@@ -2,6 +2,8 @@ package com.UltimateImgSpider;
 
 import android.support.v7.app.ActionBarActivity;
 import android.app.ActionBar;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -26,6 +28,41 @@ public class MainActivity extends ActionBarActivity
 				.add(R.id.mainFrameLayout, spiderSelSrc).commit();
 		
 		Log.i(LOG_TAG, "onCreate");
+	}
+	
+
+	protected void onStart()
+	{
+		super.onStart();
+		Log.i(LOG_TAG, "onStart");
+	}
+
+	protected void onResume()
+	{
+		super.onResume();
+		Log.i(LOG_TAG, "onResume");
+		
+	}
+
+	protected void onPause()
+	{
+		super.onPause();
+		Log.i(LOG_TAG, "onPause");
+
+	}
+
+	protected void onStop()
+	{
+		Log.i(LOG_TAG, "onStop");
+
+		super.onStop();
+	}
+
+	protected void onDestroy()
+	{
+		super.onDestroy();
+		Log.i(LOG_TAG, "onDestroy");
+		
 	}
 	
 	@Override
@@ -79,7 +116,10 @@ public class MainActivity extends ActionBarActivity
 	{
 		if (keyCode == KeyEvent.KEYCODE_BACK)
 		{
-			return spiderSelSrc.webViewSelSrcGoBack();
+			if(spiderSelSrc.webViewSelSrcGoBack())
+			{
+				return true;
+			}
 		}
 		return super.onKeyDown(keyCode, event);
 	}

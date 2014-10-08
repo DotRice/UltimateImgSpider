@@ -247,13 +247,13 @@ int id action_bar_root 0x7f05001a
 int id action_bar_subtitle 0x7f050023
 int id action_bar_title 0x7f050022
 int id action_context_bar 0x7f05001d
-int id action_exit 0x7f050041
+int id action_exit 0x7f050042
 int id action_menu_divider 0x7f050016
 int id action_menu_presenter 0x7f050017
 int id action_mode_close_button 0x7f050024
-int id action_refresh 0x7f05003f
-int id action_settings 0x7f050040
-int id action_spiderGo 0x7f05003e
+int id action_refresh 0x7f050040
+int id action_settings 0x7f050041
+int id action_spiderGo 0x7f05003f
 int id activity_chooser_view_content 0x7f050025
 int id always 0x7f05000b
 int id beginning 0x7f050011
@@ -279,6 +279,7 @@ int id middle 0x7f050012
 int id never 0x7f050009
 int id none 0x7f050010
 int id normal 0x7f050000
+int id progressBarWebView 0x7f05003d
 int id progress_circular 0x7f050018
 int id progress_horizontal 0x7f050019
 int id radio 0x7f05002f
@@ -303,7 +304,7 @@ int id title 0x7f05002b
 int id top_action_bar 0x7f050020
 int id up 0x7f050021
 int id useLogo 0x7f050003
-int id webViewSelectSrcUrl 0x7f05003d
+int id webViewSelectSrcUrl 0x7f05003e
 int id withText 0x7f05000c
 int integer abc_max_action_buttons 0x7f090000
 int layout abc_action_bar_decor 0x7f030000
@@ -331,7 +332,7 @@ int layout abc_search_dropdown_item_icons_2line 0x7f030015
 int layout abc_search_view 0x7f030016
 int layout abc_simple_decor 0x7f030017
 int layout activity_main 0x7f030018
-int layout fragment_main 0x7f030019
+int layout fragment_sel_src 0x7f030019
 int layout support_simple_spinner_dropdown_item 0x7f03001a
 int menu main 0x7f0c0000
 int string abc_action_bar_home_description 0x7f0a0001
