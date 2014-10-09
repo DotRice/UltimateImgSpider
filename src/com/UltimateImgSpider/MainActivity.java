@@ -1,7 +1,9 @@
 package com.UltimateImgSpider;
 
 import android.support.v7.app.ActionBarActivity;
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
+import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -30,34 +32,33 @@ public class MainActivity extends ActionBarActivity
 		Log.i(LOG_TAG, "onCreate");
 	}
 	
-
 	protected void onStart()
 	{
 		super.onStart();
 		Log.i(LOG_TAG, "onStart");
 	}
-
+	
 	protected void onResume()
 	{
 		super.onResume();
 		Log.i(LOG_TAG, "onResume");
 		
 	}
-
+	
 	protected void onPause()
 	{
 		super.onPause();
 		Log.i(LOG_TAG, "onPause");
-
+		
 	}
-
+	
 	protected void onStop()
 	{
 		Log.i(LOG_TAG, "onStop");
-
+		
 		super.onStop();
 	}
-
+	
 	protected void onDestroy()
 	{
 		super.onDestroy();
@@ -65,7 +66,25 @@ public class MainActivity extends ActionBarActivity
 		
 	}
 	
+	/*
 	@Override
+	public void onConfigurationChanged(Configuration newConfig)
+	{
+		// TODO Auto-generated method stub
+		super.onConfigurationChanged(newConfig);
+		if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+		{
+			Log.i(LOG_TAG, "∫·∆¡");
+			setContentView(R.layout.activity_main);
+		} else if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+		{
+			Log.i(LOG_TAG, " ˙∆¡");
+			setContentView(R.layout.activity_main);
+		}
+	}
+	*/
+	
+	@SuppressLint("NewApi") @Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -74,7 +93,7 @@ public class MainActivity extends ActionBarActivity
 		
 		final ActionBar bar = getActionBar();
 		
-		//bar.setDisplayHomeAsUpEnabled(true);
+		// bar.setDisplayHomeAsUpEnabled(true);
 		bar.setDisplayShowTitleEnabled(false);
 		
 		return true;
@@ -92,7 +111,7 @@ public class MainActivity extends ActionBarActivity
 			case R.id.action_spiderGo:
 				Log.i(LOG_TAG, "action_spiderGo");
 				return true;
-
+				
 			case R.id.action_refresh:
 				Log.i(LOG_TAG, "action_refresh");
 				spiderSelSrc.wvSelSrc.reload();
@@ -114,9 +133,11 @@ public class MainActivity extends ActionBarActivity
 	
 	public boolean onKeyDown(int keyCode, KeyEvent event)
 	{
+		Log.i(LOG_TAG, "onKeyDown " + keyCode);
+		
 		if (keyCode == KeyEvent.KEYCODE_BACK)
 		{
-			if(spiderSelSrc.webViewSelSrcGoBack())
+			if (spiderSelSrc.webViewSelSrcGoBack())
 			{
 				return true;
 			}
