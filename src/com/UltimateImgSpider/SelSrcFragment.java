@@ -1,8 +1,8 @@
 package com.UltimateImgSpider;
 
+import android.app.Fragment;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -30,6 +30,15 @@ public class SelSrcFragment extends Fragment
 	public SelSrcFragment()
 	{
 		
+	}
+	
+	public static SelSrcFragment newInstance(int sectionNumber)
+	{
+		SelSrcFragment fragment = new SelSrcFragment();
+		Bundle args = new Bundle();
+		args.putInt("section_number", sectionNumber);
+		fragment.setArguments(args);
+		return fragment;
 	}
 	
 	@Override
