@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+	<string name="OK">确定</string>
+	<string name="cancel">取消</string>
     <string name="app_name">优优看图</string>
     <string name="settings">设置</string>
     <string name="exit">退出</string>
+    <string name="home">初页面</string>
     <string name="spiderGo">开始抓图</string>
+    <string name="spiderGoConfirm">确定从当前网页开始抓图？</string>
     <string name="refresh">刷新</string>
     <string name="srcUrlHint">http://</string>
     <string name="webViewUserAgent">Chrome/37.0.2062.103</string>

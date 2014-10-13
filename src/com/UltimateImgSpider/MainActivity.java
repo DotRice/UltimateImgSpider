@@ -4,39 +4,87 @@ import java.util.Locale;
 
 import android.app.Activity;
 import android.app.ActionBar;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements ActionBar.TabListener
+public class MainActivity extends Activity
 {
 	
 	private String			LOG_TAG	= "MainActivity";
 	
-	/**
-	 * The {@link android.support.v4.view.PagerAdapter} that will provide
-	 * fragments for each of the sections. We use a {@link FragmentPagerAdapter}
-	 * derivative, which will keep every loaded fragment in memory. If this
-	 * becomes too memory intensive, it may be best to switch to a
-	 * {@link android.support.v13.app.FragmentStatePagerAdapter}.
-	 */
-	SectionsPagerAdapter	mSectionsPagerAdapter;
+	SelSrcFragment	spiderSelSrc;
+
+	SharedPreferences spMain;
+	final static String SPMAIN_NAME="spMain";
+	final static String SPIDERGO_NOT_CONFIRM="spiderGoConfirm";
+
+	private enum DLG
+	{
+		SPIDER_GO_CONFIRM
+	};
 	
-	/**
-	 * The {@link ViewPager} that will host the section contents.
-	 */
-	ViewPager				mViewPager;
+	@Override
+	protected Dialog onCreateDialog(int dlgId)
+	{
+		DLG dlg = DLG.values()[dlgId];
+		switch (dlg)
+		{
+		case SPIDER_GO_CONFIRM:
+		{
+			return new AlertDialog.Builder(this)
+            .setTitle(R.string.spiderGoConfirm)
+            .setMultiChoiceItems(R.array.noLongerConfirm,
+                    new boolean[]{false},
+                    new DialogInterface.OnMultiChoiceClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton,
+                                boolean isChecked) {
+
+                            /* User clicked on a check box do some stuff */
+
+							Editor editor = spMain.edit();
+							editor.putBoolean(SPIDERGO_NOT_CONFIRM, isChecked);
+							editor.commit();
+                        }
+                    })
+            .setPositiveButton(R.string.OK,
+                    new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    /* User clicked Yes so do some stuff */
+                	spiderGo();
+                }
+            })
+            .setNegativeButton(R.string.cancel,
+                    new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    /* User clicked No so do some stuff */
+                }
+            })
+           .create();
+		}
+
+		}
+		return null;
+	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -44,43 +92,16 @@ public class MainActivity extends Activity implements ActionBar.TabListener
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		// Set up the action bar.
-		final ActionBar actionBar = getActionBar();
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-		actionBar.setDisplayShowTitleEnabled(false);
+		final ActionBar bar = getActionBar();
+		// bar.setDisplayHomeAsUpEnabled(true);
+		bar.setDisplayShowTitleEnabled(false);
 		
-		// Create the adapter that will return a fragment for each of the three
-		// primary sections of the activity.
-		mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
+		spiderSelSrc = new SelSrcFragment();
 		
-		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
+		getFragmentManager().beginTransaction()
+				.add(R.id.mainFrameLayout, spiderSelSrc).commit();
 		
-		// When swiping between different sections, select the corresponding
-		// tab. We can also use ActionBar.Tab#select() to do this if we have
-		// a reference to the Tab.
-		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener()
-		{
-			@Override
-			public void onPageSelected(int position)
-			{
-				actionBar.setSelectedNavigationItem(position);
-			}
-		});
-		
-		
-		// For each of the sections in the app, add a tab to the action bar.
-		for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++)
-		{
-			// Create a tab with text corresponding to the page title defined by
-			// the adapter. Also specify this Activity object, which implements
-			// the TabListener interface, as the callback (listener) for when
-			// this tab is selected.
-			actionBar.addTab(actionBar.newTab()
-					.setText(mSectionsPagerAdapter.getPageTitle(i))
-					.setTabListener(this));
-		}
+		spMain = getSharedPreferences(SPMAIN_NAME, 0);
 		
 		Log.i(LOG_TAG, "onCreate");
 	}
@@ -128,6 +149,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener
 		return true;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -139,11 +161,28 @@ public class MainActivity extends Activity implements ActionBar.TabListener
 		{
 			case R.id.action_spiderGo:
 				Log.i(LOG_TAG, "action_spiderGo");
+				
+				if(spMain.getBoolean(SPIDERGO_NOT_CONFIRM, false))
+				{
+					spiderGo();
+				}
+				else
+				{
+					showDialog(DLG.SPIDER_GO_CONFIRM.ordinal());
+				}
+					
+				
+				return true;
+
+			case R.id.action_home:
+				Log.i(LOG_TAG, "action_home");
+				spiderSelSrc.wvSelSrc.loadUrl(spiderSelSrc.HOME_URL);
 				return true;
 				
 			case R.id.action_refresh:
 				Log.i(LOG_TAG, "action_refresh");
-				//mViewPager.getChildAt(mViewPager.getCurrentItem()).wvSelSrc.reload();
+				
+				spiderSelSrc.wvSelSrc.reload();
 				return true;
 				
 			case R.id.action_settings:
@@ -160,60 +199,23 @@ public class MainActivity extends Activity implements ActionBar.TabListener
 		return super.onOptionsItemSelected(item);
 	}
 	
-	@Override
-	public void onTabSelected(ActionBar.Tab tab,
-			FragmentTransaction fragmentTransaction)
+	
+	public void spiderGo()
 	{
-		// When the given tab is selected, switch to the corresponding page in
-		// the ViewPager.
-		mViewPager.setCurrentItem(tab.getPosition());
+		Log.i(LOG_TAG, "spiderGo");
 	}
 	
-	@Override
-	public void onTabUnselected(ActionBar.Tab tab,
-			FragmentTransaction fragmentTransaction)
+	public boolean onKeyDown(int keyCode, KeyEvent event)
 	{
+		Log.i(LOG_TAG, "onKeyDown " + keyCode);
 		
-	}
-	
-	@Override
-	public void onTabReselected(ActionBar.Tab tab,
-			FragmentTransaction fragmentTransaction)
-	{
-	}
-	
-	/**
-	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-	 * one of the sections/tabs/pages.
-	 */
-	public class SectionsPagerAdapter extends FragmentPagerAdapter
-	{
-		
-		public SectionsPagerAdapter(FragmentManager fm)
+		if (keyCode == KeyEvent.KEYCODE_BACK)
 		{
-			super(fm);
+			if (spiderSelSrc.webViewSelSrcGoBack())
+			{
+				return true;
+			}
 		}
-		
-		@Override
-		public Fragment getItem(int position)
-		{
-			// getItem is called to instantiate the fragment for the given page.
-			// Return a SelSrcFragment (defined as a static inner class below).
-			
-			return SelSrcFragment.newInstance(position + 1);
-		}
-		
-		@Override
-		public int getCount()
-		{
-			// Show 3 total pages.
-			return 3;
-		}
-		
-		@Override
-		public String getPageTitle(int position)
-		{
-			return "section"+position;
-		}
+		return super.onKeyDown(keyCode, event);
 	}
 }
