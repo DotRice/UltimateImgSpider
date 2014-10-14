@@ -26,17 +26,21 @@ public final class R {
     }
     public static final class drawable {
         public static final int exit=0x7f020000;
-        public static final int home=0x7f020001;
-        public static final int ic_launcher=0x7f020002;
-        public static final int refresh=0x7f020003;
-        public static final int setting=0x7f020004;
-        public static final int spidergo=0x7f020005;
+        public static final int help=0x7f020001;
+        public static final int home=0x7f020002;
+        public static final int ic_launcher=0x7f020003;
+        public static final int more=0x7f020004;
+        public static final int refresh=0x7f020005;
+        public static final int setting=0x7f020006;
+        public static final int spidergo=0x7f020007;
     }
     public static final class id {
-        public static final int action_exit=0x7f090007;
+        public static final int action_exit=0x7f090009;
+        public static final int action_help=0x7f090007;
         public static final int action_home=0x7f090004;
+        public static final int action_more=0x7f090006;
         public static final int action_refresh=0x7f090005;
-        public static final int action_settings=0x7f090006;
+        public static final int action_settings=0x7f090008;
         public static final int action_spiderGo=0x7f090003;
         public static final int mainFrameLayout=0x7f090000;
         public static final int progressBarWebView=0x7f090001;
@@ -54,13 +58,15 @@ public final class R {
         public static final int app_name=0x7f060002;
         public static final int cancel=0x7f060001;
         public static final int exit=0x7f060004;
-        public static final int home=0x7f060005;
-        public static final int refresh=0x7f060008;
+        public static final int help=0x7f060006;
+        public static final int home=0x7f060007;
+        public static final int more=0x7f060005;
+        public static final int refresh=0x7f06000a;
         public static final int settings=0x7f060003;
-        public static final int spiderGo=0x7f060006;
-        public static final int spiderGoConfirm=0x7f060007;
-        public static final int srcUrlHint=0x7f060009;
-        public static final int webViewUserAgent=0x7f06000a;
+        public static final int spiderGo=0x7f060008;
+        public static final int spiderGoConfirm=0x7f060009;
+        public static final int srcUrlHint=0x7f06000b;
+        public static final int webViewUserAgent=0x7f06000c;
     }
     public static final class style {
         /** 

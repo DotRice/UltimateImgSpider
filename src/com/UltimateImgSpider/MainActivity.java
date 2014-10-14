@@ -184,19 +184,29 @@ public class MainActivity extends Activity
 				
 				spiderSelSrc.wvSelSrc.reload();
 				return true;
+			
+			case R.id.action_more:
+				Log.i(LOG_TAG, "action_more");
+				return true;
+
+			case R.id.action_help:
+				Log.i(LOG_TAG, "action_help");
+				return true;
 				
 			case R.id.action_settings:
 				Log.i(LOG_TAG, "action_settings");
 				return true;
 				
 			case R.id.action_exit:
+				Log.i(LOG_TAG, "action_exit");
 				finish();
 				return true;
 				
 			default:
-			break;
+				break;
 		}
-		return super.onOptionsItemSelected(item);
+
+		return true;
 	}
 	
 	
