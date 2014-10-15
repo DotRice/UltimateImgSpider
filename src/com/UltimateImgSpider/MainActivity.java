@@ -138,6 +138,8 @@ public class MainActivity extends Activity
 		super.onDestroy();
 		Log.i(LOG_TAG, "onDestroy");
 		
+		spiderSelSrc.wvSelSrc.stopLoading();
+		spiderSelSrc.wvSelSrc.clearCache(true);
 	}
 	
 	@Override
