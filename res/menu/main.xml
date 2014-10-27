@@ -9,20 +9,6 @@
         android:icon="@drawable/spidergo"
         android:showAsAction="always" />
     
-    <item
-        android:id="@+id/action_home"
-        android:orderInCategory="100"
-        android:title="@string/home"
-        android:icon="@drawable/home"
-        android:showAsAction="always" />
-    
-    <item
-        android:id="@+id/action_refresh"
-        android:orderInCategory="100"
-        android:title="@string/refresh"
-        android:icon="@drawable/refresh"
-        android:showAsAction="always" />
-    
     <item 
         android:id="@+id/action_more"
         android:orderInCategory="100"
@@ -30,6 +16,17 @@
         android:title="@string/more"
         android:showAsAction="always">
         <menu>
+            
+		    <item
+		        android:id="@+id/action_home"
+		        android:title="@string/home"
+		        android:icon="@drawable/home" />
+		    
+		    <item
+		        android:id="@+id/action_refresh"
+		        android:title="@string/refresh"
+		        android:icon="@drawable/refresh" />
+		    
             <item
                 android:id="@+id/action_help"
                 android:title="@string/help"
@@ -44,6 +41,7 @@
 		        android:id="@+id/action_exit"
 		        android:title="@string/exit"
 		        android:icon="@drawable/exit" />
+		    
         </menu>
     </item>
 </menu>

@@ -35,20 +35,20 @@ public final class R {
         public static final int spidergo=0x7f020007;
     }
     public static final class id {
-        public static final int action_exit=0x7f090009;
-        public static final int action_help=0x7f090007;
+        public static final int action_exit=0x7f090008;
+        public static final int action_help=0x7f090006;
         public static final int action_home=0x7f090004;
-        public static final int action_more=0x7f090006;
+        public static final int action_more=0x7f090003;
         public static final int action_refresh=0x7f090005;
-        public static final int action_settings=0x7f090008;
-        public static final int action_spiderGo=0x7f090003;
-        public static final int mainFrameLayout=0x7f090000;
-        public static final int progressBarWebView=0x7f090001;
-        public static final int webViewSelectSrcUrl=0x7f090002;
+        public static final int action_settings=0x7f090007;
+        public static final int action_spiderGo=0x7f090002;
+        public static final int progressBarWebView=0x7f090000;
+        public static final int webViewSelectSrcUrl=0x7f090001;
     }
     public static final class layout {
-        public static final int activity_main=0x7f030000;
-        public static final int fragment_sel_src=0x7f030001;
+        public static final int activity_para_config=0x7f030000;
+        public static final int activity_sel_src=0x7f030001;
+        public static final int activity_spider_crawl=0x7f030002;
     }
     public static final class menu {
         public static final int main=0x7f080000;
@@ -57,6 +57,7 @@ public final class R {
         public static final int OK=0x7f060000;
         public static final int app_name=0x7f060002;
         public static final int cancel=0x7f060001;
+        public static final int defaultHomeUrl=0x7f06000d;
         public static final int exit=0x7f060004;
         public static final int help=0x7f060006;
         public static final int home=0x7f060007;
@@ -65,8 +66,9 @@ public final class R {
         public static final int settings=0x7f060003;
         public static final int spiderGo=0x7f060008;
         public static final int spiderGoConfirm=0x7f060009;
-        public static final int srcUrlHint=0x7f06000b;
-        public static final int webViewUserAgent=0x7f06000c;
+        public static final int srcUrl=0x7f06000b;
+        public static final int srcUrlHint=0x7f06000c;
+        public static final int webViewUserAgent=0x7f06000e;
     }
     public static final class style {
         /** 

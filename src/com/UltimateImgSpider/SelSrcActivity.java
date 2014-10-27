@@ -10,8 +10,10 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -23,20 +25,36 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class MainActivity extends Activity
+public class SelSrcActivity extends Activity
 {
+	private final String	LOG_TAG	= "SelSrcActivity";
+
+	private WebView			wvSelSrc;
+	private WebSettings		wsSelSrc;
 	
-	private String			LOG_TAG	= "MainActivity";
+	private ProgressBar		pbWebView;
 	
-	SelSrcFragment	spiderSelSrc;
+	private String	homeUrl;
+	private final int		PROGRESS_MAX	= 100;
+	
+	private ActionBar actionbar;
 
 	SharedPreferences spMain;
 	final static String SPMAIN_NAME="spMain";
 	final static String SPIDERGO_NOT_CONFIRM="spiderGoConfirm";
+	final static String HOME_URL_KEY="homeUrl";
 
+	final static String SOURCE_URL_BUNDLE_KEY="SourceUrl";
+	
 	private enum DLG
 	{
 		SPIDER_GO_CONFIRM
@@ -86,22 +104,90 @@ public class MainActivity extends Activity
 		return null;
 	}
 	
+	private void webViewInit()
+	{
+		pbWebView = (ProgressBar)findViewById(R.id.progressBarWebView);
+		pbWebView.setMax(PROGRESS_MAX);
+		
+		wvSelSrc = (WebView) findViewById(R.id.webViewSelectSrcUrl);
+		
+		wvSelSrc.requestFocus();
+		
+		wvSelSrc.setWebViewClient(new WebViewClient()
+		{
+			public boolean shouldOverrideUrlLoading(WebView view, String url)
+			{
+				Log.i(LOG_TAG, "UrlLoading " + url);
+				view.loadUrl(url);
+				return true;
+			}
+			
+			public void onPageFinished(WebView view, String url)
+			{
+				Log.i(LOG_TAG, "onPageFinished " + url);
+				actionbar.setTitle(url);
+			}
+			
+		    public void onPageStarted(WebView view, String url, Bitmap favicon) 
+		    {
+		    	pbWebView.setVisibility(View.VISIBLE);
+		    }
+		});
+		
+		wvSelSrc.setWebChromeClient(new WebChromeClient()
+		{
+			public void onProgressChanged(WebView view, int newProgress)
+			{
+				//Log.i(LOG_TAG, view.getUrl() + " Progress " + newProgress);
+				
+				pbWebView.setProgress(newProgress);
+				if (newProgress == PROGRESS_MAX)
+				{
+					pbWebView.setVisibility(View.GONE);
+				}
+			}
+		});
+		
+		wsSelSrc = wvSelSrc.getSettings();
+		// wsSelSrc.setUserAgentString(getString(R.string.webViewUserAgent));
+		
+		// 启用缩放
+		wsSelSrc.setSupportZoom(true);
+		wsSelSrc.setBuiltInZoomControls(true);
+		wsSelSrc.setUseWideViewPort(true);
+		
+		// 使能javascript
+		wsSelSrc.setJavaScriptEnabled(true);
+		wsSelSrc.setJavaScriptCanOpenWindowsAutomatically(false);
+		
+		// 自适应屏幕
+		// wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
+		// wsSelSrc.setLoadWithOverviewMode(true);
+		
+		wvSelSrc.loadUrl(homeUrl);
+		
+	}
+	
+	private void getParaConfig()
+	{
+		spMain = getSharedPreferences(SPMAIN_NAME, 0);
+		homeUrl=spMain.getString(HOME_URL_KEY, getString(R.string.defaultHomeUrl));
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_sel_src);
 		
-		final ActionBar bar = getActionBar();
-		// bar.setDisplayHomeAsUpEnabled(true);
-		bar.setDisplayShowTitleEnabled(false);
+		getParaConfig();
 		
-		spiderSelSrc = new SelSrcFragment();
+		actionbar = getActionBar();
+		// actionbar.setDisplayHomeAsUpEnabled(true);
+		actionbar.setDisplayShowTitleEnabled(true);
+		actionbar.setDisplayShowHomeEnabled(false);
 		
-		getFragmentManager().beginTransaction()
-				.add(R.id.mainFrameLayout, spiderSelSrc).commit();
-		
-		spMain = getSharedPreferences(SPMAIN_NAME, 0);
+		webViewInit();
 		
 		Log.i(LOG_TAG, "onCreate");
 	}
@@ -138,8 +224,8 @@ public class MainActivity extends Activity
 		super.onDestroy();
 		Log.i(LOG_TAG, "onDestroy");
 		
-		spiderSelSrc.wvSelSrc.stopLoading();
-		spiderSelSrc.wvSelSrc.clearCache(true);
+		wvSelSrc.stopLoading();
+		wvSelSrc.clearCache(true);
 	}
 	
 	@Override
@@ -148,6 +234,7 @@ public class MainActivity extends Activity
 		
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
+		
 		return true;
 	}
 	
@@ -178,13 +265,13 @@ public class MainActivity extends Activity
 
 			case R.id.action_home:
 				Log.i(LOG_TAG, "action_home");
-				spiderSelSrc.wvSelSrc.loadUrl(spiderSelSrc.HOME_URL);
+				wvSelSrc.loadUrl(homeUrl);
 				return true;
 				
 			case R.id.action_refresh:
 				Log.i(LOG_TAG, "action_refresh");
 				
-				spiderSelSrc.wvSelSrc.reload();
+				wvSelSrc.reload();
 				return true;
 			
 			case R.id.action_more:
@@ -197,6 +284,17 @@ public class MainActivity extends Activity
 				
 			case R.id.action_settings:
 				Log.i(LOG_TAG, "action_settings");
+
+				Intent intent = new Intent(this,
+						ParaConfigActivity.class);
+				
+				String srcUrl=wvSelSrc.getUrl();
+				
+				Bundle bundle = new Bundle();
+				bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
+				intent.putExtras(bundle);
+				
+				startActivity(intent);//直接切换Activity不接收返回结果
 				return true;
 				
 			case R.id.action_exit:
@@ -211,10 +309,22 @@ public class MainActivity extends Activity
 		return true;
 	}
 	
-	
 	public void spiderGo()
 	{
 		Log.i(LOG_TAG, "spiderGo");
+		
+		Intent intent = new Intent(this,
+				SpiderCrawlActivity.class);
+		
+		String srcUrl=wvSelSrc.getUrl();
+		
+		Bundle bundle = new Bundle();
+		bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
+		intent.putExtras(bundle);
+		
+		Toast.makeText(this, getString(R.string.srcUrl)+":"+srcUrl, Toast.LENGTH_SHORT).show();;
+		
+		startActivity(intent);//直接切换Activity不接收返回结果
 	}
 	
 	public boolean onKeyDown(int keyCode, KeyEvent event)
@@ -223,11 +333,18 @@ public class MainActivity extends Activity
 		
 		if (keyCode == KeyEvent.KEYCODE_BACK)
 		{
-			if (spiderSelSrc.webViewSelSrcGoBack())
+			if (wvSelSrc.canGoBack())
 			{
+				wvSelSrc.goBack();
+				
+				Log.i(LOG_TAG, "goBack ");
+				// String curUrl = wvSelSrc.getUrl();
+				// if(curUrl!=tvSrcUrl.getText())
 				return true;
 			}
 		}
 		return super.onKeyDown(keyCode, event);
 	}
+	
+	
 }
