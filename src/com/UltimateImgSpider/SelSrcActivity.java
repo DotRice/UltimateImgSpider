@@ -43,7 +43,6 @@ public class SelSrcActivity extends Activity
 	
 	private ProgressBar		pbWebView;
 	
-	private String	homeUrl;
 	private final int		PROGRESS_MAX	= 100;
 	
 	private ActionBar actionbar;
@@ -125,12 +124,12 @@ public class SelSrcActivity extends Activity
 			public void onPageFinished(WebView view, String url)
 			{
 				Log.i(LOG_TAG, "onPageFinished " + url);
-				actionbar.setTitle(url);
 			}
 			
 		    public void onPageStarted(WebView view, String url, Bitmap favicon) 
 		    {
 		    	pbWebView.setVisibility(View.VISIBLE);
+				actionbar.setTitle(url);
 		    }
 		});
 		
@@ -164,14 +163,18 @@ public class SelSrcActivity extends Activity
 		// wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
 		// wsSelSrc.setLoadWithOverviewMode(true);
 		
-		wvSelSrc.loadUrl(homeUrl);
+		wvSelSrc.loadUrl(getHomeUrl());
 		
 	}
 	
 	private void getParaConfig()
 	{
 		spMain = getSharedPreferences(SPMAIN_NAME, 0);
-		homeUrl=spMain.getString(HOME_URL_KEY, getString(R.string.defaultHomeUrl));
+	}
+	
+	public String getHomeUrl()
+	{
+		return spMain.getString(HOME_URL_KEY, getString(R.string.defaultHomeUrl));
 	}
 	
 	@Override
@@ -265,7 +268,7 @@ public class SelSrcActivity extends Activity
 
 			case R.id.action_home:
 				Log.i(LOG_TAG, "action_home");
-				wvSelSrc.loadUrl(homeUrl);
+				wvSelSrc.loadUrl(getHomeUrl());
 				return true;
 				
 			case R.id.action_refresh:
