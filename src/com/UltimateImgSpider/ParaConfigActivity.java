@@ -144,6 +144,18 @@ public class ParaConfigActivity extends Activity
 				SelSrcActivity.HOME_URL_KEY, getString(R.string.defaultHomeUrl));
 	}
 	
+	@JavascriptInterface
+	public void finishConfig()
+	{
+		mHandler.post(new Runnable()
+		{
+			public void run()
+			{
+				ParaConfigActivity.this.finish();
+			}
+		});
+	}
+	
 	public boolean onKeyDown(int keyCode, KeyEvent event)
 	{
 		Log.i(LOG_TAG, "onKeyDown " + keyCode);

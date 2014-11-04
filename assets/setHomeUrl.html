@@ -14,9 +14,18 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 			console.log("setHomeUrl %s", url);
 			paraConfig.setHomeUrl(url);
 		}
+		
+		function goback()
+		{
+			setHome("");
+		}
 	</script>
 
-    <body style="text-align:center;">
+    <body>
+		<div class="header" style="text-align:center;">
+			<div class="backMask" onclick="goback();"></div>
+			主页
+		</div>
 		<div class="paraItem" style='font:24px/40px "Tahoma","microsoft yahei"; height:102px; padding-top:10px;'>
 			<input type="url" class="inputText" id="customUrl" placeholder="自定义" onfocus="if(this.value=='')this.value='http://';"></input>
 			<div class="confirmBox">

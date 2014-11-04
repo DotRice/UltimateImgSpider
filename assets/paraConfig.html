@@ -13,9 +13,19 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 		{
 			$("curHomeUrl").innerHTML=paraConfig.getHomeUrl();
 		}
+		
+		function goback()
+		{
+			paraConfig.finishConfig();
+		}
 	</script>
 
-    <body>
+    <body style="text-align:left;">
+		<div class="header" style="text-align:center;">
+			<div class="backMask" onclick="goback();"></div>
+			设置
+		</div>
+		
 		<a class="para" href="setHomeUrl.html">
 			<div class="paraName">主页</div>
 			<div class="moreMask"></div>
