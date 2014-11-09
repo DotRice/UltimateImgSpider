@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
+import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.JavascriptInterface;
@@ -28,7 +29,7 @@ public class ParaConfigActivity extends Activity
 	
 	private Handler		mHandler		= new Handler();
 	
-	final static String	assetParaUrl	= "file:///android_asset/paraConfig.html";
+	final static String	assetParaUrl	= "file:///android_asset/para.html";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -103,8 +104,8 @@ public class ParaConfigActivity extends Activity
 		wvParaConfig.addJavascriptInterface(this, "paraConfig");
 		
 		// ×ÔÊÊÓ¦ÆÁÄ»
-		// wsParaConfig.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
-		// wsParaConfig.setLoadWithOverviewMode(true);
+		//wsParaConfig.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
+		//wsParaConfig.setLoadWithOverviewMode(true);
 		
 		wvParaConfig.loadUrl(assetParaUrl);
 		
@@ -162,13 +163,9 @@ public class ParaConfigActivity extends Activity
 		
 		if (keyCode == KeyEvent.KEYCODE_BACK)
 		{
-			if (wvParaConfig.canGoBack())
-			{
-				wvParaConfig.goBack();
-				
-				Log.i(LOG_TAG, "goBack ");
-				return true;
-			}
+			Log.i(LOG_TAG, "goBack ");
+			wvParaConfig.loadUrl("javascript:goback()");
+			return true;
 		}
 		return super.onKeyDown(keyCode, event);
 	}

@@ -124,6 +124,7 @@ public class SelSrcActivity extends Activity
 			public void onPageFinished(WebView view, String url)
 			{
 				Log.i(LOG_TAG, "onPageFinished " + url);
+				actionbar.setTitle(url);
 			}
 			
 		    public void onPageStarted(WebView view, String url, Bitmap favicon) 
