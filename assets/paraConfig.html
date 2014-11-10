@@ -9,38 +9,104 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     </head>
 
 	<script>
-		window.onload=function()
+		var curPage=0;
+		
+		function loadPara()
 		{
 			$("curHomeUrl").innerHTML=paraConfig.getHomeUrl();
 		}
 		
+		window.onload=loadPara();
+		
 		function goback()
 		{
-			paraConfig.finishConfig();
+			if(curPage==0)
+			{
+				paraConfig.finishConfig();
+			}
+			else
+			{
+				curPage--;
+				pageBox.style.webkitTransform='';
+				
+				if(curPage==0)
+				{
+					loadPara();
+				}
+			}
 		}
+		
+		function gotoSubpage(subPage)
+		{
+			curPage++;
+			pageBox.style.webkitTransform='translate(-50%, 0)';
+		}
+		
+		function setHome(url)
+		{
+			console.log("setHomeUrl %s", url);
+			paraConfig.setHomeUrl(url);
+			goback();
+		}
+		
 	</script>
 
-    <body style="text-align:left;">
-		<div class="header" style="text-align:center;">
-			<div class="backMaskBox" onclick="goback();">
-				<div class="backMask"></div>
+    <body>
+		<div id="pageWindow">
+		<div id="pageBox">
+			<div class="page" id="paraList">
+				<div class="title" style="text-align:center;">
+					<div class="backMaskBox" onclick="goback()">
+						<div class="backMask"></div>
+					</div>
+					设置
+				</div>
+				<div class="titleSpace"></div>
+				
+				<div class="paraBox">
+					<div class="para" onclick="gotoSubpage('setHomeUrl')">
+						<div class="paraName">主页</div>
+						<div class="moreMask"></div>
+						<div class="paraValue" id="curHomeUrl">http://www.baidu.com</div>
+					</div>
+					
+					<div class="para">
+					
+					</div>
+					
+					<div class="para">
+					
+					</div>
+				</div>
 			</div>
-			设置
+			
+			<div class="page subPage" id="setHomeUrl">
+				<div class="title">
+					<div class="backMaskBox" onclick="goback();">
+						<div class="backMask"></div>
+					</div>
+					主页
+				</div>
+				
+				<div class="titleSpace"></div>
+				
+				<div class="paraBox">
+					<div class="paraItem" style='font:24px/40px "Tahoma","microsoft yahei"; height:102px; padding-top:10px;'>
+						<input type="url" class="inputText" id="customUrl" placeholder="自定义" onfocus="if(this.value=='')this.value='http://';"></input>
+						<div class="confirmBox">
+							<input type="button" class="inputButton" style="float:left;" value="确定" onclick="setHome($('customUrl').value);"></input>
+							<input type="button" class="inputButton" style="float:right;" value="取消" onclick="setHome('');"></input>
+						</div>
+					</div>
+					
+					<div class="paraItem" onclick="setHome('curUrl');">当前页</div>
+					<div class="paraItem" onclick="setHome('http://www.baidu.com');">百度</div>
+					<div class="paraItem" onclick="setHome('http://www.bing.com');">必应</div>
+					<div class="paraItem" onclick="setHome('http://www.sogou.com');">搜狗</div>
+					<div class="paraItem" onclick="setHome('http://www.google.com');">谷歌</div>
+				</div>
+			</div>
 		</div>
-		
-		<a class="para" href="setHomeUrl.html">
-			<div class="paraName">主页</div>
-			<div class="moreMask"></div>
-			<div class="paraValue" id="curHomeUrl">http://www.baidu.com</div>
-		</a>
-		
-		<div class="para">
-		
 		</div>
-		
-		<div class="para">
-		
-		</div>
-		
 	</body>
 </html>

@@ -29,7 +29,7 @@ public class ParaConfigActivity extends Activity
 	
 	private Handler		mHandler		= new Handler();
 	
-	final static String	assetParaUrl	= "file:///android_asset/para.html";
+	final static String	assetParaUrl	= "file:///android_asset/paraConfig.html";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -114,14 +114,7 @@ public class ParaConfigActivity extends Activity
 	@JavascriptInterface
 	public void setHomeUrl(String url)
 	{
-		mHandler.post(new Runnable()
-		{
-			public void run()
-			{
-				wvParaConfig.goBack();
-				Log.i(LOG_TAG, "setHomeUrl");
-			}
-		});
+		Log.i(LOG_TAG, "setHomeUrl");
 		
 		if(!url.isEmpty())
 		{
