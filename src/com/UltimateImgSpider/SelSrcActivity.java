@@ -13,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
@@ -36,23 +37,23 @@ import android.widget.Toast;
 
 public class SelSrcActivity extends Activity
 {
-	private final String	LOG_TAG	= "SelSrcActivity";
-
+	private final String	LOG_TAG					= "SelSrcActivity";
+	
 	private WebView			wvSelSrc;
 	private WebSettings		wsSelSrc;
 	
 	private ProgressBar		pbWebView;
 	
-	private final int		PROGRESS_MAX	= 100;
+	private final int		PROGRESS_MAX			= 100;
 	
-	private ActionBar actionbar;
-
-	SharedPreferences spMain;
-	final static String SPMAIN_NAME="spMain";
-	final static String SPIDERGO_NOT_CONFIRM="spiderGoConfirm";
-	final static String HOME_URL_KEY="homeUrl";
-
-	final static String SOURCE_URL_BUNDLE_KEY="SourceUrl";
+	private ActionBar		actionbar;
+	
+	SharedPreferences		spMain;
+	final static String		SPMAIN_NAME				= "spMain";
+	final static String		SPIDERGO_NOT_CONFIRM	= "spiderGoConfirm";
+	final static String		HOME_URL_KEY			= "homeUrl";
+	
+	final static String		SOURCE_URL_BUNDLE_KEY	= "SourceUrl";
 	
 	private enum DLG
 	{
@@ -65,47 +66,56 @@ public class SelSrcActivity extends Activity
 		DLG dlg = DLG.values()[dlgId];
 		switch (dlg)
 		{
-		case SPIDER_GO_CONFIRM:
-		{
-			return new AlertDialog.Builder(this)
-            .setTitle(R.string.spiderGoConfirm)
-            .setMultiChoiceItems(R.array.noLongerConfirm,
-                    new boolean[]{false},
-                    new DialogInterface.OnMultiChoiceClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton,
-                                boolean isChecked) {
-
-                            /* User clicked on a check box do some stuff */
-
-							Editor editor = spMain.edit();
-							editor.putBoolean(SPIDERGO_NOT_CONFIRM, isChecked);
-							editor.commit();
-                        }
-                    })
-            .setPositiveButton(R.string.OK,
-                    new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    /* User clicked Yes so do some stuff */
-                	spiderGo();
-                }
-            })
-            .setNegativeButton(R.string.cancel,
-                    new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-
-                    /* User clicked No so do some stuff */
-                }
-            })
-           .create();
-		}
-
+			case SPIDER_GO_CONFIRM:
+			{
+				return new AlertDialog.Builder(this)
+						.setTitle(R.string.spiderGoConfirm)
+						.setMultiChoiceItems(
+								R.array.noLongerConfirm,
+								new boolean[] { false },
+								new DialogInterface.OnMultiChoiceClickListener()
+								{
+									public void onClick(DialogInterface dialog,
+											int whichButton, boolean isChecked)
+									{
+										
+										/* User clicked on a check box do some stuff */
+										
+										Editor editor = spMain.edit();
+										editor.putBoolean(SPIDERGO_NOT_CONFIRM,
+												isChecked);
+										editor.commit();
+									}
+								})
+						.setPositiveButton(R.string.OK,
+								new DialogInterface.OnClickListener()
+								{
+									public void onClick(DialogInterface dialog,
+											int whichButton)
+									{
+										/* User clicked Yes so do some stuff */
+										spiderGo();
+									}
+								})
+						.setNegativeButton(R.string.cancel,
+								new DialogInterface.OnClickListener()
+								{
+									public void onClick(DialogInterface dialog,
+											int whichButton)
+									{
+										
+										/* User clicked No so do some stuff */
+									}
+								}).create();
+			}
+			
 		}
 		return null;
 	}
 	
 	private void webViewInit()
 	{
-		pbWebView = (ProgressBar)findViewById(R.id.progressBarWebView);
+		pbWebView = (ProgressBar) findViewById(R.id.progressBarWebView);
 		pbWebView.setMax(PROGRESS_MAX);
 		
 		wvSelSrc = (WebView) findViewById(R.id.webViewSelectSrcUrl);
@@ -127,18 +137,19 @@ public class SelSrcActivity extends Activity
 				actionbar.setTitle(url);
 			}
 			
-		    public void onPageStarted(WebView view, String url, Bitmap favicon) 
-		    {
-		    	pbWebView.setVisibility(View.VISIBLE);
+			public void onPageStarted(WebView view, String url, Bitmap favicon)
+			{
+				Log.i(LOG_TAG, "onPageStarted " + url);
+				pbWebView.setVisibility(View.VISIBLE);
 				actionbar.setTitle(url);
-		    }
+			}
 		});
 		
 		wvSelSrc.setWebChromeClient(new WebChromeClient()
 		{
 			public void onProgressChanged(WebView view, int newProgress)
 			{
-				//Log.i(LOG_TAG, view.getUrl() + " Progress " + newProgress);
+				// Log.i(LOG_TAG, view.getUrl() + " Progress " + newProgress);
 				
 				pbWebView.setProgress(newProgress);
 				if (newProgress == PROGRESS_MAX)
@@ -149,7 +160,7 @@ public class SelSrcActivity extends Activity
 		});
 		
 		wsSelSrc = wvSelSrc.getSettings();
-		// wsSelSrc.setUserAgentString(getString(R.string.webViewUserAgent));
+		wsSelSrc.setUserAgentString(getString(R.string.webViewUserAgent));
 		
 		// 启用缩放
 		wsSelSrc.setSupportZoom(true);
@@ -175,7 +186,8 @@ public class SelSrcActivity extends Activity
 	
 	public String getHomeUrl()
 	{
-		return spMain.getString(HOME_URL_KEY, getString(R.string.defaultHomeUrl));
+		return spMain.getString(HOME_URL_KEY,
+				getString(R.string.defaultHomeUrl));
 	}
 	
 	@Override
@@ -255,18 +267,16 @@ public class SelSrcActivity extends Activity
 			case R.id.action_spiderGo:
 				Log.i(LOG_TAG, "action_spiderGo");
 				
-				if(spMain.getBoolean(SPIDERGO_NOT_CONFIRM, false))
+				if (spMain.getBoolean(SPIDERGO_NOT_CONFIRM, false))
 				{
 					spiderGo();
-				}
-				else
+				} else
 				{
 					showDialog(DLG.SPIDER_GO_CONFIRM.ordinal());
 				}
-					
 				
 				return true;
-
+				
 			case R.id.action_home:
 				Log.i(LOG_TAG, "action_home");
 				wvSelSrc.loadUrl(getHomeUrl());
@@ -277,28 +287,27 @@ public class SelSrcActivity extends Activity
 				
 				wvSelSrc.reload();
 				return true;
-			
+				
 			case R.id.action_more:
 				Log.i(LOG_TAG, "action_more");
 				return true;
-
+				
 			case R.id.action_help:
 				Log.i(LOG_TAG, "action_help");
 				return true;
 				
 			case R.id.action_settings:
 				Log.i(LOG_TAG, "action_settings");
-
-				Intent intent = new Intent(this,
-						ParaConfigActivity.class);
 				
-				String srcUrl=wvSelSrc.getUrl();
+				Intent intent = new Intent(this, ParaConfigActivity.class);
+				
+				String srcUrl = wvSelSrc.getUrl();
 				
 				Bundle bundle = new Bundle();
 				bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
 				intent.putExtras(bundle);
 				
-				startActivity(intent);//直接切换Activity不接收返回结果
+				startActivity(intent);// 直接切换Activity不接收返回结果
 				return true;
 				
 			case R.id.action_exit:
@@ -307,9 +316,9 @@ public class SelSrcActivity extends Activity
 				return true;
 				
 			default:
-				break;
+			break;
 		}
-
+		
 		return true;
 	}
 	
@@ -317,18 +326,19 @@ public class SelSrcActivity extends Activity
 	{
 		Log.i(LOG_TAG, "spiderGo");
 		
-		Intent intent = new Intent(this,
-				SpiderCrawlActivity.class);
+		Intent intent = new Intent(this, SpiderCrawlActivity.class);
 		
-		String srcUrl=wvSelSrc.getUrl();
+		String srcUrl = wvSelSrc.getUrl();
 		
 		Bundle bundle = new Bundle();
 		bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
 		intent.putExtras(bundle);
 		
-		Toast.makeText(this, getString(R.string.srcUrl)+":"+srcUrl, Toast.LENGTH_SHORT).show();;
+		Toast.makeText(this, getString(R.string.srcUrl) + ":" + srcUrl,
+				Toast.LENGTH_SHORT).show();
+		;
 		
-		startActivity(intent);//直接切换Activity不接收返回结果
+		startActivity(intent);// 直接切换Activity不接收返回结果
 	}
 	
 	public boolean onKeyDown(int keyCode, KeyEvent event)
@@ -350,5 +360,17 @@ public class SelSrcActivity extends Activity
 		return super.onKeyDown(keyCode, event);
 	}
 	
-	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig)
+	{
+		super.onConfigurationChanged(newConfig);
+		
+		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+		{
+			Log.i(LOG_TAG, "Landscape");
+		} else
+		{
+			Log.i(LOG_TAG, "Portrait");
+		}
+	}
 }

@@ -14,5 +14,5 @@
     <string name="srcUrl">起始地址</string>
     <string name="srcUrlHint">http://</string>
     <string name="defaultHomeUrl">http://www.baidu.com/</string>
-    <string name="webViewUserAgent">Chrome/37.0.2062.103</string>
+    <string name="webViewUserAgent">Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36</string>
 </resources>

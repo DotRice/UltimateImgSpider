@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -48,6 +49,8 @@ public class ParaConfigActivity extends Activity
 		
 		webViewInit();
 	}
+	
+	
 	
 	@SuppressLint({ "JavascriptInterface", "SetJavaScriptEnabled" })
 	private void webViewInit()
@@ -162,5 +165,18 @@ public class ParaConfigActivity extends Activity
 		}
 		return super.onKeyDown(keyCode, event);
 	}
-	
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig)
+	{
+		super.onConfigurationChanged(newConfig);
+		
+		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+		{
+			Log.i(LOG_TAG, "Landscape");
+		} else
+		{
+			Log.i(LOG_TAG, "Portrait");
+		}
+	}
 }

@@ -2,6 +2,7 @@ package com.UltimateImgSpider;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -26,4 +27,20 @@ public class SpiderCrawlActivity extends Activity
 		}
 	}
 	
+	
+	
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig)
+	{
+		super.onConfigurationChanged(newConfig);
+		
+		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+		{
+			Log.i(LOG_TAG, "Landscape");
+		} else
+		{
+			Log.i(LOG_TAG, "Portrait");
+		}
+	}
 }
