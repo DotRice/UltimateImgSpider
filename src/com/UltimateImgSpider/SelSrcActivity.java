@@ -15,21 +15,30 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
+import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -44,9 +53,14 @@ public class SelSrcActivity extends Activity
 	
 	private ProgressBar		pbWebView;
 	
+	private Button	btnGo;
+	private EditText	etURL;
+	
 	private final int		PROGRESS_MAX			= 100;
 	
-	private ActionBar		actionbar;
+	//private ActionBar		actionbar;
+	
+	private Handler		mHandler		= new Handler();
 	
 	SharedPreferences		spMain;
 	final static String		SPMAIN_NAME				= "spMain";
@@ -134,14 +148,14 @@ public class SelSrcActivity extends Activity
 			public void onPageFinished(WebView view, String url)
 			{
 				Log.i(LOG_TAG, "onPageFinished " + url);
-				actionbar.setTitle(url);
+				//actionbar.setTitle(url);
 			}
 			
 			public void onPageStarted(WebView view, String url, Bitmap favicon)
 			{
 				Log.i(LOG_TAG, "onPageStarted " + url);
 				pbWebView.setVisibility(View.VISIBLE);
-				actionbar.setTitle(url);
+				//actionbar.setTitle(url);
 			}
 		});
 		
@@ -152,10 +166,32 @@ public class SelSrcActivity extends Activity
 				// Log.i(LOG_TAG, view.getUrl() + " Progress " + newProgress);
 				
 				pbWebView.setProgress(newProgress);
+				
 				if (newProgress == PROGRESS_MAX)
 				{
-					pbWebView.setVisibility(View.GONE);
+					mHandler.postDelayed(new Runnable()
+					{
+						public void run()
+						{
+							pbWebView.setProgress(0);
+						}
+					}, 500);
 				}
+				
+			}
+		});
+		
+		wvSelSrc.setOnTouchListener(new View.OnTouchListener()
+		{
+			@Override
+			public boolean onTouch(View v, MotionEvent event)
+			{
+				// TODO Auto-generated method stub
+				if(etURL.isFocused())
+				{
+					clearFocusAndHideIM(etURL);
+				}
+				return false;
 			}
 		});
 		
@@ -166,17 +202,27 @@ public class SelSrcActivity extends Activity
 		wsSelSrc.setSupportZoom(true);
 		wsSelSrc.setBuiltInZoomControls(true);
 		wsSelSrc.setUseWideViewPort(true);
+		wsSelSrc.setDisplayZoomControls(false);
 		
 		// 使能javascript
 		wsSelSrc.setJavaScriptEnabled(true);
 		wsSelSrc.setJavaScriptCanOpenWindowsAutomatically(false);
 		
 		// 自适应屏幕
-		// wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
-		// wsSelSrc.setLoadWithOverviewMode(true);
+		wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
+		wsSelSrc.setLoadWithOverviewMode(true);
+		
 		
 		wvSelSrc.loadUrl(getHomeUrl());
 		
+	}
+	
+	public void clearFocusAndHideIM(View v)
+	{
+		v.clearFocus();
+		((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE))  
+    	.hideSoftInputFromWindow(v.getWindowToken(),
+    							InputMethodManager.HIDE_NOT_ALWAYS);
 	}
 	
 	private void getParaConfig()
@@ -190,6 +236,102 @@ public class SelSrcActivity extends Activity
 				getString(R.string.defaultHomeUrl));
 	}
 	
+	private void URLbarInit()
+	{
+		btnGo=(Button)findViewById(R.id.buttonGo);
+		btnGo.setVisibility(View.GONE);
+		btnGo.setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				// TODO Auto-generated method stub
+				String cmd=btnGo.getText().toString();
+				if(cmd.equals(getString(R.string.cancel)))
+				{
+					Log.i(LOG_TAG, "URLbar Cancel");
+					clearFocusAndHideIM(etURL);
+					btnGo.setVisibility(View.GONE);
+				}
+				else if(cmd.equals(getString(R.string.enter)))
+				{
+					
+				}
+				else if(cmd.equals(getString(R.string.search)))
+				{
+					
+				}
+			}
+		});
+		
+		etURL=(EditText)findViewById(R.id.editTextUrl);
+		etURL.setOnFocusChangeListener(new View.OnFocusChangeListener()
+		{
+			
+			@Override
+			public void onFocusChange(View v, boolean hasFocus)
+			{
+				// TODO Auto-generated method stub
+				if(hasFocus)
+				{
+					btnGo.setVisibility(View.VISIBLE);
+					setBtnGoDisplay(etURL.getText().toString());
+				}
+			}
+		});
+		
+		etURL.addTextChangedListener(new TextWatcher()
+		{
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void afterTextChanged(Editable s)
+			{
+				// TODO Auto-generated method stub
+				setBtnGoDisplay(s.toString());
+			}
+			
+		});
+	}
+	
+	private void setBtnGoDisplay(String URL)
+	{
+		String LowerCaseURL=URL.toLowerCase();
+		
+		if(LowerCaseURL.startsWith("http://")||
+		  (LowerCaseURL.startsWith("https://")))
+		{
+			btnGo.setTextColor(Color.parseColor(getString(R.string.colorAction)));
+			btnGo.setText(R.string.enter);
+		}
+		else if(URL.isEmpty())
+		{
+			btnGo.setTextColor(Color.parseColor(getString(R.string.colorCancel)));
+			btnGo.setText(R.string.cancel);
+		}
+		else
+		{
+			btnGo.setTextColor(Color.parseColor(getString(R.string.colorAction)));
+			btnGo.setText(R.string.search);
+		}
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -198,11 +340,7 @@ public class SelSrcActivity extends Activity
 		
 		getParaConfig();
 		
-		actionbar = getActionBar();
-		// actionbar.setDisplayHomeAsUpEnabled(true);
-		actionbar.setDisplayShowTitleEnabled(true);
-		actionbar.setDisplayShowHomeEnabled(false);
-		
+		URLbarInit();
 		webViewInit();
 		
 		Log.i(LOG_TAG, "onCreate");
