@@ -189,7 +189,11 @@ public class SelSrcActivity extends Activity
 				// TODO Auto-generated method stub
 				if(etURL.isFocused())
 				{
-					clearFocusAndHideIM(etURL);
+					clearURLfocus();
+					if(etURL.getText().length()==0)
+					{
+						btnGo.setVisibility(View.GONE);
+					}
 				}
 				return false;
 			}
@@ -209,7 +213,7 @@ public class SelSrcActivity extends Activity
 		wsSelSrc.setJavaScriptCanOpenWindowsAutomatically(false);
 		
 		// ×ÔÊÊÓ¦ÆÁÄ»
-		wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
+		//wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
 		wsSelSrc.setLoadWithOverviewMode(true);
 		
 		
@@ -217,11 +221,12 @@ public class SelSrcActivity extends Activity
 		
 	}
 	
-	public void clearFocusAndHideIM(View v)
+	private void clearURLfocus()
 	{
-		v.clearFocus();
+		//etURL.clearFocus();
+		wvSelSrc.requestFocus();
 		((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE))  
-    	.hideSoftInputFromWindow(v.getWindowToken(),
+    	.hideSoftInputFromWindow(etURL.getWindowToken(),
     							InputMethodManager.HIDE_NOT_ALWAYS);
 	}
 	
@@ -251,7 +256,7 @@ public class SelSrcActivity extends Activity
 				if(cmd.equals(getString(R.string.cancel)))
 				{
 					Log.i(LOG_TAG, "URLbar Cancel");
-					clearFocusAndHideIM(etURL);
+					clearURLfocus();
 					btnGo.setVisibility(View.GONE);
 				}
 				else if(cmd.equals(getString(R.string.enter)))

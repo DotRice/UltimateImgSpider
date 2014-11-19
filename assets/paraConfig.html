@@ -8,49 +8,6 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 		<script type="text/javascript" src="proc.js"></script>
     </head>
 
-	<script>
-		var curPage=0;
-		
-		function loadPara()
-		{
-			$("curHomeUrl").innerHTML=paraConfig.getHomeUrl();
-		}
-		
-		window.onload=loadPara();
-		
-		function goback()
-		{
-			if(curPage==0)
-			{
-				paraConfig.finishConfig();
-			}
-			else
-			{
-				curPage--;
-				$("pageBox").style.webkitTransform='';
-				
-				if(curPage==0)
-				{
-					loadPara();
-				}
-			}
-		}
-		
-		function gotoSubpage(subPage)
-		{
-			curPage++;
-			$("pageBox").style.webkitTransform='translate3d(-50%, 0, 0)';
-		}
-		
-		function setHome(url)
-		{
-			console.log("setHomeUrl %s", url);
-			paraConfig.setHomeUrl(url);
-			goback();
-		}
-		
-	</script>
-
     <body>
 		<div id="pageWindow">
 			<div id="pageBox">
@@ -166,4 +123,48 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 			</div>
 		</div>
 	</body>
+	
+	<script>
+		var curPage=0;
+		
+		function loadPara()
+		{
+			$("curHomeUrl").innerHTML=paraConfig.getHomeUrl();
+		}
+		
+		window.onload=loadPara();
+		
+		function goback()
+		{
+			if(curPage==0)
+			{
+				paraConfig.finishConfig();
+			}
+			else
+			{
+				curPage--;
+				$("pageBox").style.webkitTransform='';
+				
+				if(curPage==0)
+				{
+					loadPara();
+				}
+			}
+		}
+		
+		function gotoSubpage(subPage)
+		{
+			curPage++;
+			$("pageBox").style.webkitTransform='translate3d(-50%, 0, 0)';
+		}
+		
+		function setHome(url)
+		{
+			console.log("setHomeUrl %s", url);
+			paraConfig.setHomeUrl(url);
+			goback();
+		}
+		
+	</script>
+
 </html>
