@@ -41,6 +41,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,14 +54,15 @@ public class SelSrcActivity extends Activity
 	
 	private ProgressBar		pbWebView;
 	
-	private Button	btnGo;
-	private EditText	etURL;
+	private Button			btnGo;
+	private EditText		etURL;
+	private RelativeLayout URLbar;
 	
 	private final int		PROGRESS_MAX			= 100;
 	
-	//private ActionBar		actionbar;
+	// private ActionBar actionbar;
 	
-	private Handler		mHandler		= new Handler();
+	private Handler			mHandler				= new Handler();
 	
 	SharedPreferences		spMain;
 	final static String		SPMAIN_NAME				= "spMain";
@@ -148,14 +150,14 @@ public class SelSrcActivity extends Activity
 			public void onPageFinished(WebView view, String url)
 			{
 				Log.i(LOG_TAG, "onPageFinished " + url);
-				//actionbar.setTitle(url);
+				// actionbar.setTitle(url);
 			}
 			
 			public void onPageStarted(WebView view, String url, Bitmap favicon)
 			{
 				Log.i(LOG_TAG, "onPageStarted " + url);
 				pbWebView.setVisibility(View.VISIBLE);
-				//actionbar.setTitle(url);
+				// actionbar.setTitle(url);
 			}
 		});
 		
@@ -187,10 +189,10 @@ public class SelSrcActivity extends Activity
 			public boolean onTouch(View v, MotionEvent event)
 			{
 				// TODO Auto-generated method stub
-				if(etURL.isFocused())
+				if (etURL.isFocused())
 				{
 					clearURLfocus();
-					if(etURL.getText().length()==0)
+					if (etURL.getText().length() == 0)
 					{
 						btnGo.setVisibility(View.GONE);
 					}
@@ -213,9 +215,8 @@ public class SelSrcActivity extends Activity
 		wsSelSrc.setJavaScriptCanOpenWindowsAutomatically(false);
 		
 		// ×ÔÊÊÓ¦ÆÁÄ»
-		//wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
+		// wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
 		wsSelSrc.setLoadWithOverviewMode(true);
-		
 		
 		wvSelSrc.loadUrl(getHomeUrl());
 		
@@ -223,11 +224,11 @@ public class SelSrcActivity extends Activity
 	
 	private void clearURLfocus()
 	{
-		//etURL.clearFocus();
+		// etURL.clearFocus();
 		wvSelSrc.requestFocus();
-		((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE))  
-    	.hideSoftInputFromWindow(etURL.getWindowToken(),
-    							InputMethodManager.HIDE_NOT_ALWAYS);
+		((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+				.hideSoftInputFromWindow(etURL.getWindowToken(),
+						InputMethodManager.HIDE_NOT_ALWAYS);
 	}
 	
 	private void getParaConfig()
@@ -243,7 +244,20 @@ public class SelSrcActivity extends Activity
 	
 	private void URLbarInit()
 	{
-		btnGo=(Button)findViewById(R.id.buttonGo);
+		URLbar=(RelativeLayout)findViewById(R.id.urlBar);
+		URLbar.setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				// TODO Auto-generated method stub
+				Log.i(LOG_TAG, "URLbar onclick");
+				
+			}
+		});
+		
+		btnGo = (Button) findViewById(R.id.buttonGo);
 		btnGo.setVisibility(View.GONE);
 		btnGo.setOnClickListener(new View.OnClickListener()
 		{
@@ -252,25 +266,23 @@ public class SelSrcActivity extends Activity
 			public void onClick(View v)
 			{
 				// TODO Auto-generated method stub
-				String cmd=btnGo.getText().toString();
-				if(cmd.equals(getString(R.string.cancel)))
+				String cmd = btnGo.getText().toString();
+				if (cmd.equals(getString(R.string.cancel)))
 				{
 					Log.i(LOG_TAG, "URLbar Cancel");
 					clearURLfocus();
 					btnGo.setVisibility(View.GONE);
-				}
-				else if(cmd.equals(getString(R.string.enter)))
+				} else if (cmd.equals(getString(R.string.enter)))
 				{
 					
-				}
-				else if(cmd.equals(getString(R.string.search)))
+				} else if (cmd.equals(getString(R.string.search)))
 				{
 					
 				}
 			}
 		});
 		
-		etURL=(EditText)findViewById(R.id.editTextUrl);
+		etURL = (EditText) findViewById(R.id.editTextUrl);
 		etURL.setOnFocusChangeListener(new View.OnFocusChangeListener()
 		{
 			
@@ -278,7 +290,7 @@ public class SelSrcActivity extends Activity
 			public void onFocusChange(View v, boolean hasFocus)
 			{
 				// TODO Auto-generated method stub
-				if(hasFocus)
+				if (hasFocus)
 				{
 					btnGo.setVisibility(View.VISIBLE);
 					setBtnGoDisplay(etURL.getText().toString());
@@ -288,7 +300,7 @@ public class SelSrcActivity extends Activity
 		
 		etURL.addTextChangedListener(new TextWatcher()
 		{
-
+			
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count,
 					int after)
@@ -296,7 +308,7 @@ public class SelSrcActivity extends Activity
 				// TODO Auto-generated method stub
 				
 			}
-
+			
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before,
 					int count)
@@ -304,7 +316,7 @@ public class SelSrcActivity extends Activity
 				// TODO Auto-generated method stub
 				
 			}
-
+			
 			@Override
 			public void afterTextChanged(Editable s)
 			{
@@ -317,22 +329,23 @@ public class SelSrcActivity extends Activity
 	
 	private void setBtnGoDisplay(String URL)
 	{
-		String LowerCaseURL=URL.toLowerCase();
+		String LowerCaseURL = URL.toLowerCase();
 		
-		if(LowerCaseURL.startsWith("http://")||
-		  (LowerCaseURL.startsWith("https://")))
+		if (LowerCaseURL.startsWith("http://")
+				|| (LowerCaseURL.startsWith("https://")))
 		{
-			btnGo.setTextColor(Color.parseColor(getString(R.string.colorAction)));
+			btnGo.setTextColor(Color
+					.parseColor(getString(R.string.colorAction)));
 			btnGo.setText(R.string.enter);
-		}
-		else if(URL.isEmpty())
+		} else if (URL.isEmpty())
 		{
-			btnGo.setTextColor(Color.parseColor(getString(R.string.colorCancel)));
+			btnGo.setTextColor(Color
+					.parseColor(getString(R.string.colorCancel)));
 			btnGo.setText(R.string.cancel);
-		}
-		else
+		} else
 		{
-			btnGo.setTextColor(Color.parseColor(getString(R.string.colorAction)));
+			btnGo.setTextColor(Color
+					.parseColor(getString(R.string.colorAction)));
 			btnGo.setText(R.string.search);
 		}
 	}
