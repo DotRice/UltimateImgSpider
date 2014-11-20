@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -126,11 +127,14 @@ public class ParaConfigActivity extends Activity
 				url=curUrl;
 			}
 			
-			Editor editor = getSharedPreferences(SelSrcActivity.SPMAIN_NAME, 0).edit();
-			editor.putString(SelSrcActivity.HOME_URL_KEY, url);
-			editor.commit();
-			
-			Toast.makeText(this, "已设置主页:" + url, Toast.LENGTH_SHORT).show();
+			if(URLUtil.isNetworkUrl(url))
+			{
+				Editor editor = getSharedPreferences(SelSrcActivity.SPMAIN_NAME, 0).edit();
+				editor.putString(SelSrcActivity.HOME_URL_KEY, url);
+				editor.commit();
+				
+				Toast.makeText(this, "已设置主页:" + url, Toast.LENGTH_SHORT).show();
+			}
 		}
 	}
 

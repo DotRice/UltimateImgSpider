@@ -56,11 +56,11 @@ public class SelSrcActivity extends Activity
 	
 	private Button			btnGo;
 	private EditText		etURL;
-	private RelativeLayout URLbar;
+	private RelativeLayout	URLbar;
 	
 	private final int		PROGRESS_MAX			= 100;
 	
-	// private ActionBar actionbar;
+	private String curWebPageTitle;
 	
 	private Handler			mHandler				= new Handler();
 	
@@ -158,6 +158,8 @@ public class SelSrcActivity extends Activity
 				Log.i(LOG_TAG, "onPageStarted " + url);
 				pbWebView.setVisibility(View.VISIBLE);
 				// actionbar.setTitle(url);
+				etURL.setText(url);
+				curWebPageTitle="";
 			}
 		});
 		
@@ -180,6 +182,12 @@ public class SelSrcActivity extends Activity
 					}, 500);
 				}
 				
+			}
+			
+			public void onReceivedTitle(WebView view, String title)
+			{
+				etURL.setText(title);
+				curWebPageTitle=title;
 			}
 		});
 		
@@ -244,7 +252,7 @@ public class SelSrcActivity extends Activity
 	
 	private void URLbarInit()
 	{
-		URLbar=(RelativeLayout)findViewById(R.id.urlBar);
+		URLbar = (RelativeLayout) findViewById(R.id.urlBar);
 		URLbar.setOnClickListener(new View.OnClickListener()
 		{
 			
@@ -253,15 +261,16 @@ public class SelSrcActivity extends Activity
 			{
 				// TODO Auto-generated method stub
 				Log.i(LOG_TAG, "URLbar onclick");
-				
+				etURL.requestFocus();
+				((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+						.showSoftInput(etURL, InputMethodManager.SHOW_IMPLICIT);
 			}
 		});
 		
 		btnGo = (Button) findViewById(R.id.buttonGo);
-		btnGo.setVisibility(View.GONE);
+		//btnGo.setVisibility(View.GONE);
 		btnGo.setOnClickListener(new View.OnClickListener()
 		{
-			
 			@Override
 			public void onClick(View v)
 			{
@@ -271,7 +280,6 @@ public class SelSrcActivity extends Activity
 				{
 					Log.i(LOG_TAG, "URLbar Cancel");
 					clearURLfocus();
-					btnGo.setVisibility(View.GONE);
 				} else if (cmd.equals(getString(R.string.enter)))
 				{
 					
@@ -283,6 +291,7 @@ public class SelSrcActivity extends Activity
 		});
 		
 		etURL = (EditText) findViewById(R.id.editTextUrl);
+		etURL.setSelectAllOnFocus(true);
 		etURL.setOnFocusChangeListener(new View.OnFocusChangeListener()
 		{
 			
@@ -292,8 +301,20 @@ public class SelSrcActivity extends Activity
 				// TODO Auto-generated method stub
 				if (hasFocus)
 				{
-					btnGo.setVisibility(View.VISIBLE);
-					setBtnGoDisplay(etURL.getText().toString());
+					//btnGo.setVisibility(View.VISIBLE);
+					etURL.setText(wvSelSrc.getUrl());
+					etURL.selectAll();
+					btnGo.setBackgroundDrawable(null);;
+					btnGo.setText(R.string.refresh);
+				}
+				else
+				{
+					btnGo.setBackgroundResource(R.drawable.spidergo);
+					btnGo.setText("");
+					if(!curWebPageTitle.isEmpty())
+					{
+						etURL.setText(curWebPageTitle);
+					}
 				}
 			}
 		});
@@ -321,7 +342,10 @@ public class SelSrcActivity extends Activity
 			public void afterTextChanged(Editable s)
 			{
 				// TODO Auto-generated method stub
-				setBtnGoDisplay(s.toString());
+				if (etURL.hasFocus())
+				{
+					setBtnGoDisplay(s.toString());
+				}
 			}
 			
 		});
