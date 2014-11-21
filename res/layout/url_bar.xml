@@ -13,8 +13,8 @@
         android:layout_marginTop="7dp"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_toLeftOf="@+id/buttonGo"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@+id/areaGo"
         android:background="#FFF"
         android:hint="@string/searchOrInputURL"
         android:inputType="textUri"
@@ -29,16 +29,26 @@
         android:layout_height="2dp"
         android:layout_below="@+id/editTextUrl" />
 
-    <Button
-        android:id="@+id/buttonGo"
-        android:layout_width="50dp"
-        android:layout_height="40dp"
+    <FrameLayout 
+	    android:id="@+id/areaGo"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="2dp"
-        android:layout_marginRight="7dp"
-        android:background="@drawable/spidergo"
-        android:textAlignment="center"
-        android:textSize="16sp" />
+        android:layout_width="45dp"
+        android:layout_height="40dp"
+	    android:paddingLeft="5dp"
+	    android:paddingRight="10dp"
+	    android:paddingTop="5dp"
+	    android:paddingBottom="5dp"
+        android:layout_marginTop="2dp">
+        
+        <Button
+	        android:id="@+id/buttonGo"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:background="@drawable/spidergo"
+	        android:textAlignment="center"
+	        android:textSize="16sp" />
+    </FrameLayout>
+    
 
 </RelativeLayout>

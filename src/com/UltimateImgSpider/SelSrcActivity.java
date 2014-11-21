@@ -304,7 +304,7 @@ public class SelSrcActivity extends Activity
 					//btnGo.setVisibility(View.VISIBLE);
 					etURL.setText(wvSelSrc.getUrl());
 					etURL.selectAll();
-					btnGo.setBackgroundDrawable(null);;
+					btnGo.setBackgroundDrawable(null);
 					btnGo.setText(R.string.refresh);
 				}
 				else
