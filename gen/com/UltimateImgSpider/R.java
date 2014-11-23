@@ -25,40 +25,45 @@ public final class R {
         public static final int activity_vertical_margin=0x7f050001;
     }
     public static final class drawable {
-        public static final int exit=0x7f020000;
-        public static final int help=0x7f020001;
-        public static final int home=0x7f020002;
-        public static final int ic_launcher=0x7f020003;
-        public static final int more=0x7f020004;
-        public static final int progress_bar=0x7f020005;
-        public static final int refresh=0x7f020006;
-        public static final int setting=0x7f020007;
-        public static final int spidergo=0x7f020008;
+        public static final int back=0x7f020000;
+        public static final int baidu=0x7f020001;
+        public static final int bing=0x7f020002;
+        public static final int cancel=0x7f020003;
+        public static final int enter=0x7f020004;
+        public static final int exit=0x7f020005;
+        public static final int forward=0x7f020006;
+        public static final int google=0x7f020007;
+        public static final int home=0x7f020008;
+        public static final int ic_launcher=0x7f020009;
+        public static final int menu=0x7f02000a;
+        public static final int progress_bar=0x7f02000b;
+        public static final int refresh=0x7f02000c;
+        public static final int search=0x7f02000d;
+        public static final int setting=0x7f02000e;
+        public static final int site=0x7f02000f;
+        public static final int sogou=0x7f020010;
+        public static final int spidergo=0x7f020011;
     }
     public static final class id {
-        public static final int action_exit=0x7f09000d;
-        public static final int action_help=0x7f09000b;
-        public static final int action_home=0x7f090009;
-        public static final int action_more=0x7f090008;
-        public static final int action_refresh=0x7f09000a;
-        public static final int action_settings=0x7f09000c;
-        public static final int action_spiderGo=0x7f090007;
-        public static final int areaGo=0x7f090004;
-        public static final int buttonGo=0x7f090006;
-        public static final int editTextUrl=0x7f090003;
-        public static final int progressBarWebView=0x7f090005;
-        public static final int urlBar=0x7f090002;
-        public static final int webViewParaConfig=0x7f090000;
-        public static final int webViewSelectSrcUrl=0x7f090001;
+        public static final int FrameLayoutURLcmd=0x7f080009;
+        public static final int buttonBack=0x7f080002;
+        public static final int buttonForward=0x7f080003;
+        public static final int buttonHome=0x7f080005;
+        public static final int buttonMenu=0x7f080006;
+        public static final int buttonSpiderGo=0x7f080004;
+        public static final int buttonURLcmd=0x7f08000b;
+        public static final int editTextUrl=0x7f080008;
+        public static final int progressBarWebView=0x7f08000a;
+        public static final int urlBar=0x7f080007;
+        public static final int webViewParaConfig=0x7f080000;
+        public static final int webViewSelectSrcUrl=0x7f080001;
     }
     public static final class layout {
         public static final int activity_para_config=0x7f030000;
         public static final int activity_sel_src=0x7f030001;
         public static final int activity_spider_crawl=0x7f030002;
-        public static final int url_bar=0x7f030003;
-    }
-    public static final class menu {
-        public static final int main=0x7f080000;
+        public static final int navi_bar=0x7f030003;
+        public static final int url_bar=0x7f030004;
     }
     public static final class string {
         public static final int OK=0x7f060000;

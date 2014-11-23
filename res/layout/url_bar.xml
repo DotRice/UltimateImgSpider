@@ -14,7 +14,7 @@
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="5dp"
-        android:layout_toLeftOf="@+id/areaGo"
+        android:layout_toLeftOf="@+id/FrameLayoutURLcmd"
         android:background="#FFF"
         android:hint="@string/searchOrInputURL"
         android:inputType="textUri"
@@ -30,7 +30,7 @@
         android:layout_below="@+id/editTextUrl" />
 
     <FrameLayout 
-	    android:id="@+id/areaGo"
+	    android:id="@+id/FrameLayoutURLcmd"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_width="45dp"
@@ -42,12 +42,10 @@
         android:layout_marginTop="2dp">
         
         <Button
-	        android:id="@+id/buttonGo"
+	        android:id="@+id/buttonURLcmd"
 	        android:layout_width="match_parent"
 	        android:layout_height="match_parent"
-	        android:background="@drawable/spidergo"
-	        android:textAlignment="center"
-	        android:textSize="16sp" />
+	        android:background="@drawable/cancel"/>
     </FrameLayout>
     
 

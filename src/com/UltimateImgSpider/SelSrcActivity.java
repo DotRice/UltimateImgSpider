@@ -39,6 +39,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
@@ -47,29 +48,40 @@ import android.widget.Toast;
 
 public class SelSrcActivity extends Activity
 {
-	private final String	LOG_TAG					= "SelSrcActivity";
+	private final String			LOG_TAG					= "SelSrcActivity";
 	
-	private WebView			wvSelSrc;
-	private WebSettings		wsSelSrc;
+	private WebView					wvSelSrc;
+	private WebSettings				wsSelSrc;
 	
-	private ProgressBar		pbWebView;
+	private ProgressBar				pbWebView;
 	
-	private Button			btnGo;
-	private EditText		etURL;
-	private RelativeLayout	URLbar;
+	private EditText				etURL;
+	private RelativeLayout			URLbar;
 	
-	private final int		PROGRESS_MAX			= 100;
+	private FrameLayout				flURLcmd;
+	private Button					btnURLcmd;
 	
-	private String curWebPageTitle;
+	private final int				URL_CANCEL				= 0;
+	private final int				URL_REFRESH				= 1;
+	private final int				URL_ENTER				= 2;
+	private final int				URL_SEARCH				= 3;
+	private final int				URLCMD_ICON[]={R.drawable.cancel, R.drawable.refresh, R.drawable.enter, R.drawable.search};
+	private int						URLcmd					= URL_CANCEL;
 	
-	private Handler			mHandler				= new Handler();
+	private View.OnClickListener	oclURLcmd;
 	
-	SharedPreferences		spMain;
-	final static String		SPMAIN_NAME				= "spMain";
-	final static String		SPIDERGO_NOT_CONFIRM	= "spiderGoConfirm";
-	final static String		HOME_URL_KEY			= "homeUrl";
+	private final int				PROGRESS_MAX			= 100;
 	
-	final static String		SOURCE_URL_BUNDLE_KEY	= "SourceUrl";
+	private String					curWebPageTitle;
+	
+	private Handler					mHandler				= new Handler();
+	
+	SharedPreferences				spMain;
+	final static String				SPMAIN_NAME				= "spMain";
+	final static String				SPIDERGO_NOT_CONFIRM	= "spiderGoConfirm";
+	final static String				HOME_URL_KEY			= "homeUrl";
+	
+	final static String				SOURCE_URL_BUNDLE_KEY	= "SourceUrl";
 	
 	private enum DLG
 	{
@@ -150,16 +162,16 @@ public class SelSrcActivity extends Activity
 			public void onPageFinished(WebView view, String url)
 			{
 				Log.i(LOG_TAG, "onPageFinished " + url);
-				// actionbar.setTitle(url);
+				setURLcmd(URL_REFRESH);
 			}
 			
 			public void onPageStarted(WebView view, String url, Bitmap favicon)
 			{
 				Log.i(LOG_TAG, "onPageStarted " + url);
 				pbWebView.setVisibility(View.VISIBLE);
-				// actionbar.setTitle(url);
 				etURL.setText(url);
-				curWebPageTitle="";
+				curWebPageTitle = "";
+				setURLcmd(URL_CANCEL);
 			}
 		});
 		
@@ -169,17 +181,23 @@ public class SelSrcActivity extends Activity
 			{
 				// Log.i(LOG_TAG, view.getUrl() + " Progress " + newProgress);
 				
-				pbWebView.setProgress(newProgress);
-				
 				if (newProgress == PROGRESS_MAX)
 				{
-					mHandler.postDelayed(new Runnable()
+					if(pbWebView.getProgress()!=0)
 					{
-						public void run()
+						pbWebView.setProgress(PROGRESS_MAX);
+						mHandler.postDelayed(new Runnable()
 						{
-							pbWebView.setProgress(0);
-						}
-					}, 500);
+							public void run()
+							{
+								pbWebView.setProgress(0);
+							}
+						}, 500);
+					}
+				}
+				else
+				{
+					pbWebView.setProgress(newProgress);
 				}
 				
 			}
@@ -187,7 +205,7 @@ public class SelSrcActivity extends Activity
 			public void onReceivedTitle(WebView view, String title)
 			{
 				etURL.setText(title);
-				curWebPageTitle=title;
+				curWebPageTitle = title;
 			}
 		});
 		
@@ -200,10 +218,6 @@ public class SelSrcActivity extends Activity
 				if (etURL.isFocused())
 				{
 					clearURLfocus();
-					if (etURL.getText().length() == 0)
-					{
-						btnGo.setVisibility(View.GONE);
-					}
 				}
 				return false;
 			}
@@ -237,6 +251,20 @@ public class SelSrcActivity extends Activity
 		((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
 				.hideSoftInputFromWindow(etURL.getWindowToken(),
 						InputMethodManager.HIDE_NOT_ALWAYS);
+
+		if(pbWebView.getProgress()==0)
+		{
+			setURLcmd(URL_REFRESH);
+		}
+		else
+		{
+			setURLcmd(URL_CANCEL);
+		}
+		
+		if (!curWebPageTitle.isEmpty())
+		{
+			etURL.setText(curWebPageTitle);
+		}
 	}
 	
 	private void getParaConfig()
@@ -248,6 +276,15 @@ public class SelSrcActivity extends Activity
 	{
 		return spMain.getString(HOME_URL_KEY,
 				getString(R.string.defaultHomeUrl));
+	}
+	
+	private void setURLcmd(int cmd)
+	{
+		if(cmd<URLCMD_ICON.length)
+		{
+			URLcmd = cmd;
+			btnURLcmd.setBackgroundResource(URLCMD_ICON[cmd]);
+		}
 	}
 	
 	private void URLbarInit()
@@ -267,28 +304,51 @@ public class SelSrcActivity extends Activity
 			}
 		});
 		
-		btnGo = (Button) findViewById(R.id.buttonGo);
-		//btnGo.setVisibility(View.GONE);
-		btnGo.setOnClickListener(new View.OnClickListener()
+		oclURLcmd = new View.OnClickListener()
 		{
+						
 			@Override
 			public void onClick(View v)
 			{
-				// TODO Auto-generated method stub
-				String cmd = btnGo.getText().toString();
-				if (cmd.equals(getString(R.string.cancel)))
+				switch (URLcmd)
 				{
-					Log.i(LOG_TAG, "URLbar Cancel");
+					case URL_CANCEL:
+						if(pbWebView.getProgress()!=0)
+						{
+							wvSelSrc.stopLoading();
+							pbWebView.setProgress(0);
+						}
+					break;
+					
+					case URL_REFRESH:
+						wvSelSrc.reload();
+					break;
+					
+					case URL_ENTER:
+						wvSelSrc.loadUrl(etURL.getText().toString());
+					break;
+					
+					case URL_SEARCH:
+						wvSelSrc.loadUrl("http://www.baidu.com/s?wd="
+								+ etURL.getText().toString());
+					break;
+					
+					default:
+					break;
+				}
+				
+				if(etURL.isFocused())
+				{
 					clearURLfocus();
-				} else if (cmd.equals(getString(R.string.enter)))
-				{
-					
-				} else if (cmd.equals(getString(R.string.search)))
-				{
-					
 				}
 			}
-		});
+		};
+		
+		btnURLcmd = (Button) findViewById(R.id.buttonURLcmd);
+		btnURLcmd.setOnClickListener(oclURLcmd);
+		
+		flURLcmd=(FrameLayout)findViewById(R.id.FrameLayoutURLcmd);
+		flURLcmd.setOnClickListener(oclURLcmd);
 		
 		etURL = (EditText) findViewById(R.id.editTextUrl);
 		etURL.setSelectAllOnFocus(true);
@@ -301,20 +361,11 @@ public class SelSrcActivity extends Activity
 				// TODO Auto-generated method stub
 				if (hasFocus)
 				{
-					//btnGo.setVisibility(View.VISIBLE);
+					// btnURLcmd.setVisibility(View.VISIBLE);
 					etURL.setText(wvSelSrc.getUrl());
 					etURL.selectAll();
-					btnGo.setBackgroundDrawable(null);
-					btnGo.setText(R.string.refresh);
-				}
-				else
-				{
-					btnGo.setBackgroundResource(R.drawable.spidergo);
-					btnGo.setText("");
-					if(!curWebPageTitle.isEmpty())
-					{
-						etURL.setText(curWebPageTitle);
-					}
+
+					setURLcmd(URL_ENTER);
 				}
 			}
 		});
@@ -344,34 +395,101 @@ public class SelSrcActivity extends Activity
 				// TODO Auto-generated method stub
 				if (etURL.hasFocus())
 				{
-					setBtnGoDisplay(s.toString());
+					setBtnCmdDisplayByURL(s.toString());
 				}
 			}
 			
 		});
 	}
 	
-	private void setBtnGoDisplay(String URL)
+	private void setBtnCmdDisplayByURL(String URL)
 	{
 		String LowerCaseURL = URL.toLowerCase();
 		
 		if (LowerCaseURL.startsWith("http://")
 				|| (LowerCaseURL.startsWith("https://")))
 		{
-			btnGo.setTextColor(Color
-					.parseColor(getString(R.string.colorAction)));
-			btnGo.setText(R.string.enter);
+			setURLcmd(URL_ENTER);
 		} else if (URL.isEmpty())
 		{
-			btnGo.setTextColor(Color
-					.parseColor(getString(R.string.colorCancel)));
-			btnGo.setText(R.string.cancel);
+			setURLcmd(URL_CANCEL);
 		} else
 		{
-			btnGo.setTextColor(Color
-					.parseColor(getString(R.string.colorAction)));
-			btnGo.setText(R.string.search);
+			setURLcmd(URL_SEARCH);
 		}
+	}
+	
+	private void naviBarInit()
+	{
+		findViewById(R.id.buttonBack).setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				// TODO Auto-generated method stub
+				if(wvSelSrc.canGoBack())
+				{
+					wvSelSrc.goBack();
+				}
+			}
+		});
+
+		findViewById(R.id.buttonForward).setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				// TODO Auto-generated method stub
+				if(wvSelSrc.canGoForward())
+				{
+					wvSelSrc.goForward();
+				}
+			}
+		});
+
+		findViewById(R.id.buttonSpiderGo).setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				// TODO Auto-generated method stub
+				Log.i(LOG_TAG, "spiderGo");
+				
+				if (spMain.getBoolean(SPIDERGO_NOT_CONFIRM, false))
+				{
+					spiderGo();
+				} else
+				{
+					showDialog(DLG.SPIDER_GO_CONFIRM.ordinal());
+				}
+			}
+		});
+
+		findViewById(R.id.buttonHome).setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				// TODO Auto-generated method stub
+				wvSelSrc.loadUrl(getHomeUrl());
+			}
+		});
+
+		findViewById(R.id.buttonMenu).setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				// TODO Auto-generated method stub
+				openSettingPage();
+			}
+		});
+		
 	}
 	
 	@Override
@@ -383,6 +501,7 @@ public class SelSrcActivity extends Activity
 		getParaConfig();
 		
 		URLbarInit();
+		naviBarInit();
 		webViewInit();
 		
 		Log.i(LOG_TAG, "onCreate");
@@ -429,77 +548,23 @@ public class SelSrcActivity extends Activity
 	{
 		
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
 		
 		return true;
 	}
 	
-	@SuppressWarnings("deprecation")
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
+	private void openSettingPage()
 	{
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		switch (id)
-		{
-			case R.id.action_spiderGo:
-				Log.i(LOG_TAG, "action_spiderGo");
-				
-				if (spMain.getBoolean(SPIDERGO_NOT_CONFIRM, false))
-				{
-					spiderGo();
-				} else
-				{
-					showDialog(DLG.SPIDER_GO_CONFIRM.ordinal());
-				}
-				
-				return true;
-				
-			case R.id.action_home:
-				Log.i(LOG_TAG, "action_home");
-				wvSelSrc.loadUrl(getHomeUrl());
-				return true;
-				
-			case R.id.action_refresh:
-				Log.i(LOG_TAG, "action_refresh");
-				
-				wvSelSrc.reload();
-				return true;
-				
-			case R.id.action_more:
-				Log.i(LOG_TAG, "action_more");
-				return true;
-				
-			case R.id.action_help:
-				Log.i(LOG_TAG, "action_help");
-				return true;
-				
-			case R.id.action_settings:
-				Log.i(LOG_TAG, "action_settings");
-				
-				Intent intent = new Intent(this, ParaConfigActivity.class);
-				
-				String srcUrl = wvSelSrc.getUrl();
-				
-				Bundle bundle = new Bundle();
-				bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
-				intent.putExtras(bundle);
-				
-				startActivity(intent);// 直接切换Activity不接收返回结果
-				return true;
-				
-			case R.id.action_exit:
-				Log.i(LOG_TAG, "action_exit");
-				finish();
-				return true;
-				
-			default:
-			break;
-		}
+		Log.i(LOG_TAG, "openSettingPage");
 		
-		return true;
+		Intent intent = new Intent(this, ParaConfigActivity.class);
+		
+		String srcUrl = wvSelSrc.getUrl();
+		
+		Bundle bundle = new Bundle();
+		bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
+		intent.putExtras(bundle);
+		
+		startActivity(intent);
 	}
 	
 	public void spiderGo()

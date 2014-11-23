@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:baselineAligned="false"
+    android:background="#DDD"
+    android:orientation="horizontal" >
+    
+    <RelativeLayout 
+        android:layout_weight="1"
+	    android:layout_width="0dp"
+	    android:layout_height="match_parent">
+
+	    <Button
+	        android:id="@+id/buttonBack"
+	        android:layout_width="50dp"
+	        android:layout_height="50dp"
+	        android:layout_alignParentTop="true"
+	        android:layout_centerHorizontal="true"
+	        android:background="@drawable/back" />
+
+	</RelativeLayout>
+	
+    <RelativeLayout 
+        android:layout_weight="1"
+	    android:layout_width="0dp"
+	    android:layout_height="match_parent">
+    
+	    <Button 
+	        android:id="@+id/buttonForward"
+	        android:layout_width="50dp"
+	        android:layout_height="50dp"
+	        android:layout_alignParentTop="true"
+	        android:layout_centerHorizontal="true"
+	        android:background="@drawable/forward"/>
+	</RelativeLayout>
+	   
+    <RelativeLayout 
+        android:layout_weight="1"
+	    android:layout_width="0dp"
+	    android:layout_height="match_parent">
+    
+	    <Button 
+	        android:id="@+id/buttonSpiderGo"
+	        android:layout_width="50dp"
+	        android:layout_height="50dp"
+	        android:layout_alignParentTop="true"
+	        android:layout_centerHorizontal="true"
+	        android:background="@drawable/spidergo"/>
+	</RelativeLayout>
+	    
+    <RelativeLayout 
+        android:layout_weight="1"
+	    android:layout_width="0dp"
+	    android:layout_height="match_parent">
+    
+	    <Button 
+	        android:id="@+id/buttonHome"
+	        android:layout_width="50dp"
+	        android:layout_height="50dp"
+	        android:layout_alignParentTop="true"
+	        android:layout_centerHorizontal="true"
+	        android:background="@drawable/home"/>
+	</RelativeLayout>
+	    
+    <RelativeLayout 
+        android:layout_weight="1"
+	    android:layout_width="0dp"
+	    android:layout_height="match_parent">
+    
+	    <Button 
+	        android:id="@+id/buttonMenu"
+	        android:layout_width="50dp"
+	        android:layout_height="50dp"
+	        android:layout_alignParentTop="true"
+	        android:layout_centerHorizontal="true"
+	        android:background="@drawable/menu"/>
+	</RelativeLayout>
+	    
+</LinearLayout>
