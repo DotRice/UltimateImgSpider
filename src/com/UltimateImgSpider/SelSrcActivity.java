@@ -32,6 +32,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -65,10 +66,12 @@ public class SelSrcActivity extends Activity
 	private final int				URL_REFRESH				= 1;
 	private final int				URL_ENTER				= 2;
 	private final int				URL_SEARCH				= 3;
-	private final int				URLCMD_ICON[]={R.drawable.cancel, R.drawable.refresh, R.drawable.enter, R.drawable.search};
+	private final int				URLCMD_ICON[]			= {
+			R.drawable.cancel, R.drawable.refresh, R.drawable.enter,
+			R.drawable.search								};
 	private int						URLcmd					= URL_CANCEL;
 	
-	private View.OnClickListener	oclURLcmd;
+	private View.OnClickListener	oclBrowserBtn;
 	
 	private final int				PROGRESS_MAX			= 100;
 	
@@ -183,7 +186,7 @@ public class SelSrcActivity extends Activity
 				
 				if (newProgress == PROGRESS_MAX)
 				{
-					if(pbWebView.getProgress()!=0)
+					if (pbWebView.getProgress() != 0)
 					{
 						pbWebView.setProgress(PROGRESS_MAX);
 						mHandler.postDelayed(new Runnable()
@@ -251,8 +254,8 @@ public class SelSrcActivity extends Activity
 		((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
 				.hideSoftInputFromWindow(etURL.getWindowToken(),
 						InputMethodManager.HIDE_NOT_ALWAYS);
-
-		if(pbWebView.getProgress()==0)
+		
+		if (pbWebView.getProgress() == 0)
 		{
 			setURLcmd(URL_REFRESH);
 		}
@@ -280,11 +283,102 @@ public class SelSrcActivity extends Activity
 	
 	private void setURLcmd(int cmd)
 	{
-		if(cmd<URLCMD_ICON.length)
+		if (cmd < URLCMD_ICON.length)
 		{
 			URLcmd = cmd;
 			btnURLcmd.setBackgroundResource(URLCMD_ICON[cmd]);
 		}
+	}
+	
+	private void oclBrowserBtnInit()
+	{
+		oclBrowserBtn = new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				int viewId = v.getId();
+				
+				if ((viewId == R.id.buttonURLcmd)
+						|| (viewId == R.id.FrameLayoutURLcmd))
+				{
+					switch (URLcmd)
+					{
+						case URL_CANCEL:
+							if (pbWebView.getProgress() != 0)
+							{
+								wvSelSrc.stopLoading();
+								pbWebView.setProgress(0);
+							}
+						break;
+						
+						case URL_REFRESH:
+							wvSelSrc.reload();
+						break;
+						
+						case URL_ENTER:
+							wvSelSrc.loadUrl(etURL.getText().toString());
+						break;
+						
+						case URL_SEARCH:
+							wvSelSrc.loadUrl("http://www.baidu.com/s?wd="
+									+ etURL.getText().toString());
+						break;
+						
+						default:
+						break;
+					}
+				}
+				else
+				{
+					switch (viewId)
+					{
+						case R.id.buttonBack:
+							if (wvSelSrc.canGoBack())
+							{
+								wvSelSrc.goBack();
+							}
+						break;
+						
+						case R.id.buttonForward:
+							if (wvSelSrc.canGoForward())
+							{
+								wvSelSrc.goForward();
+							}
+						break;
+						
+						case R.id.buttonSpiderGo:
+							if (spMain.getBoolean(SPIDERGO_NOT_CONFIRM, false))
+							{
+								spiderGo();
+							}
+							else
+							{
+								showDialog(DLG.SPIDER_GO_CONFIRM.ordinal());
+							}
+						break;
+						
+						case R.id.buttonHome:
+							wvSelSrc.loadUrl(getHomeUrl());
+						break;
+						
+						case R.id.buttonMenu:
+							openSettingPage();
+						break;
+						
+						default:
+							Log.i(LOG_TAG, "oclBrowserBtn Unknown Button");
+						break;
+					}
+				}
+				
+				if (etURL.isFocused())
+				{
+					clearURLfocus();
+				}
+			}
+		};
 	}
 	
 	private void URLbarInit()
@@ -304,51 +398,10 @@ public class SelSrcActivity extends Activity
 			}
 		});
 		
-		oclURLcmd = new View.OnClickListener()
-		{
-						
-			@Override
-			public void onClick(View v)
-			{
-				switch (URLcmd)
-				{
-					case URL_CANCEL:
-						if(pbWebView.getProgress()!=0)
-						{
-							wvSelSrc.stopLoading();
-							pbWebView.setProgress(0);
-						}
-					break;
-					
-					case URL_REFRESH:
-						wvSelSrc.reload();
-					break;
-					
-					case URL_ENTER:
-						wvSelSrc.loadUrl(etURL.getText().toString());
-					break;
-					
-					case URL_SEARCH:
-						wvSelSrc.loadUrl("http://www.baidu.com/s?wd="
-								+ etURL.getText().toString());
-					break;
-					
-					default:
-					break;
-				}
-				
-				if(etURL.isFocused())
-				{
-					clearURLfocus();
-				}
-			}
-		};
-		
 		btnURLcmd = (Button) findViewById(R.id.buttonURLcmd);
-		btnURLcmd.setOnClickListener(oclURLcmd);
+		btnURLcmd.setOnClickListener(oclBrowserBtn);
 		
-		flURLcmd=(FrameLayout)findViewById(R.id.FrameLayoutURLcmd);
-		flURLcmd.setOnClickListener(oclURLcmd);
+		findViewById(R.id.FrameLayoutURLcmd).setOnClickListener(oclBrowserBtn);
 		
 		etURL = (EditText) findViewById(R.id.editTextUrl);
 		etURL.setSelectAllOnFocus(true);
@@ -364,7 +417,7 @@ public class SelSrcActivity extends Activity
 					// btnURLcmd.setVisibility(View.VISIBLE);
 					etURL.setText(wvSelSrc.getUrl());
 					etURL.selectAll();
-
+					
 					setURLcmd(URL_ENTER);
 				}
 			}
@@ -404,16 +457,15 @@ public class SelSrcActivity extends Activity
 	
 	private void setBtnCmdDisplayByURL(String URL)
 	{
-		String LowerCaseURL = URL.toLowerCase();
-		
-		if (LowerCaseURL.startsWith("http://")
-				|| (LowerCaseURL.startsWith("https://")))
+		if (URLUtil.isNetworkUrl(URL))
 		{
 			setURLcmd(URL_ENTER);
-		} else if (URL.isEmpty())
+		}
+		else if (URL.isEmpty())
 		{
 			setURLcmd(URL_CANCEL);
-		} else
+		}
+		else
 		{
 			setURLcmd(URL_SEARCH);
 		}
@@ -421,74 +473,11 @@ public class SelSrcActivity extends Activity
 	
 	private void naviBarInit()
 	{
-		findViewById(R.id.buttonBack).setOnClickListener(new View.OnClickListener()
-		{
-			
-			@Override
-			public void onClick(View v)
-			{
-				// TODO Auto-generated method stub
-				if(wvSelSrc.canGoBack())
-				{
-					wvSelSrc.goBack();
-				}
-			}
-		});
-
-		findViewById(R.id.buttonForward).setOnClickListener(new View.OnClickListener()
-		{
-			
-			@Override
-			public void onClick(View v)
-			{
-				// TODO Auto-generated method stub
-				if(wvSelSrc.canGoForward())
-				{
-					wvSelSrc.goForward();
-				}
-			}
-		});
-
-		findViewById(R.id.buttonSpiderGo).setOnClickListener(new View.OnClickListener()
-		{
-			
-			@Override
-			public void onClick(View v)
-			{
-				// TODO Auto-generated method stub
-				Log.i(LOG_TAG, "spiderGo");
-				
-				if (spMain.getBoolean(SPIDERGO_NOT_CONFIRM, false))
-				{
-					spiderGo();
-				} else
-				{
-					showDialog(DLG.SPIDER_GO_CONFIRM.ordinal());
-				}
-			}
-		});
-
-		findViewById(R.id.buttonHome).setOnClickListener(new View.OnClickListener()
-		{
-			
-			@Override
-			public void onClick(View v)
-			{
-				// TODO Auto-generated method stub
-				wvSelSrc.loadUrl(getHomeUrl());
-			}
-		});
-
-		findViewById(R.id.buttonMenu).setOnClickListener(new View.OnClickListener()
-		{
-			
-			@Override
-			public void onClick(View v)
-			{
-				// TODO Auto-generated method stub
-				openSettingPage();
-			}
-		});
+		findViewById(R.id.buttonBack).setOnClickListener(oclBrowserBtn);
+		findViewById(R.id.buttonForward).setOnClickListener(oclBrowserBtn);
+		findViewById(R.id.buttonSpiderGo).setOnClickListener(oclBrowserBtn);
+		findViewById(R.id.buttonHome).setOnClickListener(oclBrowserBtn);
+		findViewById(R.id.buttonMenu).setOnClickListener(oclBrowserBtn);
 		
 	}
 	
@@ -500,6 +489,7 @@ public class SelSrcActivity extends Activity
 		
 		getParaConfig();
 		
+		oclBrowserBtnInit();
 		URLbarInit();
 		naviBarInit();
 		webViewInit();
@@ -613,7 +603,8 @@ public class SelSrcActivity extends Activity
 		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
 		{
 			Log.i(LOG_TAG, "Landscape");
-		} else
+		}
+		else
 		{
 			Log.i(LOG_TAG, "Portrait");
 		}

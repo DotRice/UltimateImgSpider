@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:gravity="bottom|center_horizontal|center_vertical"
     android:orientation="vertical"
-    android:background="#BBB" >
+    android:background="#CCC" >
 
     <include
         android:layout_width="match_parent"

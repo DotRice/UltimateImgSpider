@@ -3,7 +3,7 @@
     android:id="@+id/urlBar"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="#DDD" >
+    android:background="#EEE" >
 
     <EditText
         android:id="@+id/editTextUrl"
@@ -26,7 +26,7 @@
         android:id="@+id/progressBarWebView"
         style="@style/ProgressBar_Mini"
         android:layout_width="match_parent"
-        android:layout_height="2dp"
+        android:layout_height="1.5dp"
         android:layout_below="@+id/editTextUrl" />
 
     <FrameLayout 
