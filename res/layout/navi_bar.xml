@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="50dp"
+    android:layout_height="@dimen/navibar_layout_height"
     android:baselineAligned="false"
-    android:background="#DDD"
+    android:background="#EEE"
     android:orientation="horizontal" >
     
     <RelativeLayout 
@@ -13,8 +13,8 @@
 
 	    <Button
 	        android:id="@+id/buttonBack"
-	        android:layout_width="50dp"
-	        android:layout_height="50dp"
+	        android:layout_width="@dimen/navibar_layout_height"
+	        android:layout_height="@dimen/navibar_layout_height"
 	        android:layout_alignParentTop="true"
 	        android:layout_centerHorizontal="true"
 	        android:background="@drawable/back" />
@@ -28,8 +28,8 @@
     
 	    <Button 
 	        android:id="@+id/buttonForward"
-	        android:layout_width="50dp"
-	        android:layout_height="50dp"
+	        android:layout_width="@dimen/navibar_layout_height"
+	        android:layout_height="@dimen/navibar_layout_height"
 	        android:layout_alignParentTop="true"
 	        android:layout_centerHorizontal="true"
 	        android:background="@drawable/forward"/>
@@ -42,8 +42,8 @@
     
 	    <Button 
 	        android:id="@+id/buttonSpiderGo"
-	        android:layout_width="50dp"
-	        android:layout_height="50dp"
+	        android:layout_width="@dimen/navibar_layout_height"
+	        android:layout_height="@dimen/navibar_layout_height"
 	        android:layout_alignParentTop="true"
 	        android:layout_centerHorizontal="true"
 	        android:background="@drawable/spidergo"/>
@@ -56,8 +56,8 @@
     
 	    <Button 
 	        android:id="@+id/buttonHome"
-	        android:layout_width="50dp"
-	        android:layout_height="50dp"
+	        android:layout_width="@dimen/navibar_layout_height"
+	        android:layout_height="@dimen/navibar_layout_height"
 	        android:layout_alignParentTop="true"
 	        android:layout_centerHorizontal="true"
 	        android:background="@drawable/home"/>
@@ -70,8 +70,8 @@
     
 	    <Button 
 	        android:id="@+id/buttonMenu"
-	        android:layout_width="50dp"
-	        android:layout_height="50dp"
+	        android:layout_width="@dimen/navibar_layout_height"
+	        android:layout_height="@dimen/navibar_layout_height"
 	        android:layout_alignParentTop="true"
 	        android:layout_centerHorizontal="true"
 	        android:background="@drawable/menu"/>
