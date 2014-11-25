@@ -4,31 +4,43 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="#EEE" >
-
-    <EditText
-        android:id="@+id/editTextUrl"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_alignParentLeft="true"
+	
+    <LinearLayout
+	    android:layout_height="30dp"
+	    android:layout_width="match_parent"
+	    android:layout_alignParentLeft="true"
         android:layout_marginTop="7dp"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="5dp"
         android:layout_toLeftOf="@+id/FrameLayoutURLcmd"
         android:background="#FFF"
-        android:hint="@string/searchOrInputURL"
-        android:inputType="textUri"
-        android:paddingLeft="5dp"
-        android:singleLine="true"
-        android:textSize="16sp" />
-
-    <ProgressBar
-        android:id="@+id/progressBarWebView"
-        style="@style/ProgressBar_Mini"
-        android:layout_width="match_parent"
-        android:layout_height="1.5dp"
-        android:layout_below="@+id/editTextUrl" />
-
+    	android:orientation="horizontal" >
+	    
+        <FrameLayout 
+	        android:layout_width="30dp"
+	        android:layout_height="match_parent"
+	        android:padding="5dp" >
+             <Button
+		        android:id="@+id/buttonSelSearchEngine"
+		        android:layout_width="match_parent"
+		        android:layout_height="match_parent"
+		        android:background="@drawable/baidu"/>
+        </FrameLayout>
+        
+        
+	    <EditText
+	        android:id="@+id/editTextUrl"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:hint="@string/searchOrInputURL"
+	        android:inputType="textUri"
+	        android:paddingLeft="5dp"
+        	android:background="#FFF"
+	        android:singleLine="true"
+	        android:textSize="16sp" />
+	</LinearLayout>
+	
     <FrameLayout 
 	    android:id="@+id/FrameLayoutURLcmd"
         android:layout_alignParentRight="true"
@@ -47,6 +59,13 @@
 	        android:layout_height="match_parent"
 	        android:background="@drawable/cancel"/>
     </FrameLayout>
+    
+    <ProgressBar
+        android:id="@+id/progressBarWebView"
+        style="@style/ProgressBar_Mini"
+        android:layout_width="match_parent"
+        android:layout_height="1.5dp"
+        android:layout_below="@+id/FrameLayoutURLcmd" />
     
 
 </RelativeLayout>
