@@ -5,42 +5,31 @@
     android:layout_height="wrap_content"
     android:background="#EEE" >
 	
-    <LinearLayout
-	    android:layout_height="30dp"
-	    android:layout_width="match_parent"
-	    android:layout_alignParentLeft="true"
-        android:layout_marginTop="7dp"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="5dp"
-        android:layout_toLeftOf="@+id/FrameLayoutURLcmd"
-        android:background="#FFF"
-    	android:orientation="horizontal" >
-	    
+    <FrameLayout
+        android:id="@+id/FrameLayoutSelSearchEngine"
+    	android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_width="43dp"
+        android:layout_height="42dp"
+        android:paddingTop="7dp"
+        android:paddingLeft="13dp"
+	    android:paddingBottom="5dp" >
+        
         <FrameLayout 
-	        android:layout_width="30dp"
-	        android:layout_height="match_parent"
-	        android:padding="5dp" >
-             <Button
-		        android:id="@+id/buttonSelSearchEngine"
-		        android:layout_width="match_parent"
-		        android:layout_height="match_parent"
-		        android:background="@drawable/site"/>
+        	android:id="@+id/FrameLayoutSSEngineBackground"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:padding="3dp"
+			android:background="#FFF" >
+            
+			<Button
+				android:id="@+id/buttonSelSearchEngine"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:background="@drawable/site"/>
         </FrameLayout>
-        
-        
-	    <EditText
-	        android:id="@+id/editTextUrl"
-	        android:layout_width="match_parent"
-	        android:layout_height="match_parent"
-	        android:hint="@string/searchOrInputURL"
-	        android:inputType="textUri"
-	        android:paddingLeft="5dp"
-        	android:background="#FFF"
-	        android:singleLine="true"
-	        android:textSize="16sp" />
-	</LinearLayout>
-	
+    </FrameLayout>
+    
     <FrameLayout 
 	    android:id="@+id/FrameLayoutURLcmd"
         android:layout_alignParentRight="true"
@@ -59,6 +48,22 @@
 	        android:layout_height="match_parent"
 	        android:background="@drawable/cancel"/>
     </FrameLayout>
+    
+    <EditText
+        android:id="@+id/editTextUrl"
+	    android:layout_height="30dp"
+	    android:layout_width="match_parent"
+        android:layout_marginTop="7dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@id/FrameLayoutURLcmd"
+        android:layout_toRightOf="@id/FrameLayoutSelSearchEngine"
+        android:hint="@string/searchOrInputURL"
+        android:inputType="textUri"
+        android:paddingLeft="2dp"
+       	android:background="#FFF"
+        android:singleLine="true"
+        android:textSize="16sp" />
     
     <ProgressBar
         android:id="@+id/progressBarWebView"

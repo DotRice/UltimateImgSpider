@@ -57,6 +57,7 @@ public class SelSrcActivity extends Activity
 	private ProgressBar				pbWebView;
 	
 	private Button	btnSelSearchEngine;
+	private View.OnClickListener oclSelSearchEngine;
 	private final int SEARCH_ENGINE_ICON[]={R.drawable.baidu, R.drawable.bing, R.drawable.sogou, R.drawable.google};
 	private final String SEARCH_ENGINE_URL[]={"http://www.baidu.com/s?wd=", "https://cn.bing.com/search?q=", "http://www.sogou.com/web?query=", "https://www.google.com/search?q="};
 	private final String SEARCH_ENGINE_KEY="searchEngine";
@@ -92,7 +93,8 @@ public class SelSrcActivity extends Activity
 	
 	private enum DLG
 	{
-		SPIDER_GO_CONFIRM
+		SPIDER_GO_CONFIRM,
+		SEL_SEARCH_ENGINE
 	};
 	
 	@Override
@@ -144,6 +146,12 @@ public class SelSrcActivity extends Activity
 								}).create();
 			}
 			
+			case SEL_SEARCH_ENGINE:
+			{
+				return new AlertDialog.Builder(this)
+					.setTitle(R.string.selSearchEngine)
+					.create();
+			}
 		}
 		return null;
 	}
@@ -271,6 +279,8 @@ public class SelSrcActivity extends Activity
 		{
 			etURL.setText(curWebPageTitle);
 		}
+		
+		btnSelSearchEngine.setBackgroundResource(R.drawable.site);
 	}
 	
 	private void getParaConfig()
@@ -413,12 +423,35 @@ public class SelSrcActivity extends Activity
 			@Override
 			public void onClick(View v)
 			{
-				Log.i(LOG_TAG, "URLbar onclick");
 				etURL.requestFocus();
 				((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
 						.showSoftInput(etURL, InputMethodManager.SHOW_IMPLICIT);
 			}
 		});
+		
+		oclSelSearchEngine=new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				if(etURL.isFocused())
+				{
+					showDialog(DLG.SEL_SEARCH_ENGINE.ordinal());
+				}
+				else
+				{
+					etURL.requestFocus();
+					((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+					.showSoftInput(etURL, InputMethodManager.SHOW_IMPLICIT);
+				}
+			}
+		};
+		btnSelSearchEngine=(Button)findViewById(R.id.buttonSelSearchEngine);
+		btnSelSearchEngine.setOnClickListener(oclSelSearchEngine);
+		findViewById(R.id.FrameLayoutSSEngineBackground).setOnClickListener(oclSelSearchEngine);
+		findViewById(R.id.FrameLayoutSelSearchEngine).setOnClickListener(oclSelSearchEngine);
+		
 		
 		btnURLcmd = (Button) findViewById(R.id.buttonURLcmd);
 		btnURLcmd.setOnClickListener(oclBrowserBtn);
@@ -440,6 +473,8 @@ public class SelSrcActivity extends Activity
 					etURL.selectAll();
 					
 					setURLcmd(URL_ENTER);
+					
+					btnSelSearchEngine.setBackgroundResource(SEARCH_ENGINE_ICON[getSearchEngine()]);
 				}
 			}
 		});
@@ -466,27 +501,25 @@ public class SelSrcActivity extends Activity
 			{
 				if (etURL.hasFocus())
 				{
-					setBtnCmdDisplayByURL(s.toString());
+					String URL=s.toString();
+					if (URLUtil.isNetworkUrl(URL))
+					{
+						setURLcmd(URL_ENTER);
+						btnSelSearchEngine.setBackgroundResource(R.drawable.site);
+					}
+					else if (URL.isEmpty())
+					{
+						setURLcmd(URL_CANCEL);
+					}
+					else
+					{
+						setURLcmd(URL_SEARCH);
+						btnSelSearchEngine.setBackgroundResource(SEARCH_ENGINE_ICON[getSearchEngine()]);
+					}
 				}
 			}
 			
 		});
-	}
-	
-	private void setBtnCmdDisplayByURL(String URL)
-	{
-		if (URLUtil.isNetworkUrl(URL))
-		{
-			setURLcmd(URL_ENTER);
-		}
-		else if (URL.isEmpty())
-		{
-			setURLcmd(URL_CANCEL);
-		}
-		else
-		{
-			setURLcmd(URL_SEARCH);
-		}
 	}
 	
 	private void naviBarInit()

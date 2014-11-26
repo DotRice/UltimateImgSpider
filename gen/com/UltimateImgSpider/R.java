@@ -46,16 +46,18 @@ public final class R {
         public static final int spidergo=0x7f020011;
     }
     public static final class id {
-        public static final int FrameLayoutURLcmd=0x7f080008;
+        public static final int FrameLayoutSSEngineBackground=0x7f080009;
+        public static final int FrameLayoutSelSearchEngine=0x7f080008;
+        public static final int FrameLayoutURLcmd=0x7f08000b;
         public static final int buttonBack=0x7f080002;
         public static final int buttonForward=0x7f080003;
         public static final int buttonHome=0x7f080005;
         public static final int buttonMenu=0x7f080006;
-        public static final int buttonSelSearchEngine=0x7f080009;
+        public static final int buttonSelSearchEngine=0x7f08000a;
         public static final int buttonSpiderGo=0x7f080004;
-        public static final int buttonURLcmd=0x7f08000b;
-        public static final int editTextUrl=0x7f08000a;
-        public static final int progressBarWebView=0x7f08000c;
+        public static final int buttonURLcmd=0x7f08000c;
+        public static final int editTextUrl=0x7f08000d;
+        public static final int progressBarWebView=0x7f08000e;
         public static final int urlBar=0x7f080007;
         public static final int webViewParaConfig=0x7f080000;
         public static final int webViewSelectSrcUrl=0x7f080001;
@@ -82,6 +84,7 @@ public final class R {
         public static final int refresh=0x7f06000a;
         public static final int search=0x7f060010;
         public static final int searchOrInputURL=0x7f06000f;
+        public static final int selSearchEngine=0x7f060014;
         public static final int settings=0x7f060003;
         public static final int spiderGo=0x7f060008;
         public static final int spiderGoConfirm=0x7f060009;
