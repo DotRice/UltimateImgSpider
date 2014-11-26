@@ -56,10 +56,14 @@ public class SelSrcActivity extends Activity
 	
 	private ProgressBar				pbWebView;
 	
+	private Button	btnSelSearchEngine;
+	private final int SEARCH_ENGINE_ICON[]={R.drawable.baidu, R.drawable.bing, R.drawable.sogou, R.drawable.google};
+	private final String SEARCH_ENGINE_URL[]={"http://www.baidu.com/s?wd=", "https://cn.bing.com/search?q=", "http://www.sogou.com/web?query=", "https://www.google.com/search?q="};
+	private final String SEARCH_ENGINE_KEY="searchEngine";
+	
 	private EditText				etURL;
 	private RelativeLayout			URLbar;
 	
-	private FrameLayout				flURLcmd;
 	private Button					btnURLcmd;
 	
 	private final int				URL_CANCEL				= 0;
@@ -217,7 +221,6 @@ public class SelSrcActivity extends Activity
 			@Override
 			public boolean onTouch(View v, MotionEvent event)
 			{
-				// TODO Auto-generated method stub
 				if (etURL.isFocused())
 				{
 					clearURLfocus();
@@ -279,6 +282,26 @@ public class SelSrcActivity extends Activity
 	{
 		return spMain.getString(HOME_URL_KEY,
 				getString(R.string.defaultHomeUrl));
+	}
+	
+	private int getSearchEngine()
+	{
+		int searchEngineIndex=spMain.getInt(SEARCH_ENGINE_KEY, 0);
+		
+		if((searchEngineIndex<0)||(searchEngineIndex>SEARCH_ENGINE_URL.length))
+		{
+			searchEngineIndex=0;
+		}
+		
+		return searchEngineIndex;
+	}
+	
+	private void setSearchEngine(int searchEngineIndex)
+	{
+		Editor editor = spMain.edit();
+		editor.putInt(SEARCH_ENGINE_KEY,
+				searchEngineIndex);
+		editor.commit();
 	}
 	
 	private void setURLcmd(int cmd)
@@ -390,7 +413,6 @@ public class SelSrcActivity extends Activity
 			@Override
 			public void onClick(View v)
 			{
-				// TODO Auto-generated method stub
 				Log.i(LOG_TAG, "URLbar onclick");
 				etURL.requestFocus();
 				((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
@@ -411,7 +433,6 @@ public class SelSrcActivity extends Activity
 			@Override
 			public void onFocusChange(View v, boolean hasFocus)
 			{
-				// TODO Auto-generated method stub
 				if (hasFocus)
 				{
 					// btnURLcmd.setVisibility(View.VISIBLE);
@@ -430,7 +451,6 @@ public class SelSrcActivity extends Activity
 			public void beforeTextChanged(CharSequence s, int start, int count,
 					int after)
 			{
-				// TODO Auto-generated method stub
 				
 			}
 			
@@ -438,14 +458,12 @@ public class SelSrcActivity extends Activity
 			public void onTextChanged(CharSequence s, int start, int before,
 					int count)
 			{
-				// TODO Auto-generated method stub
 				
 			}
 			
 			@Override
 			public void afterTextChanged(Editable s)
 			{
-				// TODO Auto-generated method stub
 				if (etURL.hasFocus())
 				{
 					setBtnCmdDisplayByURL(s.toString());
