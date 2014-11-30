@@ -12,13 +12,28 @@
         android:layout_marginBottom="0.5dp"
         layout="@layout/url_bar" />
 
-    <WebView
-        android:id="@+id/webViewSelectSrcUrl"
+    <FrameLayout 
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.49"
-        android:focusable="true"
-        android:focusableInTouchMode="true" />
+        >
+        
+	    <WebView
+	        android:id="@+id/webViewSelectSrcUrl"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:focusable="true"
+	        android:focusableInTouchMode="true" />
+	    
+        <RelativeLayout
+            android:id="@+id/RelativeLayoutWvMask"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:visibility="invisible"
+	        android:background="#8000" >
+        	
+        </RelativeLayout>
+    </FrameLayout>
 
     <include
         android:layout_width="match_parent"

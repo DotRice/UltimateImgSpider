@@ -31,6 +31,9 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.AnimationSet;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
@@ -56,12 +59,10 @@ public class SelSrcActivity extends Activity
 	
 	private ProgressBar				pbWebView;
 	
-	private Button	btnSelSearchEngine;
-	private View.OnClickListener oclSelSearchEngine;
-	private final int SEARCH_ENGINE_ICON[]={R.drawable.baidu, R.drawable.bing, R.drawable.sogou, R.drawable.google};
-	private final String SEARCH_ENGINE_URL[]={"http://www.baidu.com/s?wd=", "https://cn.bing.com/search?q=", "http://www.sogou.com/web?query=", "https://www.google.com/search?q="};
-	private final String SEARCH_ENGINE_KEY="searchEngine";
+	private RelativeLayout			layoutWvMask;
 	
+	private Button					btnSelSearchEngine;
+	private View.OnClickListener	oclSelSearchEngine;
 	private EditText				etURL;
 	private RelativeLayout			URLbar;
 	
@@ -84,17 +85,11 @@ public class SelSrcActivity extends Activity
 	
 	private Handler					mHandler				= new Handler();
 	
-	SharedPreferences				spMain;
-	final static String				SPMAIN_NAME				= "spMain";
-	final static String				SPIDERGO_NOT_CONFIRM	= "spiderGoConfirm";
-	final static String				HOME_URL_KEY			= "homeUrl";
-	
 	final static String				SOURCE_URL_BUNDLE_KEY	= "SourceUrl";
 	
 	private enum DLG
 	{
-		SPIDER_GO_CONFIRM,
-		SEL_SEARCH_ENGINE
+		SPIDER_GO_CONFIRM, SEL_SEARCH_ENGINE
 	};
 	
 	@Override
@@ -115,13 +110,7 @@ public class SelSrcActivity extends Activity
 									public void onClick(DialogInterface dialog,
 											int whichButton, boolean isChecked)
 									{
-										
-										/* User clicked on a check box do some stuff */
-										
-										Editor editor = spMain.edit();
-										editor.putBoolean(SPIDERGO_NOT_CONFIRM,
-												isChecked);
-										editor.commit();
+										ParaConfig.setSpiderGoConfirm(SelSrcActivity.this, isChecked);
 									}
 								})
 						.setPositiveButton(R.string.OK,
@@ -149,8 +138,19 @@ public class SelSrcActivity extends Activity
 			case SEL_SEARCH_ENGINE:
 			{
 				return new AlertDialog.Builder(this)
-					.setTitle(R.string.selSearchEngine)
-					.create();
+						.setTitle("ÈÄâÊã©ÊêúÁ¥¢ÂºïÊìé")
+						.setItems(ParaConfig.SEARCH_ENGINE_NAME,
+								new DialogInterface.OnClickListener()
+								{
+									public void onClick(DialogInterface dialog,
+											int whichButton)
+									{
+										Log.i(LOG_TAG, "whichButton:"
+												+ whichButton);
+										ParaConfig.setSearchEngine(SelSrcActivity.this, whichButton);
+										setCurSearchEngineIcon();
+									}
+								}).create();
 			}
 		}
 		return null;
@@ -229,6 +229,7 @@ public class SelSrcActivity extends Activity
 			@Override
 			public boolean onTouch(View v, MotionEvent event)
 			{
+				//Log.i(LOG_TAG, "webview OnTouched");
 				if (etURL.isFocused())
 				{
 					clearURLfocus();
@@ -240,21 +241,21 @@ public class SelSrcActivity extends Activity
 		wsSelSrc = wvSelSrc.getSettings();
 		wsSelSrc.setUserAgentString(getString(R.string.webViewUserAgent));
 		
-		// ∆Ù”√Àı∑≈
+		// ÂêØÁî®Áº©Êîæ
 		wsSelSrc.setSupportZoom(true);
 		wsSelSrc.setBuiltInZoomControls(true);
 		wsSelSrc.setUseWideViewPort(true);
 		wsSelSrc.setDisplayZoomControls(false);
 		
-		//  πƒ‹javascript
+		// ‰ΩøËÉΩjavascript
 		wsSelSrc.setJavaScriptEnabled(true);
 		wsSelSrc.setJavaScriptCanOpenWindowsAutomatically(false);
 		
-		// ◊‘  ”¶∆¡ƒª
+		// Ëá™ÈÄÇÂ∫îÂ±èÂπï
 		// wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
 		wsSelSrc.setLoadWithOverviewMode(true);
 		
-		wvSelSrc.loadUrl(getHomeUrl());
+		wvSelSrc.loadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
 		
 	}
 	
@@ -281,38 +282,16 @@ public class SelSrcActivity extends Activity
 		}
 		
 		btnSelSearchEngine.setBackgroundResource(R.drawable.site);
-	}
-	
-	private void getParaConfig()
-	{
-		spMain = getSharedPreferences(SPMAIN_NAME, 0);
-	}
-	
-	public String getHomeUrl()
-	{
-		return spMain.getString(HOME_URL_KEY,
-				getString(R.string.defaultHomeUrl));
-	}
-	
-	private int getSearchEngine()
-	{
-		int searchEngineIndex=spMain.getInt(SEARCH_ENGINE_KEY, 0);
 		
-		if((searchEngineIndex<0)||(searchEngineIndex>SEARCH_ENGINE_URL.length))
-		{
-			searchEngineIndex=0;
-		}
-		
-		return searchEngineIndex;
+		layoutWvMask.setVisibility(View.GONE);
 	}
 	
-	private void setSearchEngine(int searchEngineIndex)
+	private void setCurSearchEngineIcon()
 	{
-		Editor editor = spMain.edit();
-		editor.putInt(SEARCH_ENGINE_KEY,
-				searchEngineIndex);
-		editor.commit();
+		btnSelSearchEngine
+				.setBackgroundResource(ParaConfig.getSearchEngineIcon(SelSrcActivity.this));
 	}
+	
 	
 	private void setURLcmd(int cmd)
 	{
@@ -322,6 +301,43 @@ public class SelSrcActivity extends Activity
 			btnURLcmd.setBackgroundResource(URLCMD_ICON[cmd]);
 		}
 	}
+	
+	private void executeURLcmd()
+	{
+		switch (URLcmd)
+		{
+			case URL_CANCEL:
+				if (pbWebView.getProgress() != 0)
+				{
+					wvSelSrc.stopLoading();
+					pbWebView.setProgress(0);
+				}
+			break;
+			
+			case URL_REFRESH:
+				wvSelSrc.reload();
+			break;
+			
+			case URL_ENTER:
+				wvSelSrc.loadUrl(etURL.getText().toString());
+			break;
+			
+			case URL_SEARCH:
+				wvSelSrc.loadUrl(ParaConfig.getSearchEngineURL(SelSrcActivity.this)
+						+ etURL.getText().toString());
+			break;
+			
+			default:
+			break;
+		}
+		
+		if (etURL.isFocused())
+		{
+			clearURLfocus();
+		}
+	}
+	
+	
 	
 	private void oclBrowserBtnInit()
 	{
@@ -336,32 +352,7 @@ public class SelSrcActivity extends Activity
 				if ((viewId == R.id.buttonURLcmd)
 						|| (viewId == R.id.FrameLayoutURLcmd))
 				{
-					switch (URLcmd)
-					{
-						case URL_CANCEL:
-							if (pbWebView.getProgress() != 0)
-							{
-								wvSelSrc.stopLoading();
-								pbWebView.setProgress(0);
-							}
-						break;
-						
-						case URL_REFRESH:
-							wvSelSrc.reload();
-						break;
-						
-						case URL_ENTER:
-							wvSelSrc.loadUrl(etURL.getText().toString());
-						break;
-						
-						case URL_SEARCH:
-							wvSelSrc.loadUrl("http://www.baidu.com/s?wd="
-									+ etURL.getText().toString());
-						break;
-						
-						default:
-						break;
-					}
+					executeURLcmd();
 				}
 				else
 				{
@@ -382,7 +373,7 @@ public class SelSrcActivity extends Activity
 						break;
 						
 						case R.id.buttonSpiderGo:
-							if (spMain.getBoolean(SPIDERGO_NOT_CONFIRM, false))
+							if (ParaConfig.isSpiderGoNeedConfirm(SelSrcActivity.this))
 							{
 								spiderGo();
 							}
@@ -393,7 +384,7 @@ public class SelSrcActivity extends Activity
 						break;
 						
 						case R.id.buttonHome:
-							wvSelSrc.loadUrl(getHomeUrl());
+							wvSelSrc.loadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
 						break;
 						
 						case R.id.buttonMenu:
@@ -404,14 +395,36 @@ public class SelSrcActivity extends Activity
 							Log.i(LOG_TAG, "oclBrowserBtn Unknown Button");
 						break;
 					}
+					
+					if (etURL.isFocused())
+					{
+						clearURLfocus();
+					}
 				}
 				
-				if (etURL.isFocused())
-				{
-					clearURLfocus();
-				}
 			}
 		};
+	}
+	
+	private void wvMaskShowAnimation()
+	{
+		layoutWvMask.setVisibility(View.VISIBLE);
+		
+		AnimationSet animationSet = new AnimationSet(true);
+		AlphaAnimation alphaAnimation = new AlphaAnimation(0, 1);
+		/*
+		TranslateAnimation translateAnimation =
+		new TranslateAnimation(
+		Animation.RELATIVE_TO_SELF,0f,
+		Animation.RELATIVE_TO_SELF,0.5f,
+		Animation.RELATIVE_TO_SELF,0f,
+		Animation.RELATIVE_TO_SELF,0.5f)Õæ
+		translateAnimation.setDuration(1000)Õæ
+		*/
+		alphaAnimation.setDuration(300);
+		animationSet.addAnimation(alphaAnimation);
+		
+		layoutWvMask.startAnimation(animationSet);
 	}
 	
 	private void URLbarInit()
@@ -429,13 +442,13 @@ public class SelSrcActivity extends Activity
 			}
 		});
 		
-		oclSelSearchEngine=new View.OnClickListener()
+		oclSelSearchEngine = new View.OnClickListener()
 		{
 			
 			@Override
 			public void onClick(View v)
 			{
-				if(etURL.isFocused())
+				if (etURL.isFocused())
 				{
 					showDialog(DLG.SEL_SEARCH_ENGINE.ordinal());
 				}
@@ -443,20 +456,34 @@ public class SelSrcActivity extends Activity
 				{
 					etURL.requestFocus();
 					((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
-					.showSoftInput(etURL, InputMethodManager.SHOW_IMPLICIT);
+							.showSoftInput(etURL,
+									InputMethodManager.SHOW_IMPLICIT);
 				}
 			}
 		};
-		btnSelSearchEngine=(Button)findViewById(R.id.buttonSelSearchEngine);
+		btnSelSearchEngine = (Button) findViewById(R.id.buttonSelSearchEngine);
 		btnSelSearchEngine.setOnClickListener(oclSelSearchEngine);
-		findViewById(R.id.FrameLayoutSSEngineBackground).setOnClickListener(oclSelSearchEngine);
-		findViewById(R.id.FrameLayoutSelSearchEngine).setOnClickListener(oclSelSearchEngine);
-		
+		findViewById(R.id.FrameLayoutSSEngineBackground).setOnClickListener(
+				oclSelSearchEngine);
+		findViewById(R.id.FrameLayoutSelSearchEngine).setOnClickListener(
+				oclSelSearchEngine);
 		
 		btnURLcmd = (Button) findViewById(R.id.buttonURLcmd);
 		btnURLcmd.setOnClickListener(oclBrowserBtn);
 		
 		findViewById(R.id.FrameLayoutURLcmd).setOnClickListener(oclBrowserBtn);
+		
+		layoutWvMask=(RelativeLayout) findViewById(R.id.RelativeLayoutWvMask);
+		layoutWvMask.setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				Log.i(LOG_TAG, "mask Clicked");
+				clearURLfocus();
+			}
+		});
 		
 		etURL = (EditText) findViewById(R.id.editTextUrl);
 		etURL.setSelectAllOnFocus(true);
@@ -474,7 +501,9 @@ public class SelSrcActivity extends Activity
 					
 					setURLcmd(URL_ENTER);
 					
-					btnSelSearchEngine.setBackgroundResource(SEARCH_ENGINE_ICON[getSearchEngine()]);
+					setCurSearchEngineIcon();
+					
+					wvMaskShowAnimation();
 				}
 			}
 		});
@@ -501,24 +530,45 @@ public class SelSrcActivity extends Activity
 			{
 				if (etURL.hasFocus())
 				{
-					String URL=s.toString();
+					String URL = s.toString();
 					if (URLUtil.isNetworkUrl(URL))
 					{
 						setURLcmd(URL_ENTER);
-						btnSelSearchEngine.setBackgroundResource(R.drawable.site);
+						btnSelSearchEngine
+								.setBackgroundResource(R.drawable.site);
+						etURL.setImeOptions(EditorInfo.IME_ACTION_GO);
 					}
 					else if (URL.isEmpty())
 					{
 						setURLcmd(URL_CANCEL);
+						etURL.setImeOptions(EditorInfo.IME_ACTION_NONE);
 					}
 					else
 					{
 						setURLcmd(URL_SEARCH);
-						btnSelSearchEngine.setBackgroundResource(SEARCH_ENGINE_ICON[getSearchEngine()]);
+						setCurSearchEngineIcon();
+						etURL.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
 					}
 				}
 			}
 			
+		});
+		
+		etURL.setOnEditorActionListener(new TextView.OnEditorActionListener()
+		{
+			public boolean onEditorAction(TextView v, int actionId,
+					KeyEvent event)
+			{
+				if (actionId == EditorInfo.IME_ACTION_GO
+						||actionId == EditorInfo.IME_ACTION_SEARCH
+						||actionId == EditorInfo.IME_ACTION_NONE
+						||(event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
+				{
+					executeURLcmd();
+					return true;
+				}
+				return false;
+			}
 		});
 	}
 	
@@ -537,8 +587,6 @@ public class SelSrcActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sel_src);
-		
-		getParaConfig();
 		
 		oclBrowserBtnInit();
 		URLbarInit();
@@ -624,7 +672,7 @@ public class SelSrcActivity extends Activity
 				Toast.LENGTH_SHORT).show();
 		;
 		
-		startActivity(intent);// ÷±Ω”«–ªªActivity≤ªΩ” ’∑µªÿΩ·π˚
+		startActivity(intent);// Áõ¥Êé•ÂàáÊç¢Activity‰∏çÊé•Êî∂ËøîÂõûÁªìÊûú
 	}
 	
 	public boolean onKeyDown(int keyCode, KeyEvent event)

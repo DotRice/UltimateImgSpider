@@ -62,19 +62,19 @@ public class ParaConfigActivity extends Activity
 		
 		wvParaConfig.setWebViewClient(new WebViewClient()
 		{
-			public boolean shouldOverrideUrlLoading(WebView view, String url)
+			public boolean shouldOverrideUrlLoading(WebView view, String URL)
 			{
-				Log.i(LOG_TAG, "UrlLoading " + url);
-				view.loadUrl(url);
+				Log.i(LOG_TAG, "UrlLoading " + URL);
+				view.loadUrl(URL);
 				return true;
 			}
 			
-			public void onPageFinished(WebView view, String url)
+			public void onPageFinished(WebView view, String URL)
 			{
-				Log.i(LOG_TAG, "onPageFinished " + url);
+				Log.i(LOG_TAG, "onPageFinished " + URL);
 			}
 			
-			public void onPageStarted(WebView view, String url, Bitmap favicon)
+			public void onPageStarted(WebView view, String URL, Bitmap favicon)
 			{
 				
 			}
@@ -116,24 +116,22 @@ public class ParaConfigActivity extends Activity
 	}
 	
 	@JavascriptInterface
-	public void setHomeUrl(String url)
+	public void setHomeUrl(String URL)
 	{
 		Log.i(LOG_TAG, "setHomeUrl");
 		
-		if(!url.isEmpty())
+		if(!URL.isEmpty())
 		{
-			if(url.equals("curUrl"))
+			if(URL.equals("curUrl"))
 			{
-				url=curUrl;
+				URL=curUrl;
 			}
 			
-			if(URLUtil.isNetworkUrl(url))
+			if(URLUtil.isNetworkUrl(URL))
 			{
-				Editor editor = getSharedPreferences(SelSrcActivity.SPMAIN_NAME, 0).edit();
-				editor.putString(SelSrcActivity.HOME_URL_KEY, url);
-				editor.commit();
+				ParaConfig.setHomeURL(this, URL);
 				
-				Toast.makeText(this, "已设置主页:" + url, Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, "已设置主页:" + URL, Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
@@ -141,8 +139,7 @@ public class ParaConfigActivity extends Activity
 	@JavascriptInterface
 	public String getHomeUrl()
 	{
-		return getSharedPreferences(SelSrcActivity.SPMAIN_NAME, 0).getString(
-				SelSrcActivity.HOME_URL_KEY, getString(R.string.defaultHomeUrl));
+		return ParaConfig.getHomeURL(this);
 	}
 	
 	@JavascriptInterface

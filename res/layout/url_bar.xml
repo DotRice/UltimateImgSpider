@@ -19,7 +19,7 @@
         	android:id="@+id/FrameLayoutSSEngineBackground"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			android:padding="3dp"
+			android:padding="4dp"
 			android:background="#FFF" >
             
 			<Button
@@ -36,10 +36,10 @@
         android:layout_alignParentTop="true"
         android:layout_width="45dp"
         android:layout_height="40dp"
-	    android:paddingLeft="5dp"
-	    android:paddingRight="10dp"
-	    android:paddingTop="5dp"
-	    android:paddingBottom="5dp"
+	    android:paddingLeft="7dp"
+	    android:paddingRight="12dp"
+	    android:paddingTop="7dp"
+	    android:paddingBottom="7dp"
         android:layout_marginTop="2dp">
         
         <Button
@@ -60,6 +60,7 @@
         android:layout_toRightOf="@id/FrameLayoutSelSearchEngine"
         android:hint="@string/searchOrInputURL"
         android:inputType="textUri"
+        android:imeOptions="actionGo"
         android:paddingLeft="2dp"
        	android:background="#FFF"
         android:singleLine="true"
