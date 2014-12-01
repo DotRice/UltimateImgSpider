@@ -32,7 +32,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.URLUtil;
@@ -44,6 +47,7 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
@@ -52,40 +56,40 @@ import android.widget.Toast;
 
 public class SelSrcActivity extends Activity
 {
-	private final String			LOG_TAG					= "SelSrcActivity";
+	private final String	     LOG_TAG	           = "SelSrcActivity";
 	
-	private WebView					wvSelSrc;
-	private WebSettings				wsSelSrc;
+	private WebView	             wvSelSrc;
+	private WebSettings	         wsSelSrc;
 	
-	private ProgressBar				pbWebView;
+	private ProgressBar	         pbWebView;
 	
-	private RelativeLayout			layoutWvMask;
+	private RelativeLayout	     layoutWvMask;
+	private LinearLayout	     browserMenu;
 	
-	private Button					btnSelSearchEngine;
+	private Button	             btnSelSearchEngine;
 	private View.OnClickListener	oclSelSearchEngine;
-	private EditText				etURL;
-	private RelativeLayout			URLbar;
+	private EditText	         etURL;
+	private RelativeLayout	     URLbar;
 	
-	private Button					btnURLcmd;
+	private Button	             btnURLcmd;
 	
-	private final int				URL_CANCEL				= 0;
-	private final int				URL_REFRESH				= 1;
-	private final int				URL_ENTER				= 2;
-	private final int				URL_SEARCH				= 3;
-	private final int				URLCMD_ICON[]			= {
-			R.drawable.cancel, R.drawable.refresh, R.drawable.enter,
-			R.drawable.search								};
-	private int						URLcmd					= URL_CANCEL;
+	private final int	         URL_CANCEL	           = 0;
+	private final int	         URL_REFRESH	       = 1;
+	private final int	         URL_ENTER	           = 2;
+	private final int	         URL_SEARCH	           = 3;
+	private final int	         URLCMD_ICON[]	       = { R.drawable.cancel,
+	        R.drawable.refresh, R.drawable.enter, R.drawable.search };
+	private int	                 URLcmd	               = URL_CANCEL;
 	
 	private View.OnClickListener	oclBrowserBtn;
 	
-	private final int				PROGRESS_MAX			= 100;
+	private final int	         PROGRESS_MAX	       = 100;
 	
-	private String					curWebPageTitle;
+	private String	             curWebPageTitle;
 	
-	private Handler					mHandler				= new Handler();
+	private Handler	             mHandler	           = new Handler();
 	
-	final static String				SOURCE_URL_BUNDLE_KEY	= "SourceUrl";
+	final static String	         SOURCE_URL_BUNDLE_KEY	= "SourceUrl";
 	
 	private enum DLG
 	{
@@ -101,56 +105,59 @@ public class SelSrcActivity extends Activity
 			case SPIDER_GO_CONFIRM:
 			{
 				return new AlertDialog.Builder(this)
-						.setTitle(R.string.spiderGoConfirm)
-						.setMultiChoiceItems(
-								R.array.noLongerConfirm,
-								new boolean[] { false },
-								new DialogInterface.OnMultiChoiceClickListener()
-								{
-									public void onClick(DialogInterface dialog,
-											int whichButton, boolean isChecked)
-									{
-										ParaConfig.setSpiderGoConfirm(SelSrcActivity.this, isChecked);
-									}
-								})
-						.setPositiveButton(R.string.OK,
-								new DialogInterface.OnClickListener()
-								{
-									public void onClick(DialogInterface dialog,
-											int whichButton)
-									{
-										/* User clicked Yes so do some stuff */
-										spiderGo();
-									}
-								})
-						.setNegativeButton(R.string.cancel,
-								new DialogInterface.OnClickListener()
-								{
-									public void onClick(DialogInterface dialog,
-											int whichButton)
-									{
-										
-										/* User clicked No so do some stuff */
-									}
-								}).create();
+				        .setTitle(R.string.spiderGoConfirm)
+				        .setMultiChoiceItems(
+				                R.array.noLongerConfirm,
+				                new boolean[] { false },
+				                new DialogInterface.OnMultiChoiceClickListener()
+				                {
+					                public void onClick(DialogInterface dialog,
+					                        int whichButton, boolean isChecked)
+					                {
+						                ParaConfig.setSpiderGoConfirm(
+						                        SelSrcActivity.this, isChecked);
+					                }
+				                })
+				        .setPositiveButton(R.string.OK,
+				                new DialogInterface.OnClickListener()
+				                {
+					                public void onClick(DialogInterface dialog,
+					                        int whichButton)
+					                {
+						                /* User clicked Yes so do some stuff */
+						                spiderGo();
+					                }
+				                })
+				        .setNegativeButton(R.string.cancel,
+				                new DialogInterface.OnClickListener()
+				                {
+					                public void onClick(DialogInterface dialog,
+					                        int whichButton)
+					                {
+						                
+						                /* User clicked No so do some stuff */
+					                }
+				                }).create();
 			}
 			
 			case SEL_SEARCH_ENGINE:
 			{
 				return new AlertDialog.Builder(this)
-						.setTitle("选择搜索引擎")
-						.setItems(ParaConfig.SEARCH_ENGINE_NAME,
-								new DialogInterface.OnClickListener()
-								{
-									public void onClick(DialogInterface dialog,
-											int whichButton)
-									{
-										Log.i(LOG_TAG, "whichButton:"
-												+ whichButton);
-										ParaConfig.setSearchEngine(SelSrcActivity.this, whichButton);
-										setCurSearchEngineIcon();
-									}
-								}).create();
+				        .setTitle("选择搜索引擎")
+				        .setItems(ParaConfig.SEARCH_ENGINE_NAME,
+				                new DialogInterface.OnClickListener()
+				                {
+					                public void onClick(DialogInterface dialog,
+					                        int whichButton)
+					                {
+						                Log.i(LOG_TAG, "whichButton:"
+						                        + whichButton);
+						                ParaConfig.setSearchEngine(
+						                        SelSrcActivity.this,
+						                        whichButton);
+						                setCurSearchEngineIcon();
+					                }
+				                }).create();
 			}
 		}
 		return null;
@@ -224,20 +231,6 @@ public class SelSrcActivity extends Activity
 			}
 		});
 		
-		wvSelSrc.setOnTouchListener(new View.OnTouchListener()
-		{
-			@Override
-			public boolean onTouch(View v, MotionEvent event)
-			{
-				//Log.i(LOG_TAG, "webview OnTouched");
-				if (etURL.isFocused())
-				{
-					clearURLfocus();
-				}
-				return false;
-			}
-		});
-		
 		wsSelSrc = wvSelSrc.getSettings();
 		wsSelSrc.setUserAgentString(getString(R.string.webViewUserAgent));
 		
@@ -259,13 +252,12 @@ public class SelSrcActivity extends Activity
 		
 	}
 	
-	private void clearURLfocus()
+	private void clearURLbarFocus()
 	{
-		// etURL.clearFocus();
 		wvSelSrc.requestFocus();
 		((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
-				.hideSoftInputFromWindow(etURL.getWindowToken(),
-						InputMethodManager.HIDE_NOT_ALWAYS);
+		        .hideSoftInputFromWindow(etURL.getWindowToken(),
+		                InputMethodManager.HIDE_NOT_ALWAYS);
 		
 		if (pbWebView.getProgress() == 0)
 		{
@@ -283,15 +275,22 @@ public class SelSrcActivity extends Activity
 		
 		btnSelSearchEngine.setBackgroundResource(R.drawable.site);
 		
-		layoutWvMask.setVisibility(View.GONE);
+	}
+	
+	private void focusWebView()
+	{
+		if(layoutWvMask.getVisibility()==View.VISIBLE)
+		{
+			clearURLbarFocus();
+			showBrowserMenu(false);
+		}
 	}
 	
 	private void setCurSearchEngineIcon()
 	{
-		btnSelSearchEngine
-				.setBackgroundResource(ParaConfig.getSearchEngineIcon(SelSrcActivity.this));
+		btnSelSearchEngine.setBackgroundResource(ParaConfig
+		        .getSearchEngineIcon(SelSrcActivity.this));
 	}
-	
 	
 	private void setURLcmd(int cmd)
 	{
@@ -323,21 +322,17 @@ public class SelSrcActivity extends Activity
 			break;
 			
 			case URL_SEARCH:
-				wvSelSrc.loadUrl(ParaConfig.getSearchEngineURL(SelSrcActivity.this)
-						+ etURL.getText().toString());
+				wvSelSrc.loadUrl(ParaConfig
+				        .getSearchEngineURL(SelSrcActivity.this)
+				        + etURL.getText().toString());
 			break;
 			
 			default:
 			break;
 		}
 		
-		if (etURL.isFocused())
-		{
-			clearURLfocus();
-		}
+		focusWebView();
 	}
-	
-	
 	
 	private void oclBrowserBtnInit()
 	{
@@ -350,7 +345,7 @@ public class SelSrcActivity extends Activity
 				int viewId = v.getId();
 				
 				if ((viewId == R.id.buttonURLcmd)
-						|| (viewId == R.id.FrameLayoutURLcmd))
+				        || (viewId == R.id.FrameLayoutURLcmd))
 				{
 					executeURLcmd();
 				}
@@ -373,7 +368,8 @@ public class SelSrcActivity extends Activity
 						break;
 						
 						case R.id.buttonSpiderGo:
-							if (ParaConfig.isSpiderGoNeedConfirm(SelSrcActivity.this))
+							if (ParaConfig
+							        .isSpiderGoNeedConfirm(SelSrcActivity.this))
 							{
 								spiderGo();
 							}
@@ -384,11 +380,21 @@ public class SelSrcActivity extends Activity
 						break;
 						
 						case R.id.buttonHome:
-							wvSelSrc.loadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
+							wvSelSrc.loadUrl(ParaConfig
+							        .getHomeURL(SelSrcActivity.this));
 						break;
 						
 						case R.id.buttonMenu:
+							clearURLbarFocus();
+							showBrowserMenu(layoutWvMask.getVisibility()!=View.VISIBLE);
+						return;
+						
+						case R.id.buttonSetting:
 							openSettingPage();
+						break;
+						
+						case R.id.buttonExit:
+							finish();
 						break;
 						
 						default:
@@ -396,35 +402,103 @@ public class SelSrcActivity extends Activity
 						break;
 					}
 					
-					if (etURL.isFocused())
-					{
-						clearURLfocus();
-					}
+					focusWebView();
 				}
 				
 			}
 		};
 	}
 	
-	private void wvMaskShowAnimation()
+	private void showWebviewMask(final boolean isShow)
 	{
-		layoutWvMask.setVisibility(View.VISIBLE);
-		
+		/**/
 		AnimationSet animationSet = new AnimationSet(true);
-		AlphaAnimation alphaAnimation = new AlphaAnimation(0, 1);
-		/*
-		TranslateAnimation translateAnimation =
-		new TranslateAnimation(
-		Animation.RELATIVE_TO_SELF,0f,
-		Animation.RELATIVE_TO_SELF,0.5f,
-		Animation.RELATIVE_TO_SELF,0f,
-		Animation.RELATIVE_TO_SELF,0.5f);
-		translateAnimation.setDuration(1000);
-		*/
+		AlphaAnimation alphaAnimation = isShow?(new AlphaAnimation(0, 1)):(new AlphaAnimation(1, 0));
+		
 		alphaAnimation.setDuration(300);
 		animationSet.addAnimation(alphaAnimation);
+		animationSet.setAnimationListener(new AnimationListener()
+		{
+			
+			@Override
+			public void onAnimationStart(Animation animation)
+			{
+				if(isShow)layoutWvMask.setVisibility(View.VISIBLE);
+			}
+			
+			@Override
+			public void onAnimationRepeat(Animation animation)
+			{
+				
+			}
+			
+			@Override
+			public void onAnimationEnd(Animation animation)
+			{
+				if(!isShow)layoutWvMask.setVisibility(View.INVISIBLE);
+			}
+		});
 		
 		layoutWvMask.startAnimation(animationSet);
+		
+	}
+	
+	
+	private void showBrowserMenu(final boolean isShow)
+	{
+		showWebviewMask(isShow);
+		
+		if((browserMenu.getVisibility()==View.VISIBLE)!=isShow)
+		{
+			float fromY=isShow?1:0;
+			TranslateAnimation translateAnimation = new TranslateAnimation(
+			        Animation.RELATIVE_TO_SELF, 0f, Animation.RELATIVE_TO_SELF,
+			        0f, Animation.RELATIVE_TO_SELF, fromY,
+			        Animation.RELATIVE_TO_SELF, 1-fromY);
+			translateAnimation.setDuration(300);
+			translateAnimation.setAnimationListener(new AnimationListener()
+			{
+				
+				@Override
+				public void onAnimationStart(Animation animation)
+				{
+					if(isShow)browserMenu.setVisibility(View.VISIBLE);
+				}
+				
+				@Override
+				public void onAnimationRepeat(Animation animation)
+				{
+					
+				}
+				
+				@Override
+				public void onAnimationEnd(Animation animation)
+				{
+					if(!isShow)browserMenu.setVisibility(View.INVISIBLE);
+				}
+			});
+			browserMenu.startAnimation(translateAnimation);
+		}
+	}
+	
+	private void browserMenuInit()
+	{
+		layoutWvMask = (RelativeLayout) findViewById(R.id.RelativeLayoutWvMask);
+		layoutWvMask.setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				Log.i(LOG_TAG, "mask Clicked");
+				focusWebView();
+			}
+		});
+		
+		browserMenu=(LinearLayout)findViewById(R.id.browserMenu);
+		
+		findViewById(R.id.buttonExit).setOnClickListener(oclBrowserBtn);
+		findViewById(R.id.buttonSetting).setOnClickListener(oclBrowserBtn);
 	}
 	
 	private void URLbarInit()
@@ -438,7 +512,7 @@ public class SelSrcActivity extends Activity
 			{
 				etURL.requestFocus();
 				((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
-						.showSoftInput(etURL, InputMethodManager.SHOW_IMPLICIT);
+				        .showSoftInput(etURL, InputMethodManager.SHOW_IMPLICIT);
 			}
 		});
 		
@@ -456,34 +530,23 @@ public class SelSrcActivity extends Activity
 				{
 					etURL.requestFocus();
 					((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
-							.showSoftInput(etURL,
-									InputMethodManager.SHOW_IMPLICIT);
+					        .showSoftInput(etURL,
+					                InputMethodManager.SHOW_IMPLICIT);
 				}
 			}
 		};
 		btnSelSearchEngine = (Button) findViewById(R.id.buttonSelSearchEngine);
 		btnSelSearchEngine.setOnClickListener(oclSelSearchEngine);
 		findViewById(R.id.FrameLayoutSSEngineBackground).setOnClickListener(
-				oclSelSearchEngine);
+		        oclSelSearchEngine);
 		findViewById(R.id.FrameLayoutSelSearchEngine).setOnClickListener(
-				oclSelSearchEngine);
+		        oclSelSearchEngine);
 		
 		btnURLcmd = (Button) findViewById(R.id.buttonURLcmd);
 		btnURLcmd.setOnClickListener(oclBrowserBtn);
 		
 		findViewById(R.id.FrameLayoutURLcmd).setOnClickListener(oclBrowserBtn);
 		
-		layoutWvMask=(RelativeLayout) findViewById(R.id.RelativeLayoutWvMask);
-		layoutWvMask.setOnClickListener(new View.OnClickListener()
-		{
-			
-			@Override
-			public void onClick(View v)
-			{
-				Log.i(LOG_TAG, "mask Clicked");
-				clearURLfocus();
-			}
-		});
 		
 		etURL = (EditText) findViewById(R.id.editTextUrl);
 		etURL.setSelectAllOnFocus(true);
@@ -495,6 +558,8 @@ public class SelSrcActivity extends Activity
 			{
 				if (hasFocus)
 				{
+					showWebviewMask(true);
+					
 					// btnURLcmd.setVisibility(View.VISIBLE);
 					etURL.setText(wvSelSrc.getUrl());
 					etURL.selectAll();
@@ -503,7 +568,6 @@ public class SelSrcActivity extends Activity
 					
 					setCurSearchEngineIcon();
 					
-					wvMaskShowAnimation();
 				}
 			}
 		});
@@ -513,14 +577,14 @@ public class SelSrcActivity extends Activity
 			
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count,
-					int after)
+			        int after)
 			{
 				
 			}
 			
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before,
-					int count)
+			        int count)
 			{
 				
 			}
@@ -535,7 +599,7 @@ public class SelSrcActivity extends Activity
 					{
 						setURLcmd(URL_ENTER);
 						btnSelSearchEngine
-								.setBackgroundResource(R.drawable.site);
+						        .setBackgroundResource(R.drawable.site);
 						etURL.setImeOptions(EditorInfo.IME_ACTION_GO);
 					}
 					else if (URL.isEmpty())
@@ -557,12 +621,12 @@ public class SelSrcActivity extends Activity
 		etURL.setOnEditorActionListener(new TextView.OnEditorActionListener()
 		{
 			public boolean onEditorAction(TextView v, int actionId,
-					KeyEvent event)
+			        KeyEvent event)
 			{
 				if (actionId == EditorInfo.IME_ACTION_GO
-						||actionId == EditorInfo.IME_ACTION_SEARCH
-						||actionId == EditorInfo.IME_ACTION_NONE
-						||(event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
+				        || actionId == EditorInfo.IME_ACTION_SEARCH
+				        || actionId == EditorInfo.IME_ACTION_NONE
+				        || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
 				{
 					executeURLcmd();
 					return true;
@@ -589,6 +653,7 @@ public class SelSrcActivity extends Activity
 		setContentView(R.layout.activity_sel_src);
 		
 		oclBrowserBtnInit();
+		browserMenuInit();
 		URLbarInit();
 		naviBarInit();
 		webViewInit();
@@ -669,7 +734,7 @@ public class SelSrcActivity extends Activity
 		intent.putExtras(bundle);
 		
 		Toast.makeText(this, getString(R.string.srcUrl) + ":" + srcUrl,
-				Toast.LENGTH_SHORT).show();
+		        Toast.LENGTH_SHORT).show();
 		;
 		
 		startActivity(intent);// 直接切换Activity不接收返回结果

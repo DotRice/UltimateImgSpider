@@ -23,6 +23,8 @@ public final class R {
          */
         public static final int activity_horizontal_margin=0x7f050000;
         public static final int activity_vertical_margin=0x7f050001;
+        public static final int browser_menu_height=0x7f050003;
+        public static final int browser_menu_icon_size=0x7f050004;
         public static final int navibar_layout_height=0x7f050002;
     }
     public static final class drawable {
@@ -46,20 +48,23 @@ public final class R {
         public static final int spidergo=0x7f020011;
     }
     public static final class id {
-        public static final int FrameLayoutSSEngineBackground=0x7f08000a;
-        public static final int FrameLayoutSelSearchEngine=0x7f080009;
-        public static final int FrameLayoutURLcmd=0x7f08000c;
+        public static final int FrameLayoutSSEngineBackground=0x7f08000d;
+        public static final int FrameLayoutSelSearchEngine=0x7f08000c;
+        public static final int FrameLayoutURLcmd=0x7f08000f;
         public static final int RelativeLayoutWvMask=0x7f080002;
-        public static final int buttonBack=0x7f080003;
-        public static final int buttonForward=0x7f080004;
-        public static final int buttonHome=0x7f080006;
-        public static final int buttonMenu=0x7f080007;
-        public static final int buttonSelSearchEngine=0x7f08000b;
-        public static final int buttonSpiderGo=0x7f080005;
-        public static final int buttonURLcmd=0x7f08000d;
-        public static final int editTextUrl=0x7f08000e;
-        public static final int progressBarWebView=0x7f08000f;
-        public static final int urlBar=0x7f080008;
+        public static final int browserMenu=0x7f080003;
+        public static final int buttonBack=0x7f080006;
+        public static final int buttonExit=0x7f080005;
+        public static final int buttonForward=0x7f080007;
+        public static final int buttonHome=0x7f080009;
+        public static final int buttonMenu=0x7f08000a;
+        public static final int buttonSelSearchEngine=0x7f08000e;
+        public static final int buttonSetting=0x7f080004;
+        public static final int buttonSpiderGo=0x7f080008;
+        public static final int buttonURLcmd=0x7f080010;
+        public static final int editTextUrl=0x7f080011;
+        public static final int progressBarWebView=0x7f080012;
+        public static final int urlBar=0x7f08000b;
         public static final int webViewParaConfig=0x7f080000;
         public static final int webViewSelectSrcUrl=0x7f080001;
     }
