@@ -65,6 +65,8 @@ public class SelSrcActivity extends Activity
 
     private RelativeLayout       layoutWvMask;
     private LinearLayout         browserMenu;
+    private final static int     MENU_ANI_TIME         = 250;
+    private AlphaAnimation       wvMaskAlphaAni=new AlphaAnimation(0, 1);
 
     private Button               btnSelSearchEngine;
     private View.OnClickListener oclSelSearchEngine;
@@ -77,8 +79,8 @@ public class SelSrcActivity extends Activity
     private final int            URL_REFRESH           = 1;
     private final int            URL_ENTER             = 2;
     private final int            URL_SEARCH            = 3;
-    private final int            URLCMD_ICON[]         = { R.drawable.cancel,
-            R.drawable.refresh, R.drawable.enter, R.drawable.search };
+    private final int            URLCMD_ICON[]         = { R.drawable.cancel, R.drawable.refresh, R.drawable.enter,
+            R.drawable.search                         };
     private int                  URLcmd                = URL_CANCEL;
 
     private View.OnClickListener oclBrowserBtn;
@@ -106,55 +108,42 @@ public class SelSrcActivity extends Activity
             {
                 return new AlertDialog.Builder(this)
                         .setTitle(R.string.spiderGoConfirm)
-                        .setMultiChoiceItems(
-                                R.array.noLongerConfirm,
-                                new boolean[] { false },
+                        .setMultiChoiceItems(R.array.noLongerConfirm, new boolean[] { false },
                                 new DialogInterface.OnMultiChoiceClickListener()
                                 {
-                                    public void onClick(DialogInterface dialog,
-                                            int whichButton, boolean isChecked)
+                                    public void onClick(DialogInterface dialog, int whichButton, boolean isChecked)
                                     {
-                                        ParaConfig.setSpiderGoConfirm(
-                                                SelSrcActivity.this, isChecked);
+                                        ParaConfig.setSpiderGoConfirm(SelSrcActivity.this, isChecked);
                                     }
-                                })
-                        .setPositiveButton(R.string.OK,
-                                new DialogInterface.OnClickListener()
-                                {
-                                    public void onClick(DialogInterface dialog,
-                                            int whichButton)
-                                    {
-                                        /* User clicked Yes so do some stuff */
-                                        spiderGo();
-                                    }
-                                })
-                        .setNegativeButton(R.string.cancel,
-                                new DialogInterface.OnClickListener()
-                                {
-                                    public void onClick(DialogInterface dialog,
-                                            int whichButton)
-                                    {
+                                }).setPositiveButton(R.string.OK, new DialogInterface.OnClickListener()
+                        {
+                            public void onClick(DialogInterface dialog, int whichButton)
+                            {
+                                /* User clicked Yes so do some stuff */
+                                spiderGo();
+                            }
+                        }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener()
+                        {
+                            public void onClick(DialogInterface dialog, int whichButton)
+                            {
 
-                                        /* User clicked No so do some stuff */
-                                    }
-                                }).create();
+                                /* User clicked No so do some stuff */
+                            }
+                        }).create();
             }
 
             case SEL_SEARCH_ENGINE:
             {
-                return new AlertDialog.Builder(this)
-                        .setTitle("选择搜索引擎")
-                        .setItems(ParaConfig.SEARCH_ENGINE_NAME,
-                                new DialogInterface.OnClickListener()
-                                {
-                                    public void onClick(DialogInterface dialog,
-                                            int whichButton)
-                                    {
-                                        Log.i(LOG_TAG, "whichButton:" + whichButton);
-                                        ParaConfig.setSearchEngine(SelSrcActivity.this, whichButton);
-                                        setCurSearchEngineIcon();
-                                    }
-                                }).create();
+                return new AlertDialog.Builder(this).setTitle("选择搜索引擎")
+                        .setItems(ParaConfig.SEARCH_ENGINE_NAME, new DialogInterface.OnClickListener()
+                        {
+                            public void onClick(DialogInterface dialog, int whichButton)
+                            {
+                                Log.i(LOG_TAG, "whichButton:" + whichButton);
+                                ParaConfig.setSearchEngine(SelSrcActivity.this, whichButton);
+                                setCurSearchEngineIcon();
+                            }
+                        }).create();
             }
         }
         return null;
@@ -242,7 +231,6 @@ public class SelSrcActivity extends Activity
         wsSelSrc.setJavaScriptCanOpenWindowsAutomatically(false);
 
         // 自适应屏幕
-        // wsSelSrc.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
         wsSelSrc.setLoadWithOverviewMode(true);
 
         wvSelSrc.loadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
@@ -252,9 +240,8 @@ public class SelSrcActivity extends Activity
     private void clearURLbarFocus()
     {
         wvSelSrc.requestFocus();
-        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
-                .hideSoftInputFromWindow(etURL.getWindowToken(),
-                        InputMethodManager.HIDE_NOT_ALWAYS);
+        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(etURL.getWindowToken(),
+                InputMethodManager.HIDE_NOT_ALWAYS);
 
         if (pbWebView.getProgress() == 0)
         {
@@ -338,8 +325,7 @@ public class SelSrcActivity extends Activity
             {
                 int viewId = v.getId();
 
-                if ((viewId == R.id.buttonURLcmd)
-                        || (viewId == R.id.FrameLayoutURLcmd))
+                if ((viewId == R.id.buttonURLcmd) || (viewId == R.id.FrameLayoutURLcmd))
                 {
                     executeURLcmd();
                 }
@@ -378,7 +364,10 @@ public class SelSrcActivity extends Activity
 
                         case R.id.buttonMenu:
                             clearURLbarFocus();
-                            showBrowserMenu(layoutWvMask.getVisibility() != View.VISIBLE);
+                            if(wvMaskAlphaAni.hasEnded()||(!wvMaskAlphaAni.hasStarted()))
+                            {
+                                showBrowserMenu(layoutWvMask.getVisibility() != View.VISIBLE);
+                            }
                             return;
 
                         case R.id.buttonSetting:
@@ -403,14 +392,10 @@ public class SelSrcActivity extends Activity
 
     private void showWebviewMask(final boolean isShow)
     {
-        /**/
-        AnimationSet animationSet = new AnimationSet(true);
-        AlphaAnimation alphaAnimation = isShow ? (new AlphaAnimation(0, 1))
-                : (new AlphaAnimation(1, 0));
+        wvMaskAlphaAni = isShow ? (new AlphaAnimation(0, 1)) : (new AlphaAnimation(1, 0));
 
-        alphaAnimation.setDuration(300);
-        animationSet.addAnimation(alphaAnimation);
-        animationSet.setAnimationListener(new AnimationListener()
+        wvMaskAlphaAni.setDuration(MENU_ANI_TIME);
+        wvMaskAlphaAni.setAnimationListener(new AnimationListener()
         {
 
             @Override
@@ -434,7 +419,7 @@ public class SelSrcActivity extends Activity
             }
         });
 
-        layoutWvMask.startAnimation(animationSet);
+        layoutWvMask.startAnimation(wvMaskAlphaAni);
 
     }
 
@@ -445,12 +430,10 @@ public class SelSrcActivity extends Activity
         if ((browserMenu.getVisibility() == View.VISIBLE) != isShow)
         {
             float fromY = isShow ? 1 : 0;
-            TranslateAnimation translateAnimation = new TranslateAnimation(
-                    Animation.RELATIVE_TO_SELF, 0f, 
-                    Animation.RELATIVE_TO_SELF, 0f, 
-                    Animation.RELATIVE_TO_SELF, fromY,
-                    Animation.RELATIVE_TO_SELF, 1 - fromY);
-            translateAnimation.setDuration(300);
+            TranslateAnimation translateAnimation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0f,
+                    Animation.RELATIVE_TO_SELF, 0f, Animation.RELATIVE_TO_SELF, fromY, Animation.RELATIVE_TO_SELF,
+                    1 - fromY);
+            translateAnimation.setDuration(MENU_ANI_TIME);
             translateAnimation.setAnimationListener(new AnimationListener()
             {
 
@@ -508,8 +491,8 @@ public class SelSrcActivity extends Activity
             public void onClick(View v)
             {
                 etURL.requestFocus();
-                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
-                        .showSoftInput(etURL, InputMethodManager.SHOW_IMPLICIT);
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(etURL,
+                        InputMethodManager.SHOW_IMPLICIT);
             }
         });
 
@@ -521,23 +504,23 @@ public class SelSrcActivity extends Activity
             {
                 if (etURL.isFocused())
                 {
-                    showDialog(DLG.SEL_SEARCH_ENGINE.ordinal());
+                    if ((!URLUtil.isNetworkUrl(etURL.getText().toString())) && (etURL.getText().length() != 0))
+                    {
+                        showDialog(DLG.SEL_SEARCH_ENGINE.ordinal());
+                    }
                 }
                 else
                 {
                     etURL.requestFocus();
-                    ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
-                            .showSoftInput(etURL,
-                                    InputMethodManager.SHOW_IMPLICIT);
+                    ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(etURL,
+                            InputMethodManager.SHOW_IMPLICIT);
                 }
             }
         };
         btnSelSearchEngine = (Button) findViewById(R.id.buttonSelSearchEngine);
         btnSelSearchEngine.setOnClickListener(oclSelSearchEngine);
-        findViewById(R.id.FrameLayoutSSEngineBackground).setOnClickListener(
-                oclSelSearchEngine);
-        findViewById(R.id.FrameLayoutSelSearchEngine).setOnClickListener(
-                oclSelSearchEngine);
+        findViewById(R.id.FrameLayoutSSEngineBackground).setOnClickListener(oclSelSearchEngine);
+        findViewById(R.id.FrameLayoutSelSearchEngine).setOnClickListener(oclSelSearchEngine);
 
         btnURLcmd = (Button) findViewById(R.id.buttonURLcmd);
         btnURLcmd.setOnClickListener(oclBrowserBtn);
@@ -557,7 +540,7 @@ public class SelSrcActivity extends Activity
                     showWebviewMask(true);
 
                     setURLcmd(URL_ENTER);
-                    
+
                     etURL.setText(wvSelSrc.getUrl());
                     etURL.selectAll();
                 }
@@ -568,15 +551,13 @@ public class SelSrcActivity extends Activity
         {
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count,
-                    int after)
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
             {
 
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before,
-                    int count)
+            public void onTextChanged(CharSequence s, int start, int before, int count)
             {
 
             }
@@ -590,13 +571,13 @@ public class SelSrcActivity extends Activity
                     if (URLUtil.isNetworkUrl(URL))
                     {
                         setURLcmd(URL_ENTER);
-                        btnSelSearchEngine
-                                .setBackgroundResource(R.drawable.site);
+                        btnSelSearchEngine.setBackgroundResource(R.drawable.site);
                         etURL.setImeOptions(EditorInfo.IME_ACTION_GO);
                     }
                     else if (URL.isEmpty())
                     {
                         setURLcmd(URL_CANCEL);
+                        btnSelSearchEngine.setBackgroundResource(R.drawable.site);
                         etURL.setImeOptions(EditorInfo.IME_ACTION_NONE);
                     }
                     else
@@ -612,11 +593,9 @@ public class SelSrcActivity extends Activity
 
         etURL.setOnEditorActionListener(new TextView.OnEditorActionListener()
         {
-            public boolean onEditorAction(TextView v, int actionId,
-                    KeyEvent event)
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
             {
-                if (actionId == EditorInfo.IME_ACTION_GO
-                        || actionId == EditorInfo.IME_ACTION_SEARCH
+                if (actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_SEARCH
                         || actionId == EditorInfo.IME_ACTION_NONE
                         || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
                 {
@@ -725,8 +704,7 @@ public class SelSrcActivity extends Activity
         bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
         intent.putExtras(bundle);
 
-        Toast.makeText(this, getString(R.string.srcUrl) + ":" + srcUrl,
-                Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.srcUrl) + ":" + srcUrl, Toast.LENGTH_SHORT).show();
         ;
 
         startActivity(intent);// 直接切换Activity不接收返回结果
