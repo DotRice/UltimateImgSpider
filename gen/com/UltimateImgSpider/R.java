@@ -65,8 +65,8 @@ public final class R {
         public static final int editTextUrl=0x7f080011;
         public static final int progressBarWebView=0x7f080012;
         public static final int urlBar=0x7f08000b;
+        public static final int webViewPager=0x7f080001;
         public static final int webViewParaConfig=0x7f080000;
-        public static final int webViewSelectSrcUrl=0x7f080001;
     }
     public static final class layout {
         public static final int activity_para_config=0x7f030000;

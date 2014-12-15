@@ -18,12 +18,11 @@
         android:layout_weight="0.49"
         >
         
-	    <WebView
-	        android:id="@+id/webViewSelectSrcUrl"
-	        android:layout_width="match_parent"
-	        android:layout_height="match_parent"
-	        android:focusable="true"
-	        android:focusableInTouchMode="true" />
+	    
+	    <android.support.v4.view.ViewPager
+		    android:id="@+id/webViewPager"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent" />
 	    
         <RelativeLayout
             android:id="@+id/RelativeLayoutWvMask"
@@ -38,6 +37,8 @@
 		        android:layout_alignParentBottom="true"
 		        layout="@layout/browser_menu" />
         </RelativeLayout>
+        
+		
     </FrameLayout>
 
     <include
