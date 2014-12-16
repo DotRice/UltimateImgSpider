@@ -68,17 +68,18 @@ public class SelSrcActivity extends Activity
     private final String         LOG_TAG               = "SelSrcActivity";
 
     private WebView              curWebView;
-    private boolean shouldLoadInNewPage=false;
-    private ViewPager   webViewPager;
-    private ArrayList<WebView> webViewList;
-    private final int WEBPAGE_BUFLEN=3;
+    private boolean              webProgressEnough     = false;
+    private boolean              webAddrCanNotReach    = false;
+    private ViewPager            webViewPager;
+    private ArrayList<WebView>   webViewList;
+    private final int            WEBPAGE_BUFLEN        = 5;
 
     private ProgressBar          pbWebView;
 
     private RelativeLayout       layoutWvMask;
     private LinearLayout         browserMenu;
     private final static int     MENU_ANI_TIME         = 250;
-    private AlphaAnimation       wvMaskAlphaAni=new AlphaAnimation(0, 1);
+    private AlphaAnimation       wvMaskAlphaAni        = new AlphaAnimation(0, 1);
 
     private Button               btnSelSearchEngine;
     private View.OnClickListener oclSelSearchEngine;
@@ -98,8 +99,6 @@ public class SelSrcActivity extends Activity
     private View.OnClickListener oclBrowserBtn;
 
     private final int            PROGRESS_MAX          = 100;
-
-    private String               curWebPageTitle;
 
     private Handler              mHandler              = new Handler();
 
@@ -160,141 +159,150 @@ public class SelSrcActivity extends Activity
         }
         return null;
     }
-    
 
     private void webViewPagerLoadURL(String URL)
     {
-        Log.i(LOG_TAG, "webViewPagerLoadURL "+URL);
-        
-        WebView view=new WebView(this);
+        Log.i(LOG_TAG, "webViewPagerLoadURL " + URL);
+
+        WebView view = new WebView(this);
         webViewInit(view);
         webViewList.add(view);
         webViewPager.addView(view);
         webViewPager.getAdapter().notifyDataSetChanged();
-        Log.i(LOG_TAG, "webViewList.size "+ webViewList.size());
-        webViewPager.setCurrentItem(webViewList.size()-1);
+        Log.i(LOG_TAG, "webViewList.size " + webViewList.size());
+        webViewPager.setCurrentItem(webViewList.size() - 1);
         view.loadUrl(URL);
-        curWebView=view;
-        if(webViewList.size()>WEBPAGE_BUFLEN)
+        curWebView = view;
+        if (webViewList.size() > WEBPAGE_BUFLEN)
         {
             Log.i(LOG_TAG, "removeViewAt(0)");
             webViewPager.removeViewAt(0);
         }
     }
-    
+
     private boolean webViewPagerGoBack()
     {
         return false;
     }
-    
+
     private boolean webViewPagerGoForward()
     {
         return false;
     }
-    
+
     private void webViewPagerGoHome()
     {
         curWebView.loadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
     }
-    
+
     private void webViewPagerClearCache()
     {
-        
+
     }
-    
-    
+
     private void webViewPagerInit()
     {
         pbWebView = (ProgressBar) findViewById(R.id.progressBarWebView);
         pbWebView.setMax(PROGRESS_MAX);
 
-        webViewList=new ArrayList<WebView>();
-        
-        WebView view=new WebView(this);
+        webViewList = new ArrayList<WebView>();
+
+        WebView view = new WebView(this);
         webViewInit(view);
         webViewList.add(view);
-        
-        
-        webViewPager=(ViewPager)findViewById(R.id.webViewPager);
+
+        webViewPager = (ViewPager) findViewById(R.id.webViewPager);
         webViewPager.setAdapter(new PagerAdapter()
         {
-            
+
             @Override
             public boolean isViewFromObject(View arg0, Object arg1)
             {
-                return arg0==arg1;
+                return arg0 == arg1;
             }
-            
+
             @Override
             public int getCount()
             {
                 return webViewList.size();
             }
-            
 
             @Override
-            public void destroyItem(View container, int position, Object object) {
-                ((ViewPager)container).removeView(webViewList.get(position));
-                webViewList.remove(position);
-                Log.i(LOG_TAG, "destroyItem "+position);
+            public void destroyItem(View container, int position, Object object)
+            {
+                //((ViewPager) container).removeView(webViewList.get(position));
+                //webViewList.remove(position);
+                Log.i(LOG_TAG, "destroyItem " + position);
             }
- 
+
             @Override
-            public Object instantiateItem(View container, int position) {
-                //((ViewPager)container).addView(webViewList.get(position));
+            public Object instantiateItem(View container, int position)
+            {
+                //((ViewPager) container).addView(webViewList.get(position));
                 return webViewList.get(position);
             }
+
+            /*
+            @Override
+            public int getItemPosition(Object object)
+            {
+                return POSITION_NONE;
+            }
+            */
         });
-        
+
         webViewPager.addView(view);
-        
+
         webViewPager.setOnPageChangeListener(new OnPageChangeListener()
         {
-            
+
             @Override
             public void onPageSelected(int pos)
             {
-                Log.i(LOG_TAG, "Page "+pos+" Selected size:"+webViewList.size());
-                curWebView=webViewList.get(pos);
+                Log.i(LOG_TAG, "Page " + pos + " Selected size:" + webViewList.size());
+                curWebView = webViewList.get(pos);
+                setURLcmd((curWebView.getProgress() == PROGRESS_MAX) ? URL_REFRESH : URL_CANCEL);
+                dispWebTitle(curWebView);
             }
-            
+
             @Override
             public void onPageScrolled(int arg0, float arg1, int arg2)
             {
-                //Log.i(LOG_TAG, "Scroll "+arg0+" "+arg1+" "+arg2+" ");
+                // Log.i(LOG_TAG, "Scroll "+arg0+" "+arg1+" "+arg2+" ");
             }
-            
+
             @Override
             public void onPageScrollStateChanged(int arg0)
             {
-                //Log.i(LOG_TAG, "ScrollStateChanged "+arg0);
+                // Log.i(LOG_TAG, "ScrollStateChanged "+arg0);
             }
         });
-        
-        curWebView=webViewList.get(0);
+
+        curWebView = webViewList.get(0);
         curWebView.requestFocus();
         curWebView.loadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
     }
 
     private int getUrlHttpCode(String tarUrl)
     {
-        int responseCode=0;
-        
+        int responseCode = 0;
+
         try
         {
             URL url = new URL(tarUrl);
-            HttpURLConnection urlConn=(HttpURLConnection)url.openConnection();
+            HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
             try
             {
                 urlConn.setConnectTimeout(5000);
                 urlConn.setUseCaches(false);
-                urlConn.setRequestProperty("User-Agent",getString(R.string.webViewUserAgent));
-                
-                responseCode=urlConn.getResponseCode();
+                urlConn.setRequestProperty("User-Agent", getString(R.string.webViewUserAgent));
+
+                responseCode = urlConn.getResponseCode();
             }
             finally
             {
-                if(urlConn!=null)urlConn.disconnect(); 
+                if (urlConn != null)
+                    urlConn.disconnect();
             }
         }
         catch (MalformedURLException e)
@@ -307,47 +315,68 @@ public class SelSrcActivity extends Activity
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
         return responseCode;
     }
-    
+
     private void webViewInit(WebView view)
     {
         view.setFocusable(true);
         view.setFocusableInTouchMode(true);
-        
+
         view.setWebViewClient(new WebViewClient()
         {
             public boolean shouldOverrideUrlLoading(WebView view, String url)
             {
-                Log.i(LOG_TAG, "UrlLoading " + url);
-                
-                if(shouldLoadInNewPage)
+                if (view == curWebView)
                 {
-                    webViewPagerLoadURL(url);
+                    Log.i(LOG_TAG, "UrlLoading " + url);
+
+                    if (webProgressEnough && (!webAddrCanNotReach))
+                    {
+                        webViewPagerLoadURL(url);
+                    }
+                    else
+                    {
+                        view.loadUrl(url);
+                    }
                 }
-                else
-                {
-                    view.loadUrl(url);
-                }
-                
                 return true;
             }
 
             public void onPageFinished(WebView view, String url)
             {
-                Log.i(LOG_TAG, "onPageFinished " + url);
-                setURLcmd(URL_REFRESH);
+                if (view == curWebView)
+                {
+                    Log.i(LOG_TAG, "onPageFinished " + url);
+                    setURLcmd(URL_REFRESH);
+                }
             }
 
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
-                Log.i(LOG_TAG, "onPageStarted " + url);
-                pbWebView.setVisibility(View.VISIBLE);
-                etURL.setText(url);
-                curWebPageTitle = "";
-                shouldLoadInNewPage=false;
-                setURLcmd(URL_CANCEL);
+                if (view == curWebView)
+                {
+                    Log.i(LOG_TAG, "onPageStarted " + url);
+                    pbWebView.setVisibility(View.VISIBLE);
+                    etURL.setText(url);
+                    webProgressEnough = false;
+                    webAddrCanNotReach = false;
+                    setURLcmd(URL_CANCEL);
+                }
+            }
+
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl)
+            {
+                if (view == curWebView)
+                {
+                    Log.i(LOG_TAG, failingUrl + " ReceivedError " + errorCode + "  " + description);
+
+                    if (failingUrl.equals(view.getUrl()))
+                    {
+                        webAddrCanNotReach = true;
+                    }
+                }
             }
         });
 
@@ -355,13 +384,13 @@ public class SelSrcActivity extends Activity
         {
             public void onProgressChanged(WebView view, int newProgress)
             {
-                if(view==curWebView)
+                if (view == curWebView)
                 {
-                    if((!shouldLoadInNewPage)&&(newProgress>80))
+                    if ((!webProgressEnough) && (newProgress > 80))
                     {
-                        shouldLoadInNewPage=true;
+                        webProgressEnough = true;
                     }
-                    
+
                     if (newProgress == PROGRESS_MAX)
                     {
                         if (pbWebView.getProgress() != 0)
@@ -385,8 +414,10 @@ public class SelSrcActivity extends Activity
 
             public void onReceivedTitle(WebView view, String title)
             {
-                etURL.setText(title);
-                curWebPageTitle = title;
+                if (view == curWebView)
+                {
+                    etURL.setText(title);
+                }
             }
         });
 
@@ -407,6 +438,14 @@ public class SelSrcActivity extends Activity
         setting.setLoadWithOverviewMode(true);
     }
 
+    private void dispWebTitle(WebView view)
+    {
+        String title = view.getTitle();
+
+        etURL.setText(title.isEmpty() ? view.getUrl() : title);
+
+    }
+
     private void clearURLbarFocus()
     {
         curWebView.requestFocus();
@@ -422,10 +461,7 @@ public class SelSrcActivity extends Activity
             setURLcmd(URL_CANCEL);
         }
 
-        if (!curWebPageTitle.isEmpty())
-        {
-            etURL.setText(curWebPageTitle);
-        }
+        dispWebTitle(curWebView);
 
         btnSelSearchEngine.setBackgroundResource(R.drawable.site);
 
@@ -446,7 +482,7 @@ public class SelSrcActivity extends Activity
         ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(etURL,
                 InputMethodManager.SHOW_IMPLICIT);
     }
-    
+
     private void setCurSearchEngineIcon()
     {
         btnSelSearchEngine.setBackgroundResource(ParaConfig.getSearchEngineIcon(SelSrcActivity.this));
@@ -535,7 +571,7 @@ public class SelSrcActivity extends Activity
 
                         case R.id.buttonMenu:
                             clearURLbarFocus();
-                            if(wvMaskAlphaAni.hasEnded()||(!wvMaskAlphaAni.hasStarted()))
+                            if (wvMaskAlphaAni.hasEnded() || (!wvMaskAlphaAni.hasStarted()))
                             {
                                 showBrowserMenu(layoutWvMask.getVisibility() != View.VISIBLE);
                             }
@@ -707,7 +743,7 @@ public class SelSrcActivity extends Activity
 
                     setURLcmd(URL_ENTER);
 
-                    String url=curWebView.getUrl();
+                    String url = curWebView.getUrl();
                     etURL.setText(url);
                     etURL.selectAll();
                     etURL.setEnabled(false);
@@ -723,7 +759,7 @@ public class SelSrcActivity extends Activity
                 }
             }
         });
-        
+
         etURL.addTextChangedListener(new TextWatcher()
         {
 
@@ -893,7 +929,7 @@ public class SelSrcActivity extends Activity
 
         if (keyCode == KeyEvent.KEYCODE_BACK)
         {
-            if((layoutWvMask.getVisibility()==View.VISIBLE))
+            if ((layoutWvMask.getVisibility() == View.VISIBLE))
             {
                 focusOnWebView();
                 return true;
