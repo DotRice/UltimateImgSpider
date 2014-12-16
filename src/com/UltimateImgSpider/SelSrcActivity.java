@@ -68,7 +68,7 @@ public class SelSrcActivity extends Activity
     private final String         LOG_TAG               = "SelSrcActivity";
 
     private WebView              curWebView;
-    private String originalURLrec="";
+    private boolean shouldLoadInNewPage=false;
     private ViewPager   webViewPager;
     private ArrayList<WebView> webViewList;
     private final int WEBPAGE_BUFLEN=3;
@@ -164,6 +164,8 @@ public class SelSrcActivity extends Activity
 
     private void webViewPagerLoadURL(String URL)
     {
+        Log.i(LOG_TAG, "webViewPagerLoadURL "+URL);
+        
         WebView view=new WebView(this);
         webViewInit(view);
         webViewList.add(view);
@@ -276,19 +278,23 @@ public class SelSrcActivity extends Activity
 
     private int getUrlHttpCode(String tarUrl)
     {
-        URL url;
+        int responseCode=0;
+        
         try
         {
-            url = new URL(tarUrl);
+            URL url = new URL(tarUrl);
+            HttpURLConnection urlConn=(HttpURLConnection)url.openConnection();
             try
             {
-                HttpURLConnection urlConn=(HttpURLConnection)url.openConnection();
-                return urlConn.getResponseCode();
+                urlConn.setConnectTimeout(5000);
+                urlConn.setUseCaches(false);
+                urlConn.setRequestProperty("User-Agent",getString(R.string.webViewUserAgent));
+                
+                responseCode=urlConn.getResponseCode();
             }
-            catch (IOException e)
+            finally
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                if(urlConn!=null)urlConn.disconnect(); 
             }
         }
         catch (MalformedURLException e)
@@ -296,8 +302,13 @@ public class SelSrcActivity extends Activity
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         
-        return 0;
+        return responseCode;
     }
     
     private void webViewInit(WebView view)
@@ -311,21 +322,11 @@ public class SelSrcActivity extends Activity
             {
                 Log.i(LOG_TAG, "UrlLoading " + url);
                 
-                String curOriginalURL=view.getOriginalUrl();
-                Log.i(LOG_TAG, "OriginalUrl " + curOriginalURL);
-                
-                HitTestResult hit = view.getHitTestResult();
-                Log.i(LOG_TAG, "HitTestResult " + hit.getType());
-                
-                
-                /*
-                if(originalURLrec.equals(curOriginalURL))
+                if(shouldLoadInNewPage)
                 {
                     webViewPagerLoadURL(url);
-                    originalURLrec=curOriginalURL;
                 }
                 else
-                    */
                 {
                     view.loadUrl(url);
                 }
@@ -345,6 +346,7 @@ public class SelSrcActivity extends Activity
                 pbWebView.setVisibility(View.VISIBLE);
                 etURL.setText(url);
                 curWebPageTitle = "";
+                shouldLoadInNewPage=false;
                 setURLcmd(URL_CANCEL);
             }
         });
@@ -353,27 +355,32 @@ public class SelSrcActivity extends Activity
         {
             public void onProgressChanged(WebView view, int newProgress)
             {
-                // Log.i(LOG_TAG, view.getUrl() + " Progress " + newProgress);
-
-                if (newProgress == PROGRESS_MAX)
+                if(view==curWebView)
                 {
-                    if (pbWebView.getProgress() != 0)
+                    if((!shouldLoadInNewPage)&&(newProgress>80))
                     {
-                        pbWebView.setProgress(PROGRESS_MAX);
-                        mHandler.postDelayed(new Runnable()
+                        shouldLoadInNewPage=true;
+                    }
+                    
+                    if (newProgress == PROGRESS_MAX)
+                    {
+                        if (pbWebView.getProgress() != 0)
                         {
-                            public void run()
+                            pbWebView.setProgress(PROGRESS_MAX);
+                            mHandler.postDelayed(new Runnable()
                             {
-                                pbWebView.setProgress(0);
-                            }
-                        }, 500);
+                                public void run()
+                                {
+                                    pbWebView.setProgress(0);
+                                }
+                            }, 500);
+                        }
+                    }
+                    else
+                    {
+                        pbWebView.setProgress(newProgress);
                     }
                 }
-                else
-                {
-                    pbWebView.setProgress(newProgress);
-                }
-
             }
 
             public void onReceivedTitle(WebView view, String title)
