@@ -83,6 +83,7 @@ public final class R {
         public static final int colorAction=0x7f060013;
         public static final int colorCancel=0x7f060012;
         public static final int defaultHomeUrl=0x7f06000d;
+        public static final int defaultUserAgent=0x7f06000e;
         public static final int enter=0x7f060011;
         public static final int exit=0x7f060004;
         public static final int help=0x7f060006;
@@ -97,7 +98,6 @@ public final class R {
         public static final int spiderGoConfirm=0x7f060009;
         public static final int srcUrl=0x7f06000b;
         public static final int srcUrlHint=0x7f06000c;
-        public static final int webViewUserAgent=0x7f06000e;
     }
     public static final class style {
         /** 

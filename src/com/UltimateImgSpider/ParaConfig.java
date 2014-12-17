@@ -11,6 +11,8 @@ public class ParaConfig
     final static String              SPIDERGO_NOT_CONFIRM = "spiderGoConfirm";
 
     final static String              HOME_URL_KEY         = "homeUrl";
+    
+    final static String USER_AGENT_KEY="userAgent";
 
     public static final int          SEARCH_ENGINE_ICON[] = { R.drawable.baidu,
             R.drawable.bing, R.drawable.sogou, R.drawable.google };
@@ -77,5 +79,18 @@ public class ParaConfig
     {
         return ctx.getSharedPreferences(SPMAIN_NAME, 0).getString(HOME_URL_KEY,
                 ctx.getString(R.string.defaultHomeUrl));
+    }
+    
+    public static void setUserAgent(Context ctx, String ua)
+    {
+        Editor editor = ctx.getSharedPreferences(SPMAIN_NAME, 0).edit();
+        editor.putString(USER_AGENT_KEY, ua);
+        editor.commit();
+    }
+    
+    public static String getUserAgent(Context ctx)
+    {
+        return ctx.getSharedPreferences(SPMAIN_NAME, 0).getString(USER_AGENT_KEY,
+                ctx.getString(R.string.defaultUserAgent));
     }
 }

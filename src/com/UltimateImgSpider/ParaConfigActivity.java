@@ -140,6 +140,20 @@ public class ParaConfigActivity extends Activity
         return ParaConfig.getHomeURL(this);
     }
 
+
+    @JavascriptInterface
+    public void setUserAgent(String ua)
+    {
+        Log.i(LOG_TAG, "setHomeUrl");
+
+        if (!ua.isEmpty())
+        {
+            ParaConfig.setUserAgent(this, ua);
+
+            Toast.makeText(this, "“—…Ë÷√UA:" + ua, Toast.LENGTH_SHORT).show();
+        }
+    }
+    
     @JavascriptInterface
     public void finishConfig()
     {

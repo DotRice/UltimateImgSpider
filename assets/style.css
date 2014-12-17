@@ -42,6 +42,7 @@ input:focus, a:focus, div:focus
 .subPage
 {
 	left:50%;
+	display:none;
 }
 
 #paraList

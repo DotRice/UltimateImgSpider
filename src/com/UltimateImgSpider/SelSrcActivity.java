@@ -306,7 +306,7 @@ public class SelSrcActivity extends Activity
             {
                 urlConn.setConnectTimeout(5000);
                 urlConn.setUseCaches(false);
-                urlConn.setRequestProperty("User-Agent", getString(R.string.webViewUserAgent));
+                urlConn.setRequestProperty("User-Agent", ParaConfig.getUserAgent(SelSrcActivity.this));
 
                 responseCode = urlConn.getResponseCode();
             }
@@ -343,6 +343,7 @@ public class SelSrcActivity extends Activity
                 {
                     Log.i(LOG_TAG, "UrlLoading " + url);
 
+                    view.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
                     if (webProgressEnough && (!webAddrCanNotReach))
                     {
                         webViewPagerLoadURL(url);
@@ -432,7 +433,7 @@ public class SelSrcActivity extends Activity
         });
 
         WebSettings setting = view.getSettings();
-        setting.setUserAgentString(getString(R.string.webViewUserAgent));
+        setting.setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
 
         // 启用缩放
         setting.setSupportZoom(true);
