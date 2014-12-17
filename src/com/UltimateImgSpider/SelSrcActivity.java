@@ -242,13 +242,13 @@ public class SelSrcActivity extends Activity
                 return webViewList.get(position);
             }
 
-            /*
+            
             @Override
             public int getItemPosition(Object object)
             {
                 return POSITION_NONE;
             }
-            */
+            
         });
 
         webViewPager.addView(view);
@@ -261,7 +261,18 @@ public class SelSrcActivity extends Activity
             {
                 Log.i(LOG_TAG, "Page " + pos + " Selected size:" + webViewList.size());
                 curWebView = webViewList.get(pos);
-                setURLcmd((curWebView.getProgress() == PROGRESS_MAX) ? URL_REFRESH : URL_CANCEL);
+                
+                int curProgress=curWebView.getProgress();
+                if(curProgress == PROGRESS_MAX)
+                {
+                    setUrlCmd(URL_REFRESH);
+                    pbWebView.setProgress(0);
+                }
+                else
+                {
+                    setUrlCmd(URL_CANCEL);
+                    pbWebView.setProgress(curProgress);
+                }
                 dispWebTitle(curWebView);
             }
 
@@ -349,7 +360,7 @@ public class SelSrcActivity extends Activity
                 if (view == curWebView)
                 {
                     Log.i(LOG_TAG, "onPageFinished " + url);
-                    setURLcmd(URL_REFRESH);
+                    setUrlCmd(URL_REFRESH);
                 }
             }
 
@@ -358,11 +369,10 @@ public class SelSrcActivity extends Activity
                 if (view == curWebView)
                 {
                     Log.i(LOG_TAG, "onPageStarted " + url);
-                    pbWebView.setVisibility(View.VISIBLE);
                     etURL.setText(url);
                     webProgressEnough = false;
                     webAddrCanNotReach = false;
-                    setURLcmd(URL_CANCEL);
+                    setUrlCmd(URL_CANCEL);
                 }
             }
 
@@ -442,8 +452,16 @@ public class SelSrcActivity extends Activity
     {
         String title = view.getTitle();
 
-        etURL.setText(title.isEmpty() ? view.getUrl() : title);
-
+        if(title!=null)
+        {
+            if(!title.isEmpty())
+            {
+                etURL.setText(title);
+                return;
+            }
+        }
+        
+        etURL.setText(view.getUrl());
     }
 
     private void clearURLbarFocus()
@@ -454,11 +472,11 @@ public class SelSrcActivity extends Activity
 
         if (pbWebView.getProgress() == 0)
         {
-            setURLcmd(URL_REFRESH);
+            setUrlCmd(URL_REFRESH);
         }
         else
         {
-            setURLcmd(URL_CANCEL);
+            setUrlCmd(URL_CANCEL);
         }
 
         dispWebTitle(curWebView);
@@ -488,7 +506,7 @@ public class SelSrcActivity extends Activity
         btnSelSearchEngine.setBackgroundResource(ParaConfig.getSearchEngineIcon(SelSrcActivity.this));
     }
 
-    private void setURLcmd(int cmd)
+    private void setUrlCmd(int cmd)
     {
         if (cmd < URLCMD_ICON.length)
         {
@@ -741,7 +759,7 @@ public class SelSrcActivity extends Activity
                 {
                     showWebviewMask(true);
 
-                    setURLcmd(URL_ENTER);
+                    setUrlCmd(URL_ENTER);
 
                     String url = curWebView.getUrl();
                     etURL.setText(url);
@@ -783,19 +801,19 @@ public class SelSrcActivity extends Activity
                     String URL = s.toString();
                     if (URLUtil.isNetworkUrl(URL))
                     {
-                        setURLcmd(URL_ENTER);
+                        setUrlCmd(URL_ENTER);
                         btnSelSearchEngine.setBackgroundResource(R.drawable.site);
                         etURL.setImeOptions(EditorInfo.IME_ACTION_GO);
                     }
                     else if (URL.isEmpty())
                     {
-                        setURLcmd(URL_CANCEL);
+                        setUrlCmd(URL_CANCEL);
                         btnSelSearchEngine.setBackgroundResource(R.drawable.site);
                         etURL.setImeOptions(EditorInfo.IME_ACTION_NONE);
                     }
                     else
                     {
-                        setURLcmd(URL_SEARCH);
+                        setUrlCmd(URL_SEARCH);
                         setCurSearchEngineIcon();
                         etURL.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
                     }
