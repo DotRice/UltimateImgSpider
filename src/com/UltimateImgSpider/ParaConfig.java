@@ -24,11 +24,17 @@ public class ParaConfig
     public static final CharSequence SEARCH_ENGINE_NAME[] = { "°Ù¶È", "Bing",
             "ËÑ¹·", "Google"                               };
 
-    public static void setSearchEngine(Context ctx, int searchEngineIndex)
+    public static boolean setSearchEngine(Context ctx, int searchEngineIndex)
     {
+        if((searchEngineIndex>=SEARCH_ENGINE_NAME.length)||(searchEngineIndex<0))
+        {
+            return false;
+        }
+        
         Editor editor = ctx.getSharedPreferences(SPMAIN_NAME, 0).edit();
         editor.putInt(SEARCH_ENGINE_KEY, searchEngineIndex);
         editor.commit();
+        return true;
     }
 
     public static int getSearchEngine(Context ctx)
@@ -55,6 +61,11 @@ public class ParaConfig
         return SEARCH_ENGINE_URL[getSearchEngine(ctx)];
     }
 
+    public static String getSearchEngineName(Context ctx)
+    {
+        return SEARCH_ENGINE_NAME[getSearchEngine(ctx)].toString();
+    }
+    
     public static void setSpiderGoConfirm(Context ctx, boolean noConfirm)
     {
         Editor editor = ctx.getSharedPreferences(SPMAIN_NAME, 0).edit();

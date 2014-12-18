@@ -153,7 +153,24 @@ public class ParaConfigActivity extends Activity
             Toast.makeText(this, "已设置UA:" + ua, Toast.LENGTH_SHORT).show();
         }
     }
-    
+
+    @JavascriptInterface
+    public void setSearchEngine(int seIndex)
+    {
+        Log.i(LOG_TAG, "setHomeUrl");
+        
+        if(ParaConfig.setSearchEngine(this, seIndex))
+        {
+            Toast.makeText(this, "已设置搜索引擎:" + ParaConfig.getSearchEngineName(this), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @JavascriptInterface
+    public String getSearchEngine()
+    {
+        return ParaConfig.getSearchEngineName(this);
+    }
+
     @JavascriptInterface
     public void finishConfig()
     {
