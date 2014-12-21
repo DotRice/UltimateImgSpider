@@ -72,7 +72,7 @@ public class SelSrcActivity extends Activity
     private boolean              webAddrCanNotReach    = false;
     private ViewPager            webViewPager;
     private ArrayList<WebView>   webViewList;
-    private final int            WEBPAGE_BUFLEN        = 5;
+    private final int            WEBPAGE_BUFLEN        = 3;
 
     private ProgressBar          pbWebView;
 
@@ -547,6 +547,15 @@ public class SelSrcActivity extends Activity
         focusOnWebView();
     }
 
+    void responseMenuKey()
+    {
+        clearURLbarFocus();
+        if (wvMaskAlphaAni.hasEnded() || (!wvMaskAlphaAni.hasStarted()))
+        {
+            showBrowserMenu(layoutWvMask.getVisibility() != View.VISIBLE);
+        }
+    }
+    
     private void oclBrowserBtnInit()
     {
         oclBrowserBtn = new View.OnClickListener()
@@ -589,11 +598,7 @@ public class SelSrcActivity extends Activity
                         break;
 
                         case R.id.buttonMenu:
-                            clearURLbarFocus();
-                            if (wvMaskAlphaAni.hasEnded() || (!wvMaskAlphaAni.hasStarted()))
-                            {
-                                showBrowserMenu(layoutWvMask.getVisibility() != View.VISIBLE);
-                            }
+                            responseMenuKey();
                             return;
 
                         case R.id.buttonSetting:
@@ -900,15 +905,6 @@ public class SelSrcActivity extends Activity
         webViewPagerClearCache();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-
-        // Inflate the menu; this adds items to the action bar if it is present.
-
-        return true;
-    }
-
     private void openSettingPage()
     {
         Log.i(LOG_TAG, "openSettingPage");
@@ -958,6 +954,10 @@ public class SelSrcActivity extends Activity
                 Log.i(LOG_TAG, "goBack ");
                 return true;
             }
+        }
+        else if(keyCode == KeyEvent.KEYCODE_MENU)
+        {
+            responseMenuKey();
         }
         return super.onKeyDown(keyCode, event);
     }

@@ -29,42 +29,47 @@ public final class R {
     }
     public static final class drawable {
         public static final int back=0x7f020000;
+        public static final int background_normal=0x7f020013;
+        public static final int background_pressed=0x7f020014;
         public static final int baidu=0x7f020001;
         public static final int bing=0x7f020002;
-        public static final int cancel=0x7f020003;
-        public static final int enter=0x7f020004;
-        public static final int exit=0x7f020005;
-        public static final int forward=0x7f020006;
-        public static final int google=0x7f020007;
-        public static final int home=0x7f020008;
-        public static final int ic_launcher=0x7f020009;
-        public static final int menu=0x7f02000a;
-        public static final int progress_bar=0x7f02000b;
-        public static final int refresh=0x7f02000c;
-        public static final int search=0x7f02000d;
-        public static final int setting=0x7f02000e;
-        public static final int site=0x7f02000f;
-        public static final int sogou=0x7f020010;
-        public static final int spidergo=0x7f020011;
+        public static final int button_bcakground_selector=0x7f020003;
+        public static final int cancel=0x7f020004;
+        public static final int enter=0x7f020005;
+        public static final int exit=0x7f020006;
+        public static final int forward=0x7f020007;
+        public static final int google=0x7f020008;
+        public static final int home=0x7f020009;
+        public static final int ic_launcher=0x7f02000a;
+        public static final int menu=0x7f02000b;
+        public static final int progress_bar=0x7f02000c;
+        public static final int refresh=0x7f02000d;
+        public static final int search=0x7f02000e;
+        public static final int setting=0x7f02000f;
+        public static final int site=0x7f020010;
+        public static final int sogou=0x7f020011;
+        public static final int spidergo=0x7f020012;
     }
     public static final class id {
-        public static final int FrameLayoutSSEngineBackground=0x7f08000d;
-        public static final int FrameLayoutSelSearchEngine=0x7f08000c;
-        public static final int FrameLayoutURLcmd=0x7f08000f;
+        public static final int FrameLayoutSSEngineBackground=0x7f08000f;
+        public static final int FrameLayoutSelSearchEngine=0x7f08000e;
+        public static final int FrameLayoutURLcmd=0x7f080011;
         public static final int RelativeLayoutWvMask=0x7f080002;
         public static final int browserMenu=0x7f080003;
-        public static final int buttonBack=0x7f080006;
+        public static final int buttonBack=0x7f080008;
         public static final int buttonExit=0x7f080005;
-        public static final int buttonForward=0x7f080007;
-        public static final int buttonHome=0x7f080009;
-        public static final int buttonMenu=0x7f08000a;
-        public static final int buttonSelSearchEngine=0x7f08000e;
+        public static final int buttonForward=0x7f080009;
+        public static final int buttonHome=0x7f08000b;
+        public static final int buttonImg=0x7f080006;
+        public static final int buttonMenu=0x7f08000c;
+        public static final int buttonSelSearchEngine=0x7f080010;
         public static final int buttonSetting=0x7f080004;
-        public static final int buttonSpiderGo=0x7f080008;
-        public static final int buttonURLcmd=0x7f080010;
-        public static final int editTextUrl=0x7f080011;
-        public static final int progressBarWebView=0x7f080012;
-        public static final int urlBar=0x7f08000b;
+        public static final int buttonSpiderGo=0x7f08000a;
+        public static final int buttonText=0x7f080007;
+        public static final int buttonURLcmd=0x7f080012;
+        public static final int editTextUrl=0x7f080013;
+        public static final int progressBarWebView=0x7f080014;
+        public static final int urlBar=0x7f08000d;
         public static final int webViewPager=0x7f080001;
         public static final int webViewParaConfig=0x7f080000;
     }
@@ -73,8 +78,9 @@ public final class R {
         public static final int activity_sel_src=0x7f030001;
         public static final int activity_spider_crawl=0x7f030002;
         public static final int browser_menu=0x7f030003;
-        public static final int navi_bar=0x7f030004;
-        public static final int url_bar=0x7f030005;
+        public static final int image_text_button=0x7f030004;
+        public static final int navi_bar=0x7f030005;
+        public static final int url_bar=0x7f030006;
     }
     public static final class string {
         public static final int OK=0x7f060000;
@@ -89,6 +95,7 @@ public final class R {
         public static final int help=0x7f060006;
         public static final int home=0x7f060007;
         public static final int more=0x7f060005;
+        public static final int notSet=0x7f060015;
         public static final int refresh=0x7f06000a;
         public static final int search=0x7f060010;
         public static final int searchOrInputURL=0x7f06000f;

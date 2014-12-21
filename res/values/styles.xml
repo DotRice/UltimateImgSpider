@@ -29,4 +29,7 @@
         <item name="android:progressDrawable">@drawable/progress_bar</item>
     </style>
     
+	<drawable name="background_normal">#FFF</drawable>
+	<drawable name="background_pressed">#CFC</drawable>
+	
 </resources>

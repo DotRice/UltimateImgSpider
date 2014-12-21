@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/browserMenu"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/browser_menu_height"
+    android:layout_height="wrap_content"
     android:background="#FFF"
 	android:visibility="invisible"
     android:baselineAligned="false"
@@ -11,29 +11,31 @@
     <RelativeLayout 
         android:layout_weight="1"
 	    android:layout_width="0dp"
-	    android:layout_height="match_parent">
+	    android:layout_height="wrap_content">
 
-	    <Button
+	    <com.view.ImageTextButton
 	        android:id="@+id/buttonSetting"
-	        android:layout_width="@dimen/browser_menu_icon_size"
-	        android:layout_height="@dimen/browser_menu_icon_size"
+	        android:layout_width="100dp"
+	        android:layout_height="wrap_content"
 	        android:layout_centerVertical="true"
 	        android:layout_centerHorizontal="true"
-	        android:background="@drawable/setting" />
+	        image="@drawable/setting"
+	        text="@string/settings" />
 	</RelativeLayout>
 	
     <RelativeLayout 
         android:layout_weight="1"
 	    android:layout_width="0dp"
-	    android:layout_height="match_parent">
+	    android:layout_height="wrap_content">
 
-	    <Button
+	    <com.view.ImageTextButton
 	        android:id="@+id/buttonExit"
-	        android:layout_width="@dimen/browser_menu_icon_size"
-	        android:layout_height="@dimen/browser_menu_icon_size"
-	        android:layout_centerHorizontal="true"
+	        android:layout_width="100dp"
+	        android:layout_height="wrap_content"
 	        android:layout_centerVertical="true"
-	        android:background="@drawable/exit" />
+	        android:layout_centerHorizontal="true"
+	        image="@drawable/exit"
+	        text="@string/exit" />
 	</RelativeLayout>
     
 </LinearLayout>
