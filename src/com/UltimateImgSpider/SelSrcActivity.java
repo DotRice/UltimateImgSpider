@@ -176,7 +176,10 @@ public class SelSrcActivity extends Activity
         if (webViewList.size() > WEBPAGE_BUFLEN)
         {
             Log.i(LOG_TAG, "removeViewAt(0)");
-            webViewPager.removeViewAt(0);
+            //webViewPager.removeViewAt(0);
+            webViewPager.removeView(webViewList.get(0));
+            webViewList.remove(0);
+            webViewPager.getAdapter().notifyDataSetChanged();
         }
     }
 
@@ -232,7 +235,7 @@ public class SelSrcActivity extends Activity
             {
                 //((ViewPager) container).removeView(webViewList.get(position));
                 //webViewList.remove(position);
-                Log.i(LOG_TAG, "destroyItem " + position);
+                //Log.i(LOG_TAG, "destroyItem " + position);
             }
 
             @Override
@@ -259,7 +262,7 @@ public class SelSrcActivity extends Activity
             @Override
             public void onPageSelected(int pos)
             {
-                Log.i(LOG_TAG, "Page " + pos + " Selected size:" + webViewList.size());
+                //Log.i(LOG_TAG, "Page " + pos + " Selected size:" + webViewList.size());
                 curWebView = webViewList.get(pos);
                 
                 int curProgress=curWebView.getProgress();
@@ -341,7 +344,7 @@ public class SelSrcActivity extends Activity
             {
                 if (view == curWebView)
                 {
-                    Log.i(LOG_TAG, "UrlLoading " + url);
+                    //Log.i(LOG_TAG, "UrlLoading " + url);
 
                     view.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
                     if (webProgressEnough && (!webAddrCanNotReach))
@@ -360,7 +363,7 @@ public class SelSrcActivity extends Activity
             {
                 if (view == curWebView)
                 {
-                    Log.i(LOG_TAG, "onPageFinished " + url);
+                    //Log.i(LOG_TAG, "onPageFinished " + url);
                     setUrlCmd(URL_REFRESH);
                 }
             }
@@ -369,7 +372,7 @@ public class SelSrcActivity extends Activity
             {
                 if (view == curWebView)
                 {
-                    Log.i(LOG_TAG, "onPageStarted " + url);
+                    //Log.i(LOG_TAG, "onPageStarted " + url);
                     etURL.setText(url);
                     webProgressEnough = false;
                     webAddrCanNotReach = false;
