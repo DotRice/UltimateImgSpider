@@ -19,10 +19,12 @@
         >
         
 	    
-	    <android.support.v4.view.ViewPager
-		    android:id="@+id/webViewPager"
-		    android:layout_width="match_parent"
-		    android:layout_height="match_parent" />
+	    <WebView
+			android:id="@+id/webViewSelectSrcUrl"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:focusable="true"
+			android:focusableInTouchMode="true" />
 	    
         <RelativeLayout
             android:id="@+id/RelativeLayoutWvMask"

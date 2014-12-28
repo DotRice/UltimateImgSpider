@@ -153,6 +153,12 @@ public class ParaConfigActivity extends Activity
             Toast.makeText(this, "“—…Ë÷√UA:" + ua, Toast.LENGTH_SHORT).show();
         }
     }
+    
+    @JavascriptInterface
+    public String getUserAgent()
+    {
+        return ParaConfig.getUserAgent(this);
+    }
 
     @JavascriptInterface
     public void setSearchEngine(int seIndex)
