@@ -14,23 +14,22 @@ public final class R {
     public static final class attr {
     }
     public static final class dimen {
-        /**  Default screen margins, per the Android Design guidelines. 
-
+        /** 
          Example customization of dimensions originally defined in res/values/dimens.xml
          (such as screen margins) for screens with more than 820dp of available width. This
          would include 7" and 10" devices in landscape (~960dp and ~1280dp respectively).
     
          */
-        public static final int activity_horizontal_margin=0x7f050000;
-        public static final int activity_vertical_margin=0x7f050001;
-        public static final int browser_menu_height=0x7f050003;
-        public static final int browser_menu_icon_size=0x7f050004;
-        public static final int navibar_layout_height=0x7f050002;
+        public static final int activity_horizontal_margin=0x7f050002;
+        public static final int browser_menu_width=0x7f050001;
+        /**  Default screen margins, per the Android Design guidelines. 
+         */
+        public static final int navibar_layout_height=0x7f050000;
     }
     public static final class drawable {
         public static final int back=0x7f020000;
-        public static final int background_normal=0x7f020013;
-        public static final int background_pressed=0x7f020014;
+        public static final int background_normal=0x7f020014;
+        public static final int background_pressed=0x7f020015;
         public static final int baidu=0x7f020001;
         public static final int bing=0x7f020002;
         public static final int button_bcakground_selector=0x7f020003;
@@ -42,34 +41,36 @@ public final class R {
         public static final int home=0x7f020009;
         public static final int ic_launcher=0x7f02000a;
         public static final int menu=0x7f02000b;
-        public static final int progress_bar=0x7f02000c;
-        public static final int refresh=0x7f02000d;
-        public static final int search=0x7f02000e;
-        public static final int setting=0x7f02000f;
-        public static final int site=0x7f020010;
-        public static final int sogou=0x7f020011;
-        public static final int spidergo=0x7f020012;
+        public static final int menu_refresh=0x7f02000c;
+        public static final int progress_bar=0x7f02000d;
+        public static final int refresh=0x7f02000e;
+        public static final int search=0x7f02000f;
+        public static final int setting=0x7f020010;
+        public static final int site=0x7f020011;
+        public static final int sogou=0x7f020012;
+        public static final int spidergo=0x7f020013;
     }
     public static final class id {
-        public static final int FrameLayoutSSEngineBackground=0x7f08000f;
-        public static final int FrameLayoutSelSearchEngine=0x7f08000e;
-        public static final int FrameLayoutURLcmd=0x7f080011;
+        public static final int FrameLayoutSSEngineBackground=0x7f080010;
+        public static final int FrameLayoutSelSearchEngine=0x7f08000f;
+        public static final int FrameLayoutURLcmd=0x7f080012;
         public static final int RelativeLayoutWvMask=0x7f080002;
         public static final int browserMenu=0x7f080003;
-        public static final int buttonBack=0x7f080008;
-        public static final int buttonExit=0x7f080005;
-        public static final int buttonForward=0x7f080009;
-        public static final int buttonHome=0x7f08000b;
-        public static final int buttonImg=0x7f080006;
-        public static final int buttonMenu=0x7f08000c;
-        public static final int buttonSelSearchEngine=0x7f080010;
+        public static final int buttonBack=0x7f080009;
+        public static final int buttonExit=0x7f080006;
+        public static final int buttonForward=0x7f08000a;
+        public static final int buttonHome=0x7f08000c;
+        public static final int buttonImg=0x7f080007;
+        public static final int buttonMenu=0x7f08000d;
+        public static final int buttonRefresh=0x7f080005;
+        public static final int buttonSelSearchEngine=0x7f080011;
         public static final int buttonSetting=0x7f080004;
-        public static final int buttonSpiderGo=0x7f08000a;
-        public static final int buttonText=0x7f080007;
-        public static final int buttonURLcmd=0x7f080012;
-        public static final int editTextUrl=0x7f080013;
-        public static final int progressBarWebView=0x7f080014;
-        public static final int urlBar=0x7f08000d;
+        public static final int buttonSpiderGo=0x7f08000b;
+        public static final int buttonText=0x7f080008;
+        public static final int buttonURLcmd=0x7f080013;
+        public static final int editTextUrl=0x7f080014;
+        public static final int progressBarWebView=0x7f080015;
+        public static final int urlBar=0x7f08000e;
         public static final int webViewParaConfig=0x7f080000;
         public static final int webViewSelectSrcUrl=0x7f080001;
     }

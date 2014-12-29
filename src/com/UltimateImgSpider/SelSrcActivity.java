@@ -38,42 +38,42 @@ import android.widget.Toast;
 
 public class SelSrcActivity extends Activity
 {
-    private final String         LOG_TAG               = "SelSrcActivity";
+    private final String                  LOG_TAG               = "SelSrcActivity";
 
-    private ArrayList<BrowserHistoryItem>  browserHistory;
-    private WebView              wvSelSrc;
-    private boolean              webProgressEnough     = false;
-    private boolean              webAddrCanNotReach    = false;
+    private ArrayList<BrowserHistoryItem> browserHistory;
+    private WebView                       wvSelSrc;
+    private boolean                       webProgressEnough     = false;
+    private boolean                       webAddrCanNotReach    = false;
 
-    private ProgressBar          pbWebView;
+    private ProgressBar                   pbWebView;
 
-    private RelativeLayout       layoutWvMask;
-    private LinearLayout         browserMenu;
-    private final static int     MENU_ANI_TIME         = 250;
-    private AlphaAnimation       wvMaskAlphaAni        = new AlphaAnimation(0, 1);
+    private RelativeLayout                layoutWvMask;
+    private LinearLayout                  browserMenu;
+    private final static int              MENU_ANI_TIME         = 250;
+    private AlphaAnimation                wvMaskAlphaAni        = new AlphaAnimation(0, 1);
 
-    private Button               btnSelSearchEngine;
-    private View.OnClickListener oclSelSearchEngine;
-    private EditText             etURL;
-    private RelativeLayout       URLbar;
+    private Button                        btnSelSearchEngine;
+    private View.OnClickListener          oclSelSearchEngine;
+    private EditText                      etURL;
+    private RelativeLayout                URLbar;
 
-    private Button               btnURLcmd;
+    private Button                        btnURLcmd;
 
-    private final int            URL_CANCEL            = 0;
-    private final int            URL_REFRESH           = 1;
-    private final int            URL_ENTER             = 2;
-    private final int            URL_SEARCH            = 3;
-    private final int            URLCMD_ICON[]         = { R.drawable.cancel, R.drawable.refresh, R.drawable.enter,
-            R.drawable.search                         };
-    private int                  URLcmd                = URL_CANCEL;
+    private final int                     URL_CANCEL            = 0;
+    private final int                     URL_REFRESH           = 1;
+    private final int                     URL_ENTER             = 2;
+    private final int                     URL_SEARCH            = 3;
+    private final int                     URLCMD_ICON[]         = { R.drawable.cancel, R.drawable.refresh,
+            R.drawable.enter, R.drawable.search                };
+    private int                           URLcmd                = URL_CANCEL;
 
-    private View.OnClickListener oclBrowserBtn;
+    private View.OnClickListener          oclBrowserBtn;
 
-    private final int            PROGRESS_MAX          = 100;
+    private final int                     PROGRESS_MAX          = 100;
 
-    private Handler              mHandler              = new Handler();
+    private Handler                       mHandler              = new Handler();
 
-    final static String          SOURCE_URL_BUNDLE_KEY = "SourceUrl";
+    final static String                   SOURCE_URL_BUNDLE_KEY = "SourceUrl";
 
     private enum DLG
     {
@@ -131,21 +131,20 @@ public class SelSrcActivity extends Activity
         return null;
     }
 
-    
     class BrowserHistoryItem
     {
-        public String Url;
+        public String  Url;
         public boolean isRedirecrt;
-        public String title;
-        
+        public String  title;
+
         public BrowserHistoryItem(String URL, boolean isRedrc)
         {
-            Url=URL;
-            isRedirecrt=isRedrc;
-            title=null;
+            Url = URL;
+            isRedirecrt = isRedrc;
+            title = null;
         }
     }
-    
+
     private void browserLoadUrl(String URL, boolean isRedirect)
     {
         browserHistory.add(new BrowserHistoryItem(URL, isRedirect));
@@ -155,12 +154,12 @@ public class SelSrcActivity extends Activity
 
     private boolean browserGoBack()
     {
-        WebBackForwardList rec=wvSelSrc.copyBackForwardList();
-        int curIndex=rec.getCurrentIndex();
-        Log.i(LOG_TAG, "rec index " +curIndex);
-        if(curIndex>=1)
+        WebBackForwardList rec = wvSelSrc.copyBackForwardList();
+        int curIndex = rec.getCurrentIndex();
+        Log.i(LOG_TAG, "rec index " + curIndex);
+        if (curIndex >= 1)
         {
-            
+
             wvSelSrc.goBack();
             return true;
         }
@@ -169,7 +168,7 @@ public class SelSrcActivity extends Activity
 
     private boolean browserGoForward()
     {
-        if(wvSelSrc.canGoForward())
+        if (wvSelSrc.canGoForward())
         {
             wvSelSrc.goForward();
             return true;
@@ -186,11 +185,11 @@ public class SelSrcActivity extends Activity
     {
         pbWebView = (ProgressBar) findViewById(R.id.progressBarWebView);
         pbWebView.setMax(PROGRESS_MAX);
-        
-        browserHistory=new ArrayList<BrowserHistoryItem>();
-        
-        wvSelSrc=(WebView)findViewById(R.id.webViewSelectSrcUrl);
-        
+
+        browserHistory = new ArrayList<BrowserHistoryItem>();
+
+        wvSelSrc = (WebView) findViewById(R.id.webViewSelectSrcUrl);
+
         wvSelSrc.setWebViewClient(new WebViewClient()
         {
             public boolean shouldOverrideUrlLoading(WebView view, String url)
@@ -205,13 +204,13 @@ public class SelSrcActivity extends Activity
                 Log.i(LOG_TAG, "onPageFinished " + url);
                 setUrlCmd(URL_REFRESH);
 
-                for(int i=browserHistory.size()-1; i>0; i--)
+                for (int i = browserHistory.size() - 1; i > 0; i--)
                 {
-                    BrowserHistoryItem historyItem=browserHistory.get(i);
-                    if(historyItem.Url.equals(url))
+                    BrowserHistoryItem historyItem = browserHistory.get(i);
+                    if (historyItem.Url.equals(url))
                     {
-                        String title=historyItem.title;
-                        if(title!=null)
+                        String title = historyItem.title;
+                        if (title != null)
                         {
                             etURL.setText(title);
                         }
@@ -272,7 +271,7 @@ public class SelSrcActivity extends Activity
             public void onReceivedTitle(WebView view, String title)
             {
                 etURL.setText(title);
-                browserHistory.get(browserHistory.size()-1).title=title;
+                browserHistory.get(browserHistory.size() - 1).title = title;
             }
         });
 
@@ -291,9 +290,9 @@ public class SelSrcActivity extends Activity
 
         // 自适应屏幕
         setting.setLoadWithOverviewMode(true);
-        
+
         wvSelSrc.requestFocus();
-        
+
         browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this), false);
     }
 
@@ -301,15 +300,15 @@ public class SelSrcActivity extends Activity
     {
         String title = view.getTitle();
 
-        if(title!=null)
+        if (title != null)
         {
-            if(!title.isEmpty())
+            if (!title.isEmpty())
             {
                 etURL.setText(title);
                 return;
             }
         }
-        
+
         etURL.setText(view.getUrl());
     }
 
@@ -381,8 +380,8 @@ public class SelSrcActivity extends Activity
             break;
 
             case URL_ENTER:
-                String tarURL=etURL.getText().toString();
-                if(!wvSelSrc.getUrl().equals(tarURL))
+                String tarURL = etURL.getText().toString();
+                if (!wvSelSrc.getUrl().equals(tarURL))
                 {
                     browserLoadUrl(tarURL, false);
                 }
@@ -407,7 +406,7 @@ public class SelSrcActivity extends Activity
             showBrowserMenu(layoutWvMask.getVisibility() != View.VISIBLE);
         }
     }
-    
+
     private void oclBrowserBtnInit()
     {
         oclBrowserBtn = new View.OnClickListener()
@@ -460,6 +459,9 @@ public class SelSrcActivity extends Activity
                         case R.id.buttonExit:
                             finish();
                             return;
+                        case R.id.buttonRefresh:
+                            wvSelSrc.reload();
+                        break;
 
                         default:
                             Log.i(LOG_TAG, "oclBrowserBtn Unknown Button");
@@ -553,7 +555,7 @@ public class SelSrcActivity extends Activity
             @Override
             public void onClick(View v)
             {
-                //Log.i(LOG_TAG, "mask Clicked");
+                // Log.i(LOG_TAG, "mask Clicked");
                 focusOnWebView();
             }
         });
@@ -562,6 +564,7 @@ public class SelSrcActivity extends Activity
 
         findViewById(R.id.buttonExit).setOnClickListener(oclBrowserBtn);
         findViewById(R.id.buttonSetting).setOnClickListener(oclBrowserBtn);
+        findViewById(R.id.buttonRefresh).setOnClickListener(oclBrowserBtn);
     }
 
     private void URLbarInit()
@@ -807,7 +810,7 @@ public class SelSrcActivity extends Activity
                 return true;
             }
         }
-        else if(keyCode == KeyEvent.KEYCODE_MENU)
+        else if (keyCode == KeyEvent.KEYCODE_MENU)
         {
             responseMenuKey();
         }

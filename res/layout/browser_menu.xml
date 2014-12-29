@@ -15,7 +15,7 @@
 
 	    <com.view.ImageTextButton
 	        android:id="@+id/buttonSetting"
-	        android:layout_width="100dp"
+	        android:layout_width="@dimen/browser_menu_width"
 	        android:layout_height="wrap_content"
 	        android:layout_centerVertical="true"
 	        android:layout_centerHorizontal="true"
@@ -30,11 +30,11 @@
 
 	    <com.view.ImageTextButton
 	        android:id="@+id/buttonRefresh"
-	        android:layout_width="100dp"
+	        android:layout_width="@dimen/browser_menu_width"
 	        android:layout_height="wrap_content"
 	        android:layout_centerVertical="true"
 	        android:layout_centerHorizontal="true"
-	        image="@drawable/mRefresh"
+	        image="@drawable/menu_refresh"
 	        text="@string/refresh" />
 	</RelativeLayout>
 	
@@ -45,7 +45,7 @@
 
 	    <com.view.ImageTextButton
 	        android:id="@+id/buttonExit"
-	        android:layout_width="100dp"
+	        android:layout_width="@dimen/browser_menu_width"
 	        android:layout_height="wrap_content"
 	        android:layout_centerVertical="true"
 	        android:layout_centerHorizontal="true"
