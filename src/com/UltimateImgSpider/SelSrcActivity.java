@@ -30,6 +30,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -147,20 +148,27 @@ public class SelSrcActivity extends Activity
 
     private void browserLoadUrl(String URL, boolean isRedirect)
     {
-        browserHistory.add(new BrowserHistoryItem(URL, isRedirect));
         wvSelSrc.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
         wvSelSrc.loadUrl(URL);
+
+        browserHistory.add(new BrowserHistoryItem(URL, isRedirect));
     }
 
     private boolean browserGoBack()
     {
         WebBackForwardList rec = wvSelSrc.copyBackForwardList();
         int curIndex = rec.getCurrentIndex();
-        Log.i(LOG_TAG, "rec index " + curIndex);
-        if (curIndex >= 1)
+        Log.i(LOG_TAG, "rec index " + curIndex+" history size:"+browserHistory.size());
+        if (curIndex > 0)
         {
-
-            wvSelSrc.goBack();
+            if(browserHistory.get(curIndex).isRedirecrt)
+            {
+                wvSelSrc.goBackOrForward(-2);
+            }
+            else
+            {
+                wvSelSrc.goBack();
+            }
             return true;
         }
         return false;
@@ -720,7 +728,7 @@ public class SelSrcActivity extends Activity
         URLbarInit();
         naviBarInit();
         webViewInit();
-
+        
         Log.i(LOG_TAG, "onCreate");
     }
 

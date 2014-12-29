@@ -5,76 +5,55 @@
     android:baselineAligned="false"
     android:background="#EEE"
     android:orientation="horizontal" >
-    
-    <RelativeLayout 
-        android:layout_weight="1"
-	    android:layout_width="0dp"
-	    android:layout_height="match_parent">
+   
+    <ImageButton
+        android:id="@+id/buttonBack"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/back"
+        android:contentDescription="@string/back"
+        android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
 
-	    <Button
-	        android:id="@+id/buttonBack"
-	        android:layout_width="@dimen/navibar_layout_height"
-	        android:layout_height="@dimen/navibar_layout_height"
-	        android:layout_alignParentTop="true"
-	        android:layout_centerHorizontal="true"
-	        android:background="@drawable/back" />
-
-	</RelativeLayout>
-	
-    <RelativeLayout 
-        android:layout_weight="1"
-	    android:layout_width="0dp"
-	    android:layout_height="match_parent">
-    
-	    <Button 
-	        android:id="@+id/buttonForward"
-	        android:layout_width="@dimen/navibar_layout_height"
-	        android:layout_height="@dimen/navibar_layout_height"
-	        android:layout_alignParentTop="true"
-	        android:layout_centerHorizontal="true"
-	        android:background="@drawable/forward"/>
-	</RelativeLayout>
+    <ImageButton 
+        android:id="@+id/buttonForward"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/forward"
+        android:contentDescription="@string/forward"
+       	android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
 	   
-    <RelativeLayout 
-        android:layout_weight="1"
-	    android:layout_width="0dp"
-	    android:layout_height="match_parent">
-    
-	    <Button 
-	        android:id="@+id/buttonSpiderGo"
-	        android:layout_width="@dimen/navibar_layout_height"
-	        android:layout_height="@dimen/navibar_layout_height"
-	        android:layout_alignParentTop="true"
-	        android:layout_centerHorizontal="true"
-	        android:background="@drawable/spidergo"/>
-	</RelativeLayout>
+    <ImageButton 
+        android:id="@+id/buttonSpiderGo"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/spidergo"
+        android:contentDescription="@string/spiderGo"
+       	android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
 	    
-    <RelativeLayout 
-        android:layout_weight="1"
-	    android:layout_width="0dp"
-	    android:layout_height="match_parent">
-    
-	    <Button 
-	        android:id="@+id/buttonHome"
-	        android:layout_width="@dimen/navibar_layout_height"
-	        android:layout_height="@dimen/navibar_layout_height"
-	        android:layout_alignParentTop="true"
-	        android:layout_centerHorizontal="true"
-	        android:background="@drawable/home"/>
-	</RelativeLayout>
-	    
-    <RelativeLayout 
-        android:layout_weight="1"
-	    android:layout_width="0dp"
-	    android:layout_height="match_parent">
-    
-	    <Button 
-	        android:id="@+id/buttonMenu"
-	        android:layout_width="@dimen/navibar_layout_height"
-	        android:layout_height="@dimen/navibar_layout_height"
-	        android:layout_alignParentTop="true"
-	        android:layout_centerHorizontal="true"
-	        android:background="@drawable/menu"/>
-	</RelativeLayout>
-	    
+    <ImageButton 
+        android:id="@+id/buttonHome"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/home"
+        android:contentDescription="@string/home"
+      	android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
+	 
+    <ImageButton 
+        android:id="@+id/buttonMenu"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/menu"
+        android:contentDescription="@string/menu"
+     	android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
+
 </LinearLayout>

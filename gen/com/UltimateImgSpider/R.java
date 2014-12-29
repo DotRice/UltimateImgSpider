@@ -86,26 +86,29 @@ public final class R {
     public static final class string {
         public static final int OK=0x7f060000;
         public static final int app_name=0x7f060002;
+        public static final int back=0x7f060007;
         public static final int cancel=0x7f060001;
-        public static final int colorAction=0x7f060013;
-        public static final int colorCancel=0x7f060012;
-        public static final int defaultHomeUrl=0x7f06000d;
-        public static final int defaultUserAgent=0x7f06000e;
-        public static final int enter=0x7f060011;
+        public static final int colorAction=0x7f060016;
+        public static final int colorCancel=0x7f060015;
+        public static final int defaultHomeUrl=0x7f060010;
+        public static final int defaultUserAgent=0x7f060011;
+        public static final int enter=0x7f060014;
         public static final int exit=0x7f060004;
-        public static final int help=0x7f060006;
-        public static final int home=0x7f060007;
-        public static final int more=0x7f060005;
-        public static final int notSet=0x7f060015;
-        public static final int refresh=0x7f06000a;
-        public static final int search=0x7f060010;
-        public static final int searchOrInputURL=0x7f06000f;
-        public static final int selSearchEngine=0x7f060014;
+        public static final int forward=0x7f060008;
+        public static final int help=0x7f060005;
+        public static final int home=0x7f06000a;
+        public static final int menu=0x7f060009;
+        public static final int more=0x7f060006;
+        public static final int notSet=0x7f060018;
+        public static final int refresh=0x7f06000d;
+        public static final int search=0x7f060013;
+        public static final int searchOrInputURL=0x7f060012;
+        public static final int selSearchEngine=0x7f060017;
         public static final int settings=0x7f060003;
-        public static final int spiderGo=0x7f060008;
-        public static final int spiderGoConfirm=0x7f060009;
-        public static final int srcUrl=0x7f06000b;
-        public static final int srcUrlHint=0x7f06000c;
+        public static final int spiderGo=0x7f06000b;
+        public static final int spiderGoConfirm=0x7f06000c;
+        public static final int srcUrl=0x7f06000e;
+        public static final int srcUrlHint=0x7f06000f;
     }
     public static final class style {
         /** 

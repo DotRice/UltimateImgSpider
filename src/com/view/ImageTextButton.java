@@ -14,11 +14,8 @@ public class ImageTextButton extends RelativeLayout
     ImageView img;
     TextView text;
     
-    public ImageTextButton(Context context, AttributeSet attrs)
+    private void construct(Context context, AttributeSet attrs)
     {
-        super(context, attrs);
-        // TODO Auto-generated constructor stub
-        
         LayoutInflater inflater=(LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.image_text_button, this);
         
@@ -29,4 +26,16 @@ public class ImageTextButton extends RelativeLayout
         text.setText(attrs.getAttributeResourceValue(null, "text",R.string.notSet));
     }
     
+    public ImageTextButton(Context context, AttributeSet attrs)
+    {
+        super(context, attrs);
+        // TODO Auto-generated constructor stub
+        construct(context, attrs);
+    }
+    
+    public ImageTextButton(Context context, AttributeSet attrs, int defStyle)
+    {
+        super(context, attrs, defStyle);
+        construct(context, attrs);
+    }
 }
