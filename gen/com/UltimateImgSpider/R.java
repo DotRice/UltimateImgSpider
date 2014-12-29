@@ -20,8 +20,7 @@ public final class R {
          would include 7" and 10" devices in landscape (~960dp and ~1280dp respectively).
     
          */
-        public static final int activity_horizontal_margin=0x7f050002;
-        public static final int browser_menu_width=0x7f050001;
+        public static final int activity_horizontal_margin=0x7f050001;
         /**  Default screen margins, per the Android Design guidelines. 
          */
         public static final int navibar_layout_height=0x7f050000;

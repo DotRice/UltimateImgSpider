@@ -136,13 +136,11 @@ public class SelSrcActivity extends Activity
     {
         public String  Url;
         public boolean isRedirecrt;
-        public String  title;
 
         public BrowserHistoryItem(String URL, boolean isRedrc)
         {
             Url = URL;
             isRedirecrt = isRedrc;
-            title = null;
         }
     }
 
@@ -212,18 +210,10 @@ public class SelSrcActivity extends Activity
                 Log.i(LOG_TAG, "onPageFinished " + url);
                 setUrlCmd(URL_REFRESH);
 
-                for (int i = browserHistory.size() - 1; i > 0; i--)
+                String title=wvSelSrc.copyBackForwardList().getCurrentItem().getTitle();
+                if(title!=null)
                 {
-                    BrowserHistoryItem historyItem = browserHistory.get(i);
-                    if (historyItem.Url.equals(url))
-                    {
-                        String title = historyItem.title;
-                        if (title != null)
-                        {
-                            etURL.setText(title);
-                        }
-                        break;
-                    }
+                    etURL.setText(title);
                 }
             }
 
@@ -279,7 +269,6 @@ public class SelSrcActivity extends Activity
             public void onReceivedTitle(WebView view, String title)
             {
                 etURL.setText(title);
-                browserHistory.get(browserHistory.size() - 1).title = title;
             }
         });
 
