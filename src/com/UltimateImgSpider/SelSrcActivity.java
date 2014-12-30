@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -40,10 +41,12 @@ import android.widget.Toast;
 public class SelSrcActivity extends Activity
 {
     private final String                  LOG_TAG               = "SelSrcActivity";
-
+    private long exitTim=0;
+    
+    
     private ArrayList<BrowserHistoryItem> browserHistory;
     private WebView                       wvSelSrc;
-    private boolean                       webProgressEnough     = false;
+    private boolean                       lastPageFinished     = false;
     private boolean                       webAddrCanNotReach    = false;
 
     private ProgressBar                   pbWebView;
@@ -149,32 +152,55 @@ public class SelSrcActivity extends Activity
         wvSelSrc.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
         wvSelSrc.loadUrl(URL);
 
+        Log.i(LOG_TAG, "UrlLoading " + URL);
+        Log.i(LOG_TAG, "Redirect:" + isRedirect);
+        
         browserHistory.add(new BrowserHistoryItem(URL, isRedirect));
     }
 
     private boolean browserGoBack()
     {
         WebBackForwardList rec = wvSelSrc.copyBackForwardList();
+        int curIndex=rec.getCurrentIndex();
         if (wvSelSrc.canGoBack())
         {
-            int historySize=browserHistory.size();
-            if(historySize>0)
+            int historyIndex=browserHistory.size()-1;
+            if(historyIndex>0)
             {
-                if(browserHistory.get(historySize).isRedirecrt&&
-                        rec.getItemAtIndex(rec.getCurrentIndex()-1).getUrl().equals(browserHistory.get(historySize-1)))
+                Log.i(LOG_TAG, "historyIndex:"+historyIndex+" Redirecrt:"+browserHistory.get(historyIndex).isRedirecrt);
+                Log.i(LOG_TAG, "recBack "+rec.getItemAtIndex(curIndex-1).getUrl());
+                Log.i(LOG_TAG, "historyBack "+browserHistory.get(historyIndex-1).Url);
+
+                
+                if(browserHistory.get(historyIndex).isRedirecrt&&
+                   rec.getItemAtIndex(curIndex-1).getUrl().equals(browserHistory.get(historyIndex-1).Url))
                 {
-                    if(wvSelSrc.canGoBackOrForward(-2))
+                    browserHistory.remove(historyIndex);
+                    
+                    int i=1;
+                    while((historyIndex>=i)&&(curIndex>=(i+1)))
                     {
-                        wvSelSrc.goBackOrForward(-2);
-                        browserHistory.remove(historySize);
-                        browserHistory.remove(historySize-1);
+                        if(browserHistory.get(historyIndex-i).isRedirecrt&&
+                           rec.getItemAtIndex(curIndex-i-1).getUrl().equals(browserHistory.get(historyIndex-i-1).Url))
+                        {
+                            browserHistory.remove(historyIndex-i);
+                            i++;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    
+                    if(wvSelSrc.canGoBackOrForward(-1-i))
+                    {
+                        wvSelSrc.goBackOrForward(-1-i);
                         return true;
                     }
                 }
                 else
                 {
                     wvSelSrc.goBack();
-                    browserHistory.remove(historySize);
                     return true;
                 }
             }
@@ -212,8 +238,7 @@ public class SelSrcActivity extends Activity
         {
             public boolean shouldOverrideUrlLoading(WebView view, String url)
             {
-                Log.i(LOG_TAG, "UrlLoading " + url);
-                browserLoadUrl(url, (!webProgressEnough) || webAddrCanNotReach);
+                browserLoadUrl(url, (!lastPageFinished) || webAddrCanNotReach);
                 return true;
             }
 
@@ -222,6 +247,8 @@ public class SelSrcActivity extends Activity
                 Log.i(LOG_TAG, "onPageFinished " + url);
                 setUrlCmd(URL_REFRESH);
 
+                lastPageFinished=true;
+                
                 String title=wvSelSrc.copyBackForwardList().getCurrentItem().getTitle();
                 if(title!=null)
                 {
@@ -233,7 +260,7 @@ public class SelSrcActivity extends Activity
             {
                 Log.i(LOG_TAG, "onPageStarted " + url);
                 etURL.setText(url);
-                webProgressEnough = false;
+                lastPageFinished = false;
                 webAddrCanNotReach = false;
                 setUrlCmd(URL_CANCEL);
             }
@@ -253,11 +280,6 @@ public class SelSrcActivity extends Activity
         {
             public void onProgressChanged(WebView view, int newProgress)
             {
-                if ((!webProgressEnough) && (newProgress > 80))
-                {
-                    webProgressEnough = true;
-                }
-
                 if (newProgress == PROGRESS_MAX)
                 {
                     if (pbWebView.getProgress() != 0)
@@ -797,8 +819,7 @@ public class SelSrcActivity extends Activity
         intent.putExtras(bundle);
 
         Toast.makeText(this, getString(R.string.srcUrl) + ":" + srcUrl, Toast.LENGTH_SHORT).show();
-        ;
-
+        
         startActivity(intent);// 直接切换Activity不接收返回结果
     }
 
@@ -815,8 +836,16 @@ public class SelSrcActivity extends Activity
             }
             else if (browserGoBack())
             {
-                Log.i(LOG_TAG, "goBack ");
                 return true;
+            }
+            else
+            {
+                if(SystemClock.uptimeMillis()-exitTim>2000)
+                {
+                    Toast.makeText(this, R.string.keyBackExitConfirm, Toast.LENGTH_SHORT).show();;
+                    exitTim=SystemClock.uptimeMillis();
+                    return true;
+                }
             }
         }
         else if (keyCode == KeyEvent.KEYCODE_MENU)

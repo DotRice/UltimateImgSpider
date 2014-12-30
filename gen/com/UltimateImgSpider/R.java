@@ -96,6 +96,7 @@ public final class R {
         public static final int forward=0x7f060008;
         public static final int help=0x7f060005;
         public static final int home=0x7f06000a;
+        public static final int keyBackExitConfirm=0x7f060019;
         public static final int menu=0x7f060009;
         public static final int more=0x7f060006;
         public static final int notSet=0x7f060018;
