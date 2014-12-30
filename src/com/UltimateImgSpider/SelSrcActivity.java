@@ -155,19 +155,29 @@ public class SelSrcActivity extends Activity
     private boolean browserGoBack()
     {
         WebBackForwardList rec = wvSelSrc.copyBackForwardList();
-        int curIndex = rec.getCurrentIndex();
-        Log.i(LOG_TAG, "rec index " + curIndex+" history size:"+browserHistory.size());
-        if (curIndex > 0)
+        if (wvSelSrc.canGoBack())
         {
-            if(browserHistory.get(curIndex).isRedirecrt)
+            int historySize=browserHistory.size();
+            if(historySize>0)
             {
-                wvSelSrc.goBackOrForward(-2);
+                if(browserHistory.get(historySize).isRedirecrt&&
+                        rec.getItemAtIndex(rec.getCurrentIndex()-1).getUrl().equals(browserHistory.get(historySize-1)))
+                {
+                    if(wvSelSrc.canGoBackOrForward(-2))
+                    {
+                        wvSelSrc.goBackOrForward(-2);
+                        browserHistory.remove(historySize);
+                        browserHistory.remove(historySize-1);
+                        return true;
+                    }
+                }
+                else
+                {
+                    wvSelSrc.goBack();
+                    browserHistory.remove(historySize);
+                    return true;
+                }
             }
-            else
-            {
-                wvSelSrc.goBack();
-            }
-            return true;
         }
         return false;
     }
@@ -176,6 +186,8 @@ public class SelSrcActivity extends Activity
     {
         if (wvSelSrc.canGoForward())
         {
+            WebBackForwardList rec = wvSelSrc.copyBackForwardList();
+            browserHistory.add(new BrowserHistoryItem(rec.getItemAtIndex(rec.getCurrentIndex()+1).getUrl(), false));
             wvSelSrc.goForward();
             return true;
         }
