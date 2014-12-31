@@ -26,6 +26,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.URLUtil;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -48,6 +49,7 @@ public class SelSrcActivity extends Activity
     private WebView                       wvSelSrc;
     private boolean                       lastPageFinished     = false;
     private boolean                       webAddrCanNotReach    = false;
+    private long lastStartTime=0;
 
     private ProgressBar                   pbWebView;
 
@@ -156,51 +158,63 @@ public class SelSrcActivity extends Activity
         Log.i(LOG_TAG, "Redirect:" + isRedirect);
         
         browserHistory.add(new BrowserHistoryItem(URL, isRedirect));
+        
+        setUrlCmd(URL_CANCEL);
     }
 
     private boolean browserGoBack()
     {
         WebBackForwardList rec = wvSelSrc.copyBackForwardList();
-        int curIndex=rec.getCurrentIndex();
+        int wvIndex=rec.getCurrentIndex();
         if (wvSelSrc.canGoBack())
         {
             int historyIndex=browserHistory.size()-1;
             if(historyIndex>0)
             {
-                Log.i(LOG_TAG, "historyIndex:"+historyIndex+" Redirecrt:"+browserHistory.get(historyIndex).isRedirecrt);
-                Log.i(LOG_TAG, "recBack "+rec.getItemAtIndex(curIndex-1).getUrl());
-                Log.i(LOG_TAG, "historyBack "+browserHistory.get(historyIndex-1).Url);
-
+                int i;
                 
-                if(browserHistory.get(historyIndex).isRedirecrt&&
-                   rec.getItemAtIndex(curIndex-1).getUrl().equals(browserHistory.get(historyIndex-1).Url))
+                Log.i(LOG_TAG, "history back:");
+                for(i=0; i<(historyIndex+1); i++)
                 {
-                    browserHistory.remove(historyIndex);
-                    
-                    int i=1;
-                    while((historyIndex>=i)&&(curIndex>=(i+1)))
-                    {
-                        if(browserHistory.get(historyIndex-i).isRedirecrt&&
-                           rec.getItemAtIndex(curIndex-i-1).getUrl().equals(browserHistory.get(historyIndex-i-1).Url))
-                        {
-                            browserHistory.remove(historyIndex-i);
-                            i++;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    
-                    if(wvSelSrc.canGoBackOrForward(-1-i))
-                    {
-                        wvSelSrc.goBackOrForward(-1-i);
-                        return true;
-                    }
+                    Log.i(LOG_TAG, i+" "+browserHistory.get(i).Url+" "+browserHistory.get(i).isRedirecrt);
                 }
-                else
+                
+                Log.i(LOG_TAG, "webView back:");
+                for(i=0; i<(wvIndex+1); i++)
                 {
-                    wvSelSrc.goBack();
+                    Log.i(LOG_TAG, i+" "+rec.getItemAtIndex(i).getUrl());
+                }
+
+                while(historyIndex>=0)
+                {
+                    if(!browserHistory.get(historyIndex).isRedirecrt)
+                    {
+                        browserHistory.remove(historyIndex);
+                        break;
+                    }
+                    
+                    if(browserHistory.get(historyIndex).Url.equals(rec.getItemAtIndex(wvIndex).getUrl()))
+                    {
+                        wvIndex--;
+                    }
+
+                    browserHistory.remove(historyIndex);
+                    historyIndex--;
+                }
+                
+                wvIndex--;
+                int backSteps=wvIndex-rec.getCurrentIndex();
+                if(wvSelSrc.canGoBackOrForward(backSteps))
+                {
+                    WebHistoryItem item=rec.getItemAtIndex(wvIndex);
+                    String title=item.getTitle();
+                    
+                    etURL.setText((title!=null)?title:item.getUrl());
+                    setUrlCmd(URL_CANCEL);
+                    
+                    Log.i(LOG_TAG, "backSteps:"+backSteps);
+                    Log.i(LOG_TAG, "backToUrl:"+item.getUrl());
+                    wvSelSrc.goBackOrForward(backSteps);
                     return true;
                 }
             }
@@ -238,7 +252,7 @@ public class SelSrcActivity extends Activity
         {
             public boolean shouldOverrideUrlLoading(WebView view, String url)
             {
-                browserLoadUrl(url, (!lastPageFinished) || webAddrCanNotReach);
+                browserLoadUrl(url, webAddrCanNotReach||((SystemClock.uptimeMillis()-lastStartTime)<300));
                 return true;
             }
 
@@ -262,6 +276,7 @@ public class SelSrcActivity extends Activity
                 etURL.setText(url);
                 lastPageFinished = false;
                 webAddrCanNotReach = false;
+                lastStartTime=SystemClock.uptimeMillis();
                 setUrlCmd(URL_CANCEL);
             }
 
@@ -403,11 +418,13 @@ public class SelSrcActivity extends Activity
                 {
                     wvSelSrc.stopLoading();
                     pbWebView.setProgress(0);
+                    setUrlCmd(URL_REFRESH);
                 }
             break;
 
             case URL_REFRESH:
                 wvSelSrc.reload();
+                setUrlCmd(URL_CANCEL);
             break;
 
             case URL_ENTER:
