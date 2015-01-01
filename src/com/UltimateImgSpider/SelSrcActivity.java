@@ -187,13 +187,15 @@ public class SelSrcActivity extends Activity
 
                 while(historyIndex>=0)
                 {
-                    if(!browserHistory.get(historyIndex).isRedirecrt)
+                    BrowserHistoryItem history=browserHistory.get(historyIndex);
+                    if(!history.isRedirecrt)
                     {
                         browserHistory.remove(historyIndex);
+                        historyIndex--;
                         break;
                     }
                     
-                    if(browserHistory.get(historyIndex).Url.equals(rec.getItemAtIndex(wvIndex).getUrl()))
+                    if(history.Url.equals(rec.getItemAtIndex(wvIndex).getUrl()))
                     {
                         wvIndex--;
                     }
@@ -203,7 +205,20 @@ public class SelSrcActivity extends Activity
                 }
                 
                 wvIndex--;
-                int backSteps=wvIndex-rec.getCurrentIndex();
+                
+                String tarBackUrl=browserHistory.get(historyIndex).Url;
+                int wvCurIndex=rec.getCurrentIndex();
+                int wvRecLen=wvCurIndex+1;
+                for(i=0; i<wvRecLen; i++)
+                {
+                    if(tarBackUrl.equals(rec.getItemAtIndex(i).getUrl()))
+                    {
+                        wvIndex=i;
+                        break;
+                    }
+                }
+                
+                int backSteps=wvIndex-wvCurIndex;
                 if(wvSelSrc.canGoBackOrForward(backSteps))
                 {
                     WebHistoryItem item=rec.getItemAtIndex(wvIndex);
