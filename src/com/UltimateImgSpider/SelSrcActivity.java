@@ -1,6 +1,9 @@
 package com.UltimateImgSpider;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,6 +19,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -151,15 +155,27 @@ public class SelSrcActivity extends Activity
 
     private void browserLoadUrl(String URL, boolean isRedirect)
     {
-        wvSelSrc.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
-        wvSelSrc.loadUrl(URL);
-
-        Log.i(LOG_TAG, "UrlLoading " + URL);
-        Log.i(LOG_TAG, "Redirect:" + isRedirect);
-        
-        browserHistory.add(new BrowserHistoryItem(URL, isRedirect));
-        
-        setUrlCmd(URL_CANCEL);
+        String Protocol=URL.substring(0, 7).toLowerCase();
+        if(Protocol.startsWith("http://")||Protocol.startsWith("https://"))
+        {
+            wvSelSrc.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
+            wvSelSrc.loadUrl(URL);
+    
+            Log.i(LOG_TAG, "UrlLoading " + URL);
+            Log.i(LOG_TAG, "Redirect:" + isRedirect);
+            
+            browserHistory.add(new BrowserHistoryItem(URL, isRedirect));
+            
+            setUrlCmd(URL_CANCEL);
+        }
+    }
+    
+    void setUrlTitle(String title)
+    {
+        if(!etURL.hasFocus())
+        {
+            etURL.setText(title);
+        }
     }
 
     private boolean browserGoBack()
@@ -223,7 +239,6 @@ public class SelSrcActivity extends Activity
                 {
                     WebHistoryItem item=rec.getItemAtIndex(wvIndex);
                     String title=item.getTitle();
-                    
                     etURL.setText((title!=null)?title:item.getUrl());
                     setUrlCmd(URL_CANCEL);
                     
@@ -262,12 +277,14 @@ public class SelSrcActivity extends Activity
         browserHistory = new ArrayList<BrowserHistoryItem>();
 
         wvSelSrc = (WebView) findViewById(R.id.webViewSelectSrcUrl);
-
+        
         wvSelSrc.setWebViewClient(new WebViewClient()
         {
             public boolean shouldOverrideUrlLoading(WebView view, String url)
             {
-                browserLoadUrl(url, webAddrCanNotReach||((SystemClock.uptimeMillis()-lastStartTime)<300));
+                long curTime=SystemClock.uptimeMillis();
+                browserLoadUrl(url, ((curTime-lastStartTime)<300));
+                lastStartTime=curTime;
                 return true;
             }
 
@@ -281,17 +298,17 @@ public class SelSrcActivity extends Activity
                 String title=wvSelSrc.copyBackForwardList().getCurrentItem().getTitle();
                 if(title!=null)
                 {
-                    etURL.setText(title);
+                    setUrlTitle(title);
                 }
+                
             }
 
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
                 Log.i(LOG_TAG, "onPageStarted " + url);
-                etURL.setText(url);
+                setUrlTitle(url);
                 lastPageFinished = false;
                 webAddrCanNotReach = false;
-                lastStartTime=SystemClock.uptimeMillis();
                 setUrlCmd(URL_CANCEL);
             }
 
@@ -332,7 +349,7 @@ public class SelSrcActivity extends Activity
 
             public void onReceivedTitle(WebView view, String title)
             {
-                etURL.setText(title);
+                setUrlTitle(title);
             }
         });
 
@@ -357,22 +374,6 @@ public class SelSrcActivity extends Activity
         browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this), false);
     }
 
-    private void dispWebTitle(WebView view)
-    {
-        String title = view.getTitle();
-
-        if (title != null)
-        {
-            if (!title.isEmpty())
-            {
-                etURL.setText(title);
-                return;
-            }
-        }
-
-        etURL.setText(view.getUrl());
-    }
-
     private void clearURLbarFocus()
     {
         wvSelSrc.requestFocus();
@@ -388,8 +389,10 @@ public class SelSrcActivity extends Activity
             setUrlCmd(URL_CANCEL);
         }
 
-        dispWebTitle(wvSelSrc);
-
+        String title = wvSelSrc.getTitle();
+        etURL.setText((title != null)?title:wvSelSrc.getUrl());
+        
+        
         btnSelSearchEngine.setBackgroundResource(R.drawable.site);
 
     }
@@ -451,7 +454,17 @@ public class SelSrcActivity extends Activity
             break;
 
             case URL_SEARCH:
-                browserLoadUrl(ParaConfig.getSearchEngineURL(SelSrcActivity.this) + etURL.getText().toString(), false);
+                String target=etURL.getText().toString();
+                try
+                {
+                    target=URLEncoder.encode(target, "UTF-8");
+                }
+                catch (UnsupportedEncodingException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                browserLoadUrl(ParaConfig.getSearchEngineURL(SelSrcActivity.this) + target, false);
             break;
 
             default:
@@ -684,9 +697,8 @@ public class SelSrcActivity extends Activity
                     showWebviewMask(true);
 
                     setUrlCmd(URL_ENTER);
-
-                    String url = wvSelSrc.getUrl();
-                    etURL.setText(url);
+                    
+                    etURL.setText(wvSelSrc.getUrl());
                     etURL.selectAll();
                     etURL.setEnabled(false);
                     mHandler.postDelayed(new Runnable()

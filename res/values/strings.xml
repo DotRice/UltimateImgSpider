@@ -17,7 +17,7 @@
     <string name="srcUrl">起始地址</string>
     <string name="srcUrlHint">http://</string>
     <string name="defaultHomeUrl">http://www.baidu.com/</string>
-    <string name="defaultUserAgent">Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36</string>
+    <string name="defaultUserAgent">Mozilla/5.0 (Linux; Android 4.2.2; GT-I9505 Build/JDQ39) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.59 Mobile Safari/537.36</string>
     <string name="searchOrInputURL">搜索或输入网址</string>
     <string name="search">搜索</string>
     <string name="enter">进入</string>
