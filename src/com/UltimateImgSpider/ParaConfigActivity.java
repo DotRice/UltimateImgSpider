@@ -63,27 +63,7 @@ public class ParaConfigActivity extends Activity
             public boolean shouldOverrideUrlLoading(WebView view, String URL)
             {
                 Log.i(LOG_TAG, "UrlLoading " + URL);
-                view.loadUrl(URL);
-                return true;
-            }
-
-            public void onPageFinished(WebView view, String URL)
-            {
-                Log.i(LOG_TAG, "onPageFinished " + URL);
-            }
-
-            public void onPageStarted(WebView view, String URL, Bitmap favicon)
-            {
-
-            }
-        });
-
-        wvParaConfig.setWebChromeClient(new WebChromeClient()
-        {
-            public void onProgressChanged(WebView view, int newProgress)
-            {
-                // Log.i(LOG_TAG, view.getUrl() + " Progress " + newProgress);
-
+                return false;
             }
         });
 
@@ -95,8 +75,6 @@ public class ParaConfigActivity extends Activity
             }
         });
 
-        // jsInterface=new JavaScriptinterface(this);
-
         wsParaConfig = wvParaConfig.getSettings();
 
         // 使能javascript
@@ -104,10 +82,6 @@ public class ParaConfigActivity extends Activity
         wsParaConfig.setJavaScriptCanOpenWindowsAutomatically(false);
 
         wvParaConfig.addJavascriptInterface(this, "paraConfig");
-
-        // 自适应屏幕
-        // wsParaConfig.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
-        // wsParaConfig.setLoadWithOverviewMode(true);
 
         wvParaConfig.loadUrl(assetParaUrl);
 

@@ -49,13 +49,7 @@ public class SelSrcActivity extends Activity
     private final String                  LOG_TAG               = "SelSrcActivity";
     private long exitTim=0;
     
-    
-    private ArrayList<String> redirectUrlList;
     private WebView                       wvSelSrc;
-    private boolean                       lastPageFinished     = false;
-    private boolean                       webAddrCanNotReach    = false;
-    private long lastStartTime=0;
-
     private ProgressBar                   pbWebView;
 
     private RelativeLayout                layoutWvMask;
@@ -163,74 +157,10 @@ public class SelSrcActivity extends Activity
         }
     }
 
-    private boolean browserGoBack()
-    {
-        if (wvSelSrc.canGoBack())
-        {
-            WebBackForwardList rec = wvSelSrc.copyBackForwardList();
-            int curIndex=rec.getCurrentIndex();
-            
-            int redirListSize=redirectUrlList.size();
-            int historySize=curIndex+1;
-            int i;
-            
-            Log.i(LOG_TAG, "redirectUrlList:");
-            for(i=0; i<redirListSize; i++)
-            {
-                Log.i(LOG_TAG, i+" "+redirectUrlList.get(i));
-            }
-            
-            Log.i(LOG_TAG, "webView History:");
-            for(i=0; i<historySize; i++)
-            {
-                Log.i(LOG_TAG, i+" "+rec.getItemAtIndex(i).getUrl());
-            }
-            
-            int h;
-            for(h=curIndex-1; h>0; h--)
-            {
-                if(!redirectUrlList.contains(rec.getItemAtIndex(h).getUrl()))
-                {
-                    break;
-                }
-            }
-            
-            int backSteps=h-curIndex;
-            WebHistoryItem item=rec.getItemAtIndex(h);
-            String title=item.getTitle();
-            etURL.setText((title!=null)?title:item.getUrl());
-            setUrlCmd(URL_CANCEL);
-            
-            Log.i(LOG_TAG, "backSteps:"+backSteps);
-            Log.i(LOG_TAG, "backToUrl:"+item.getUrl());
-            wvSelSrc.goBackOrForward(backSteps);
-            return true;
-        }
-        return false;
-    }
-
-    private boolean browserGoForward()
-    {
-        if (wvSelSrc.canGoForward())
-        {
-            WebBackForwardList rec = wvSelSrc.copyBackForwardList();
-            wvSelSrc.goForward();
-            return true;
-        }
-        return false;
-    }
-
-    private void browserGoHome()
-    {
-        browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
-    }
-
     private void webViewInit()
     {
         pbWebView = (ProgressBar) findViewById(R.id.progressBarWebView);
         pbWebView.setMax(PROGRESS_MAX);
-
-        redirectUrlList = new ArrayList<String>();
 
         wvSelSrc = (WebView) findViewById(R.id.webViewSelectSrcUrl);
         
@@ -238,19 +168,7 @@ public class SelSrcActivity extends Activity
         {
             public boolean shouldOverrideUrlLoading(WebView view, String url)
             {
-                browserLoadUrl(url);
-                Log.i(LOG_TAG, "UrlLoading "+url);
-                long curTime=SystemClock.uptimeMillis();
-                if((curTime-lastStartTime)<300)
-                {
-                    Log.i(LOG_TAG, "Redirected URL");
-                    if(!redirectUrlList.contains(url))
-                    {
-                        redirectUrlList.add(url);
-                    }
-                }
-                lastStartTime=curTime;
-                return true;
+                return false;
             }
 
             public void onPageFinished(WebView view, String url)
@@ -258,8 +176,6 @@ public class SelSrcActivity extends Activity
                 //Log.i(LOG_TAG, "onPageFinished " + url);
                 setUrlCmd(URL_REFRESH);
 
-                lastPageFinished=true;
-                
                 String title=wvSelSrc.copyBackForwardList().getCurrentItem().getTitle();
                 if(title!=null)
                 {
@@ -272,19 +188,12 @@ public class SelSrcActivity extends Activity
             {
                 //Log.i(LOG_TAG, "onPageStarted " + url);
                 setUrlTitle(url);
-                lastPageFinished = false;
-                webAddrCanNotReach = false;
                 setUrlCmd(URL_CANCEL);
             }
 
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl)
             {
                 Log.i(LOG_TAG, failingUrl + " ReceivedError " + errorCode + "  " + description);
-
-                if (failingUrl.equals(view.getUrl()))
-                {
-                    webAddrCanNotReach = true;
-                }
             }
         });
 
@@ -325,8 +234,6 @@ public class SelSrcActivity extends Activity
 
         WebSettings setting = wvSelSrc.getSettings();
         setting.setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
-
-        setting.setJavaScriptCanOpenWindowsAutomatically(false);
         
         // 启用缩放
         setting.setSupportZoom(true);
@@ -469,11 +376,17 @@ public class SelSrcActivity extends Activity
                     switch (viewId)
                     {
                         case R.id.buttonBack:
-                            browserGoBack();
+                            if (wvSelSrc.canGoBack())
+                            {
+                                wvSelSrc.goBack();
+                            }
                         break;
 
                         case R.id.buttonForward:
-                            browserGoForward();
+                            if (wvSelSrc.canGoForward())
+                            {
+                                wvSelSrc.goForward();
+                            }
                         break;
 
                         case R.id.buttonSpiderGo:
@@ -488,7 +401,7 @@ public class SelSrcActivity extends Activity
                         break;
 
                         case R.id.buttonHome:
-                            browserGoHome();
+                            browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
                         break;
 
                         case R.id.buttonMenu:
@@ -845,8 +758,9 @@ public class SelSrcActivity extends Activity
                 focusOnWebView();
                 return true;
             }
-            else if (browserGoBack())
+            else if (wvSelSrc.canGoBack())
             {
+                wvSelSrc.goBack();
                 return true;
             }
             else
