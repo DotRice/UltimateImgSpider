@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,6 +37,7 @@ import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebSettings.RenderPriority;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -46,39 +49,40 @@ import android.widget.Toast;
 
 public class SelSrcActivity extends Activity
 {
-    private final String                  LOG_TAG               = "SelSrcActivity";
-    private long exitTim=0;
-    
-    private WebView                       wvSelSrc;
-    private ProgressBar                   pbWebView;
+    private final String         LOG_TAG               = "SelSrcActivity";
+    private long                 exitTim               = 0;
 
-    private RelativeLayout                layoutWvMask;
-    private LinearLayout                  browserMenu;
-    private final static int              MENU_ANI_TIME         = 250;
-    private AlphaAnimation                wvMaskAlphaAni        = new AlphaAnimation(0, 1);
+    private WebView              browser;
+    private ProgressBar          pbWebView;
+    private Bitmap               browserIcon;
 
-    private Button                        btnSelSearchEngine;
-    private View.OnClickListener          oclSelSearchEngine;
-    private EditText                      etURL;
-    private RelativeLayout                URLbar;
+    private RelativeLayout       layoutWvMask;
+    private LinearLayout         browserMenu;
+    private final static int     MENU_ANI_TIME         = 250;
+    private AlphaAnimation       wvMaskAlphaAni        = new AlphaAnimation(0, 1);
 
-    private Button                        btnURLcmd;
+    private ImageButton          btnSelSearchEngine;
+    private View.OnClickListener oclSelSearchEngine;
+    private EditText             etURL;
+    private RelativeLayout       URLbar;
 
-    private final int                     URL_CANCEL            = 0;
-    private final int                     URL_REFRESH           = 1;
-    private final int                     URL_ENTER             = 2;
-    private final int                     URL_SEARCH            = 3;
-    private final int                     URLCMD_ICON[]         = { R.drawable.cancel, R.drawable.refresh,
-            R.drawable.enter, R.drawable.search                };
-    private int                           URLcmd                = URL_CANCEL;
+    private Button               btnURLcmd;
 
-    private View.OnClickListener          oclBrowserBtn;
+    private final int            URL_CANCEL            = 0;
+    private final int            URL_REFRESH           = 1;
+    private final int            URL_ENTER             = 2;
+    private final int            URL_SEARCH            = 3;
+    private final int            URLCMD_ICON[]         = { R.drawable.cancel, R.drawable.refresh, R.drawable.enter,
+            R.drawable.search                         };
+    private int                  URLcmd                = URL_CANCEL;
 
-    private final int                     PROGRESS_MAX          = 100;
+    private View.OnClickListener oclBrowserBtn;
 
-    private Handler                       mHandler              = new Handler();
+    private final int            PROGRESS_MAX          = 100;
 
-    final static String                   SOURCE_URL_BUNDLE_KEY = "SourceUrl";
+    private Handler              mHandler              = new Handler();
+
+    final static String          SOURCE_URL_BUNDLE_KEY = "SourceUrl";
 
     private enum DLG
     {
@@ -128,7 +132,7 @@ public class SelSrcActivity extends Activity
                             {
                                 Log.i(LOG_TAG, "whichButton:" + whichButton);
                                 ParaConfig.setSearchEngine(SelSrcActivity.this, whichButton);
-                                btnSelSearchEngine.setBackgroundResource(ParaConfig.getSearchEngineIcon(SelSrcActivity.this));
+                                btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(SelSrcActivity.this));
                             }
                         }).create();
             }
@@ -138,55 +142,69 @@ public class SelSrcActivity extends Activity
 
     private void browserLoadUrl(String URL)
     {
-        String Protocol=URL.substring(0, 7).toLowerCase();
-        if(Protocol.startsWith("http://")||Protocol.startsWith("https://"))
+        String Protocol = URL.substring(0, 7).toLowerCase();
+        if (Protocol.startsWith("http://") || Protocol.startsWith("https://"))
         {
-            wvSelSrc.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
-            wvSelSrc.loadUrl(URL);
-           
-            btnSelSearchEngine.setBackgroundResource(R.drawable.site);
+            browser.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
+            browser.loadUrl(URL);
+
+            btnSelSearchEngine.setImageResource(R.drawable.site);
             setUrlCmd(URL_CANCEL);
         }
     }
-    
+
     void setUrlTitle(String title)
     {
-        if(!etURL.hasFocus())
+        if (!etURL.hasFocus())
         {
             etURL.setText(title);
         }
     }
 
-    private void webViewInit()
+    private void browserInit()
     {
         pbWebView = (ProgressBar) findViewById(R.id.progressBarWebView);
         pbWebView.setMax(PROGRESS_MAX);
 
-        wvSelSrc = (WebView) findViewById(R.id.webViewSelectSrcUrl);
+        browser = (WebView) findViewById(R.id.webViewSelectSrcUrl);
         
-        wvSelSrc.setWebViewClient(new WebViewClient()
+        browser.setOnTouchListener(new View.OnTouchListener()
+        {
+            
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                // TODO Auto-generated method stub
+                
+                return false;
+            }
+        });
+        
+        browser.setWebViewClient(new WebViewClient()
         {
             public boolean shouldOverrideUrlLoading(WebView view, String url)
             {
+                browserIcon = BitmapFactory.decodeResource(getResources(), R.drawable.site);
+                btnSelSearchEngine.setImageBitmap(browserIcon);
                 return false;
             }
 
             public void onPageFinished(WebView view, String url)
             {
-                //Log.i(LOG_TAG, "onPageFinished " + url);
+                // Log.i(LOG_TAG, "onPageFinished " + url);
                 setUrlCmd(URL_REFRESH);
 
-                String title=wvSelSrc.copyBackForwardList().getCurrentItem().getTitle();
-                if(title!=null)
+                String title = browser.copyBackForwardList().getCurrentItem().getTitle();
+                if (title != null)
                 {
                     setUrlTitle(title);
                 }
-                
+
             }
 
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
-                //Log.i(LOG_TAG, "onPageStarted " + url);
+                // Log.i(LOG_TAG, "onPageStarted " + url);
                 setUrlTitle(url);
                 setUrlCmd(URL_CANCEL);
             }
@@ -197,13 +215,14 @@ public class SelSrcActivity extends Activity
             }
         });
 
-        wvSelSrc.setWebChromeClient(new WebChromeClient()
+        browser.setWebChromeClient(new WebChromeClient()
         {
             public void onReceivedIcon(WebView view, Bitmap icon)
             {
-                btnSelSearchEngine.setBackgroundDrawable(new BitmapDrawable(icon));
+                btnSelSearchEngine.setImageBitmap(icon);
+                browserIcon = icon;
             }
-            
+
             public void onProgressChanged(WebView view, int newProgress)
             {
                 if (newProgress == PROGRESS_MAX)
@@ -232,9 +251,9 @@ public class SelSrcActivity extends Activity
             }
         });
 
-        WebSettings setting = wvSelSrc.getSettings();
+        WebSettings setting = browser.getSettings();
         setting.setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
-        
+
         // 启用缩放
         setting.setSupportZoom(true);
         setting.setBuiltInZoomControls(true);
@@ -248,14 +267,16 @@ public class SelSrcActivity extends Activity
         // 自适应屏幕
         setting.setLoadWithOverviewMode(true);
 
-        wvSelSrc.requestFocus();
+        browser.requestFocus();
 
         browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
+        
+        browserIcon=BitmapFactory.decodeResource(getResources(), R.drawable.site);
     }
 
     private void clearURLbarFocus()
     {
-        wvSelSrc.requestFocus();
+        browser.requestFocus();
         ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(etURL.getWindowToken(),
                 InputMethodManager.HIDE_NOT_ALWAYS);
 
@@ -268,11 +289,10 @@ public class SelSrcActivity extends Activity
             setUrlCmd(URL_CANCEL);
         }
 
-        String title = wvSelSrc.getTitle();
-        etURL.setText((title != null)?title:wvSelSrc.getUrl());
-        
-        
-        btnSelSearchEngine.setBackgroundResource(R.drawable.site);
+        String title = browser.getTitle();
+        etURL.setText((title != null) ? title : browser.getUrl());
+
+        btnSelSearchEngine.setImageBitmap(browserIcon);
 
     }
 
@@ -308,30 +328,30 @@ public class SelSrcActivity extends Activity
             case URL_CANCEL:
                 if (pbWebView.getProgress() != 0)
                 {
-                    wvSelSrc.stopLoading();
+                    browser.stopLoading();
                     pbWebView.setProgress(0);
                     setUrlCmd(URL_REFRESH);
                 }
             break;
 
             case URL_REFRESH:
-                wvSelSrc.reload();
+                browser.reload();
                 setUrlCmd(URL_CANCEL);
             break;
 
             case URL_ENTER:
                 String tarURL = etURL.getText().toString();
-                if (!wvSelSrc.getUrl().equals(tarURL))
+                if (!browser.getUrl().equals(tarURL))
                 {
                     browserLoadUrl(tarURL);
                 }
             break;
 
             case URL_SEARCH:
-                String target=etURL.getText().toString();
+                String target = etURL.getText().toString();
                 try
                 {
-                    target=URLEncoder.encode(target, "UTF-8");
+                    target = URLEncoder.encode(target, "UTF-8");
                 }
                 catch (UnsupportedEncodingException e)
                 {
@@ -376,16 +396,16 @@ public class SelSrcActivity extends Activity
                     switch (viewId)
                     {
                         case R.id.buttonBack:
-                            if (wvSelSrc.canGoBack())
+                            if (browser.canGoBack())
                             {
-                                wvSelSrc.goBack();
+                                browser.goBack();
                             }
                         break;
 
                         case R.id.buttonForward:
-                            if (wvSelSrc.canGoForward())
+                            if (browser.canGoForward())
                             {
-                                wvSelSrc.goForward();
+                                browser.goForward();
                             }
                         break;
 
@@ -416,7 +436,7 @@ public class SelSrcActivity extends Activity
                             finish();
                             return;
                         case R.id.buttonRefresh:
-                            wvSelSrc.reload();
+                            browser.reload();
                         break;
 
                         default:
@@ -555,7 +575,7 @@ public class SelSrcActivity extends Activity
                 }
             }
         };
-        btnSelSearchEngine = (Button) findViewById(R.id.buttonSelSearchEngine);
+        btnSelSearchEngine = (ImageButton) findViewById(R.id.buttonSelSearchEngine);
         btnSelSearchEngine.setOnClickListener(oclSelSearchEngine);
         findViewById(R.id.FrameLayoutSSEngineBackground).setOnClickListener(oclSelSearchEngine);
         findViewById(R.id.FrameLayoutSelSearchEngine).setOnClickListener(oclSelSearchEngine);
@@ -577,8 +597,8 @@ public class SelSrcActivity extends Activity
                     showWebviewMask(true);
 
                     setUrlCmd(URL_ENTER);
-                    
-                    etURL.setText(wvSelSrc.getUrl());
+
+                    etURL.setText(browser.getUrl());
                     etURL.selectAll();
                     etURL.setEnabled(false);
                     mHandler.postDelayed(new Runnable()
@@ -618,19 +638,19 @@ public class SelSrcActivity extends Activity
                     if (URLUtil.isNetworkUrl(URL))
                     {
                         setUrlCmd(URL_ENTER);
-                        btnSelSearchEngine.setBackgroundResource(R.drawable.site);
+                        btnSelSearchEngine.setImageResource(R.drawable.site);
                         etURL.setImeOptions(EditorInfo.IME_ACTION_GO);
                     }
                     else if (URL.isEmpty())
                     {
                         setUrlCmd(URL_CANCEL);
-                        btnSelSearchEngine.setBackgroundResource(R.drawable.site);
+                        btnSelSearchEngine.setImageResource(R.drawable.site);
                         etURL.setImeOptions(EditorInfo.IME_ACTION_NONE);
                     }
                     else
                     {
                         setUrlCmd(URL_SEARCH);
-                        btnSelSearchEngine.setBackgroundResource(ParaConfig.getSearchEngineIcon(SelSrcActivity.this));
+                        btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(SelSrcActivity.this));
                         etURL.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
                     }
                 }
@@ -674,8 +694,8 @@ public class SelSrcActivity extends Activity
         browserMenuInit();
         URLbarInit();
         naviBarInit();
-        webViewInit();
-        
+        browserInit();
+
         Log.i(LOG_TAG, "onCreate");
     }
 
@@ -711,8 +731,9 @@ public class SelSrcActivity extends Activity
         super.onDestroy();
         Log.i(LOG_TAG, "onDestroy");
 
-        wvSelSrc.stopLoading();
-        wvSelSrc.clearCache(true);
+        browser.stopLoading();
+        browser.clearCache(true);
+        browser.destroy();
     }
 
     private void openSettingPage()
@@ -721,7 +742,7 @@ public class SelSrcActivity extends Activity
 
         Intent intent = new Intent(this, ParaConfigActivity.class);
 
-        String srcUrl = wvSelSrc.getUrl();
+        String srcUrl = browser.getUrl();
 
         Bundle bundle = new Bundle();
         bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
@@ -736,14 +757,14 @@ public class SelSrcActivity extends Activity
 
         Intent intent = new Intent(this, SpiderCrawlActivity.class);
 
-        String srcUrl = wvSelSrc.getUrl();
+        String srcUrl = browser.getUrl();
 
         Bundle bundle = new Bundle();
         bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
         intent.putExtras(bundle);
 
         Toast.makeText(this, getString(R.string.srcUrl) + ":" + srcUrl, Toast.LENGTH_SHORT).show();
-        
+
         startActivity(intent);// 直接切换Activity不接收返回结果
     }
 
@@ -758,17 +779,18 @@ public class SelSrcActivity extends Activity
                 focusOnWebView();
                 return true;
             }
-            else if (wvSelSrc.canGoBack())
+            else if (browser.canGoBack())
             {
-                wvSelSrc.goBack();
+                browser.goBack();
                 return true;
             }
             else
             {
-                if(SystemClock.uptimeMillis()-exitTim>2000)
+                if (SystemClock.uptimeMillis() - exitTim > 2000)
                 {
-                    Toast.makeText(this, R.string.keyBackExitConfirm, Toast.LENGTH_SHORT).show();;
-                    exitTim=SystemClock.uptimeMillis();
+                    Toast.makeText(this, R.string.keyBackExitConfirm, Toast.LENGTH_SHORT).show();
+                    ;
+                    exitTim = SystemClock.uptimeMillis();
                     return true;
                 }
             }

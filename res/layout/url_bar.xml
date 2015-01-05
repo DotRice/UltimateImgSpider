@@ -22,11 +22,13 @@
 			android:padding="4dp"
 			android:background="#FFF" >
             
-			<Button
+			<ImageButton
 				android:id="@+id/buttonSelSearchEngine"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
-				android:background="@drawable/site"/>
+		        android:src="@drawable/site"
+				android:background="#FFF"
+		       	android:scaleType="fitCenter"/>
         </FrameLayout>
     </FrameLayout>
     
