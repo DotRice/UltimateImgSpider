@@ -167,19 +167,58 @@ public class SelSrcActivity extends Activity
         pbWebView.setMax(PROGRESS_MAX);
 
         browser = (WebView) findViewById(R.id.webViewSelectSrcUrl);
-        
+
         browser.setOnTouchListener(new View.OnTouchListener()
         {
-            
+            int touchDelay=0;
+            int oriX;
+            int oriY;
             @Override
             public boolean onTouch(View v, MotionEvent event)
             {
                 // TODO Auto-generated method stub
                 
+                switch (event.getAction())
+                {
+                    case MotionEvent.ACTION_DOWN:
+                        Log.i(LOG_TAG, "ACTION_DOWN");
+                        oriX=(int) event.getX();
+                        oriY=(int) event.getY();
+                    break;
+                    case MotionEvent.ACTION_UP:
+                        Log.i(LOG_TAG, "ACTION_UP");
+                    break;
+                    case MotionEvent.ACTION_MOVE:
+                        int x=(int) event.getX();
+                        int y=(int) event.getY();
+                        int downY=y-oriY;
+                        int upY=oriY-y;
+                        final int urlBarHideThr=50;
+                        
+                        int urlBarMove=upY;
+                        int height=URLbar.getHeight();
+                        if(urlBarMove<height)
+                        {
+                            URLbar.setTop(0-urlBarMove);
+                        }
+                        
+                        if(downY>urlBarHideThr)
+                        {
+                            
+                        }
+                        
+                        touchDelay++;
+                        if(touchDelay==20)
+                        {
+                            Log.i(LOG_TAG, "ACTION_MOVE "+x+","+y+" "+(x-oriX)+","+(y-oriY));
+                            touchDelay=0;
+                        }
+                    break;
+                }
                 return false;
             }
         });
-        
+
         browser.setWebViewClient(new WebViewClient()
         {
             public boolean shouldOverrideUrlLoading(WebView view, String url)
@@ -270,8 +309,8 @@ public class SelSrcActivity extends Activity
         browser.requestFocus();
 
         browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
-        
-        browserIcon=BitmapFactory.decodeResource(getResources(), R.drawable.site);
+
+        browserIcon = BitmapFactory.decodeResource(getResources(), R.drawable.site);
     }
 
     private void clearURLbarFocus()
