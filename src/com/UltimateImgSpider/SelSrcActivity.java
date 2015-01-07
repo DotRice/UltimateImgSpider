@@ -8,6 +8,7 @@ import java.util.Locale;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ActionBar.LayoutParams;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -24,6 +25,7 @@ import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -40,6 +42,7 @@ import android.webkit.WebViewClient;
 import android.webkit.WebSettings.RenderPriority;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -63,8 +66,9 @@ public class SelSrcActivity extends Activity
 
     private ImageButton          btnSelSearchEngine;
     private View.OnClickListener oclSelSearchEngine;
-    private EditText             etURL;
-    private RelativeLayout       URLbar;
+    private EditText             etUrl;
+    private RelativeLayout       urlBar;
+    private FrameLayout urlBarBox;
 
     private Button               btnURLcmd;
 
@@ -155,9 +159,9 @@ public class SelSrcActivity extends Activity
 
     void setUrlTitle(String title)
     {
-        if (!etURL.hasFocus())
+        if (!etUrl.hasFocus())
         {
-            etURL.setText(title);
+            etUrl.setText(title);
         }
     }
 
@@ -167,12 +171,12 @@ public class SelSrcActivity extends Activity
         pbWebView.setMax(PROGRESS_MAX);
 
         browser = (WebView) findViewById(R.id.webViewSelectSrcUrl);
-
+        
         browser.setOnTouchListener(new View.OnTouchListener()
         {
             int touchDelay=0;
-            int oriX;
-            int oriY;
+            int scollSum=0;
+            int oriScollY;
             @Override
             public boolean onTouch(View v, MotionEvent event)
             {
@@ -182,36 +186,28 @@ public class SelSrcActivity extends Activity
                 {
                     case MotionEvent.ACTION_DOWN:
                         Log.i(LOG_TAG, "ACTION_DOWN");
-                        oriX=(int) event.getX();
-                        oriY=(int) event.getY();
+                        oriScollY=browser.getScrollY();
                     break;
                     case MotionEvent.ACTION_UP:
                         Log.i(LOG_TAG, "ACTION_UP");
                     break;
                     case MotionEvent.ACTION_MOVE:
-                        int x=(int) event.getX();
-                        int y=(int) event.getY();
-                        int downY=y-oriY;
-                        int upY=oriY-y;
                         final int urlBarHideThr=50;
-                        
-                        int urlBarMove=upY;
-                        int height=URLbar.getHeight();
-                        if(urlBarMove<height)
-                        {
-                            URLbar.setTop(0-urlBarMove);
-                        }
-                        
-                        if(downY>urlBarHideThr)
-                        {
-                            
-                        }
-                        
                         touchDelay++;
-                        if(touchDelay==20)
+                        scollSum+=browser.getScrollY();
+                        if(touchDelay==5)
                         {
-                            Log.i(LOG_TAG, "ACTION_MOVE "+x+","+y+" "+(x-oriX)+","+(y-oriY));
                             touchDelay=0;
+                            
+                            int upY=scollSum/5-oriScollY;
+                            scollSum=0;
+                            
+                            if((upY<urlBar.getHeight())&&(upY>0))
+                            {
+                                LinearLayout.LayoutParams lp=(LinearLayout.LayoutParams) urlBarBox.getLayoutParams();
+                                lp.topMargin=0-upY;
+                                urlBarBox.setLayoutParams(lp);
+                            }
                         }
                     break;
                 }
@@ -316,7 +312,7 @@ public class SelSrcActivity extends Activity
     private void clearURLbarFocus()
     {
         browser.requestFocus();
-        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(etURL.getWindowToken(),
+        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(etUrl.getWindowToken(),
                 InputMethodManager.HIDE_NOT_ALWAYS);
 
         if (pbWebView.getProgress() == 0)
@@ -329,7 +325,7 @@ public class SelSrcActivity extends Activity
         }
 
         String title = browser.getTitle();
-        etURL.setText((title != null) ? title : browser.getUrl());
+        etUrl.setText((title != null) ? title : browser.getUrl());
 
         btnSelSearchEngine.setImageBitmap(browserIcon);
 
@@ -346,8 +342,8 @@ public class SelSrcActivity extends Activity
 
     private void focusOnURL()
     {
-        etURL.requestFocus();
-        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(etURL,
+        etUrl.requestFocus();
+        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(etUrl,
                 InputMethodManager.SHOW_IMPLICIT);
     }
 
@@ -379,7 +375,7 @@ public class SelSrcActivity extends Activity
             break;
 
             case URL_ENTER:
-                String tarURL = etURL.getText().toString();
+                String tarURL = etUrl.getText().toString();
                 if (!browser.getUrl().equals(tarURL))
                 {
                     browserLoadUrl(tarURL);
@@ -387,7 +383,7 @@ public class SelSrcActivity extends Activity
             break;
 
             case URL_SEARCH:
-                String target = etURL.getText().toString();
+                String target = etUrl.getText().toString();
                 try
                 {
                     target = URLEncoder.encode(target, "UTF-8");
@@ -584,8 +580,8 @@ public class SelSrcActivity extends Activity
 
     private void URLbarInit()
     {
-        URLbar = (RelativeLayout) findViewById(R.id.urlBar);
-        URLbar.setOnClickListener(new View.OnClickListener()
+        urlBar = (RelativeLayout) findViewById(R.id.urlBar);
+        urlBar.setOnClickListener(new View.OnClickListener()
         {
 
             @Override
@@ -594,6 +590,8 @@ public class SelSrcActivity extends Activity
                 focusOnURL();
             }
         });
+        
+        urlBarBox=(FrameLayout)findViewById(R.id.urlBarBox);
 
         oclSelSearchEngine = new View.OnClickListener()
         {
@@ -601,9 +599,9 @@ public class SelSrcActivity extends Activity
             @Override
             public void onClick(View v)
             {
-                if (etURL.isFocused())
+                if (etUrl.isFocused())
                 {
-                    if ((!URLUtil.isNetworkUrl(etURL.getText().toString())) && (etURL.getText().length() != 0))
+                    if ((!URLUtil.isNetworkUrl(etUrl.getText().toString())) && (etUrl.getText().length() != 0))
                     {
                         showDialog(DLG.SEL_SEARCH_ENGINE.ordinal());
                     }
@@ -624,8 +622,8 @@ public class SelSrcActivity extends Activity
 
         findViewById(R.id.FrameLayoutURLcmd).setOnClickListener(oclBrowserBtn);
 
-        etURL = (EditText) findViewById(R.id.editTextUrl);
-        etURL.setOnFocusChangeListener(new View.OnFocusChangeListener()
+        etUrl = (EditText) findViewById(R.id.editTextUrl);
+        etUrl.setOnFocusChangeListener(new View.OnFocusChangeListener()
         {
 
             @Override
@@ -637,15 +635,15 @@ public class SelSrcActivity extends Activity
 
                     setUrlCmd(URL_ENTER);
 
-                    etURL.setText(browser.getUrl());
-                    etURL.selectAll();
-                    etURL.setEnabled(false);
+                    etUrl.setText(browser.getUrl());
+                    etUrl.selectAll();
+                    etUrl.setEnabled(false);
                     mHandler.postDelayed(new Runnable()
                     {
                         @Override
                         public void run()
                         {
-                            etURL.setEnabled(true);
+                            etUrl.setEnabled(true);
                             focusOnURL();
                         }
                     }, 50);
@@ -653,7 +651,7 @@ public class SelSrcActivity extends Activity
             }
         });
 
-        etURL.addTextChangedListener(new TextWatcher()
+        etUrl.addTextChangedListener(new TextWatcher()
         {
 
             @Override
@@ -671,33 +669,33 @@ public class SelSrcActivity extends Activity
             @Override
             public void afterTextChanged(Editable s)
             {
-                if (etURL.hasFocus())
+                if (etUrl.hasFocus())
                 {
                     String URL = s.toString();
                     if (URLUtil.isNetworkUrl(URL))
                     {
                         setUrlCmd(URL_ENTER);
                         btnSelSearchEngine.setImageResource(R.drawable.site);
-                        etURL.setImeOptions(EditorInfo.IME_ACTION_GO);
+                        etUrl.setImeOptions(EditorInfo.IME_ACTION_GO);
                     }
                     else if (URL.isEmpty())
                     {
                         setUrlCmd(URL_CANCEL);
                         btnSelSearchEngine.setImageResource(R.drawable.site);
-                        etURL.setImeOptions(EditorInfo.IME_ACTION_NONE);
+                        etUrl.setImeOptions(EditorInfo.IME_ACTION_NONE);
                     }
                     else
                     {
                         setUrlCmd(URL_SEARCH);
                         btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(SelSrcActivity.this));
-                        etURL.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+                        etUrl.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
                     }
                 }
             }
 
         });
 
-        etURL.setOnEditorActionListener(new TextView.OnEditorActionListener()
+        etUrl.setOnEditorActionListener(new TextView.OnEditorActionListener()
         {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
             {

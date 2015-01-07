@@ -6,12 +6,19 @@
     android:orientation="vertical"
     android:background="#CCC" >
 
-    <include
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="0.5dp"
-        layout="@layout/url_bar" />
-
+	<FrameLayout 
+	    android:id="@+id/urlBarBox"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		>
+		<include
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="0.5dp"
+			layout="@layout/url_bar" />
+	</FrameLayout>
+	    
+    
     <FrameLayout 
         android:layout_width="match_parent"
         android:layout_height="0dp"
