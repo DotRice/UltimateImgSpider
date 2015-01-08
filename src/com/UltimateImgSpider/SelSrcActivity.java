@@ -174,9 +174,11 @@ public class SelSrcActivity extends Activity
         
         browser.setOnTouchListener(new View.OnTouchListener()
         {
-            int touchDelay=0;
-            int scollSum=0;
-            int oriScollY;
+            final int SCOLL_SUM_STEP=5;
+            int eventCount=0;
+            int[] scollList=new int[SCOLL_SUM_STEP];
+            int oriY;
+            boolean startScollUrlBar=false;
             @Override
             public boolean onTouch(View v, MotionEvent event)
             {
@@ -186,27 +188,66 @@ public class SelSrcActivity extends Activity
                 {
                     case MotionEvent.ACTION_DOWN:
                         Log.i(LOG_TAG, "ACTION_DOWN");
-                        oriScollY=browser.getScrollY();
+                        oriY=(int) event.getRawY();
+                        int oriMargin=((LinearLayout.LayoutParams) urlBarBox.getLayoutParams()).topMargin;
+                        if(oriMargin==(0-urlBar.getHeight()))
+                        {
+                            oriMargin-=150;
+                        }
+                        oriY-=oriMargin;
+                        startScollUrlBar=false;
                     break;
                     case MotionEvent.ACTION_UP:
                         Log.i(LOG_TAG, "ACTION_UP");
                     break;
                     case MotionEvent.ACTION_MOVE:
-                        final int urlBarHideThr=50;
-                        touchDelay++;
-                        scollSum+=browser.getScrollY();
-                        if(touchDelay==5)
+                        scollList[eventCount]=(int) event.getRawY();
+                        eventCount++;
+                        if(eventCount==SCOLL_SUM_STEP)
                         {
-                            touchDelay=0;
+                            eventCount=0;
+                            startScollUrlBar=true;
+                        }
+                        
+                        if(startScollUrlBar)
+                        {
+                            int scollSum=0;
                             
-                            int upY=scollSum/5-oriScollY;
-                            scollSum=0;
-                            
-                            if((upY<urlBar.getHeight())&&(upY>0))
+                            for(int i=0; i<SCOLL_SUM_STEP; i++)
                             {
-                                LinearLayout.LayoutParams lp=(LinearLayout.LayoutParams) urlBarBox.getLayoutParams();
-                                lp.topMargin=0-upY;
+                                scollSum+=scollList[i];
+                            }
+                            
+                            int upY=oriY-scollSum/SCOLL_SUM_STEP;
+                            
+                            LinearLayout.LayoutParams lp=(LinearLayout.LayoutParams) urlBarBox.getLayoutParams();
+                            int barHight=urlBar.getHeight();
+                            int topMargin=lp.topMargin;
+                            if(upY<barHight)
+                            {
+                                if(upY>0)
+                                {
+                                    topMargin=0-upY;
+                                }
+                                else
+                                {
+                                    topMargin=0;
+                                }
+                            }
+                            else
+                            {
+                                barHight=0-barHight;
+                                if(topMargin>barHight)
+                                {
+                                    topMargin=barHight;
+                                }
+                            }
+                            
+                            if(topMargin!=lp.topMargin)
+                            {
+                                lp.topMargin=topMargin;
                                 urlBarBox.setLayoutParams(lp);
+                                return true;
                             }
                         }
                     break;
