@@ -1,13 +1,23 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+	tools:context="com.UltimateImgSpider.SpiderCrawlActivity"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:gravity="top"
-    android:background="#606060"
-    tools:context="com.UltimateImgSpider.SpiderCrawlActivity"
-    tools:ignore="MergeRootFrame" 
+    >
     
->
+	<RelativeLayout
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:background="#606060"
+	>
+	
+	    
+	</RelativeLayout>
 
-</RelativeLayout>
 
+    <WebView 
+        android:id="@+id/wvSpider"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"/>
+	
+</FrameLayout>

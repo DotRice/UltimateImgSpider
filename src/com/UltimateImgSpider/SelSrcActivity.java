@@ -690,6 +690,17 @@ public class SelSrcActivity extends Activity
         naviBarInit();
         browserInit();
 
+        mHandler.postDelayed(new Runnable()
+        {
+            
+            @Override
+            public void run()
+            {
+                // TODO Auto-generated method stub
+                spiderGo();
+            }
+        }, 500);
+        
         Log.i(LOG_TAG, "onCreate");
     }
 
@@ -753,13 +764,14 @@ public class SelSrcActivity extends Activity
 
         String srcUrl = browser.getUrl();
 
-        Bundle bundle = new Bundle();
-        bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
-        intent.putExtras(bundle);
-
-        Toast.makeText(this, getString(R.string.srcUrl) + ":" + srcUrl, Toast.LENGTH_SHORT).show();
-
-        startActivity(intent);// 直接切换Activity不接收返回结果
+        if(srcUrl!=null)
+        {
+            Bundle bundle = new Bundle();
+            bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
+            intent.putExtras(bundle);
+    
+            startActivity(intent);// 直接切换Activity不接收返回结果
+        }
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event)
