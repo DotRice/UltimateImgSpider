@@ -261,7 +261,7 @@ public class SelSrcActivity extends Activity
 
         browser.requestFocus();
 
-        browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
+        //browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
 
         browserIcon = BitmapFactory.decodeResource(getResources(), R.drawable.site);
     }
@@ -762,7 +762,7 @@ public class SelSrcActivity extends Activity
 
         Intent intent = new Intent(this, SpiderCrawlActivity.class);
 
-        String srcUrl = browser.getUrl();
+        String srcUrl = ParaConfig.getHomeURL(SelSrcActivity.this);//browser.getUrl();
 
         if(srcUrl!=null)
         {
