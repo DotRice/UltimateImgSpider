@@ -261,7 +261,7 @@ public class SelSrcActivity extends Activity
 
         browser.requestFocus();
 
-        //browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
+        browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
 
         browserIcon = BitmapFactory.decodeResource(getResources(), R.drawable.site);
     }
@@ -690,6 +690,7 @@ public class SelSrcActivity extends Activity
         naviBarInit();
         browserInit();
 
+        /*
         mHandler.postDelayed(new Runnable()
         {
             
@@ -700,7 +701,7 @@ public class SelSrcActivity extends Activity
                 spiderGo();
             }
         }, 500);
-        
+        */
         Log.i(LOG_TAG, "onCreate");
     }
 
@@ -762,7 +763,7 @@ public class SelSrcActivity extends Activity
 
         Intent intent = new Intent(this, SpiderCrawlActivity.class);
 
-        String srcUrl = ParaConfig.getHomeURL(SelSrcActivity.this);//browser.getUrl();
+        String srcUrl = browser.getUrl();
 
         if(srcUrl!=null)
         {
