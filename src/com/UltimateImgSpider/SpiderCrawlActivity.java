@@ -42,12 +42,12 @@ public class SpiderCrawlActivity extends Activity
      * 
      * 深度优先搜索
      * 
-     * 网页遍历算法：扫描当前网页上每一个本站URL，查找所有不在网页列表中的URL。
-     * 将第1个符合此条件的URL作为下次要扫描的页面，其他符合此条件的URL存入网页列表并标记为等待状态，
-     * 如无符合此条件的页面，将网页列表中第一个等待状态的URL作为下次要扫描的页面。 如果列表中全部都为已下载页面，则遍历结束。
-     * 如果遍历没有结束，把当前URL存入网页列表并标记为已下载状态，进入下次要扫描的页面。
+     * 网页遍历算法：
+     * 扫描当前网页上每一个本站URL，查找所有不在网页列表中的URL，存入列表并设置为等待状态。
+     * 扫描网页列表中所有等待状态的URL，将与当前页面URL最相似的作为下次要扫描的页面。如果列表中全部都为已下载页面，则遍历结束。
      * 
-     * 资源下载算法：扫描当前网页上的所有图片，查找源URL不在图片列表中的图片。
+     * 资源下载算法：
+     * 扫描当前网页上的所有图片，查找源URL不在图片列表中的图片。
      * 下载并将源URL存入列表，以下载序号作为文件名，如果此图片存在alt则将alt加下载序号作为文件名。
      */
 
@@ -99,12 +99,11 @@ public class SpiderCrawlActivity extends Activity
                 Log.i(LOG_TAG, "onPageFinished " + url + " loadTime:" + (System.currentTimeMillis() - loadTimer));
                 // spider.getSettings().setLoadsImagesAutomatically(true);
 
-                if((!curPageFinished)&&(curUrl!=null))
+                if(!curPageFinished)
                 {
+                    curPageFinished=true;
                     if(curUrl.equals(url))
                     {
-                        curPageFinished=true;
-                        curUrl = null;
                         view.loadUrl("javascript:" + "var i;" + "var img=document.getElementsByTagName(\"img\");"
                                 + "for(i=0; i<img.length; i++)" + "{SpiderCrawl.recvImgUrl(img[i].src)}"
                                 + "var a=document.getElementsByTagName(\"a\");" + "for(i=0; i<a.length; i++)"
@@ -200,18 +199,7 @@ public class SpiderCrawlActivity extends Activity
                 if ((urlStr.startsWith("http://") || urlStr.startsWith("https://")) && (url.getHost().equals(srcHost))
                         &&(url.getRef()==null))
                 {
-                    int status;
-
-                    if (curUrl == null)
-                    {
-                        status = URL_SCANED;
-                        curUrl = urlStr;
-                    }
-                    else
-                    {
-                        status = URL_PENDING;
-                    }
-                    pageUrlList.add(new SpiderNode(urlStr, status));
+                    pageUrlList.add(new SpiderNode(urlStr, URL_PENDING));
                 }
             }
             catch (MalformedURLException e)
@@ -224,30 +212,26 @@ public class SpiderCrawlActivity extends Activity
     @JavascriptInterface
     public void onCurPageScaned()
     {
-        if (curUrl == null)
+        //todo 查找URL列表中与当前URL相似度最高的URL
+        boolean scanComplete=true;
+        int i;
+        int listSize = pageUrlList.size();
+        int urlComp=0;
+        for (i = 0; i < listSize; i++)
         {
-            int i;
-            int listSize = pageUrlList.size();
-            SpiderNode node=null;
-            for (i = 0; i < listSize; i++)
+            SpiderNode node=pageUrlList.get(i);
+            if (node.status == URL_PENDING)
             {
-                node=pageUrlList.get(i);
-                if (node.status == URL_PENDING)
-                {
-                    break;
-                }
+                scanComplete=false;
+                
+                urlComp=node.url.compareTo(curUrl);
             }
+        }
 
-            if (i < listSize)
-            {
-                curUrl = node.url;
-                node.status=URL_SCANED;
-            }
-            else
-            {
-                Log.i(LOG_TAG, "site scan complete");
-                return;
-            }
+        if (scanComplete)
+        {
+            Log.i(LOG_TAG, "site scan complete");
+            return;
         }
         
         mHandler.post(new Runnable()
