@@ -4,6 +4,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import com.utils.utils;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -18,6 +20,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 import android.widget.Toast;
 
 class SpiderNode
@@ -34,7 +37,6 @@ class SpiderNode
 
 public class SpiderCrawlActivity extends Activity
 {
-    private String                srcUrl;
     private String                LOG_TAG     = "SpiderCrawl";
 
     /*
@@ -51,6 +53,9 @@ public class SpiderCrawlActivity extends Activity
      * 下载并将源URL存入列表，以下载序号作为文件名，如果此图片存在alt则将alt加下载序号作为文件名。
      */
 
+
+    private String                srcUrl;
+    
     private final int URL_TIME_OUT=10000;
     
     private final int             URL_PENDING = 1;
@@ -59,8 +64,11 @@ public class SpiderCrawlActivity extends Activity
     private ArrayList<String>     imgUrlList;
     private long                  DownLoadIndex;
     private String                curUrl;
+    private int pageIndex=0;;
     private String                srcHost;
     private boolean curPageFinished;
+    
+    private TextView spiderLog;
 
     private long                  loadTimer;
 
@@ -79,12 +87,20 @@ public class SpiderCrawlActivity extends Activity
         return srcUrl != null;
     }
 
+    private void dispSpiderLog()
+    {
+        pageIndex++;
+        spiderLog.setText(imgUrlList.size()+" "+pageIndex+"/"+pageUrlList.size()+" "+curUrl);
+    }
+    
     private void spiderInit()
     {
         pageUrlList = new ArrayList<SpiderNode>();
         imgUrlList = new ArrayList<String>();
         DownLoadIndex = 0;
 
+        spiderLog=(TextView)findViewById(R.id.tvSpiderLog);
+        
         spider = (WebView) findViewById(R.id.wvSpider);
 
         spider.setWebViewClient(new WebViewClient()
@@ -99,15 +115,16 @@ public class SpiderCrawlActivity extends Activity
                 Log.i(LOG_TAG, "onPageFinished " + url + " loadTime:" + (System.currentTimeMillis() - loadTimer));
                 // spider.getSettings().setLoadsImagesAutomatically(true);
 
-                if(!curPageFinished)
+                if(curUrl.equals(url))
                 {
-                    curPageFinished=true;
-                    if(curUrl.equals(url))
+                    if(!curPageFinished)
                     {
+                        curPageFinished=true;
                         view.loadUrl("javascript:" + "var i;" + "var img=document.getElementsByTagName(\"img\");"
                                 + "for(i=0; i<img.length; i++)" + "{SpiderCrawl.recvImgUrl(img[i].src)}"
                                 + "var a=document.getElementsByTagName(\"a\");" + "for(i=0; i<a.length; i++)"
                                 + "{SpiderCrawl.recvPageUrl(a[i].href)}" + "SpiderCrawl.onCurPageScaned();");
+                        
                     }
                 }
             }
@@ -139,6 +156,15 @@ public class SpiderCrawlActivity extends Activity
         setting.setJavaScriptEnabled(true);
         setting.setJavaScriptCanOpenWindowsAutomatically(false);
 
+        // 启用缩放
+        setting.setSupportZoom(true);
+        setting.setBuiltInZoomControls(true);
+        setting.setUseWideViewPort(true);
+        setting.setDisplayZoomControls(false);
+        
+        // 自适应屏幕
+        setting.setLoadWithOverviewMode(true);
+        
         spider.addJavascriptInterface(this, "SpiderCrawl");
 
         try
@@ -148,6 +174,7 @@ public class SpiderCrawlActivity extends Activity
             pageUrlList.add(new SpiderNode(srcUrl, URL_SCANED));
             curPageFinished=false;
             curUrl=srcUrl;
+            dispSpiderLog();
         }
         catch (MalformedURLException e)
         {
@@ -160,7 +187,6 @@ public class SpiderCrawlActivity extends Activity
         spider.loadUrl(url);
         mHandler.postDelayed(new Runnable()
         {
-            
             @Override
             public void run()
             {
@@ -170,9 +196,13 @@ public class SpiderCrawlActivity extends Activity
     }
     
     @JavascriptInterface
-    public void recvImgUrl(String img)
+    public void recvImgUrl(String imgUrl)
     {
         // Log.i(LOG_TAG, "picSrc:"+picSrc);
+        if(!imgUrlList.contains(imgUrl))
+        {
+            imgUrlList.add(imgUrl);
+        }
     }
 
     @JavascriptInterface
@@ -216,34 +246,50 @@ public class SpiderCrawlActivity extends Activity
         boolean scanComplete=true;
         int i;
         int listSize = pageUrlList.size();
-        int urlComp=0;
+        int urlSim=0;
+        SpiderNode nextNode=null;
         for (i = 0; i < listSize; i++)
         {
             SpiderNode node=pageUrlList.get(i);
             if (node.status == URL_PENDING)
             {
-                scanComplete=false;
-                
-                urlComp=node.url.compareTo(curUrl);
+                if(scanComplete)
+                {
+                    scanComplete=false;
+                    urlSim=utils.strSimilarity(node.url,curUrl);
+                    nextNode=node;
+                }
+                else
+                {
+                    int curSim=utils.strSimilarity(node.url,curUrl);
+                    if(curSim>urlSim)
+                    {
+                        urlSim=curSim;
+                        nextNode=node;
+                    }
+                }
             }
         }
 
         if (scanComplete)
         {
             Log.i(LOG_TAG, "site scan complete");
-            return;
         }
-        
-        mHandler.post(new Runnable()
+        else
         {
-            @Override
-            public void run()
+            nextNode.status=URL_SCANED;
+            curUrl=nextNode.url;
+            mHandler.post(new Runnable()
             {
-                spiderLoadUrl(curUrl);
-            }
-        });
-        curPageFinished=false;
-        
+                @Override
+                public void run()
+                {
+                    spiderLoadUrl(curUrl);
+                    dispSpiderLog();
+                }
+            });
+            curPageFinished=false;
+        }
         Log.i(LOG_TAG, "list Size:"+pageUrlList.size());
     }
 
