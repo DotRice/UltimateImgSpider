@@ -691,16 +691,19 @@ public class SelSrcActivity extends Activity
         browserInit();
 
         /*
-        mHandler.postDelayed(new Runnable()
+        Runnable tr=new Runnable()
         {
             
             @Override
             public void run()
             {
                 // TODO Auto-generated method stub
-                spiderGo();
+                Log.i(LOG_TAG, "new Runnable()");
             }
-        }, 500);
+        };
+        
+        mHandler.postDelayed(tr, 500);
+        mHandler.removeCallbacks(tr);
         */
         Log.i(LOG_TAG, "onCreate");
     }
