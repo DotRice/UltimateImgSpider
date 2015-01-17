@@ -347,7 +347,6 @@ public class SelSrcActivity extends Activity
                 }
                 catch (UnsupportedEncodingException e)
                 {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 browserLoadUrl(ParaConfig.getSearchEngineURL(SelSrcActivity.this) + target);
@@ -690,21 +689,19 @@ public class SelSrcActivity extends Activity
         naviBarInit();
         browserInit();
 
-        /*
+        
         Runnable tr=new Runnable()
         {
-            
             @Override
             public void run()
             {
-                // TODO Auto-generated method stub
-                Log.i(LOG_TAG, "new Runnable()");
+                Log.i(LOG_TAG, "spiderGo");
+                spiderGo();
             }
         };
         
         mHandler.postDelayed(tr, 500);
-        mHandler.removeCallbacks(tr);
-        */
+        
         Log.i(LOG_TAG, "onCreate");
     }
 

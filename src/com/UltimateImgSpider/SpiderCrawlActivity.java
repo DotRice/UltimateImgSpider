@@ -19,6 +19,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -39,7 +40,7 @@ class SpiderNode
 
 public class SpiderCrawlActivity extends Activity
 {
-    private String                LOG_TAG       = "SpiderCrawl";
+    private String                LOG_TAG            = "SpiderCrawl";
 
     /*
      * 遍历一个网站所有页面，并且下载所有图片。
@@ -55,29 +56,92 @@ public class SpiderCrawlActivity extends Activity
 
     private String                srcUrl;
 
-
-    private final int             URL_PENDING   = 1;
-    private final int             URL_SCANED    = 2;
+    private final int             URL_PENDING        = 1;
+    private final int             URL_SCANED         = 2;
     private ArrayList<SpiderNode> pageUrlList;
     private ArrayList<String>     imgUrlList;
     private long                  DownLoadIndex;
     private String                curUrl;
-    private int                   pageIndex     = 0;
+    private int                   pageIndex          = 0;
     private String                srcHost;
 
     private TextView              spiderLog;
 
     private long                  loadTimer;
+    private long                  loadTime;
+    private long                  scanTimer;
+    private long                  scanTime;
 
     private WebView               spider;
 
     private Runnable              urlLoadAfterScan;
     private Runnable              urlLoadTimeOut;
-    private Handler               spiderHandler = new Handler();
-    private boolean               timerRunning  = true;
-    private final int             URL_TIME_OUT  = 10;
-    private AtomicInteger  urlLoadTimer=new AtomicInteger(URL_TIME_OUT);
-    private AtomicBoolean urlLoadpostSuccess=new AtomicBoolean(true);
+    private Handler               spiderHandler      = new Handler();
+    private boolean               timerRunning       = true;
+    private final int             URL_TIME_OUT       = 10;
+    private AtomicInteger         urlLoadTimer       = new AtomicInteger(URL_TIME_OUT);
+    private AtomicBoolean         urlLoadpostSuccess = new AtomicBoolean(true);
+
+    public native String stringFromJNI(String srcStr);
+
+    static
+    {
+        System.loadLibrary("UltimateImgSpider");
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_spider_crawl);
+
+        if (!getSrcUrlFromBundle())
+        {
+            return;
+        }
+
+        Log.i(LOG_TAG, stringFromJNI("java source"));
+        
+        spiderInit();
+    }
+
+    protected void onStart()
+    {
+        super.onStart();
+        Log.i(LOG_TAG, "onStart");
+    }
+
+    protected void onResume()
+    {
+        super.onResume();
+        Log.i(LOG_TAG, "onResume");
+
+    }
+
+    protected void onPause()
+    {
+        super.onPause();
+        Log.i(LOG_TAG, "onPause");
+
+    }
+
+    protected void onStop()
+    {
+        Log.i(LOG_TAG, "onStop");
+
+        super.onStop();
+    }
+
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Log.i(LOG_TAG, "onDestroy");
+        timerRunning = false;
+        spider.stopLoading();
+        spider.clearCache(true);
+        spider.destroy();
+    }
+
     
     private boolean getSrcUrlFromBundle()
     {
@@ -93,19 +157,21 @@ public class SpiderCrawlActivity extends Activity
     private void dispSpiderLog()
     {
         pageIndex++;
-        String log = imgUrlList.size() + " " + pageIndex + "/" + pageUrlList.size() + " " + curUrl;
+        String log = imgUrlList.size() + " " + pageIndex + "/" + pageUrlList.size() + " " + loadTime + " " + scanTime
+                + " " + curUrl;
         spiderLog.setText(log);
         Log.i(LOG_TAG, log);
     }
 
     private void scanPageWithJS()
     {
+        scanTimer = System.currentTimeMillis();
         spider.loadUrl("javascript:" + "var i;" + "var img=document.getElementsByTagName(\"img\");"
                 + "for(i=0; i<img.length; i++)" + "{SpiderCrawl.recvImgUrl(img[i].src)}"
                 + "var a=document.getElementsByTagName(\"a\");" + "for(i=0; i<a.length; i++)"
                 + "{SpiderCrawl.recvPageUrl(a[i].href)}" + "SpiderCrawl.onCurPageScaned();");
     }
-    
+
     private void spiderInit()
     {
         pageUrlList = new ArrayList<SpiderNode>();
@@ -125,12 +191,12 @@ public class SpiderCrawlActivity extends Activity
 
             public void onPageFinished(WebView view, String url)
             {
-                Log.i(LOG_TAG, "onPageFinished " + url + " loadTime:" + (System.currentTimeMillis() - loadTimer));
-                // spider.getSettings().setLoadsImagesAutomatically(true);
+                loadTime = System.currentTimeMillis() - loadTimer;
+                Log.i(LOG_TAG, "onPageFinished " + url + " loadTime:" + loadTime);
 
                 if (curUrl.equals(url))
                 {
-                    if (urlLoadTimer.get()!=0)
+                    if (urlLoadTimer.get() != 0)
                     {
                         urlLoadTimer.set(0);
                         scanPageWithJS();
@@ -143,6 +209,17 @@ public class SpiderCrawlActivity extends Activity
                 Log.i(LOG_TAG, "onPageStarted " + url);
                 loadTimer = System.currentTimeMillis();
                 // spider.getSettings().setLoadsImagesAutomatically(false);
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url)
+            {
+                WebResourceResponse response = null;
+                if (!curUrl.equals(url))
+                {
+                    response = new WebResourceResponse("image/png", "UTF-8", null);
+                }
+                return response;
             }
 
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl)
@@ -159,7 +236,10 @@ public class SpiderCrawlActivity extends Activity
         WebSettings setting = spider.getSettings();
         setting.setUserAgentString(ParaConfig.getUserAgent(this));
 
+        // 阻止图片
         setting.setLoadsImagesAutomatically(false);
+
+        //setting.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         // 使能javascript
         setting.setJavaScriptEnabled(true);
@@ -186,9 +266,9 @@ public class SpiderCrawlActivity extends Activity
             }
         };
 
-        urlLoadTimeOut=new Runnable()
+        urlLoadTimeOut = new Runnable()
         {
-            
+
             @Override
             public void run()
             {
@@ -196,9 +276,9 @@ public class SpiderCrawlActivity extends Activity
                 scanPageWithJS();
             }
         };
-        
+
         new timerThread().start();
-        
+
         try
         {
             srcHost = new URL(srcUrl).getHost();
@@ -215,36 +295,34 @@ public class SpiderCrawlActivity extends Activity
 
     private class timerThread extends Thread
     {
-        private final int timerInterval=1000;
-        private boolean urlTimeOutPostSuccess=true;
-        
+        private final int timerInterval         = 1000;
+        private boolean   urlTimeOutPostSuccess = true;
+
         public void run()
         {
             while (timerRunning)
             {
-                //Log.i(LOG_TAG, "Timer");
-                
-                if(urlLoadTimer.get()!=0)
+                // Log.i(LOG_TAG, "Timer");
+
+                if (urlLoadTimer.get() != 0)
                 {
-                    if(urlLoadTimer.decrementAndGet()==0)
+                    if (urlLoadTimer.decrementAndGet() == 0)
                     {
-                        urlTimeOutPostSuccess=spiderHandler.post(urlLoadTimeOut);
+                        urlTimeOutPostSuccess = spiderHandler.post(urlLoadTimeOut);
                     }
                 }
-                else if(!urlTimeOutPostSuccess)
+                else if (!urlTimeOutPostSuccess)
                 {
                     Log.i(LOG_TAG, "try again urlTimeOutPost");
-                    urlTimeOutPostSuccess=spiderHandler.post(urlLoadTimeOut);
+                    urlTimeOutPostSuccess = spiderHandler.post(urlLoadTimeOut);
                 }
-                
-                if(!urlLoadpostSuccess.get())
+
+                if (!urlLoadpostSuccess.get())
                 {
                     Log.i(LOG_TAG, "try again urlLoadpost");
                     urlLoadpostSuccess.set(spiderHandler.post(urlLoadAfterScan));
                 }
-                
-                
-                
+
                 try
                 {
                     sleep(timerInterval);
@@ -275,7 +353,7 @@ public class SpiderCrawlActivity extends Activity
     }
 
     @JavascriptInterface
-    public void recvPageUrl(String urlStr)
+    public void recvPageUrl(String pageUrl)
     {
         // Log.i(LOG_TAG, "url:"+url);
 
@@ -284,7 +362,7 @@ public class SpiderCrawlActivity extends Activity
         int listSize = pageUrlList.size();
         for (i = 0; i < listSize; i++)
         {
-            if (pageUrlList.get(i).url.equals(urlStr))
+            if (pageUrlList.get(i).url.equals(pageUrl))
             {
                 break;
             }
@@ -294,11 +372,11 @@ public class SpiderCrawlActivity extends Activity
         {
             try
             {
-                URL url = new URL(urlStr);
-                if ((urlStr.startsWith("http://") || urlStr.startsWith("https://")) && (url.getHost().equals(srcHost))
-                        && (url.getRef() == null))
+                URL url = new URL(pageUrl);
+                if ((pageUrl.startsWith("http://") || pageUrl.startsWith("https://"))
+                        && (url.getHost().equals(srcHost)) && (url.getRef() == null))
                 {
-                    pageUrlList.add(new SpiderNode(urlStr, URL_PENDING));
+                    pageUrlList.add(new SpiderNode(pageUrl, URL_PENDING));
                 }
             }
             catch (MalformedURLException e)
@@ -340,6 +418,7 @@ public class SpiderCrawlActivity extends Activity
             }
         }
 
+        scanTime = System.currentTimeMillis() - scanTimer;
         if (scanComplete)
         {
             Log.i(LOG_TAG, "site scan complete");
@@ -350,30 +429,6 @@ public class SpiderCrawlActivity extends Activity
             curUrl = nextNode.url;
             urlLoadpostSuccess.set(spiderHandler.post(urlLoadAfterScan));
         }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_spider_crawl);
-
-        if (!getSrcUrlFromBundle())
-        {
-            return;
-        }
-
-        spiderInit();
-    }
-
-    protected void onDestroy()
-    {
-        super.onDestroy();
-        Log.i(LOG_TAG, "onDestroy");
-        timerRunning=false;
-        spider.stopLoading();
-        spider.clearCache(true);
-        spider.destroy();
     }
 
     @Override
