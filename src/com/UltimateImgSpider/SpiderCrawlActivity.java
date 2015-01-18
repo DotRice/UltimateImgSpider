@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.utils.utils;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -83,7 +85,9 @@ public class SpiderCrawlActivity extends Activity
     private AtomicBoolean         urlLoadpostSuccess = new AtomicBoolean(true);
 
     public native String stringFromJNI(String srcStr);
-
+    public native boolean jniUrlListInit();
+    public native void jniOnDestroy();
+    
     static
     {
         System.loadLibrary("UltimateImgSpider");
@@ -100,7 +104,12 @@ public class SpiderCrawlActivity extends Activity
             return;
         }
 
-        Log.i(LOG_TAG, stringFromJNI("java source"));
+        Log.i(LOG_TAG, stringFromJNI("java onCreate"));
+        Log.i(LOG_TAG, "jniUrlListInit "+jniUrlListInit());
+        
+        ActivityManager activityManager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+        Log.i(LOG_TAG, "MemoryClass "+activityManager.getMemoryClass());
+        Log.i(LOG_TAG, "MemoryClass "+activityManager.getLargeMemoryClass());
         
         spiderInit();
     }
@@ -140,6 +149,7 @@ public class SpiderCrawlActivity extends Activity
         spider.stopLoading();
         spider.clearCache(true);
         spider.destroy();
+        jniOnDestroy();
     }
 
     
@@ -368,6 +378,7 @@ public class SpiderCrawlActivity extends Activity
             }
         }
 
+        
         if (i == listSize)
         {
             try

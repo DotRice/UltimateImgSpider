@@ -11,6 +11,9 @@ typedef short 				s16;
 typedef int 				s32;
 typedef long long 			s64;
 
+#define false 0
+#define true 1
+
 
 #if defined(__arm__)
 #if defined(__ARM_ARCH_7A__)
