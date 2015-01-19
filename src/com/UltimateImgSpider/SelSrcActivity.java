@@ -157,7 +157,7 @@ public class SelSrcActivity extends Activity
         }
     }
 
-    void setUrlTitle(String title)
+    void setBrowserTitle(String title)
     {
         if (!etUrl.hasFocus())
         {
@@ -186,10 +186,10 @@ public class SelSrcActivity extends Activity
                 // Log.i(LOG_TAG, "onPageFinished " + url);
                 setUrlCmd(URL_REFRESH);
 
-                String title = browser.copyBackForwardList().getCurrentItem().getTitle();
+                String title = browser.getTitle();
                 if (title != null)
                 {
-                    setUrlTitle(title);
+                    setBrowserTitle(title);
                 }
 
             }
@@ -197,7 +197,7 @@ public class SelSrcActivity extends Activity
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
                 // Log.i(LOG_TAG, "onPageStarted " + url);
-                setUrlTitle(url);
+                setBrowserTitle(url);
                 setUrlCmd(URL_CANCEL);
             }
 
@@ -239,7 +239,7 @@ public class SelSrcActivity extends Activity
 
             public void onReceivedTitle(WebView view, String title)
             {
-                setUrlTitle(title);
+                setBrowserTitle(title);
             }
         });
 

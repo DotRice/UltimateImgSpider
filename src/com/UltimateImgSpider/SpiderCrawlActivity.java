@@ -82,11 +82,12 @@ public class SpiderCrawlActivity extends Activity
     private boolean               timerRunning       = true;
     private final int             URL_TIME_OUT       = 10;
     private AtomicInteger         urlLoadTimer       = new AtomicInteger(URL_TIME_OUT);
-    private AtomicBoolean         urlLoadpostSuccess = new AtomicBoolean(true);
+    private AtomicBoolean         urlLoadPostSuccess = new AtomicBoolean(true);
 
     public native String stringFromJNI(String srcStr);
     public native boolean jniUrlListInit();
     public native void jniOnDestroy();
+    public native boolean jniRecvPageUrl(String pageUrl, int hashCode);
     
     static
     {
@@ -104,14 +105,14 @@ public class SpiderCrawlActivity extends Activity
             return;
         }
 
+        spiderInit();
+        
         Log.i(LOG_TAG, stringFromJNI("java onCreate"));
         Log.i(LOG_TAG, "jniUrlListInit "+jniUrlListInit());
         
-        ActivityManager activityManager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-        Log.i(LOG_TAG, "MemoryClass "+activityManager.getMemoryClass());
-        Log.i(LOG_TAG, "MemoryClass "+activityManager.getLargeMemoryClass());
         
-        spiderInit();
+        Log.i(LOG_TAG, "curUrl.hashCode() "+curUrl.hashCode());
+        jniRecvPageUrl(curUrl, curUrl.hashCode());
     }
 
     protected void onStart()
@@ -327,10 +328,10 @@ public class SpiderCrawlActivity extends Activity
                     urlTimeOutPostSuccess = spiderHandler.post(urlLoadTimeOut);
                 }
 
-                if (!urlLoadpostSuccess.get())
+                if (!urlLoadPostSuccess.get())
                 {
                     Log.i(LOG_TAG, "try again urlLoadpost");
-                    urlLoadpostSuccess.set(spiderHandler.post(urlLoadAfterScan));
+                    urlLoadPostSuccess.set(spiderHandler.post(urlLoadAfterScan));
                 }
 
                 try
@@ -438,7 +439,7 @@ public class SpiderCrawlActivity extends Activity
         {
             nextNode.status = URL_SCANED;
             curUrl = nextNode.url;
-            urlLoadpostSuccess.set(spiderHandler.post(urlLoadAfterScan));
+            urlLoadPostSuccess.set(spiderHandler.post(urlLoadAfterScan));
         }
     }
 

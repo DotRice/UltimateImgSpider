@@ -31,28 +31,45 @@ typedef struct
 	int hashCode;
 	u8 state;
 }urlNode;
-/*
-urlNode *imgUrlList;
+
 urlNode *pageUrlList;
-u8 *allocTest;
-*/
+urlNode *imgUrlList;
+
+#define MAX_PAGE_ONE_SITE	100000
+#define MAX_IMG_ONE_SITE	100000
+
 jboolean Java_com_UltimateImgSpider_SpiderCrawlActivity_jniUrlListInit(JNIEnv* env, jobject thiz)
 {
-	/*
-	//allocTest=malloc(100);//*1024*1024);
-	if(allocTest==NULL)
+	pageUrlList=malloc(MAX_PAGE_ONE_SITE*sizeof(urlNode));
+	if(pageUrlList==NULL)
 	{
 		LOGI("malloc Fail!");
 		return false;
 	}
 
-	allocTest[0]=123;
-	*/
-	return false;
+	imgUrlList=malloc(MAX_PAGE_ONE_SITE*sizeof(urlNode));
+	if(imgUrlList==NULL)
+	{
+		LOGI("malloc Fail!");
+		return false;
+	}
+
+	return true;
+}
+
+jboolean Java_com_UltimateImgSpider_SpiderCrawlActivity_jniRecvPageUrl(JNIEnv* env, jobject thiz, jstring jPageUrl, jint jHashCode)
+{
+	jboolean ret;
+	const u8 *pageUrl = (*env)->GetStringUTFChars(env, jPageUrl, NULL);
+	LOGI("pageUrl:%s hashCode:%d", pageUrl, jHashCode);
+	(*env)->ReleaseStringUTFChars(env, jPageUrl, pageUrl);
+	
+	return true;
 }
 
 void Java_com_UltimateImgSpider_SpiderCrawlActivity_jniOnDestroy(JNIEnv* env, jobject thiz)
 {
-	//free(allocTest);
+	free(pageUrlList);
+	free(imgUrlList);
 }
 
