@@ -28,21 +28,9 @@ import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
 
-class SpiderNode
-{
-    int    status;
-    String url;
-
-    public SpiderNode(String srcUrl, int stat)
-    {
-        url = srcUrl;
-        status = stat;
-    }
-}
-
 public class SpiderCrawlActivity extends Activity
 {
-    private String                LOG_TAG            = "SpiderCrawl";
+    private String        LOG_TAG            = "SpiderCrawl";
 
     /*
      * 遍历一个网站所有页面，并且下载所有图片。
@@ -56,39 +44,45 @@ public class SpiderCrawlActivity extends Activity
      * 下载并将源URL存入列表，以下载序号作为文件名，如果此图片存在alt则将alt加下载序号作为文件名。
      */
 
-    private String                srcUrl;
+    private String        srcUrl;
 
-    private final int             URL_PENDING        = 1;
-    private final int             URL_SCANED         = 2;
-    private ArrayList<SpiderNode> pageUrlList;
-    private ArrayList<String>     imgUrlList;
-    private long                  DownLoadIndex;
-    private String                curUrl;
-    private int                   pageIndex          = 0;
-    private String                srcHost;
+    private final int     URL_TYPE_PAGE      = 0;
+    private final int     URL_TYPE_IMG       = 1;
 
-    private TextView              spiderLog;
+    private String        curUrl;
+    private String        srcHost;
 
-    private long                  loadTimer;
-    private long                  loadTime;
-    private long                  scanTimer;
-    private long                  scanTime;
+    private int           pageUrlCnt         = 0;
+    private int           pageScanCnt        = 0;
+    private int           imgUrlCnt          = 0;
+    private int           imgDownloadCnt     = 0;
 
-    private WebView               spider;
+    private TextView      spiderLog;
 
-    private Runnable              urlLoadAfterScan;
-    private Runnable              urlLoadTimeOut;
-    private Handler               spiderHandler      = new Handler();
-    private boolean               timerRunning       = true;
-    private final int             URL_TIME_OUT       = 10;
-    private AtomicInteger         urlLoadTimer       = new AtomicInteger(URL_TIME_OUT);
-    private AtomicBoolean         urlLoadPostSuccess = new AtomicBoolean(true);
+    private long          loadTimer;
+    private long          loadTime;
+    private long          scanTimer;
+    private long          scanTime;
+
+    private WebView       spider;
+
+    private Runnable      urlLoadAfterScan;
+    private Runnable      urlLoadTimeOut;
+    private Handler       spiderHandler      = new Handler();
+    private boolean       timerRunning       = true;
+    private final int     URL_TIME_OUT       = 10;
+    private AtomicInteger urlLoadTimer       = new AtomicInteger(URL_TIME_OUT);
+    private AtomicBoolean urlLoadPostSuccess = new AtomicBoolean(true);
 
     public native String stringFromJNI(String srcStr);
+
     public native boolean jniUrlListInit();
+
     public native void jniOnDestroy();
-    public native boolean jniRecvPageUrl(String pageUrl, int hashCode);
-    
+
+    public native int jniAddUrl(String url, int hashCode, int type);
+    private native String jniFindNextUrlToLoad(String prevUrl, int type);
+
     static
     {
         System.loadLibrary("UltimateImgSpider");
@@ -105,14 +99,13 @@ public class SpiderCrawlActivity extends Activity
             return;
         }
 
+        if (!jniUrlListInit())
+        {
+            Log.i(LOG_TAG, "jniUrlListInit fail");
+        }
+
         spiderInit();
-        
-        Log.i(LOG_TAG, stringFromJNI("java onCreate"));
-        Log.i(LOG_TAG, "jniUrlListInit "+jniUrlListInit());
-        
-        
-        Log.i(LOG_TAG, "curUrl.hashCode() "+curUrl.hashCode());
-        jniRecvPageUrl(curUrl, curUrl.hashCode());
+
     }
 
     protected void onStart()
@@ -153,7 +146,6 @@ public class SpiderCrawlActivity extends Activity
         jniOnDestroy();
     }
 
-    
     private boolean getSrcUrlFromBundle()
     {
         Intent intent = this.getIntent();
@@ -167,8 +159,8 @@ public class SpiderCrawlActivity extends Activity
 
     private void dispSpiderLog()
     {
-        pageIndex++;
-        String log = imgUrlList.size() + " " + pageIndex + "/" + pageUrlList.size() + " " + loadTime + " " + scanTime
+        pageScanCnt++;
+        String log = imgUrlCnt + " " + pageScanCnt + "/" + pageUrlCnt + " " + loadTime + " " + scanTime
                 + " " + curUrl;
         spiderLog.setText(log);
         Log.i(LOG_TAG, log);
@@ -185,10 +177,6 @@ public class SpiderCrawlActivity extends Activity
 
     private void spiderInit()
     {
-        pageUrlList = new ArrayList<SpiderNode>();
-        imgUrlList = new ArrayList<String>();
-        DownLoadIndex = 0;
-
         spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
 
         spider = (WebView) findViewById(R.id.wvSpider);
@@ -250,7 +238,7 @@ public class SpiderCrawlActivity extends Activity
         // 阻止图片
         setting.setLoadsImagesAutomatically(false);
 
-        //setting.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        // setting.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         // 使能javascript
         setting.setJavaScriptEnabled(true);
@@ -293,9 +281,10 @@ public class SpiderCrawlActivity extends Activity
         try
         {
             srcHost = new URL(srcUrl).getHost();
-            spiderLoadUrl(srcUrl);
-            pageUrlList.add(new SpiderNode(srcUrl, URL_SCANED));
-            curUrl = srcUrl;
+            pageUrlCnt=jniAddUrl(srcUrl, srcUrl.hashCode(), URL_TYPE_PAGE);
+            Log.i(LOG_TAG, "jniAddUrl "+srcUrl);
+            curUrl=jniFindNextUrlToLoad(null, URL_TYPE_PAGE);
+            spiderLoadUrl(curUrl);
             dispSpiderLog();
         }
         catch (MalformedURLException e)
@@ -357,44 +346,26 @@ public class SpiderCrawlActivity extends Activity
     public void recvImgUrl(String imgUrl)
     {
         // Log.i(LOG_TAG, "picSrc:"+picSrc);
-        if (!imgUrlList.contains(imgUrl))
-        {
-            imgUrlList.add(imgUrl);
-        }
+        imgUrlCnt=jniAddUrl(imgUrl, imgUrl.hashCode(), URL_TYPE_IMG);
     }
 
     @JavascriptInterface
     public void recvPageUrl(String pageUrl)
     {
         // Log.i(LOG_TAG, "url:"+url);
-
-        int i;
-
-        int listSize = pageUrlList.size();
-        for (i = 0; i < listSize; i++)
+        
+        try
         {
-            if (pageUrlList.get(i).url.equals(pageUrl))
+            URL url = new URL(pageUrl);
+            if ((pageUrl.startsWith("http://") || pageUrl.startsWith("https://"))
+                    && (url.getHost().equals(srcHost)) && (url.getRef() == null))
             {
-                break;
+                pageUrlCnt=jniAddUrl(pageUrl, pageUrl.hashCode(), URL_TYPE_PAGE);
             }
         }
-
-        
-        if (i == listSize)
+        catch (MalformedURLException e)
         {
-            try
-            {
-                URL url = new URL(pageUrl);
-                if ((pageUrl.startsWith("http://") || pageUrl.startsWith("https://"))
-                        && (url.getHost().equals(srcHost)) && (url.getRef() == null))
-                {
-                    pageUrlList.add(new SpiderNode(pageUrl, URL_PENDING));
-                }
-            }
-            catch (MalformedURLException e)
-            {
-                e.printStackTrace();
-            }
+            e.printStackTrace();
         }
     }
 
@@ -402,44 +373,15 @@ public class SpiderCrawlActivity extends Activity
     public void onCurPageScaned()
     {
         // todo 查找URL列表中与当前URL相似度最高的URL
-        boolean scanComplete = true;
-        int i;
-        int listSize = pageUrlList.size();
-        int urlSim = 0;
-        SpiderNode nextNode = null;
-        for (i = 0; i < listSize; i++)
+    
+        curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE);
+        if(curUrl!=null)
         {
-            SpiderNode node = pageUrlList.get(i);
-            if (node.status == URL_PENDING)
-            {
-                if (scanComplete)
-                {
-                    scanComplete = false;
-                    urlSim = utils.strSimilarity(node.url, curUrl);
-                    nextNode = node;
-                }
-                else
-                {
-                    int curSim = utils.strSimilarity(node.url, curUrl);
-                    if (curSim > urlSim)
-                    {
-                        urlSim = curSim;
-                        nextNode = node;
-                    }
-                }
-            }
-        }
-
-        scanTime = System.currentTimeMillis() - scanTimer;
-        if (scanComplete)
-        {
-            Log.i(LOG_TAG, "site scan complete");
+            urlLoadPostSuccess.set(spiderHandler.post(urlLoadAfterScan));
         }
         else
         {
-            nextNode.status = URL_SCANED;
-            curUrl = nextNode.url;
-            urlLoadPostSuccess.set(spiderHandler.post(urlLoadAfterScan));
+            Log.i(LOG_TAG, "page scan complete");
         }
     }
 
