@@ -183,7 +183,7 @@ public class SelSrcActivity extends Activity
 
             public void onPageFinished(WebView view, String url)
             {
-                // Log.i(LOG_TAG, "onPageFinished " + url);
+                Log.i(LOG_TAG, "onPageFinished " + url);
                 setUrlCmd(URL_REFRESH);
 
                 String title = browser.getTitle();
@@ -196,7 +196,7 @@ public class SelSrcActivity extends Activity
 
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
-                // Log.i(LOG_TAG, "onPageStarted " + url);
+                Log.i(LOG_TAG, "onPageStarted " + url);
                 setBrowserTitle(url);
                 setUrlCmd(URL_CANCEL);
             }

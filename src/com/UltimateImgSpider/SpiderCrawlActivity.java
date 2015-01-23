@@ -59,13 +59,15 @@ public class SpiderCrawlActivity extends Activity
 
     private TextView      spiderLog;
 
+    private boolean       pageFinished       = false;
     private long          loadTimer;
     private long          loadTime;
     private long          scanTimer;
+    private long          scanTime;
 
     private WebView       spider;
 
-    private Runnable      urlLoadAfterScan;
+    private Runnable      loadNextUrlAfterScan;
     private Runnable      urlLoadTimeOut;
     private Handler       spiderHandler      = new Handler();
     private boolean       timerRunning       = true;
@@ -80,6 +82,7 @@ public class SpiderCrawlActivity extends Activity
     public native void jniOnDestroy();
 
     public native int jniAddUrl(String url, int hashCode, int type);
+
     private native String jniFindNextUrlToLoad(String prevUrl, int type);
 
     static
@@ -159,9 +162,9 @@ public class SpiderCrawlActivity extends Activity
     private void dispSpiderLog()
     {
         pageScanCnt++;
-        String log = imgUrlCnt + " " + pageScanCnt + "/" + pageUrlCnt + " " + loadTime + " " + curUrl;
+        String log = imgUrlCnt + " " + pageScanCnt + "/" + pageUrlCnt + " " + loadTime + " " + scanTime + " " + curUrl;
         spiderLog.setText(log);
-        Log.i(LOG_TAG, log);
+        // Log.i(LOG_TAG, log);
     }
 
     private void scanPageWithJS()
@@ -191,9 +194,10 @@ public class SpiderCrawlActivity extends Activity
                 loadTime = System.currentTimeMillis() - loadTimer;
                 Log.i(LOG_TAG, "onPageFinished " + url + " loadTime:" + loadTime);
 
-                if (curUrl.equals(url))
+                if (!pageFinished)
                 {
-                    if (urlLoadTimer.get() != 0)
+                    pageFinished = true;
+                    if (curUrl.equals(url))
                     {
                         urlLoadTimer.set(0);
                         scanPageWithJS();
@@ -205,7 +209,7 @@ public class SpiderCrawlActivity extends Activity
             {
                 Log.i(LOG_TAG, "onPageStarted " + url);
                 loadTimer = System.currentTimeMillis();
-                // spider.getSettings().setLoadsImagesAutomatically(false);
+                pageFinished = false;
             }
 
             @Override
@@ -227,7 +231,13 @@ public class SpiderCrawlActivity extends Activity
 
         spider.setWebChromeClient(new WebChromeClient()
         {
+            public void onProgressChanged(WebView view, int newProgress)
+            {
+                if (newProgress == 100)
+                {
 
+                }
+            }
         });
 
         WebSettings setting = spider.getSettings();
@@ -253,7 +263,7 @@ public class SpiderCrawlActivity extends Activity
 
         spider.addJavascriptInterface(this, "SpiderCrawl");
 
-        urlLoadAfterScan = new Runnable()
+        loadNextUrlAfterScan = new Runnable()
         {
             @Override
             public void run()
@@ -269,6 +279,7 @@ public class SpiderCrawlActivity extends Activity
             @Override
             public void run()
             {
+                Log.i(LOG_TAG, "Load TimeOut!!");
                 spider.stopLoading();
                 scanPageWithJS();
             }
@@ -279,9 +290,9 @@ public class SpiderCrawlActivity extends Activity
         try
         {
             srcHost = new URL(srcUrl).getHost();
-            pageUrlCnt=jniAddUrl(srcUrl, srcUrl.hashCode(), URL_TYPE_PAGE);
-            Log.i(LOG_TAG, "jniAddUrl "+srcUrl+" "+pageUrlCnt);
-            curUrl=jniFindNextUrlToLoad(null, URL_TYPE_PAGE);
+            pageUrlCnt = jniAddUrl(srcUrl, srcUrl.hashCode(), URL_TYPE_PAGE);
+            Log.i(LOG_TAG, "jniAddUrl " + srcUrl + " " + pageUrlCnt);
+            curUrl = jniFindNextUrlToLoad(null, URL_TYPE_PAGE);
             spiderLoadUrl(curUrl);
             dispSpiderLog();
         }
@@ -318,7 +329,7 @@ public class SpiderCrawlActivity extends Activity
                 if (!urlLoadPostSuccess.get())
                 {
                     Log.i(LOG_TAG, "try again urlLoadpost");
-                    urlLoadPostSuccess.set(spiderHandler.post(urlLoadAfterScan));
+                    urlLoadPostSuccess.set(spiderHandler.post(loadNextUrlAfterScan));
                 }
 
                 try
@@ -344,34 +355,34 @@ public class SpiderCrawlActivity extends Activity
     public void recvImgUrl(String imgUrl)
     {
         // Log.i(LOG_TAG, "picSrc:"+picSrc);
-    
+
         if (imgUrl.startsWith("http://") || imgUrl.startsWith("https://"))
         {
-            int urlNumAfterAdd=jniAddUrl(imgUrl, imgUrl.hashCode(), URL_TYPE_IMG);
-            
-            if(urlNumAfterAdd!=0)
+            int urlNumAfterAdd = jniAddUrl(imgUrl, imgUrl.hashCode(), URL_TYPE_IMG);
+
+            if (urlNumAfterAdd != 0)
             {
-                imgUrlCnt=urlNumAfterAdd;
+                imgUrlCnt = urlNumAfterAdd;
             }
         }
-        
+
     }
 
     @JavascriptInterface
     public void recvPageUrl(String pageUrl)
     {
         // Log.i(LOG_TAG, "url:"+url);
-        
+
         try
         {
             URL url = new URL(pageUrl);
-            if ((pageUrl.startsWith("http://") || pageUrl.startsWith("https://"))
-                    && (url.getHost().equals(srcHost)) && (url.getRef() == null))
+            if ((pageUrl.startsWith("http://") || pageUrl.startsWith("https://")) && (url.getHost().equals(srcHost))
+                    && (url.getRef() == null))
             {
-                int urlNumAfterAdd=jniAddUrl(pageUrl, pageUrl.hashCode(), URL_TYPE_PAGE);
-                if(urlNumAfterAdd!=0)
+                int urlNumAfterAdd = jniAddUrl(pageUrl, pageUrl.hashCode(), URL_TYPE_PAGE);
+                if (urlNumAfterAdd != 0)
                 {
-                    pageUrlCnt=urlNumAfterAdd;
+                    pageUrlCnt = urlNumAfterAdd;
                 }
             }
         }
@@ -385,11 +396,12 @@ public class SpiderCrawlActivity extends Activity
     public void onCurPageScaned()
     {
         // todo 查找URL列表中与当前URL相似度最高的URL
-    
+
         curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE);
-        if(!curUrl.isEmpty())
+        scanTime = System.currentTimeMillis() - scanTimer;
+        if (!curUrl.isEmpty())
         {
-            urlLoadPostSuccess.set(spiderHandler.post(urlLoadAfterScan));
+            urlLoadPostSuccess.set(spiderHandler.post(loadNextUrlAfterScan));
         }
         else
         {
