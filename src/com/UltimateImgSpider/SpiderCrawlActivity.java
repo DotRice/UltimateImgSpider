@@ -62,7 +62,6 @@ public class SpiderCrawlActivity extends Activity
     private long          loadTimer;
     private long          loadTime;
     private long          scanTimer;
-    private long          scanTime;
 
     private WebView       spider;
 
@@ -160,8 +159,7 @@ public class SpiderCrawlActivity extends Activity
     private void dispSpiderLog()
     {
         pageScanCnt++;
-        String log = imgUrlCnt + " " + pageScanCnt + "/" + pageUrlCnt + " " + loadTime + " " + scanTime
-                + " " + curUrl;
+        String log = imgUrlCnt + " " + pageScanCnt + "/" + pageUrlCnt + " " + loadTime + " " + curUrl;
         spiderLog.setText(log);
         Log.i(LOG_TAG, log);
     }
@@ -282,7 +280,7 @@ public class SpiderCrawlActivity extends Activity
         {
             srcHost = new URL(srcUrl).getHost();
             pageUrlCnt=jniAddUrl(srcUrl, srcUrl.hashCode(), URL_TYPE_PAGE);
-            Log.i(LOG_TAG, "jniAddUrl "+srcUrl);
+            Log.i(LOG_TAG, "jniAddUrl "+srcUrl+" "+pageUrlCnt);
             curUrl=jniFindNextUrlToLoad(null, URL_TYPE_PAGE);
             spiderLoadUrl(curUrl);
             dispSpiderLog();
@@ -346,7 +344,17 @@ public class SpiderCrawlActivity extends Activity
     public void recvImgUrl(String imgUrl)
     {
         // Log.i(LOG_TAG, "picSrc:"+picSrc);
-        imgUrlCnt=jniAddUrl(imgUrl, imgUrl.hashCode(), URL_TYPE_IMG);
+    
+        if (imgUrl.startsWith("http://") || imgUrl.startsWith("https://"))
+        {
+            int urlNumAfterAdd=jniAddUrl(imgUrl, imgUrl.hashCode(), URL_TYPE_IMG);
+            
+            if(urlNumAfterAdd!=0)
+            {
+                imgUrlCnt=urlNumAfterAdd;
+            }
+        }
+        
     }
 
     @JavascriptInterface
@@ -360,7 +368,11 @@ public class SpiderCrawlActivity extends Activity
             if ((pageUrl.startsWith("http://") || pageUrl.startsWith("https://"))
                     && (url.getHost().equals(srcHost)) && (url.getRef() == null))
             {
-                pageUrlCnt=jniAddUrl(pageUrl, pageUrl.hashCode(), URL_TYPE_PAGE);
+                int urlNumAfterAdd=jniAddUrl(pageUrl, pageUrl.hashCode(), URL_TYPE_PAGE);
+                if(urlNumAfterAdd!=0)
+                {
+                    pageUrlCnt=urlNumAfterAdd;
+                }
             }
         }
         catch (MalformedURLException e)
@@ -375,7 +387,7 @@ public class SpiderCrawlActivity extends Activity
         // todo 查找URL列表中与当前URL相似度最高的URL
     
         curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE);
-        if(curUrl!=null)
+        if(!curUrl.isEmpty())
         {
             urlLoadPostSuccess.set(spiderHandler.post(urlLoadAfterScan));
         }

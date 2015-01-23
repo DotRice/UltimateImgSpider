@@ -129,7 +129,7 @@ public class SelSrcActivity extends Activity
 
             case SEL_SEARCH_ENGINE:
             {
-                return new AlertDialog.Builder(this).setTitle("选择搜索引擎")
+                return new AlertDialog.Builder(this).setTitle(R.string.selSearchEngine)
                         .setItems(ParaConfig.SEARCH_ENGINE_NAME, new DialogInterface.OnClickListener()
                         {
                             public void onClick(DialogInterface dialog, int whichButton)

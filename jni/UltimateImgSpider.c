@@ -77,13 +77,13 @@ jboolean Java_com_UltimateImgSpider_SpiderCrawlActivity_jniUrlListInit(JNIEnv* e
 jint Java_com_UltimateImgSpider_SpiderCrawlActivity_jniAddUrl(JNIEnv* env, jobject thiz, jstring jUrl, jint jHashCode, jint jType)
 {
 	int i;
-	int ret;
+	int ret=0;
 	urlList *curList=(jType==URL_TYPE_PAGE)?(&pageUrlList):(&imgUrlList);
-	urlNode *curNode;
+	urlNode *curNode=&(curList->list[0]);
 	
 	const u8 *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
-	LOGI("url:%s hashCode:%d", url, jHashCode);
-	
+	//LOGI("url:%s hashCode:%d type:%d", url, jHashCode, jType);
+
 	for(i=0; i<curList->len; i++)
 	{
 		curNode=&(curList->list[i]);
@@ -95,35 +95,35 @@ jint Java_com_UltimateImgSpider_SpiderCrawlActivity_jniAddUrl(JNIEnv* env, jobje
 			}
 		}
 	}
-	
-	if((i==0)||((i==curList->len)&&(curList->len<curList->max)))
+
+	while(true)
 	{
-		char *newUrl=malloc(strlen(url)+1);
-		if(newUrl==NULL)
+		if((i==curList->len)&&(curList->len<curList->max))
 		{
-			ret=0;
+			char *newUrl=malloc(strlen(url)+1);
+			if(newUrl==NULL)
+			{
+				break;
+			}
+			else
+			{
+				strcpy(newUrl, url);
+
+				curNode=&(curList->list[i]);
+				curNode->url=newUrl;
+				curNode->hashCode=jHashCode;
+				curNode->state=URL_PENDING;
+				curList->len++;
+			}
 		}
-		else
-		{
-			stpcpy(newUrl, url);
-			
-			curNode->url=newUrl;
-			curNode->hashCode=jHashCode;
-			curNode->state=URL_PENDING;
-			curList->len++;
-			
-			ret=curList->len;
-		}
-	}
-	else
-	{
+
 		ret=curList->len;
+		break;
 	}
-	
+
 	(*env)->ReleaseStringUTFChars(env, jUrl, url);
 	
-	LOGI("url cmp21");
-	return 1;
+	return ret;
 }
 
 u32 urlSimilarity(const char *url1, const char *url2)
@@ -152,7 +152,7 @@ jstring Java_com_UltimateImgSpider_SpiderCrawlActivity_jniFindNextUrlToLoad(JNIE
 	urlNode *nextNode=NULL;
 	urlNode *curNode;
 	
-	LOGI("url:%X", jPrevUrl);
+	LOGI("jniFindNextUrlToLoad jPrevUrl:%X", (int)jPrevUrl);
 	
 	if(jPrevUrl==NULL)
 	{
@@ -173,13 +173,17 @@ jstring Java_com_UltimateImgSpider_SpiderCrawlActivity_jniFindNextUrlToLoad(JNIE
 		int urlSim = 0;
 		
 		const u8 *prevUrl = (*env)->GetStringUTFChars(env, jPrevUrl, NULL);
-		
-		for(i=0; i<curList->len; i++)
+
+		LOGI("prevUrl:%s curList->len:%d", prevUrl, curList->len);
+		/**/
+		for(i=0; i<(curList->len); i++)
 		{
 			curNode=&(curList->list[i]);
-			
+			/**/
+			//LOGI("url %d:%s", i, curNode->url);
 			if(curNode->state==URL_PENDING)
 			{
+
 				if (scanComplete)
 				{
 					scanComplete = false;
@@ -195,19 +199,21 @@ jstring Java_com_UltimateImgSpider_SpiderCrawlActivity_jniFindNextUrlToLoad(JNIE
                         nextNode = curNode;
                     }
 				}
+
 			}
 		}
-		
-		(*env)->ReleaseStringUTFChars(env, jPrevUrl, NULL);
+
+		(*env)->ReleaseStringUTFChars(env, jPrevUrl, prevUrl);
 	}
 	
 	if(nextNode!=NULL)
 	{
+		LOGI("nextNode->url:%s", nextNode->url);
 		nextNode->state=URL_DOWNLOADED;
 		return (*env)->NewStringUTF(env, nextNode->url);
 	}
 	
-	return NULL;
+	return (*env)->NewStringUTF(env, "");
 }
 
 void Java_com_UltimateImgSpider_SpiderCrawlActivity_jniOnDestroy(JNIEnv* env, jobject thiz)
