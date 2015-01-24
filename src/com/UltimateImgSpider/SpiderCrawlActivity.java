@@ -79,6 +79,7 @@ public class SpiderCrawlActivity extends Activity
 
     public native boolean jniUrlListInit();
 
+    //Activity onDestory时调用，与jniAddUrl、jniFindNextUrlToLoad不在同一线程，可能会出错。
     public native void jniOnDestroy();
 
     public native int jniAddUrl(String url, int hashCode, int type);
@@ -246,8 +247,8 @@ public class SpiderCrawlActivity extends Activity
         // 阻止图片
         setting.setLoadsImagesAutomatically(false);
 
-        // setting.setCacheMode(WebSettings.LOAD_NO_CACHE);
-
+        setting.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        
         // 使能javascript
         setting.setJavaScriptEnabled(true);
         setting.setJavaScriptCanOpenWindowsAutomatically(false);
@@ -291,14 +292,13 @@ public class SpiderCrawlActivity extends Activity
         {
             srcHost = new URL(srcUrl).getHost();
             pageUrlCnt = jniAddUrl(srcUrl, srcUrl.hashCode(), URL_TYPE_PAGE);
-            Log.i(LOG_TAG, "jniAddUrl " + srcUrl + " " + pageUrlCnt);
             curUrl = jniFindNextUrlToLoad(null, URL_TYPE_PAGE);
             spiderLoadUrl(curUrl);
             dispSpiderLog();
         }
         catch (MalformedURLException e)
         {
-            e.printStackTrace();
+            //Log.e(LOG_TAG,e.toString());
         }
     }
 
@@ -338,8 +338,7 @@ public class SpiderCrawlActivity extends Activity
                 }
                 catch (InterruptedException e)
                 {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    //Log.e(LOG_TAG,e.toString());
                 }
             }
         }
@@ -347,6 +346,13 @@ public class SpiderCrawlActivity extends Activity
 
     private void spiderLoadUrl(String url)
     {
+        if(pageScanCnt%100==0)
+        {
+            spider.clearCache(true);
+            spider.clearHistory();
+            Log.i(LOG_TAG, "spider.clear");
+        }
+        
         spider.loadUrl(url);
         urlLoadTimer.set(URL_TIME_OUT);
     }
@@ -355,17 +361,17 @@ public class SpiderCrawlActivity extends Activity
     public void recvImgUrl(String imgUrl)
     {
         // Log.i(LOG_TAG, "picSrc:"+picSrc);
-
+        
         if (imgUrl.startsWith("http://") || imgUrl.startsWith("https://"))
         {
             int urlNumAfterAdd = jniAddUrl(imgUrl, imgUrl.hashCode(), URL_TYPE_IMG);
-
+ 
             if (urlNumAfterAdd != 0)
             {
                 imgUrlCnt = urlNumAfterAdd;
             }
         }
-
+        
     }
 
     @JavascriptInterface
@@ -388,15 +394,14 @@ public class SpiderCrawlActivity extends Activity
         }
         catch (MalformedURLException e)
         {
-            e.printStackTrace();
+            //Log.e(LOG_TAG,e.toString());
         }
+        
     }
 
     @JavascriptInterface
     public void onCurPageScaned()
     {
-        // todo 查找URL列表中与当前URL相似度最高的URL
-
         curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE);
         scanTime = System.currentTimeMillis() - scanTimer;
         if (!curUrl.isEmpty())
@@ -408,7 +413,7 @@ public class SpiderCrawlActivity extends Activity
             Log.i(LOG_TAG, "page scan complete");
         }
     }
-
+    
     @Override
     public void onConfigurationChanged(Configuration newConfig)
     {

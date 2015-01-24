@@ -46,8 +46,112 @@ typedef struct
 urlList pageUrlList;
 urlList imgUrlList;
 
-#define MAX_PAGE_ONE_SITE	100000
-#define MAX_IMG_ONE_SITE	100000
+#define MAX_PAGE_ONE_SITE	200000
+#define MAX_IMG_ONE_SITE	200000
+
+#define MAX_SIZE_PER_URL	4096
+
+#define SIZE_PER_URLPOOL	(1024*1024-16)
+typedef struct memPool
+{
+	char 			mem[SIZE_PER_URLPOOL];
+	u32  			idleMemPtr;
+	struct memPool* next;
+}t_urlPool;
+
+t_urlPool *firstUrlPool=NULL;
+char *urlMalloc(u32 size)
+{
+	t_urlPool *urlPool;
+
+	if(size>MAX_SIZE_PER_URL)
+	{
+		return NULL;
+	}
+
+	if(firstUrlPool==NULL)
+	{
+		firstUrlPool=malloc(sizeof(t_urlPool));
+		if(firstUrlPool==NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			firstUrlPool->idleMemPtr=0;
+			firstUrlPool->next=NULL;
+
+			LOGI("init firstUrlPool Success");
+		}
+	}
+
+	urlPool=firstUrlPool;
+	while(true)
+	{
+		if((urlPool->idleMemPtr+size)<=SIZE_PER_URLPOOL)
+		{
+			u32 retPtr=urlPool->idleMemPtr;
+			urlPool->idleMemPtr+=size;
+			return urlPool->mem+retPtr;
+		}
+		else
+		{
+			if(urlPool->next!=NULL)
+			{
+				urlPool=urlPool->next;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	urlPool->next=malloc(sizeof(t_urlPool));
+	if(urlPool->next!=NULL)
+	{
+		urlPool=urlPool->next;
+
+		urlPool->idleMemPtr=size;
+		urlPool->next=NULL;
+
+		LOGI("init new urlPool Success");
+
+		return urlPool->mem;
+	}
+
+	return NULL;
+}
+
+void urlListTest()
+{
+	int i;
+	char url[200];
+
+	for(i=0; i<180000; i++)
+	{
+		urlList *curList=(i&0x01)?(&pageUrlList):(&imgUrlList);
+		urlNode *curNode;
+
+		sprintf(url, "http://www.umei.cc/p/gaoqing/rihan/indexp/gaoqing/rihan/indexp/gaoqing/rihan/indexp/gaoqing/rihan/indexp/gaoqing/rihan/index-%d.htm", i);
+
+		char *newUrl=urlMalloc(strlen(url)+1);
+		if(newUrl==NULL)
+		{
+			break;
+		}
+		else
+		{
+			strcpy(newUrl, url);
+
+			curNode=&(curList->list[curList->len]);
+			curNode->url=newUrl;
+			curNode->hashCode=0x233445;
+			curNode->state=URL_DOWNLOADED;
+			curList->len++;
+		}
+	}
+}
 
 jboolean Java_com_UltimateImgSpider_SpiderCrawlActivity_jniUrlListInit(JNIEnv* env, jobject thiz)
 {
@@ -66,9 +170,11 @@ jboolean Java_com_UltimateImgSpider_SpiderCrawlActivity_jniUrlListInit(JNIEnv* e
 	}
 	
 	pageUrlList.len=0;
-	pageUrlList.max=MAX_PAGE_ONE_SITE;
 	imgUrlList.len=0;
+	pageUrlList.max=MAX_PAGE_ONE_SITE;
 	imgUrlList.max=MAX_IMG_ONE_SITE;
+
+	urlListTest();
 
 	return true;
 }
@@ -100,7 +206,7 @@ jint Java_com_UltimateImgSpider_SpiderCrawlActivity_jniAddUrl(JNIEnv* env, jobje
 	{
 		if((i==curList->len)&&(curList->len<curList->max))
 		{
-			char *newUrl=malloc(strlen(url)+1);
+			char *newUrl=urlMalloc(strlen(url)+1);
 			if(newUrl==NULL)
 			{
 				break;
@@ -152,8 +258,8 @@ jstring Java_com_UltimateImgSpider_SpiderCrawlActivity_jniFindNextUrlToLoad(JNIE
 	urlNode *nextNode=NULL;
 	urlNode *curNode;
 	
-	LOGI("jniFindNextUrlToLoad jPrevUrl:%X", (int)jPrevUrl);
-	
+	//LOGI("jniFindNextUrlToLoad jPrevUrl:%X", (int)jPrevUrl);
+
 	if(jPrevUrl==NULL)
 	{
 		LOGI("jPrevUrl==NULL");
@@ -174,12 +280,12 @@ jstring Java_com_UltimateImgSpider_SpiderCrawlActivity_jniFindNextUrlToLoad(JNIE
 		
 		const u8 *prevUrl = (*env)->GetStringUTFChars(env, jPrevUrl, NULL);
 
-		LOGI("prevUrl:%s curList->len:%d", prevUrl, curList->len);
-		/**/
+		//LOGI("prevUrl:%s curList->len:%d", prevUrl, curList->len);
+
 		for(i=0; i<(curList->len); i++)
 		{
 			curNode=&(curList->list[i]);
-			/**/
+
 			//LOGI("url %d:%s", i, curNode->url);
 			if(curNode->state==URL_PENDING)
 			{
@@ -208,11 +314,11 @@ jstring Java_com_UltimateImgSpider_SpiderCrawlActivity_jniFindNextUrlToLoad(JNIE
 	
 	if(nextNode!=NULL)
 	{
-		LOGI("nextNode->url:%s", nextNode->url);
+		//LOGI("nextNode->url:%s", nextNode->url);
 		nextNode->state=URL_DOWNLOADED;
 		return (*env)->NewStringUTF(env, nextNode->url);
 	}
-	
+
 	return (*env)->NewStringUTF(env, "");
 }
 
@@ -220,16 +326,26 @@ void Java_com_UltimateImgSpider_SpiderCrawlActivity_jniOnDestroy(JNIEnv* env, jo
 {
 	int i;
 	
-	for(i=0; i<pageUrlList.len; i++)
-	{
-		free(pageUrlList.list[i].url);
-	}
+
+	pageUrlList.len=0;
+	imgUrlList.len=0;
 	free(pageUrlList.list);
-	
-	for(i=0; i<imgUrlList.len; i++)
-	{
-		free(imgUrlList.list[i].url);
-	}
 	free(imgUrlList.list);
+	
+	if(firstUrlPool!=NULL)
+	{
+		t_urlPool *urlPool=firstUrlPool;
+
+		do
+		{
+			t_urlPool *next=urlPool->next;
+			free(urlPool);
+			urlPool=next;
+		}
+		while(urlPool!=NULL);
+
+		firstUrlPool=NULL;
+	}
+	LOGI("jniOnDestroy free all url");
 }
 

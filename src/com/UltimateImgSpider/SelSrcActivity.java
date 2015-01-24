@@ -149,7 +149,6 @@ public class SelSrcActivity extends Activity
         String Protocol = URL.substring(0, 7).toLowerCase();
         if (Protocol.startsWith("http://") || Protocol.startsWith("https://"))
         {
-            browser.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
             browser.loadUrl(URL);
 
             btnSelSearchEngine.setImageResource(R.drawable.site);
@@ -716,6 +715,10 @@ public class SelSrcActivity extends Activity
         super.onResume();
         Log.i(LOG_TAG, "onResume");
 
+        if(browser!=null)
+        {
+            browser.getSettings().setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
+        }
     }
 
     protected void onPause()
