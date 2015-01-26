@@ -62,30 +62,13 @@ typedef struct memPool
 t_urlPool *firstUrlPool=NULL;
 char *urlMalloc(u32 size)
 {
-	t_urlPool *urlPool;
+	t_urlPool *urlPool=firstUrlPool;
 
-	if(size>MAX_SIZE_PER_URL)
+	if((size>MAX_SIZE_PER_URL)||(urlPool==NULL))
 	{
 		return NULL;
 	}
 
-	if(firstUrlPool==NULL)
-	{
-		firstUrlPool=malloc(sizeof(t_urlPool));
-		if(firstUrlPool==NULL)
-		{
-			return NULL;
-		}
-		else
-		{
-			firstUrlPool->idleMemPtr=0;
-			firstUrlPool->next=NULL;
-
-			LOGI("init firstUrlPool Success");
-		}
-	}
-
-	urlPool=firstUrlPool;
 	while(true)
 	{
 		if((urlPool->idleMemPtr+size)<=SIZE_PER_URLPOOL)
@@ -174,7 +157,20 @@ jboolean Java_com_UltimateImgSpider_SpiderCrawlActivity_jniUrlListInit(JNIEnv* e
 	pageUrlList.max=MAX_PAGE_ONE_SITE;
 	imgUrlList.max=MAX_IMG_ONE_SITE;
 
-	urlListTest();
+	firstUrlPool=malloc(sizeof(t_urlPool));
+	if(firstUrlPool==NULL)
+	{
+		return false;
+	}
+	else
+	{
+		firstUrlPool->idleMemPtr=0;
+		firstUrlPool->next=NULL;
+
+		LOGI("init firstUrlPool Success");
+	}
+
+	//urlListTest();
 
 	return true;
 }

@@ -16,6 +16,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
@@ -162,8 +163,10 @@ public class SpiderCrawlActivity extends Activity
 
     private void dispSpiderLog()
     {
+        Runtime rt=Runtime.getRuntime();
+        
         pageScanCnt++;
-        String log = imgUrlCnt + " " + pageScanCnt + "/" + pageUrlCnt + " " + loadTime + " " + scanTime + " " + curUrl;
+        String log = (rt.totalMemory()>>20)+" "+(Debug.getNativeHeapSize()>>20)+" "+(Debug.getNativeHeapAllocatedSize()>>20)+" "+imgUrlCnt + " " + pageScanCnt + "/" + pageUrlCnt + " " + loadTime + " " + scanTime + " " + curUrl;
         spiderLog.setText(log);
         // Log.i(LOG_TAG, log);
     }
@@ -176,12 +179,10 @@ public class SpiderCrawlActivity extends Activity
                 + "var a=document.getElementsByTagName(\"a\");" + "for(i=0; i<a.length; i++)"
                 + "{SpiderCrawl.recvPageUrl(a[i].href)}" + "SpiderCrawl.onCurPageScaned();");
     }
-
-    private void spiderInit()
+    
+    private void spiderWebViewInit()
     {
-        spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
-
-        spider = (WebView) findViewById(R.id.wvSpider);
+        spider = new WebView(getApplicationContext());  //(WebView) findViewById(R.id.wvSpider);
 
         spider.setWebViewClient(new WebViewClient()
         {
@@ -263,6 +264,14 @@ public class SpiderCrawlActivity extends Activity
         setting.setLoadWithOverviewMode(true);
 
         spider.addJavascriptInterface(this, "SpiderCrawl");
+
+    }
+
+    private void spiderInit()
+    {
+        spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
+        
+        spiderWebViewInit();
 
         loadNextUrlAfterScan = new Runnable()
         {
@@ -346,10 +355,15 @@ public class SpiderCrawlActivity extends Activity
 
     private void spiderLoadUrl(String url)
     {
-        if(pageScanCnt%100==0)
+        if((pageScanCnt%10==0)&&(pageScanCnt!=0))
         {
             spider.clearCache(true);
             spider.clearHistory();
+            spider.removeAllViews();
+            
+            //spider.destroy();
+            //spiderWebViewInit();
+            
             Log.i(LOG_TAG, "spider.clear");
         }
         
