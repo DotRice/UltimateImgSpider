@@ -40,6 +40,11 @@
         	android:configChanges="orientation|keyboardHidden|screenSize" >
         </activity>
         
+        <service
+            android:name="com.UltimateImgSpider.SpiderService"
+            android:process=":spiderProcess">
+        </service>
+        
         <activity 
             android:name="com.UltimateImgSpider.ParaConfigActivity"
         	android:configChanges="orientation|keyboardHidden|screenSize" >
