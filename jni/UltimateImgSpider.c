@@ -136,7 +136,7 @@ void urlListTest()
 	}
 }
 
-jboolean Java_com_UltimateImgSpider_SpiderCrawlActivity_jniUrlListInit(JNIEnv* env, jobject thiz)
+jboolean Java_com_UltimateImgSpider_SpiderService_jniUrlListInit(JNIEnv* env, jobject thiz)
 {
 	pageUrlList.list=malloc(MAX_PAGE_ONE_SITE*sizeof(urlNode));
 	if(pageUrlList.list==NULL)
@@ -176,7 +176,7 @@ jboolean Java_com_UltimateImgSpider_SpiderCrawlActivity_jniUrlListInit(JNIEnv* e
 }
 
 //添加URL 返回添加完成后的列表大小，返回0表示内存分配失败
-jint Java_com_UltimateImgSpider_SpiderCrawlActivity_jniAddUrl(JNIEnv* env, jobject thiz, jstring jUrl, jint jHashCode, jint jType)
+jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env, jobject thiz, jstring jUrl, jint jHashCode, jint jType)
 {
 	int i;
 	int ret=0;
@@ -246,7 +246,7 @@ u32 urlSimilarity(const char *url1, const char *url2)
 	return i;
 }
 
-jstring Java_com_UltimateImgSpider_SpiderCrawlActivity_jniFindNextUrlToLoad(JNIEnv* env, jobject thiz, jstring jPrevUrl, jint jType)
+jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(JNIEnv* env, jobject thiz, jstring jPrevUrl, jint jType)
 {
 	int i;
 	urlList *curList=(jType==URL_TYPE_PAGE)?(&pageUrlList):(&imgUrlList);
@@ -318,7 +318,7 @@ jstring Java_com_UltimateImgSpider_SpiderCrawlActivity_jniFindNextUrlToLoad(JNIE
 	return (*env)->NewStringUTF(env, "");
 }
 
-void Java_com_UltimateImgSpider_SpiderCrawlActivity_jniOnDestroy(JNIEnv* env, jobject thiz)
+void Java_com_UltimateImgSpider_SpiderService_jniOnDestroy(JNIEnv* env, jobject thiz)
 {
 	int i;
 	

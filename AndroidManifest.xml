@@ -46,8 +46,7 @@
             <intent-filter>
                 <!-- These are the interfaces supported by the service, which
                      you can bind to. -->
-                <action android:name="com.UltimateImgSpider.IRemoteService" />
-                <action android:name="com.UltimateImgSpider.ISecondary" />
+                <action android:name="com.UltimateImgSpider.IRemoteSpiderService" />
                 <!-- This is an action code you can use to select the service
                      without explicitly supplying the implementation class. -->
                 <action android:name="com.UltimateImgSpider.REMOTE_SERVICE" />
