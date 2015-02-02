@@ -38,10 +38,8 @@ public class ParaConfigActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_para_config);
-
-        Intent intent = this.getIntent();
-        Bundle bundle = intent.getExtras();
-        curUrl = bundle.getString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY);
+        
+        curUrl = savedInstanceState.getString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY);
 
         if (curUrl != null)
         {

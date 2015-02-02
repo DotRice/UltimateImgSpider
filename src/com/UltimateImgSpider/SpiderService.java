@@ -37,12 +37,6 @@ public class SpiderService extends Service
 	public void onCreate()
 	{
 		Log.i(LOG_TAG, "onCreate");
-		
-		if (!jniUrlListInit())
-		{
-			Log.i(LOG_TAG, "jniUrlListInit fail");
-			return;
-		}
 	}
 	
 	@Override
@@ -59,7 +53,31 @@ public class SpiderService extends Service
 			spider.clearCache(true);
 			spider.destroy();
 		}
+		
 		jniOnDestroy();
+		
+		System.exit(0);
+	}
+	
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId)
+	{
+		String url=intent.getStringExtra(SelSrcActivity.SOURCE_URL_BUNDLE_KEY);
+		if(!srcUrl.equals(url))
+		{
+			srcUrl=url;
+
+			jniOnDestroy();
+			if(!jniUrlListInit())
+			{
+				this.stopSelf();
+				return START_NOT_STICKY;
+			}
+			
+			spiderInit();
+		}
+		
+		return START_REDELIVER_INTENT;
 	}
 	
 	@Override
@@ -102,26 +120,6 @@ public class SpiderService extends Service
 		{
 			return Process.myPid();
 		}
-
-		@Override
-        public void setSpiderSrcUrl(final String url) throws RemoteException
-        {
-			spiderHandler.post(new Runnable()
-			{
-				
-				@Override
-				public void run()
-				{
-			        if(srcUrl==null)
-			        {
-			        	srcUrl=url;
-			        	spiderInit();
-			        }
-				}
-			});
-			
-	        Log.i(LOG_TAG, url);
-        }
 	};
 	
 	
@@ -142,7 +140,7 @@ public class SpiderService extends Service
 	 * 下载并将源URL存入列表，以下载序号作为文件名，如果此图片存在alt则将alt加下载序号作为文件名。
 	 */
 	
-	private String srcUrl;
+	private String srcUrl="about:blank";
 	
 	private final int URL_TYPE_PAGE = 0;
 	private final int URL_TYPE_IMG = 1;
@@ -191,11 +189,10 @@ public class SpiderService extends Service
 		
 		pageScanCnt++;
 		String log = (rt.totalMemory() >> 20) + " "
-		        + (Debug.getNativeHeapSize() >> 20) + " "
-		        + (Debug.getNativeHeapAllocatedSize() >> 20) + " " + imgUrlCnt
+		        + (Debug.getNativeHeapSize() >> 20) + " " + imgUrlCnt
 		        + " " + pageScanCnt + "/" + pageUrlCnt + " " + loadTime + " "
 		        + scanTime + " " + curUrl;
-		//spiderLog.setText(log);
+		
 		Log.i(LOG_TAG, log);
 		
 		int N = mCallbacks.beginBroadcast();
@@ -301,7 +298,7 @@ public class SpiderService extends Service
 		// 阻止图片
 		setting.setLoadsImagesAutomatically(false);
 		
-		setting.setCacheMode(WebSettings.LOAD_NO_CACHE);
+		setting.setCacheMode(WebSettings.LOAD_DEFAULT);
 		
 		// 使能javascript
 		setting.setJavaScriptEnabled(true);
@@ -408,18 +405,7 @@ public class SpiderService extends Service
 	
 	private void spiderLoadUrl(String url)
 	{
-		if ((pageScanCnt % 10 == 0) && (pageScanCnt != 0))
-		{
-			spider.clearCache(true);
-			spider.clearHistory();
-			spider.removeAllViews();
-			
-			// spider.destroy();
-			// spiderWebViewInit();
-			
-			Log.i(LOG_TAG, "spider.clear");
-		}
-		
+        //Log.i(LOG_TAG, "spiderLoadUrl:"+url);
 		spider.loadUrl(url);
 		urlLoadTimer.set(URL_TIME_OUT);
 	}

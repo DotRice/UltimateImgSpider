@@ -42,7 +42,7 @@ public class SpiderCrawlActivity extends Activity
 {
 	private String LOG_TAG = "SpiderCrawl";
 	
-	private String srcUrl;
+	private String srcUrl="http://www.umei.cc/";
 	
 	private TextView spiderLog;
 	
@@ -51,14 +51,15 @@ public class SpiderCrawlActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_spider_crawl);
-		
+		/*
 		if (!getSrcUrlFromBundle())
 		{
 			return;
 		}
+		*/
 		
 		spiderLog=(TextView)findViewById(R.id.tvSpiderLog);
-		boundSpiderService();
+		startSpiderService();
 	}
 	
 	protected void onStart()
@@ -96,19 +97,6 @@ public class SpiderCrawlActivity extends Activity
 		unboundSpiderService();
 	}
 	
-	private boolean getSrcUrlFromBundle()
-	{
-		Intent intent = this.getIntent();
-		Bundle bundle = intent.getExtras();
-		
-		srcUrl = bundle.getString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY); // 获取Bundle里面的字符串
-		Toast.makeText(this, getString(R.string.srcUrl) + ":" + srcUrl,
-		        Toast.LENGTH_SHORT).show();
-		
-		return srcUrl != null;
-	}
-	
-	
 	
 	/** The primary interface we will be calling on the service. */
 	IRemoteSpiderService mService = null;
@@ -132,7 +120,6 @@ public class SpiderCrawlActivity extends Activity
 			try
 			{
 				mService.registerCallback(mCallback);
-				mService.setSpiderSrcUrl(srcUrl);
 			}
 			catch (RemoteException e)
 			{
@@ -155,15 +142,16 @@ public class SpiderCrawlActivity extends Activity
 		}
 	};
 	
-	private void boundSpiderService()
+	private void startSpiderService()
 	{
-		// Establish a couple connections with the service, binding
-		// by interface names. This allows other applications to be
-		// installed that replace the remote service by implementing
-		// the same interface.
-		bindService(new Intent(IRemoteSpiderService.class.getName()), mConnection,
-		        Context.BIND_AUTO_CREATE);
-		Log.i(LOG_TAG, "boundSpiderService");
+		Intent spiderIntent=new Intent(IRemoteSpiderService.class.getName());
+        Bundle bundle = new Bundle();
+        bundle.putString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY, srcUrl);
+        spiderIntent.putExtras(bundle);
+
+		startService(spiderIntent);
+		bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
+		Log.i(LOG_TAG, "startSpiderService");
 	}
 	
 	private void unboundSpiderService()
@@ -231,7 +219,7 @@ public class SpiderCrawlActivity extends Activity
 			switch (msg.what)
 			{
 				case BUMP_MSG:
-					spiderLog.setText((String)msg.obj);
+					spiderLog.setText((Runtime.getRuntime().totalMemory()>>20)+" "+(Debug.getNativeHeapSize()>>20)+" "+(String)msg.obj);
 				break;
 				default:
 					super.handleMessage(msg);

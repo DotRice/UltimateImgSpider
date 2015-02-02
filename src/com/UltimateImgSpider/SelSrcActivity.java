@@ -688,7 +688,7 @@ public class SelSrcActivity extends Activity
         naviBarInit();
         browserInit();
 
-        
+        /*
         Runnable tr=new Runnable()
         {
             @Override
@@ -700,7 +700,7 @@ public class SelSrcActivity extends Activity
         };
         
         mHandler.postDelayed(tr, 500);
-        
+        */
         Log.i(LOG_TAG, "onCreate");
     }
 

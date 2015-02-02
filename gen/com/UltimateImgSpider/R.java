@@ -27,8 +27,8 @@ public final class R {
     }
     public static final class drawable {
         public static final int back=0x7f020000;
-        public static final int background_normal=0x7f020014;
-        public static final int background_pressed=0x7f020015;
+        public static final int background_normal=0x7f020018;
+        public static final int background_pressed=0x7f020019;
         public static final int baidu=0x7f020001;
         public static final int bing=0x7f020002;
         public static final int button_bcakground_selector=0x7f020003;
@@ -41,13 +41,17 @@ public final class R {
         public static final int ic_launcher=0x7f02000a;
         public static final int menu=0x7f02000b;
         public static final int menu_refresh=0x7f02000c;
-        public static final int progress_bar=0x7f02000d;
-        public static final int refresh=0x7f02000e;
-        public static final int search=0x7f02000f;
-        public static final int setting=0x7f020010;
-        public static final int site=0x7f020011;
-        public static final int sogou=0x7f020012;
-        public static final int spidergo=0x7f020013;
+        public static final int pause=0x7f02000d;
+        public static final int progress_bar=0x7f02000e;
+        public static final int refresh=0x7f02000f;
+        public static final int search=0x7f020010;
+        public static final int select_url=0x7f020011;
+        public static final int setting=0x7f020012;
+        public static final int site=0x7f020013;
+        public static final int sogou=0x7f020014;
+        public static final int spidergo=0x7f020015;
+        public static final int start=0x7f020016;
+        public static final int stop=0x7f020017;
     }
     public static final class id {
         public static final int FrameLayoutSSEngineBackground=0x7f080012;
