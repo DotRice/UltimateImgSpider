@@ -8,10 +8,14 @@
 	<RelativeLayout
 	    android:layout_width="fill_parent"
 	    android:layout_height="fill_parent"
-	    android:background="#606060"
+	    android:background="#EEE"
 	>
-	
-	    
+		
+		<include
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentBottom="true"
+	        layout="@layout/proj_bar" />
 	</RelativeLayout>
 
 

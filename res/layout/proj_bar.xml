@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFF"
+    android:baselineAligned="false"
+    android:orientation="horizontal" >
+    
+    <com.view.ImageTextButton
+        android:id="@+id/buttonSelSrc"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        image="@drawable/select_src"
+        image_size="30dp"
+        text="@string/selSrc" />
+    
+    <com.view.ImageTextButton
+        android:id="@+id/buttonStart"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        image="@drawable/start"
+        image_size="30dp"
+        text="@string/start" />
+	
+    <com.view.ImageTextButton
+        android:id="@+id/buttonPause"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        image="@drawable/pause"
+        image_size="30dp"
+        text="@string/pause" />
+	
+    <com.view.ImageTextButton
+        android:id="@+id/buttonStop"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        image="@drawable/stop"
+        image_size="30dp"
+        text="@string/stop" />
+    
+</LinearLayout>

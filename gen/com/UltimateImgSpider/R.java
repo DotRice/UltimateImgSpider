@@ -45,7 +45,7 @@ public final class R {
         public static final int progress_bar=0x7f02000e;
         public static final int refresh=0x7f02000f;
         public static final int search=0x7f020010;
-        public static final int select_url=0x7f020011;
+        public static final int select_src=0x7f020011;
         public static final int setting=0x7f020012;
         public static final int site=0x7f020013;
         public static final int sogou=0x7f020014;
@@ -54,9 +54,9 @@ public final class R {
         public static final int stop=0x7f020017;
     }
     public static final class id {
-        public static final int FrameLayoutSSEngineBackground=0x7f080012;
-        public static final int FrameLayoutSelSearchEngine=0x7f080011;
-        public static final int FrameLayoutURLcmd=0x7f080014;
+        public static final int FrameLayoutSSEngineBackground=0x7f080016;
+        public static final int FrameLayoutSelSearchEngine=0x7f080015;
+        public static final int FrameLayoutURLcmd=0x7f080018;
         public static final int RelativeLayoutWvMask=0x7f080003;
         public static final int browserMenu=0x7f080005;
         public static final int buttonBack=0x7f08000b;
@@ -65,16 +65,20 @@ public final class R {
         public static final int buttonHome=0x7f08000e;
         public static final int buttonImg=0x7f080009;
         public static final int buttonMenu=0x7f08000f;
+        public static final int buttonPause=0x7f080012;
         public static final int buttonRefresh=0x7f080007;
-        public static final int buttonSelSearchEngine=0x7f080013;
+        public static final int buttonSelSearchEngine=0x7f080017;
+        public static final int buttonSelSrc=0x7f080010;
         public static final int buttonSetting=0x7f080006;
         public static final int buttonSpiderGo=0x7f08000d;
+        public static final int buttonStart=0x7f080011;
+        public static final int buttonStop=0x7f080013;
         public static final int buttonText=0x7f08000a;
-        public static final int buttonURLcmd=0x7f080015;
-        public static final int editTextUrl=0x7f080016;
-        public static final int progressBarWebView=0x7f080017;
+        public static final int buttonURLcmd=0x7f080019;
+        public static final int editTextUrl=0x7f08001a;
+        public static final int progressBarWebView=0x7f08001b;
         public static final int tvSpiderLog=0x7f080004;
-        public static final int urlBar=0x7f080010;
+        public static final int urlBar=0x7f080014;
         public static final int urlBarBox=0x7f080001;
         public static final int webViewParaConfig=0x7f080000;
         public static final int webViewSelectSrcUrl=0x7f080002;
@@ -86,7 +90,8 @@ public final class R {
         public static final int browser_menu=0x7f030003;
         public static final int image_text_button=0x7f030004;
         public static final int navi_bar=0x7f030005;
-        public static final int url_bar=0x7f030006;
+        public static final int proj_bar=0x7f030006;
+        public static final int url_bar=0x7f030007;
     }
     public static final class string {
         public static final int OK=0x7f060000;
@@ -106,15 +111,19 @@ public final class R {
         public static final int menu=0x7f060009;
         public static final int more=0x7f060006;
         public static final int notSet=0x7f060018;
+        public static final int pause=0x7f06001c;
         public static final int refresh=0x7f06000d;
         public static final int search=0x7f060013;
         public static final int searchOrInputURL=0x7f060012;
         public static final int selSearchEngine=0x7f060017;
+        public static final int selSrc=0x7f06001a;
         public static final int settings=0x7f060003;
         public static final int spiderGo=0x7f06000b;
         public static final int spiderGoConfirm=0x7f06000c;
         public static final int srcUrl=0x7f06000e;
         public static final int srcUrlHint=0x7f06000f;
+        public static final int start=0x7f06001b;
+        public static final int stop=0x7f06001d;
     }
     public static final class style {
         /** 
