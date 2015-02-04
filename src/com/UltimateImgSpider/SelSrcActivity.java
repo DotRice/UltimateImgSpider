@@ -53,7 +53,6 @@ import android.widget.Toast;
 public class SelSrcActivity extends Activity
 {
     private final String         LOG_TAG               = "SelSrcActivity";
-    private long                 exitTim               = 0;
 
     private WebView              browser;
     private ProgressBar          pbWebView;
@@ -743,6 +742,7 @@ public class SelSrcActivity extends Activity
         browser.stopLoading();
         browser.clearCache(true);
         browser.destroy();
+        System.exit(0);
     }
 
     private void openSettingPage()
@@ -764,18 +764,13 @@ public class SelSrcActivity extends Activity
     {
         Log.i(LOG_TAG, "spiderGo");
 
-        Intent intent = new Intent(this, SpiderCrawlActivity.class);
-
         String srcUrl = browser.getUrl();
-
+        
         if(srcUrl!=null)
         {
-            Bundle bundle = new Bundle();
-            bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
-            intent.putExtras(bundle);
-    
-            startActivity(intent);// 直接切换Activity不接收返回结果
+			setResult(RESULT_OK, (new Intent()).setAction(srcUrl));
         }
+		finish();
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event)
@@ -793,16 +788,6 @@ public class SelSrcActivity extends Activity
             {
                 browser.goBack();
                 return true;
-            }
-            else
-            {
-                if (SystemClock.uptimeMillis() - exitTim > 2000)
-                {
-                    Toast.makeText(this, R.string.keyBackExitConfirm, Toast.LENGTH_SHORT).show();
-                    ;
-                    exitTim = SystemClock.uptimeMillis();
-                    return true;
-                }
             }
         }
         else if (keyCode == KeyEvent.KEYCODE_MENU)

@@ -24,6 +24,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.JavascriptInterface;
@@ -38,9 +39,10 @@ import android.widget.Toast;
 
 public class SpiderCrawlActivity extends Activity
 {
-	private String LOG_TAG = "SpiderCrawl";
+	private final String LOG_TAG = "SpiderCrawl";
+	public final static int REQUST_SRC_URL = 0;
 	
-	private String srcUrl="http://www.umei.cc/";
+	private String srcUrl = "http://www.umei.cc/";
 	
 	private TextView spiderLog;
 	
@@ -49,14 +51,9 @@ public class SpiderCrawlActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_spider_crawl);
-		/*
-		if (!getSrcUrlFromBundle())
-		{
-			return;
-		}
-		*/
 		
-		spiderLog=(TextView)findViewById(R.id.tvSpiderLog);
+		spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
+		projBarInit();
 		startSpiderService();
 	}
 	
@@ -95,6 +92,83 @@ public class SpiderCrawlActivity extends Activity
 		unboundSpiderService();
 	}
 	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		
+		if (requestCode == REQUST_SRC_URL)
+		{
+			if (resultCode == RESULT_CANCELED)
+			{
+				Log.i(LOG_TAG, "REQUST_SRC_URL cancelled!");
+			}
+			else
+			{
+				if (data != null)
+				{
+					srcUrl = data.getAction();
+					Log.i(LOG_TAG, "REQUST_SRC_URL " + srcUrl);
+				}
+			}
+		}
+	}
+	
+	private void projBarInit()
+	{
+		findViewById(R.id.buttonNewProj).setOnClickListener(
+		        new View.OnClickListener()
+		        {
+			        
+			        @Override
+			        public void onClick(View v)
+			        {
+				        Log.i(LOG_TAG, "NewProj");
+			        }
+		        });
+		findViewById(R.id.buttonDelete).setOnClickListener(
+		        new View.OnClickListener()
+		        {
+			        
+			        @Override
+			        public void onClick(View v)
+			        {
+				        Log.i(LOG_TAG, "Delete");
+			        }
+		        });
+		findViewById(R.id.buttonSelSrc).setOnClickListener(
+		        new View.OnClickListener()
+		        {
+			        
+			        @Override
+			        public void onClick(View v)
+			        {
+				        Log.i(LOG_TAG, "SelSrc");
+
+						Intent intent = new Intent(SpiderCrawlActivity.this, SelSrcActivity.class);
+						startActivityForResult(intent, REQUST_SRC_URL);
+			        }
+		        });
+		findViewById(R.id.buttonStart).setOnClickListener(
+		        new View.OnClickListener()
+		        {
+			        
+			        @Override
+			        public void onClick(View v)
+			        {
+				        Log.i(LOG_TAG, "Start");
+			        }
+		        });
+		findViewById(R.id.buttonPause).setOnClickListener(
+		        new View.OnClickListener()
+		        {
+			        
+			        @Override
+			        public void onClick(View v)
+			        {
+				        Log.i(LOG_TAG, "Pause");
+			        }
+		        });
+	}
 	
 	/** The primary interface we will be calling on the service. */
 	IRemoteSpiderService mService = null;
@@ -142,11 +216,11 @@ public class SpiderCrawlActivity extends Activity
 	
 	private void startSpiderService()
 	{
-		Intent spiderIntent=new Intent(IRemoteSpiderService.class.getName());
-        Bundle bundle = new Bundle();
-        bundle.putString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY, srcUrl);
-        spiderIntent.putExtras(bundle);
-
+		Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
+		Bundle bundle = new Bundle();
+		bundle.putString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY, srcUrl);
+		spiderIntent.putExtras(bundle);
+		
 		startService(spiderIntent);
 		bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
 		Log.i(LOG_TAG, "startSpiderService");
@@ -192,14 +266,13 @@ public class SpiderCrawlActivity extends Activity
 		}
 	}
 	
-	
 	private IRemoteSpiderServiceCallback mCallback = new IRemoteSpiderServiceCallback.Stub()
 	{
 		/**
-		 * Note that IPC calls are dispatched through a thread pool
-		 * running in each process, so the code executing here will NOT be
-		 * running in our main thread like most other things -- so, to update
-		 * the UI, we need to use a Handler to hop over there.
+		 * Note that IPC calls are dispatched through a thread pool running in
+		 * each process, so the code executing here will NOT be running in our
+		 * main thread like most other things -- so, to update the UI, we need
+		 * to use a Handler to hop over there.
 		 */
 		public void valueChanged(String value)
 		{
@@ -217,7 +290,10 @@ public class SpiderCrawlActivity extends Activity
 			switch (msg.what)
 			{
 				case BUMP_MSG:
-					spiderLog.setText((Runtime.getRuntime().totalMemory()>>20)+" "+(Debug.getNativeHeapSize()>>20)+" "+(String)msg.obj);
+					spiderLog
+					        .setText((Runtime.getRuntime().totalMemory() >> 20)
+					                + " " + (Debug.getNativeHeapSize() >> 20)
+					                + " " + (String) msg.obj);
 				break;
 				default:
 					super.handleMessage(msg);
@@ -225,10 +301,6 @@ public class SpiderCrawlActivity extends Activity
 		}
 		
 	};
-	
-	
-	
-	
 	
 	@Override
 	public void onConfigurationChanged(Configuration newConfig)
@@ -239,4 +311,23 @@ public class SpiderCrawlActivity extends Activity
 		        (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) ? "Landscape"
 		                : "Portrait");
 	}
+	
+	private long exitTim=0;
+
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        Log.i(LOG_TAG, "onKeyDown " + keyCode);
+
+        if (keyCode == KeyEvent.KEYCODE_BACK)
+        {
+            if (SystemClock.uptimeMillis() - exitTim > 2000)
+            {
+                Toast.makeText(this, R.string.keyBackExitConfirm, Toast.LENGTH_SHORT).show();
+                ;
+                exitTim = SystemClock.uptimeMillis();
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 }

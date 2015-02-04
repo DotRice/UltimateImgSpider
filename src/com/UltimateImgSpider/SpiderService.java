@@ -468,6 +468,7 @@ public class SpiderService extends Service
 		else
 		{
 			Log.i(LOG_TAG, "page scan complete");
+			stopSelf();
 		}
 	}
 	

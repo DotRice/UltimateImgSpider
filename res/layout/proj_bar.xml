@@ -6,13 +6,32 @@
     android:baselineAligned="false"
     android:orientation="horizontal" >
     
+    
+    <com.view.ImageTextButton
+        android:id="@+id/buttonNewProj"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        image="@drawable/new_proj"
+        image_size="35dp"
+        text="@string/newProj" />
+    
+    <com.view.ImageTextButton
+        android:id="@+id/buttonDelete"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        image="@drawable/delete"
+        image_size="35dp"
+        text="@string/delete" />
+    
     <com.view.ImageTextButton
         android:id="@+id/buttonSelSrc"
         android:layout_weight="1"
         android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
         image="@drawable/select_src"
-        image_size="30dp"
+        image_size="35dp"
         text="@string/selSrc" />
     
     <com.view.ImageTextButton
@@ -21,7 +40,7 @@
         android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
         image="@drawable/start"
-        image_size="30dp"
+        image_size="35dp"
         text="@string/start" />
 	
     <com.view.ImageTextButton
@@ -30,16 +49,7 @@
         android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
         image="@drawable/pause"
-        image_size="30dp"
+        image_size="35dp"
         text="@string/pause" />
-	
-    <com.view.ImageTextButton
-        android:id="@+id/buttonStop"
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-        image="@drawable/stop"
-        image_size="30dp"
-        text="@string/stop" />
     
 </LinearLayout>
