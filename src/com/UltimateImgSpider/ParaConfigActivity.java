@@ -39,14 +39,31 @@ public class ParaConfigActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_para_config);
         
-        curUrl = savedInstanceState.getString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY);
+        Log.i(LOG_TAG, "onCreate");
+        
+        curUrl = getIntent().getExtras().getString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY);
 
         if (curUrl != null)
         {
             Log.i(LOG_TAG, "curUrl:" + curUrl);
+            webViewInit();
         }
+        
+    }
+    
 
-        webViewInit();
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Log.i(LOG_TAG, "onDestroy");
+
+        if(wvParaConfig!=null)
+        {
+	        wvParaConfig.clearCache(true);
+	        wvParaConfig.destroy();
+        }
+        //System.exit(0);
     }
 
     @SuppressLint({ "JavascriptInterface", "SetJavaScriptEnabled" })

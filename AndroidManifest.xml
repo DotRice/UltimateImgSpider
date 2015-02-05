@@ -42,7 +42,8 @@
         
         <service
             android:name="com.UltimateImgSpider.SpiderService"
-            android:process=":remoteSpider">
+            android:process=":remoteSpider"
+            android:exported="false">
             <intent-filter>
                 <!-- These are the interfaces supported by the service, which
                      you can bind to. -->
@@ -54,6 +55,7 @@
         </service>
         
         <activity 
+            android:process=":selectSrcUrl"
             android:name="com.UltimateImgSpider.ParaConfigActivity"
         	android:configChanges="orientation|keyboardHidden|screenSize" >
         </activity>
