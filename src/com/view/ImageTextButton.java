@@ -1,5 +1,5 @@
-package com.view;
-
+package com.View;
+ 
 import com.Utils.Utils;
 import com.UltimateImgSpider.R;
 

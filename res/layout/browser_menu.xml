@@ -8,7 +8,7 @@
     android:baselineAligned="false"
     android:orientation="horizontal" >
     
-    <com.view.ImageTextButton
+    <com.View.ImageTextButton
         android:id="@+id/buttonSetting"
         android:layout_weight="1"
         android:layout_width="match_parent"
@@ -16,7 +16,7 @@
         image="@drawable/setting"
         text="@string/settings" />
 	
-    <com.view.ImageTextButton
+    <com.View.ImageTextButton
         android:id="@+id/buttonRefresh"
         android:layout_weight="1"
         android:layout_width="match_parent"
@@ -24,7 +24,7 @@
         image="@drawable/menu_refresh"
         text="@string/refresh" />
 	
-    <com.view.ImageTextButton
+    <com.View.ImageTextButton
         android:id="@+id/buttonExit"
         android:layout_weight="1"
         android:layout_width="match_parent"

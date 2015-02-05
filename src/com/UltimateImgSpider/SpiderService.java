@@ -188,10 +188,10 @@ public class SpiderService extends Service
 		Runtime rt = Runtime.getRuntime();
 		
 		pageScanCnt++;
-		String log = (rt.totalMemory() >> 20) + " "
-		        + (Debug.getNativeHeapSize() >> 20) + " " + imgUrlCnt
-		        + " " + pageScanCnt + "/" + pageUrlCnt + " " + loadTime + " "
-		        + scanTime + " " + curUrl;
+		String log = "VM:"+(rt.totalMemory() >> 20) + "M Native:"
+		        + (Debug.getNativeHeapSize() >> 20) + "M pic:" + imgUrlCnt
+		        + " page:" + pageScanCnt + "/" + pageUrlCnt + " loadTime:" + loadTime + " scanTime:"
+		        + scanTime + "\r\n" + curUrl;
 		
 		Log.i(LOG_TAG, log);
 		

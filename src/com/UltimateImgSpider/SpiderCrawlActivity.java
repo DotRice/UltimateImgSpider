@@ -42,8 +42,6 @@ public class SpiderCrawlActivity extends Activity
 	private final String LOG_TAG = "SpiderCrawl";
 	public final static int REQUST_SRC_URL = 0;
 	
-	private String srcUrl = "http://www.umei.cc/";
-	
 	private TextView spiderLog;
 	
 	@Override
@@ -54,7 +52,8 @@ public class SpiderCrawlActivity extends Activity
 		
 		spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
 		projBarInit();
-		startSpiderService();
+		
+		startSpiderService("http://www.umei.cc/");
 	}
 	
 	protected void onStart()
@@ -106,8 +105,9 @@ public class SpiderCrawlActivity extends Activity
 			{
 				if (data != null)
 				{
-					srcUrl = data.getAction();
+					String srcUrl = data.getAction();
 					Log.i(LOG_TAG, "REQUST_SRC_URL " + srcUrl);
+					startSpiderService(srcUrl);
 				}
 			}
 		}
@@ -214,11 +214,11 @@ public class SpiderCrawlActivity extends Activity
 		}
 	};
 	
-	private void startSpiderService()
+	private void startSpiderService(String src)
 	{
 		Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
 		Bundle bundle = new Bundle();
-		bundle.putString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY, srcUrl);
+		bundle.putString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY, src);
 		spiderIntent.putExtras(bundle);
 		
 		startService(spiderIntent);
@@ -291,8 +291,8 @@ public class SpiderCrawlActivity extends Activity
 			{
 				case BUMP_MSG:
 					spiderLog
-					        .setText((Runtime.getRuntime().totalMemory() >> 20)
-					                + " " + (Debug.getNativeHeapSize() >> 20)
+					        .setText("free:"+(Runtime.getRuntime().freeMemory() >> 20)
+					                + "M " + (Debug.getNativeHeapSize() >> 20)
 					                + " " + (String) msg.obj);
 				break;
 				default:
