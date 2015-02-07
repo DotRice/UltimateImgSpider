@@ -41,7 +41,7 @@ public class ParaConfigActivity extends Activity
         
         Log.i(LOG_TAG, "onCreate");
         
-        curUrl = getIntent().getExtras().getString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY);
+        curUrl = getIntent().getExtras().getString(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
 
         if (curUrl != null)
         {
@@ -63,7 +63,6 @@ public class ParaConfigActivity extends Activity
 	        wvParaConfig.clearCache(true);
 	        wvParaConfig.destroy();
         }
-        //System.exit(0);
     }
 
     @SuppressLint({ "JavascriptInterface", "SetJavaScriptEnabled" })

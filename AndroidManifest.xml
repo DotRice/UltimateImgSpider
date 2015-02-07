@@ -24,7 +24,7 @@
         android:theme="@android:style/Theme.Holo.Light.NoActionBar" >
         
         <activity 
-            android:name="com.UltimateImgSpider.SpiderCrawlActivity"
+            android:name="com.UltimateImgSpider.SpiderActivity"
         	android:configChanges="orientation|keyboardHidden|screenSize" >
             
             <intent-filter>

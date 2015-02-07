@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.Utils.MemoryInfo;
+
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ComponentName;
@@ -37,12 +39,21 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class SpiderCrawlActivity extends Activity
+public class SpiderActivity extends Activity
 {
-	private final String LOG_TAG = "SpiderCrawl";
+	private final String LOG_TAG = "SpiderActivity";
 	public final static int REQUST_SRC_URL = 0;
 	
+	final static String SOURCE_URL_BUNDLE_KEY = "SourceUrl";
+	final static String CMD_BUNDLE_KEY = "cmd";
+	
+	public final static int CMD_VAL_NOTHING=0;
+	public final static int CMD_VAL_RESTART=1;
+	public final static int CMD_VAL_STOP=2;
+	
+	
 	private TextView spiderLog;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -50,10 +61,12 @@ public class SpiderCrawlActivity extends Activity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_spider_crawl);
 		
+		Log.i(LOG_TAG, "onCreate");
+		
 		spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
 		projBarInit();
 		
-		startSpiderService("http://www.umei.cc/");
+		startAndBindSpiderService(null);
 	}
 	
 	protected void onStart()
@@ -107,7 +120,7 @@ public class SpiderCrawlActivity extends Activity
 				{
 					String srcUrl = data.getAction();
 					Log.i(LOG_TAG, "REQUST_SRC_URL " + srcUrl);
-					startSpiderService(srcUrl);
+					startAndBindSpiderService(srcUrl);
 				}
 			}
 		}
@@ -133,6 +146,7 @@ public class SpiderCrawlActivity extends Activity
 			        public void onClick(View v)
 			        {
 				        Log.i(LOG_TAG, "Delete");
+				        sendCmdToSpiderService(CMD_VAL_STOP);
 			        }
 		        });
 		findViewById(R.id.buttonSelSrc).setOnClickListener(
@@ -143,9 +157,10 @@ public class SpiderCrawlActivity extends Activity
 			        public void onClick(View v)
 			        {
 				        Log.i(LOG_TAG, "SelSrc");
-
-						Intent intent = new Intent(SpiderCrawlActivity.this, SelSrcActivity.class);
-						startActivityForResult(intent, REQUST_SRC_URL);
+				        
+				        Intent intent = new Intent(SpiderActivity.this,
+				                SelSrcActivity.class);
+				        startActivityForResult(intent, REQUST_SRC_URL);
 			        }
 		        });
 		findViewById(R.id.buttonStart).setOnClickListener(
@@ -214,18 +229,6 @@ public class SpiderCrawlActivity extends Activity
 		}
 	};
 	
-	private void startSpiderService(String src)
-	{
-		Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
-		Bundle bundle = new Bundle();
-		bundle.putString(SelSrcActivity.SOURCE_URL_BUNDLE_KEY, src);
-		spiderIntent.putExtras(bundle);
-		
-		startService(spiderIntent);
-		bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
-		Log.i(LOG_TAG, "startSpiderService");
-	}
-	
 	private void unboundSpiderService()
 	{
 		// If we have received the service, and hence registered with
@@ -241,29 +244,43 @@ public class SpiderCrawlActivity extends Activity
 				// There is nothing special we need to do if the service
 				// has crashed.
 			}
+			
+			// Detach our existing connection.
+			unbindService(mConnection);
+		Log.i(LOG_TAG, "unbound SpiderService");
 		}
 		
-		// Detach our existing connection.
-		unbindService(mConnection);
-		Log.i(LOG_TAG, "unbound SpiderService");
 	}
 	
-	private void killSpiderProcess()
+	private void startAndBindSpiderService(String src)
 	{
-		if (mService != null)
-		{
-			try
-			{
-				int pid = mService.getPid();
-				Process.killProcess(pid);
-				Log.i(LOG_TAG, "Killed service process.");
-			}
-			catch (RemoteException ex)
-			{
-				
-				Log.i(LOG_TAG, "remote_call_failed");
-			}
-		}
+		Log.i(LOG_TAG, "startAndBindSpiderService src:" + src);
+		
+		Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
+		
+		spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
+		        .getName());
+		
+		Bundle bundle = new Bundle();
+		bundle.putString(SOURCE_URL_BUNDLE_KEY, src);
+		spiderIntent.putExtras(bundle);
+		startService(spiderIntent);
+		
+		bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
+	}
+	
+	private void sendCmdToSpiderService(int cmd)
+	{
+		
+		Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
+		
+		spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
+		        .getName());
+		
+		Bundle bundle = new Bundle();
+		bundle.putString(CMD_BUNDLE_KEY, "cmd:"+cmd);
+		spiderIntent.putExtras(bundle);
+		startService(spiderIntent);
 	}
 	
 	private IRemoteSpiderServiceCallback mCallback = new IRemoteSpiderServiceCallback.Stub()
@@ -290,10 +307,10 @@ public class SpiderCrawlActivity extends Activity
 			switch (msg.what)
 			{
 				case BUMP_MSG:
-					spiderLog
-					        .setText("free:"+(Runtime.getRuntime().freeMemory() >> 20)
-					                + "M " + (Debug.getNativeHeapSize() >> 20)
-					                + " " + (String) msg.obj);
+					spiderLog.setText("Total:" + MemoryInfo.getTotalMemInMb()
+					        + "M Free:"
+					        + MemoryInfo.getFreeMemInMb(SpiderActivity.this)
+					        + "M " + (String) msg.obj);
 				break;
 				default:
 					super.handleMessage(msg);
@@ -312,22 +329,23 @@ public class SpiderCrawlActivity extends Activity
 		                : "Portrait");
 	}
 	
-	private long exitTim=0;
-
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-        Log.i(LOG_TAG, "onKeyDown " + keyCode);
-
-        if (keyCode == KeyEvent.KEYCODE_BACK)
-        {
-            if (SystemClock.uptimeMillis() - exitTim > 2000)
-            {
-                Toast.makeText(this, R.string.keyBackExitConfirm, Toast.LENGTH_SHORT).show();
-                ;
-                exitTim = SystemClock.uptimeMillis();
-                return true;
-            }
-        }
-        return super.onKeyDown(keyCode, event);
-    }
+	private long exitTim = 0;
+	
+	public boolean onKeyDown(int keyCode, KeyEvent event)
+	{
+		Log.i(LOG_TAG, "onKeyDown " + keyCode);
+		
+		if (keyCode == KeyEvent.KEYCODE_BACK)
+		{
+			if (SystemClock.uptimeMillis() - exitTim > 2000)
+			{
+				Toast.makeText(this, R.string.keyBackExitConfirm,
+				        Toast.LENGTH_SHORT).show();
+				;
+				exitTim = SystemClock.uptimeMillis();
+				return true;
+			}
+		}
+		return super.onKeyDown(keyCode, event);
+	}
 }

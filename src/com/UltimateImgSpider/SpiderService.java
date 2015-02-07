@@ -33,6 +33,8 @@ public class SpiderService extends Service
 	private final String LOG_TAG = "SpiderService";
 	final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
 	
+	private int cmdVal=SpiderActivity.CMD_VAL_NOTHING;
+	
 	@Override
 	public void onCreate()
 	{
@@ -62,22 +64,93 @@ public class SpiderService extends Service
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
-		String url=intent.getStringExtra(SelSrcActivity.SOURCE_URL_BUNDLE_KEY);
-		if(!srcUrl.equals(url))
+		String url=intent.getStringExtra(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
+		
+		if(url!=null)
 		{
-			srcUrl=url;
-
-			jniOnDestroy();
-			if(!jniUrlListInit())
+			Log.i(LOG_TAG, "onStartCommand url:"+url);
+		
+			if(url.startsWith("http://")||url.startsWith("https://"))
 			{
-				this.stopSelf();
-				return START_NOT_STICKY;
+				
+				if(!srcUrl.equals(url))
+				{
+					srcUrl=url;
+		
+					jniOnDestroy();
+					if(!jniUrlListInit())
+					{
+						stopSelf();
+						return START_NOT_STICKY;
+					}
+					
+					spiderInit();
+				}
 			}
+		}
+		
+		String cmd=intent.getStringExtra(SpiderActivity.CMD_BUNDLE_KEY);
+		
+		if(cmd!=null)
+		{
+			Log.i(LOG_TAG, "onStartCommand "+cmd);
 			
-			spiderInit();
+			cmdVal=Integer.parseInt(cmd.split(":")[1]);
+			
+			if(curUrl.isEmpty())
+			{
+				handleCmd();
+			}
 		}
 		
 		return START_REDELIVER_INTENT;
+	}
+	
+	private void handleCmd()
+	{
+		switch(cmdVal)
+		{
+			case SpiderActivity.CMD_VAL_RESTART:
+				
+				break;
+				
+			case SpiderActivity.CMD_VAL_STOP:
+				stopSelf();
+				break;
+		}
+		
+		cmdVal=SpiderActivity.CMD_VAL_NOTHING;
+	}
+	
+	@Override
+	public void onTrimMemory(int level)
+	{
+		Log.i("onTrimMemory", "level:"+level);
+		
+		switch(level)
+		{
+			case TRIM_MEMORY_COMPLETE:
+				Log.i("onTrimMemory", "TRIM_MEMORY_COMPLETE");
+				break;
+				
+			case TRIM_MEMORY_MODERATE:
+				Log.i("onTrimMemory", "TRIM_MEMORY_MODERATE");
+				break;
+
+			case TRIM_MEMORY_BACKGROUND:
+				Log.i("onTrimMemory", "TRIM_MEMORY_BACKGROUND");
+				break;
+				
+			case TRIM_MEMORY_UI_HIDDEN:
+				Log.i("onTrimMemory", "TRIM_MEMORY_UI_HIDDEN");
+				break;
+		}
+	}
+	
+	@Override
+	public void onLowMemory()
+	{
+		Log.i("onLowMemory", "onLowMemory");
 	}
 	
 	@Override
@@ -141,12 +214,12 @@ public class SpiderService extends Service
 	 */
 	
 	private String srcUrl="about:blank";
+	private String srcHost;
 	
 	private final int URL_TYPE_PAGE = 0;
 	private final int URL_TYPE_IMG = 1;
 	
-	private String curUrl;
-	private String srcHost;
+	private String curUrl="";
 	
 	private int pageUrlCnt = 0;
 	private int pageScanCnt = 0;
@@ -405,9 +478,16 @@ public class SpiderService extends Service
 	
 	private void spiderLoadUrl(String url)
 	{
-        //Log.i(LOG_TAG, "spiderLoadUrl:"+url);
-		spider.loadUrl(url);
-		urlLoadTimer.set(URL_TIME_OUT);
+		if(cmdVal==SpiderActivity.CMD_VAL_NOTHING)
+		{
+	        //Log.i(LOG_TAG, "spiderLoadUrl:"+url);
+			spider.loadUrl(url);
+			urlLoadTimer.set(URL_TIME_OUT);
+		}
+		else
+		{
+			handleCmd();
+		}
 	}
 	
 	@JavascriptInterface
@@ -467,10 +547,14 @@ public class SpiderService extends Service
 		}
 		else
 		{
-			Log.i(LOG_TAG, "page scan complete");
-			stopSelf();
+			onSiteScanCompleted();
 		}
 	}
 	
+	private void onSiteScanCompleted()
+	{
+		Log.i(LOG_TAG, "site scan complete");
+		stopSelf();
+	}
 	
 }

@@ -84,9 +84,7 @@ public class SelSrcActivity extends Activity
     private final int            PROGRESS_MAX          = 100;
 
     private Handler              mHandler              = new Handler();
-
-    final static String          SOURCE_URL_BUNDLE_KEY = "SourceUrl";
-
+    
     private enum DLG
     {
         SPIDER_GO_CONFIRM, SEL_SEARCH_ENGINE
@@ -754,7 +752,7 @@ public class SelSrcActivity extends Activity
         String srcUrl = browser.getUrl();
 
         Bundle bundle = new Bundle();
-        bundle.putString(SOURCE_URL_BUNDLE_KEY, srcUrl);
+        bundle.putString(SpiderActivity.SOURCE_URL_BUNDLE_KEY, srcUrl);
         intent.putExtras(bundle);
 
         startActivity(intent);
@@ -762,9 +760,9 @@ public class SelSrcActivity extends Activity
 
     public void spiderGo()
     {
-        Log.i(LOG_TAG, "spiderGo");
-
         String srcUrl = browser.getUrl();
+        
+        Log.i(LOG_TAG, "spiderGo srcUrl:"+srcUrl);
         
         if(srcUrl!=null)
         {
