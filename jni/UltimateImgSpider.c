@@ -3,23 +3,55 @@
 #include <jni.h>
 #include <malloc.h>
 #include <android/log.h>
+#include <linux/ashmem.h>
+#include <asm-generic/fcntl.h>
 
 #include "typeDef.h"
 
-#define  LOG_TAG    "jni"
-#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+int ashmem_create_region(const char *name, size_t size)
+{
+    int fd, ret;
 
-jstring Java_com_UltimateImgSpider_SpiderCrawlActivity_stringFromJNI(
+    fd = open(ASHMEM_NAME_DEF, O_RDWR);
+    if (fd < 0)
+        return fd;
+
+    LOGI("ashmem open success!");
+    if (name) {
+        char buf[ASHMEM_NAME_LEN];
+
+        strlcpy(buf, name, sizeof(buf));
+        ret = ioctl(fd, ASHMEM_SET_NAME, buf);
+        if (ret < 0)
+            goto error;
+    }
+
+    ret = ioctl(fd, ASHMEM_SET_SIZE, size);
+    if (ret < 0)
+        goto error;
+
+    return fd;
+
+error:
+    close(fd);
+    return ret;
+}
+
+jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(
 		JNIEnv* env, jobject thiz, jstring jSrcStr)
 {
 	const u8 *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
 	LOGI("stringFromJNI %s", srcStr);
+
+
+	ashmem_create_region("ashmemTest", 32);
+
+
 	(*env)->ReleaseStringUTFChars(env, jSrcStr, srcStr);
-	return (*env)->NewStringUTF(env, "test jni !  Compiled with ABI " ABI ".");
+	return (*env)->NewStringUTF(env, "test jni !");
 }
 
-enum URL_STATE
+enum URL_STATEg
 {
 	URL_PENDING,
 	URL_DOWNLOADED

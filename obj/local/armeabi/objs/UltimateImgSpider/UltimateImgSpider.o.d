@@ -21,6 +21,12 @@ obj/local/armeabi/objs/UltimateImgSpider/UltimateImgSpider.o: \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/malloc.h \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/jni.h \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/android/log.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/linux/ashmem.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/linux/limits.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/linux/ioctl.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm/ioctl.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/ioctl.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/fcntl.h \
  jni/typeDef.h
 
 G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/stdio.h:
@@ -64,5 +70,17 @@ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/mal
 G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/jni.h:
 
 G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/android/log.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/linux/ashmem.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/linux/limits.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/linux/ioctl.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm/ioctl.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/ioctl.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/fcntl.h:
 
 jni/typeDef.h:

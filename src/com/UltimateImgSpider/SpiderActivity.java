@@ -51,6 +51,7 @@ public class SpiderActivity extends Activity
 	public final static int CMD_VAL_RESTART=1;
 	public final static int CMD_VAL_STOP=2;
 	
+	String srcUrl;
 	
 	private TextView spiderLog;
 	
@@ -118,7 +119,7 @@ public class SpiderActivity extends Activity
 			{
 				if (data != null)
 				{
-					String srcUrl = data.getAction();
+					srcUrl = data.getAction();
 					Log.i(LOG_TAG, "REQUST_SRC_URL " + srcUrl);
 					startAndBindSpiderService(srcUrl);
 				}
@@ -171,6 +172,11 @@ public class SpiderActivity extends Activity
 			        public void onClick(View v)
 			        {
 				        Log.i(LOG_TAG, "Start");
+				        
+				        if(srcUrl!=null)
+				        {
+				        	startAndBindSpiderService(srcUrl);
+				        }
 			        }
 		        });
 		findViewById(R.id.buttonPause).setOnClickListener(
@@ -252,33 +258,36 @@ public class SpiderActivity extends Activity
 		
 	}
 	
-	private void startAndBindSpiderService(String src)
+	
+	private Intent sendUrlToSpiderService(String url)
 	{
-		Log.i(LOG_TAG, "startAndBindSpiderService src:" + src);
+		Log.i(LOG_TAG, "startAndBindSpiderService src:" + url);
 		
 		Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
-		
 		spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
 		        .getName());
 		
 		Bundle bundle = new Bundle();
-		bundle.putString(SOURCE_URL_BUNDLE_KEY, src);
+		bundle.putString(SOURCE_URL_BUNDLE_KEY, url);
 		spiderIntent.putExtras(bundle);
 		startService(spiderIntent);
 		
-		bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
+		return spiderIntent;
+	}
+	
+	private void startAndBindSpiderService(String src)
+	{
+		bindService(sendUrlToSpiderService(src), mConnection, BIND_ABOVE_CLIENT);
 	}
 	
 	private void sendCmdToSpiderService(int cmd)
 	{
-		
 		Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
-		
 		spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
 		        .getName());
 		
 		Bundle bundle = new Bundle();
-		bundle.putString(CMD_BUNDLE_KEY, "cmd:"+cmd);
+		bundle.putInt(CMD_BUNDLE_KEY, cmd);
 		spiderIntent.putExtras(bundle);
 		startService(spiderIntent);
 	}

@@ -39,6 +39,7 @@ public class SpiderService extends Service
 	public void onCreate()
 	{
 		Log.i(LOG_TAG, "onCreate");
+		Log.i(LOG_TAG, "ashmem test "+stringFromJNI("ashmem"));
 	}
 	
 	@Override
@@ -65,7 +66,6 @@ public class SpiderService extends Service
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
 		String url=intent.getStringExtra(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
-		
 		if(url!=null)
 		{
 			Log.i(LOG_TAG, "onStartCommand url:"+url);
@@ -89,18 +89,12 @@ public class SpiderService extends Service
 			}
 		}
 		
-		String cmd=intent.getStringExtra(SpiderActivity.CMD_BUNDLE_KEY);
 		
-		if(cmd!=null)
+		cmdVal=intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY, SpiderActivity.CMD_VAL_NOTHING);
+		Log.i(LOG_TAG, "onStartCommand "+cmdVal);
+		if(curUrl.isEmpty())
 		{
-			Log.i(LOG_TAG, "onStartCommand "+cmd);
-			
-			cmdVal=Integer.parseInt(cmd.split(":")[1]);
-			
-			if(curUrl.isEmpty())
-			{
-				handleCmd();
-			}
+			handleCmd();
 		}
 		
 		return START_REDELIVER_INTENT;
@@ -289,18 +283,21 @@ public class SpiderService extends Service
 		scanTimer = System.currentTimeMillis();
 		spider.loadUrl("javascript:" + "var i;"
 		        + "var img=document.getElementsByTagName(\"img\");"
+		        + "var imgSrc=\"\";"
 		        + "for(i=0; i<img.length; i++)"
-		        + "{SpiderCrawl.recvImgUrl(img[i].src)}"
+		        + "{imgSrc+=(img[i].src+'分');}"
+		        + "SpiderCrawl.recvImgUrl(imgSrc);"
 		        + "var a=document.getElementsByTagName(\"a\");"
+		        + "var aHref=\"\";"
 		        + "for(i=0; i<a.length; i++)"
-		        + "{SpiderCrawl.recvPageUrl(a[i].href)}"
+		        + "{aHref+=(a[i].href+'分');}"
+		        + "SpiderCrawl.recvPageUrl(aHref);"
 		        + "SpiderCrawl.onCurPageScaned();");
 	}
 	
 	private void spiderWebViewInit()
 	{
-		spider = new WebView(getApplicationContext()); // (WebView)
-													   // findViewById(R.id.wvSpider);
+		spider = new WebView(getApplicationContext()); 
 		
 		spider.setWebViewClient(new WebViewClient()
 		{
@@ -493,47 +490,59 @@ public class SpiderService extends Service
 	@JavascriptInterface
 	public void recvImgUrl(String imgUrl)
 	{
-		// Log.i(LOG_TAG, "picSrc:"+picSrc);
+		//Log.i(LOG_TAG, "imgUrl:"+imgUrl);
 		
-		if (imgUrl.startsWith("http://") || imgUrl.startsWith("https://"))
+		String[] list=imgUrl.split("分");
+
+		//Log.i(LOG_TAG, "length:"+list.length);
+		
+		for(String urlInList:list)
 		{
-			int urlNumAfterAdd = jniAddUrl(imgUrl, imgUrl.hashCode(),
-			        URL_TYPE_IMG);
-			
-			if (urlNumAfterAdd != 0)
+			if (urlInList.startsWith("http://") || urlInList.startsWith("https://"))
 			{
-				imgUrlCnt = urlNumAfterAdd;
+				int urlNumAfterAdd = jniAddUrl(urlInList, urlInList.hashCode(),
+				        URL_TYPE_IMG);
+				
+				if (urlNumAfterAdd != 0)
+				{
+					imgUrlCnt = urlNumAfterAdd;
+				}
 			}
 		}
-		
 	}
 	
 	@JavascriptInterface
 	public void recvPageUrl(String pageUrl)
 	{
-		// Log.i(LOG_TAG, "url:"+url);
+		//Log.i(LOG_TAG, "pageUrl:"+pageUrl);
 		
-		try
+		String[] list=pageUrl.split("分");
+
+		//Log.i(LOG_TAG, "length:"+list.length);
+		
+		for(String urlInList:list)
 		{
-			URL url = new URL(pageUrl);
-			if ((pageUrl.startsWith("http://") || pageUrl
-			        .startsWith("https://"))
-			        && (url.getHost().equals(srcHost))
-			        && (url.getRef() == null))
+			try
 			{
-				int urlNumAfterAdd = jniAddUrl(pageUrl, pageUrl.hashCode(),
-				        URL_TYPE_PAGE);
-				if (urlNumAfterAdd != 0)
+				URL url = new URL(urlInList);
+				if ((urlInList.startsWith("http://") || urlInList
+				        .startsWith("https://"))
+				        && (url.getHost().equals(srcHost))
+				        && (url.getRef() == null))
 				{
-					pageUrlCnt = urlNumAfterAdd;
+					int urlNumAfterAdd = jniAddUrl(urlInList, urlInList.hashCode(),
+					        URL_TYPE_PAGE);
+					if (urlNumAfterAdd != 0)
+					{
+						pageUrlCnt = urlNumAfterAdd;
+					}
 				}
 			}
+			catch (MalformedURLException e)
+			{
+				// Log.e(LOG_TAG,e.toString());
+			}
 		}
-		catch (MalformedURLException e)
-		{
-			// Log.e(LOG_TAG,e.toString());
-		}
-		
 	}
 	
 	@JavascriptInterface
