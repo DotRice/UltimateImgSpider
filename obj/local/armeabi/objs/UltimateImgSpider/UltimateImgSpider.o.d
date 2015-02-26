@@ -27,6 +27,11 @@ obj/local/armeabi/objs/UltimateImgSpider/UltimateImgSpider.o: \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm/ioctl.h \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/ioctl.h \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/fcntl.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/sys/mman.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm/mman.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/mman.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/mman-common.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm/page.h \
  jni/typeDef.h
 
 G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/stdio.h:
@@ -82,5 +87,15 @@ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm
 G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/ioctl.h:
 
 G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/fcntl.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/sys/mman.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm/mman.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/mman.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm-generic/mman-common.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-arm/usr/include/asm/page.h:
 
 jni/typeDef.h:
