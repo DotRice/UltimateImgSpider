@@ -44,52 +44,46 @@ int ashmem_create_region(const char *name, u32 size)
 	return fd;
 }
 
-void ashmemTest()
-{
-
 #define ASHMEM_FILESIZE	32
-	fd = ashmem_create_region("ashmemTest", ASHMEM_FILESIZE);
+void* ashmemTest(char* ashmName)
+{
+	int i, fd;
+	void* mAddr=NULL;
 
-	while (fd>=0)
+	fd = ashmem_create_region(ashmName, ASHMEM_FILESIZE);
+
+	if (fd>=0)
 	{
-		u8* maddr = (u8*)mmap(NULL, ASHMEM_FILESIZE, PROT_READ | PROT_WRITE,
+		mAddr = (u8*)mmap(NULL, ASHMEM_FILESIZE, PROT_READ | PROT_WRITE,
 			MAP_SHARED, fd, 0);
-		if(maddr==NULL)
+		if(mAddr!=NULL)
 		{
-			break;
+			LOGI("mmap %d success!", (u32)mAddr);
 		}
-		LOGI("mmap %d success!", (u32)maddr);
-
-		for(i=0; i<ASHMEM_FILESIZE; i++)
-		{
-			maddr[i]=i;
-		}
-
-		for(i=0; i<ASHMEM_FILESIZE; i++)
-		{
-			if(maddr[i]!=i)
-			{
-				LOGI("mem test error %d!", i);
-				break;
-			}
-		}
-		if(i==ASHMEM_FILESIZE)
-		{
-			LOGI("mem test success");
-		}
-
-		break;
 	}
-}
 
+	return mAddr;
+}
 
 jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 		jobject thiz, jstring jSrcStr)
 {
-	int i, fd;
+	int i;
 	const u8 *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
 	LOGI("stringFromJNI %s", srcStr);
 
+	u8 *mWrite=ashmemTest("write");
+	u8 *mRead=ashmemTest("read");
+
+	for(i=0; i<ASHMEM_FILESIZE; i++)
+	{
+		mWrite[i]=i;
+	}
+
+	for(i=0; i<ASHMEM_FILESIZE; i++)
+	{
+		LOGI("ashm read: %02X %02X", mWrite[i], mRead[i]);
+	}
 
 	(*env)->ReleaseStringUTFChars(env, jSrcStr, srcStr);
 	return (*env)->NewStringUTF(env, "test jni !");
