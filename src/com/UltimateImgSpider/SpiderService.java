@@ -1,5 +1,6 @@
 package com.UltimateImgSpider;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,6 +15,8 @@ import android.graphics.Bitmap;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.MemoryFile;
+import android.os.ParcelFileDescriptor; 
 import android.os.Message;
 import android.os.Process;
 import android.os.RemoteCallbackList;
@@ -98,6 +101,13 @@ public class SpiderService extends Service
 		}
 		
 		return START_REDELIVER_INTENT;
+	}
+	
+	public boolean registerAshmemPool(int fd)
+	{
+		Log.i(LOG_TAG, "call test");
+		
+		return true;
 	}
 	
 	private void handleCmd()

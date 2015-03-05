@@ -9,12 +9,21 @@
 
 #include "typeDef.h"
 
+
+/*
+ * 使用共享内存存储urlList，实现重启下载服务进程后能恢复工作现场。
+ * 需要新申请一段内存时，新建一段共享内存，并把文件描述符发送给看门狗服务进程，
+ * 看门狗服务进程用这个文件描述符映射此段共享内存到自己虚拟内存空间。
+ */
+
+
+
 int ashmem_create_region(const char *name, u32 size)
 {
 	int fd, ret;
 	char buf[ASHMEM_NAME_LEN];
 
-	while(name&&size)
+	while (name && size)
 	{
 		fd = open(ASHMEM_NAME_DEF, O_RDWR);
 		if (fd < 0)
@@ -44,21 +53,52 @@ int ashmem_create_region(const char *name, u32 size)
 	return fd;
 }
 
+
+jmethodID registerAshmemPoolMID=NULL;
+jclass SpiderServiceClass=NULL;
+jobject SpiderServiceInstance=NULL;
+
+void registerAshmemPool(JNIEnv* env, int fd)
+{
+	if(registerAshmemPoolMID==NULL)
+	{
+		SpiderServiceClass = (*env)->FindClass(env,
+			"com/UltimateImgSpider/SpiderService");
+		if (SpiderServiceClass != NULL)
+		{
+			LOGI("find class");
+
+			registerAshmemPoolMID = (*env)->GetMethodID(env, SpiderServiceClass, "registerAshmemPool",
+					"(I)Z");
+		}
+	}
+
+	if (registerAshmemPoolMID != NULL)
+	{
+		LOGI("find Method");
+		(*env)->CallBooleanMethod(env, SpiderServiceInstance, registerAshmemPoolMID, fd);
+	}
+
+}
+
+
 #define ASHMEM_FILESIZE	32
-void* ashmemTest(char* ashmName)
+void* ashmemTest(JNIEnv* env, char* ashmName)
 {
 	int i, fd;
-	void* mAddr=NULL;
+	void* mAddr = NULL;
 
 	fd = ashmem_create_region(ashmName, ASHMEM_FILESIZE);
 
-	if (fd>=0)
+	if (fd >= 0)
 	{
-		mAddr = (u8*)mmap(NULL, ASHMEM_FILESIZE, PROT_READ | PROT_WRITE,
-			MAP_SHARED, fd, 0);
-		if(mAddr!=NULL)
+		mAddr = (u8*) mmap(NULL, ASHMEM_FILESIZE, PROT_READ | PROT_WRITE,
+		MAP_SHARED, fd, 0);
+		if (mAddr != NULL)
 		{
-			LOGI("mmap %d success!", (u32)mAddr);
+			LOGI("mmap %d success!", (u32 )mAddr);
+
+			registerAshmemPool(env, fd);
 		}
 	}
 
@@ -72,17 +112,12 @@ jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 	const u8 *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
 	LOGI("stringFromJNI %s", srcStr);
 
-	u8 *mWrite=ashmemTest("write");
-	u8 *mRead=ashmemTest("read");
+	SpiderServiceInstance=thiz;
 
-	for(i=0; i<ASHMEM_FILESIZE; i++)
-	{
-		mWrite[i]=i;
-	}
+	u8 *mWrite = ashmemTest(env, "write");
 
-	for(i=0; i<ASHMEM_FILESIZE; i++)
-	{
-		LOGI("ashm read: %02X %02X", mWrite[i], mRead[i]);
+	if((*env)->ExceptionOccurred(env)) {
+	   return NULL;
 	}
 
 	(*env)->ReleaseStringUTFChars(env, jSrcStr, srcStr);
