@@ -86,7 +86,7 @@ void registerAshmemPool(JNIEnv* env, int fd)
 void* ashmemTest(JNIEnv* env, char* ashmName)
 {
 	int i, fd;
-	void* mAddr = NULL;
+	u8* mAddr = NULL;
 
 	fd = ashmem_create_region(ashmName, ASHMEM_FILESIZE);
 
@@ -98,11 +98,36 @@ void* ashmemTest(JNIEnv* env, char* ashmName)
 		{
 			LOGI("mmap %d success!", (u32 )mAddr);
 
+			for(i=0; i<ASHMEM_FILESIZE; i++)
+			{
+				mAddr[i]=i;
+			}
+
 			registerAshmemPool(env, fd);
 		}
 	}
 
 	return mAddr;
+}
+
+void Java_com_UltimateImgSpider_WatchdogService_jniRegisterAshmem(JNIEnv* env,
+		jobject thiz, jint fd)
+{
+	LOGI("handleAshmem %d", fd);
+	u8 *addr=(u8*) mmap(NULL, ASHMEM_FILESIZE, PROT_READ | PROT_WRITE,
+			MAP_SHARED, fd, 0);
+
+	if(addr!=NULL)
+	{
+		int i;
+
+		LOGI("data:");
+		for(i=0; i<ASHMEM_FILESIZE; i++)
+		{
+			LOGI("%d", addr[i]);
+		}
+	}
+
 }
 
 jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,

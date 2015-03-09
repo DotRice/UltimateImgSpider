@@ -10,8 +10,11 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
@@ -38,11 +41,54 @@ public class SpiderService extends Service
 	
 	private int cmdVal=SpiderActivity.CMD_VAL_NOTHING;
 	
+	
+	/** The primary interface we will be calling on the service. */
+	IRemoteWatchdogService watchdogService = null;
+	
+	private ServiceConnection watchdogConnection = new ServiceConnection()
+	{
+		public void onServiceConnected(ComponentName className, IBinder service)
+		{
+			// This is called when the connection with the service has been
+			// established, giving us the service object we can use to
+			// interact with the service. We are communicating with our
+			// service through an IDL interface, so get a client-side
+			// representation of that from the raw service object.
+			watchdogService = IRemoteWatchdogService.Stub.asInterface(service);
+			
+			stringFromJNI("ashmem");
+			
+			Log.i(LOG_TAG, "onServiceConnected");
+		}
+		
+		public void onServiceDisconnected(ComponentName className)
+		{
+			// This is called when the connection with the service has been
+			// unexpectedly disconnected -- that is, its process crashed.
+			watchdogService = null;
+			
+			Log.i(LOG_TAG, "onServiceDisconnected");
+		}
+	};
+	
+	private void startWatchdog()
+	{
+		Log.i(LOG_TAG, "startWatchdog");
+		
+		Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
+		watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage()
+		        .getName());
+		
+		startService(watchdogIntent);
+		bindService(watchdogIntent, watchdogConnection, BIND_ABOVE_CLIENT);
+	}
+	
+	
 	@Override
 	public void onCreate()
 	{
 		Log.i(LOG_TAG, "onCreate");
-		Log.i(LOG_TAG, "ashmem test "+stringFromJNI("ashmem"));
+		startWatchdog();
 	}
 	
 	@Override
@@ -88,6 +134,7 @@ public class SpiderService extends Service
 					}
 					
 					spiderInit();
+					
 				}
 			}
 		}
@@ -105,8 +152,23 @@ public class SpiderService extends Service
 	
 	public boolean registerAshmemPool(int fd)
 	{
-		Log.i(LOG_TAG, "call test");
-		
+		try
+        {
+	        try
+            {
+	            watchdogService.registerAshmem(ParcelFileDescriptor.fromFd(fd));
+            }
+            catch (IOException e)
+            {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+            }
+        }
+        catch (RemoteException e)
+        {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
 		return true;
 	}
 	

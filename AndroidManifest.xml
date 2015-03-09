@@ -54,6 +54,20 @@
             </intent-filter>
         </service>
         
+        <service
+            android:name="com.UltimateImgSpider.WatchdogService"
+            android:process=":remoteWatchdog"
+            android:exported="false">
+            <intent-filter>
+                <!-- These are the interfaces supported by the service, which
+                     you can bind to. -->
+                <action android:name="com.UltimateImgSpider.IRemoteWatchdogService" />
+                <!-- This is an action code you can use to select the service
+                     without explicitly supplying the implementation class. -->
+                <action android:name="com.UltimateImgSpider.WATCHDOG_SERVICE" />
+            </intent-filter>
+        </service>
+        
         <activity 
             android:process=":selectSrcUrl"
             android:name="com.UltimateImgSpider.ParaConfigActivity"
