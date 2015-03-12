@@ -26,11 +26,14 @@
     <string name="selSearchEngine">选择搜索引擎</string>
     <string name="notSet">未设置</string>
     <string name="keyBackExitConfirm">再按一次返回键，退出程序。</string>
-    <string name="selSrc">选择源</string>
+    <string name="selSrc">选择站点</string>
     <string name="start">开始</string>
     <string name="pause">暂停</string>
+    <string name="goOn">继续</string>
     <string name="stop">结束</string>
     <string name="newProj">新建</string>
     <string name="delete">删除</string>
+    <string name="clear">清空</string>
+    <string name="option">选项</string>
     
 </resources>

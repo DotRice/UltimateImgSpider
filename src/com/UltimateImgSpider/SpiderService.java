@@ -144,7 +144,7 @@ public class SpiderService extends Service
 		Log.i(LOG_TAG, "onStartCommand "+cmdVal);
 		if(curUrl.isEmpty())
 		{
-			handleCmd();
+			handleCmd(false);
 		}
 		
 		return START_REDELIVER_INTENT;
@@ -172,20 +172,35 @@ public class SpiderService extends Service
 		return true;
 	}
 	
-	private void handleCmd()
+	private boolean handleCmd(boolean isOnLoadUrl)
 	{
-		switch(cmdVal)
+		int cmd=cmdVal;
+		cmdVal=SpiderActivity.CMD_VAL_NOTHING;
+		switch(cmd)
 		{
-			case SpiderActivity.CMD_VAL_RESTART:
-				
-				break;
-				
 			case SpiderActivity.CMD_VAL_STOP:
 				stopSelf();
-				break;
+				return true;
+			case SpiderActivity.CMD_VAL_PAUSE:
+				curUrl="";
+				return true;
+
+			case SpiderActivity.CMD_VAL_CONTINUE:
+				if(!isOnLoadUrl)
+				{
+					curUrl = jniFindNextUrlToLoad(null, URL_TYPE_PAGE);
+					if(!curUrl.isEmpty())
+					{
+						spiderLoadUrl(curUrl);
+						reportSpiderLog();
+					}
+					return true;
+				}
+				return false;
+				
+			default:
+				return false;
 		}
-		
-		cmdVal=SpiderActivity.CMD_VAL_NOTHING;
 	}
 	
 	@Override
@@ -547,15 +562,11 @@ public class SpiderService extends Service
 	
 	private void spiderLoadUrl(String url)
 	{
-		if(cmdVal==SpiderActivity.CMD_VAL_NOTHING)
+		if(!handleCmd(true))
 		{
 	        //Log.i(LOG_TAG, "spiderLoadUrl:"+url);
 			spider.loadUrl(url);
 			urlLoadTimer.set(URL_TIME_OUT);
-		}
-		else
-		{
-			handleCmd();
 		}
 	}
 	

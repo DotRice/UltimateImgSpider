@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.Utils.MemoryInfo;
+import com.View.ImageTextButton;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -48,8 +49,10 @@ public class SpiderActivity extends Activity
 	final static String CMD_BUNDLE_KEY = "cmd";
 	
 	public final static int CMD_VAL_NOTHING=0;
-	public final static int CMD_VAL_RESTART=1;
-	public final static int CMD_VAL_STOP=2;
+	public final static int CMD_VAL_STOP=1;
+	public final static int CMD_VAL_PAUSE=2;
+	public final static int CMD_VAL_CONTINUE=3;
+	
 	
 	String srcUrl;
 	
@@ -129,24 +132,15 @@ public class SpiderActivity extends Activity
 	
 	private void projBarInit()
 	{
-		findViewById(R.id.buttonNewProj).setOnClickListener(
+		
+		findViewById(R.id.buttonClear).setOnClickListener(
 		        new View.OnClickListener()
 		        {
 			        
 			        @Override
 			        public void onClick(View v)
 			        {
-				        Log.i(LOG_TAG, "NewProj");
-			        }
-		        });
-		findViewById(R.id.buttonDelete).setOnClickListener(
-		        new View.OnClickListener()
-		        {
-			        
-			        @Override
-			        public void onClick(View v)
-			        {
-				        Log.i(LOG_TAG, "Delete");
+				        Log.i(LOG_TAG, "Clear");
 				        sendCmdToSpiderService(CMD_VAL_STOP);
 			        }
 		        });
@@ -164,7 +158,7 @@ public class SpiderActivity extends Activity
 				        startActivityForResult(intent, REQUST_SRC_URL);
 			        }
 		        });
-		findViewById(R.id.buttonStart).setOnClickListener(
+		findViewById(R.id.buttonPauseOrContinue).setOnClickListener(
 		        new View.OnClickListener()
 		        {
 			        
@@ -173,22 +167,23 @@ public class SpiderActivity extends Activity
 			        {
 				        Log.i(LOG_TAG, "Start");
 				        
-				        if(srcUrl!=null)
+				        ImageTextButton itb=(ImageTextButton)v;
+				        if(itb.textView.getText().toString().equals(getString(R.string.pause)))
 				        {
-				        	startAndBindSpiderService(srcUrl);
+				        	itb.changeView(R.drawable.start, R.string.goOn);
+				        	
+				        }
+				        else
+				        {
+					        if(srcUrl!=null)
+					        {
+					        	itb.changeView(R.drawable.pause, R.string.pause);
+					        	startAndBindSpiderService(srcUrl);
+					        }
 				        }
 			        }
 		        });
-		findViewById(R.id.buttonPause).setOnClickListener(
-		        new View.OnClickListener()
-		        {
-			        
-			        @Override
-			        public void onClick(View v)
-			        {
-				        Log.i(LOG_TAG, "Pause");
-			        }
-		        });
+		        
 	}
 	
 	/** The primary interface we will be calling on the service. */

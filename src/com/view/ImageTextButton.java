@@ -13,30 +13,30 @@ import android.widget.TextView;
 
 public class ImageTextButton extends RelativeLayout
 {
-    ImageView img;
-    TextView text;
+    public ImageView imageView;
+    public TextView textView;
     
     private void construct(Context context, AttributeSet attrs)
     {
         LayoutInflater inflater=(LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.image_text_button, this);
         
-        img=(ImageView)findViewById(R.id.buttonImg);
-        img.setImageResource(attrs.getAttributeResourceValue(null, "image", R.drawable.cancel));
+        imageView=(ImageView)findViewById(R.id.buttonImg);
+        imageView.setImageResource(attrs.getAttributeResourceValue(null, "image", R.drawable.cancel));
         
         String sizeAttr=attrs.getAttributeValue(null, "image_size");
         if(sizeAttr!=null)
         {
 	        int imgSize=Utils.DisplayUtil.attrToPx(context, sizeAttr);
 	        
-	        android.view.ViewGroup.LayoutParams lp=img.getLayoutParams();
+	        android.view.ViewGroup.LayoutParams lp=imageView.getLayoutParams();
 	        lp.width=imgSize;
 	        lp.height=imgSize;
-	        img.setLayoutParams(lp);
+	        imageView.setLayoutParams(lp);
         }
         
-        text=(TextView)findViewById(R.id.buttonText);
-        text.setText(attrs.getAttributeResourceValue(null, "text", R.string.notSet));
+        textView=(TextView)findViewById(R.id.buttonText);
+        textView.setText(attrs.getAttributeResourceValue(null, "text", R.string.notSet));
     }
     
     public ImageTextButton(Context context, AttributeSet attrs)
@@ -51,4 +51,11 @@ public class ImageTextButton extends RelativeLayout
         super(context, attrs, defStyle);
         construct(context, attrs);
     }
+    
+    public void changeView(int imgResId, int textResId)
+    {
+    	imageView.setImageResource(imgResId);
+    	textView.setText(textResId);
+    }
+    
 }

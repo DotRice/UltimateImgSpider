@@ -149,6 +149,11 @@ jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 	return (*env)->NewStringUTF(env, "test jni !");
 }
 
+
+
+
+
+
 enum URL_STATE
 {
 	URL_PENDING, URL_DOWNLOADED
@@ -234,40 +239,7 @@ char *urlMalloc(u32 size)
 	return NULL ;
 }
 
-void urlListTest()
-{
-	int i;
-	char url[200];
-
-	for (i = 0; i < 180000; i++)
-	{
-		urlList *curList = (i & 0x01) ? (&pageUrlList) : (&imgUrlList);
-		urlNode *curNode;
-
-		sprintf(url,
-				"http://www.umei.cc/p/gaoqing/rihan/indexp/gaoqing/rihan/indexp/gaoqing/rihan/indexp/gaoqing/rihan/indexp/gaoqing/rihan/index-%d.htm",
-				i);
-
-		char *newUrl = urlMalloc(strlen(url) + 1);
-		if (newUrl == NULL)
-		{
-			break;
-		}
-		else
-		{
-			strcpy(newUrl, url);
-
-			curNode = &(curList->list[curList->len]);
-			curNode->url = newUrl;
-			curNode->hashCode = 0x233445;
-			curNode->state = URL_DOWNLOADED;
-			curList->len++;
-		}
-	}
-}
-
-jboolean Java_com_UltimateImgSpider_SpiderService_jniUrlListInit(JNIEnv* env,
-		jobject thiz)
+jboolean urlListInit()
 {
 	pageUrlList.list = malloc(MAX_PAGE_ONE_SITE * sizeof(urlNode));
 	if (pageUrlList.list == NULL)
@@ -288,6 +260,11 @@ jboolean Java_com_UltimateImgSpider_SpiderService_jniUrlListInit(JNIEnv* env,
 	pageUrlList.max = MAX_PAGE_ONE_SITE;
 	imgUrlList.max = MAX_IMG_ONE_SITE;
 
+	return true;
+}
+
+jboolean urlRemPoolInit()
+{
 	firstUrlPool = malloc(sizeof(t_urlPool));
 	if (firstUrlPool == NULL)
 	{
@@ -301,7 +278,21 @@ jboolean Java_com_UltimateImgSpider_SpiderService_jniUrlListInit(JNIEnv* env,
 		LOGI("init firstUrlPool Success");
 	}
 
-	//urlListTest();
+	return true;
+}
+
+jboolean Java_com_UltimateImgSpider_SpiderService_jniUrlListInit(JNIEnv* env,
+		jobject thiz)
+{
+	if(!urlListInit())
+	{
+		return false;
+	}
+
+	if(!urlRemPoolInit())
+	{
+		return false;
+	}
 
 	return true;
 }
