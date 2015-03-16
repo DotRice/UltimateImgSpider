@@ -1,5 +1,6 @@
 package com.UltimateImgSpider;
 
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,16 +49,19 @@ public class SpiderActivity extends Activity
 	final static String SOURCE_URL_BUNDLE_KEY = "SourceUrl";
 	final static String CMD_BUNDLE_KEY = "cmd";
 	
-	public final static int CMD_VAL_NOTHING=0;
-	public final static int CMD_VAL_STOP=1;
-	public final static int CMD_VAL_PAUSE=2;
-	public final static int CMD_VAL_CONTINUE=3;
+	public final static int CMD_NOTHING = 0;
+	public final static int CMD_CLEAR = 1;
+	public final static int CMD_PAUSE = 2;
+	public final static int CMD_CONTINUE = 3;
+	public final static int CMD_PREPARE_RESTART=4;
 	
+	private ImageTextButton btPauseOrContinue;
+	private ImageTextButton btSelSrc;
+	private ImageTextButton btClear;
 	
-	String srcUrl;
+	String srcUrl = "http://www.umei.cc/";
 	
 	private TextView spiderLog;
-	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -70,7 +74,7 @@ public class SpiderActivity extends Activity
 		spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
 		projBarInit();
 		
-		startAndBindSpiderService(null);
+		startAndBindSpiderService(srcUrl);
 	}
 	
 	protected void onStart()
@@ -132,58 +136,64 @@ public class SpiderActivity extends Activity
 	
 	private void projBarInit()
 	{
+		btPauseOrContinue = (ImageTextButton) findViewById(R.id.buttonPauseOrContinue);
+		btPauseOrContinue.setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				Log.i(LOG_TAG, "Start");
+				
+				ImageTextButton itb = (ImageTextButton) v;
+				if (itb.textView.getText().toString()
+				        .equals(getString(R.string.pause)))
+				{
+					itb.changeView(R.drawable.start, R.string.goOn);
+					
+					sendCmdToSpiderService(CMD_PAUSE);
+				}
+				else
+				{
+					if (srcUrl != null)
+					{
+						itb.changeView(R.drawable.pause, R.string.pause);
+						startAndBindSpiderService(srcUrl);
+						
+						sendCmdToSpiderService(CMD_CONTINUE);
+					}
+				}
+			}
+		});
 		
-		findViewById(R.id.buttonClear).setOnClickListener(
-		        new View.OnClickListener()
-		        {
-			        
-			        @Override
-			        public void onClick(View v)
-			        {
-				        Log.i(LOG_TAG, "Clear");
-				        sendCmdToSpiderService(CMD_VAL_STOP);
-			        }
-		        });
-		findViewById(R.id.buttonSelSrc).setOnClickListener(
-		        new View.OnClickListener()
-		        {
-			        
-			        @Override
-			        public void onClick(View v)
-			        {
-				        Log.i(LOG_TAG, "SelSrc");
-				        
-				        Intent intent = new Intent(SpiderActivity.this,
-				                SelSrcActivity.class);
-				        startActivityForResult(intent, REQUST_SRC_URL);
-			        }
-		        });
-		findViewById(R.id.buttonPauseOrContinue).setOnClickListener(
-		        new View.OnClickListener()
-		        {
-			        
-			        @Override
-			        public void onClick(View v)
-			        {
-				        Log.i(LOG_TAG, "Start");
-				        
-				        ImageTextButton itb=(ImageTextButton)v;
-				        if(itb.textView.getText().toString().equals(getString(R.string.pause)))
-				        {
-				        	itb.changeView(R.drawable.start, R.string.goOn);
-				        	
-				        }
-				        else
-				        {
-					        if(srcUrl!=null)
-					        {
-					        	itb.changeView(R.drawable.pause, R.string.pause);
-					        	startAndBindSpiderService(srcUrl);
-					        }
-				        }
-			        }
-		        });
-		        
+		btSelSrc = (ImageTextButton) findViewById(R.id.buttonSelSrc);
+		btSelSrc.setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				Log.i(LOG_TAG, "SelSrc");
+				
+				Intent intent = new Intent(SpiderActivity.this,
+				        SelSrcActivity.class);
+				startActivityForResult(intent, REQUST_SRC_URL);
+			}
+		});
+		
+		btClear = (ImageTextButton) findViewById(R.id.buttonClear);
+		btClear.setOnClickListener(new View.OnClickListener()
+		{
+			
+			@Override
+			public void onClick(View v)
+			{
+				Log.i(LOG_TAG, "Clear");
+				sendCmdToSpiderService(CMD_CLEAR);
+				btPauseOrContinue.changeView(R.drawable.start, R.string.goOn);
+			}
+		});
+		
 	}
 	
 	/** The primary interface we will be calling on the service. */
@@ -248,11 +258,10 @@ public class SpiderActivity extends Activity
 			
 			// Detach our existing connection.
 			unbindService(mConnection);
-		Log.i(LOG_TAG, "unbound SpiderService");
+			Log.i(LOG_TAG, "unbound SpiderService");
 		}
 		
 	}
-	
 	
 	private Intent sendUrlToSpiderService(String url)
 	{
@@ -301,20 +310,29 @@ public class SpiderActivity extends Activity
 		}
 	};
 	
-	private static final int BUMP_MSG = 1;
+	private MessageHandler mHandler=new MessageHandler(this);
 	
-	private Handler mHandler = new Handler()
+	private static final int BUMP_MSG = 1;
+	private static class MessageHandler extends Handler
 	{
+		WeakReference<SpiderActivity> mActivity;
+		
+		MessageHandler(SpiderActivity activity)
+		{
+			mActivity = new WeakReference<SpiderActivity>(activity);
+		}
+		
 		@Override
 		public void handleMessage(Message msg)
 		{
+			SpiderActivity theActivity=mActivity.get();
 			switch (msg.what)
 			{
 				case BUMP_MSG:
-					spiderLog.setText("Total:" + MemoryInfo.getTotalMemInMb()
+					theActivity.spiderLog.setText("Total:" + MemoryInfo.getTotalMemInMb()
 					        + "M Free:"
-					        + MemoryInfo.getFreeMemInMb(SpiderActivity.this)
-					        + "M " + (String) msg.obj);
+					        + MemoryInfo.getFreeMemInMb(theActivity)
+					        + "M\r\n" + (String) msg.obj);
 				break;
 				default:
 					super.handleMessage(msg);

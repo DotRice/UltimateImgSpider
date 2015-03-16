@@ -39,7 +39,7 @@ public class SpiderService extends Service
 	private final String LOG_TAG = "SpiderService";
 	final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
 	
-	private int cmdVal=SpiderActivity.CMD_VAL_NOTHING;
+	private int cmdVal=SpiderActivity.CMD_NOTHING;
 	
 	
 	/** The primary interface we will be calling on the service. */
@@ -140,11 +140,11 @@ public class SpiderService extends Service
 		}
 		
 		
-		cmdVal=intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY, SpiderActivity.CMD_VAL_NOTHING);
+		cmdVal=intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY, SpiderActivity.CMD_NOTHING);
 		Log.i(LOG_TAG, "onStartCommand "+cmdVal);
 		if(curUrl.isEmpty())
 		{
-			handleCmd(false);
+			handleCmd();
 		}
 		
 		return START_REDELIVER_INTENT;
@@ -172,34 +172,29 @@ public class SpiderService extends Service
 		return true;
 	}
 	
-	private boolean handleCmd(boolean isOnLoadUrl)
+	private void handleCmd()
 	{
-		int cmd=cmdVal;
-		cmdVal=SpiderActivity.CMD_VAL_NOTHING;
-		switch(cmd)
+		switch(cmdVal)
 		{
-			case SpiderActivity.CMD_VAL_STOP:
+			case SpiderActivity.CMD_CLEAR:
 				stopSelf();
-				return true;
-			case SpiderActivity.CMD_VAL_PAUSE:
-				curUrl="";
-				return true;
-
-			case SpiderActivity.CMD_VAL_CONTINUE:
+				break;
+			case SpiderActivity.CMD_CONTINUE:
 				if(!isOnLoadUrl)
 				{
-					curUrl = jniFindNextUrlToLoad(null, URL_TYPE_PAGE);
+					curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE);
 					if(!curUrl.isEmpty())
 					{
 						spiderLoadUrl(curUrl);
-						reportSpiderLog();
+						reportSpiderLog(false);
 					}
-					return true;
 				}
-				return false;
-				
+				break;
+			case SpiderActivity.CMD_PREPARE_RESTART:
+				stopSelf();
+				break;
 			default:
-				return false;
+				break;
 		}
 	}
 	
@@ -337,20 +332,30 @@ public class SpiderService extends Service
 	}
 	
 	
-	private void reportSpiderLog()
+	private void reportSpiderLog(boolean isCompleted)
 	{
-		Runtime rt = Runtime.getRuntime();
+		String log="";
 		
-		pageScanCnt++;
-		String log = "VM:"+(rt.totalMemory() >> 20) + "M Native:"
+		if(isCompleted)
+		{
+			log="siteScanCompleted\r\n";
+		}
+		else
+		{
+			pageScanCnt++;
+		}
+		
+		Runtime rt = Runtime.getRuntime();
+		log = log+"VM:"+(rt.totalMemory() >> 20) + "M Native:"
 		        + (Debug.getNativeHeapSize() >> 20) + "M pic:" + imgUrlCnt
 		        + " page:" + pageScanCnt + "/" + pageUrlCnt + " loadTime:" + loadTime + " scanTime:"
 		        + scanTime + "\r\n" + curUrl;
 		
+		
 		Log.i(LOG_TAG, log);
 		
-		int N = mCallbacks.beginBroadcast();
-		for (int i = 0; i < N; i++)
+		int numOfCallback = mCallbacks.beginBroadcast();
+		for (int i = 0; i < numOfCallback; i++)
 		{
 			try
 			{
@@ -483,8 +488,23 @@ public class SpiderService extends Service
 			@Override
 			public void run()
 			{
-				spiderLoadUrl(curUrl);
-				reportSpiderLog();
+				if(cmdVal!=SpiderActivity.CMD_PAUSE)
+				{
+					curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE);
+					
+					if(curUrl.isEmpty())
+					{
+						Log.i(LOG_TAG, "site scan complete");
+						reportSpiderLog(true);
+						stopSelf();
+					}
+					else
+					{
+						spiderLoadUrl(curUrl);
+						reportSpiderLog(false);
+					}
+				}
+				cmdVal=SpiderActivity.CMD_NOTHING;
 			}
 		};
 		
@@ -508,7 +528,7 @@ public class SpiderService extends Service
 			pageUrlCnt = jniAddUrl(srcUrl, srcUrl.hashCode(), URL_TYPE_PAGE);
 			curUrl = jniFindNextUrlToLoad(null, URL_TYPE_PAGE);
 			spiderLoadUrl(curUrl);
-			reportSpiderLog();
+			reportSpiderLog(false);
 		}
 		catch (MalformedURLException e)
 		{
@@ -518,7 +538,7 @@ public class SpiderService extends Service
 	
 	private class timerThread extends Thread
 	{
-		private final int timerInterval = 1000;
+		private final int TIMER_INTERVAL = 1000;
 		private boolean urlTimeOutPostSuccess = true;
 		
 		public void run()
@@ -550,7 +570,7 @@ public class SpiderService extends Service
 				
 				try
 				{
-					sleep(timerInterval);
+					sleep(TIMER_INTERVAL);
 				}
 				catch (InterruptedException e)
 				{
@@ -562,12 +582,9 @@ public class SpiderService extends Service
 	
 	private void spiderLoadUrl(String url)
 	{
-		if(!handleCmd(true))
-		{
-	        //Log.i(LOG_TAG, "spiderLoadUrl:"+url);
-			spider.loadUrl(url);
-			urlLoadTimer.set(URL_TIME_OUT);
-		}
+        //Log.i(LOG_TAG, "spiderLoadUrl:"+url);
+		spider.loadUrl(url);
+		urlLoadTimer.set(URL_TIME_OUT);
 	}
 	
 	@JavascriptInterface
@@ -631,22 +648,8 @@ public class SpiderService extends Service
 	@JavascriptInterface
 	public void onCurPageScaned()
 	{
-		curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE);
 		scanTime = System.currentTimeMillis() - scanTimer;
-		if (!curUrl.isEmpty())
-		{
-			urlLoadPostSuccess.set(spiderHandler.post(loadNextUrlAfterScan));
-		}
-		else
-		{
-			onSiteScanCompleted();
-		}
-	}
-	
-	private void onSiteScanCompleted()
-	{
-		Log.i(LOG_TAG, "site scan complete");
-		stopSelf();
+		urlLoadPostSuccess.set(spiderHandler.post(loadNextUrlAfterScan));
 	}
 	
 }
