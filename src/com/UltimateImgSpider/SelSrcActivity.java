@@ -67,7 +67,6 @@ public class SelSrcActivity extends Activity
     private View.OnClickListener oclSelSearchEngine;
     private EditText             etUrl;
     private RelativeLayout       urlBar;
-    private FrameLayout urlBarBox;
 
     private Button               btnURLcmd;
 
@@ -543,8 +542,6 @@ public class SelSrcActivity extends Activity
             }
         });
         
-        urlBarBox=(FrameLayout)findViewById(R.id.urlBarBox);
-
         oclSelSearchEngine = new View.OnClickListener()
         {
 

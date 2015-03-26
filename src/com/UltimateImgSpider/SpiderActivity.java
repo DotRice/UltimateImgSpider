@@ -143,13 +143,13 @@ public class SpiderActivity extends Activity
 			@Override
 			public void onClick(View v)
 			{
-				Log.i(LOG_TAG, "Start");
+				Log.i(LOG_TAG, "Start pause go-on");
 				
-				ImageTextButton itb = (ImageTextButton) v;
-				if (itb.textView.getText().toString()
-				        .equals(getString(R.string.pause)))
+				String cmd = btPauseOrContinue.textView.getText().toString();
+				
+				if (cmd.equals(getString(R.string.pause)))
 				{
-					itb.changeView(R.drawable.start, R.string.goOn);
+					btPauseOrContinue.changeView(R.drawable.start, R.string.goOn);
 					
 					sendCmdToSpiderService(CMD_PAUSE);
 				}
@@ -157,10 +157,14 @@ public class SpiderActivity extends Activity
 				{
 					if (srcUrl != null)
 					{
-						itb.changeView(R.drawable.pause, R.string.pause);
+						btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
+						
 						startAndBindSpiderService(srcUrl);
 						
-						sendCmdToSpiderService(CMD_CONTINUE);
+						if(cmd.equals(getString(R.string.goOn)))
+						{
+							sendCmdToSpiderService(CMD_CONTINUE);
+						}
 					}
 				}
 			}
@@ -190,7 +194,7 @@ public class SpiderActivity extends Activity
 			{
 				Log.i(LOG_TAG, "Clear");
 				sendCmdToSpiderService(CMD_CLEAR);
-				btPauseOrContinue.changeView(R.drawable.start, R.string.goOn);
+				btPauseOrContinue.changeView(R.drawable.start, R.string.start);
 			}
 		});
 		
@@ -329,10 +333,17 @@ public class SpiderActivity extends Activity
 			switch (msg.what)
 			{
 				case BUMP_MSG:
+					String msgStr=(String) msg.obj;
+					
 					theActivity.spiderLog.setText("Total:" + MemoryInfo.getTotalMemInMb()
 					        + "M Free:"
 					        + MemoryInfo.getFreeMemInMb(theActivity)
-					        + "M\r\n" + (String) msg.obj);
+					        + "M\r\n" + msgStr);
+					if(msgStr.contains("siteScanCompleted"))
+					{
+						theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
+						theActivity.sendCmdToSpiderService(CMD_PAUSE);
+					}
 				break;
 				default:
 					super.handleMessage(msg);

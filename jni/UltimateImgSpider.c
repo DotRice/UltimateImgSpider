@@ -408,9 +408,9 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		int urlSim = 0;
 		const u8 *prevUrl = (*env)->GetStringUTFChars(env, jPrevUrl, NULL);
 
-		if(strcmp(prevUrl, *curNode->url)==0)
+		if(strcmp(prevUrl, (*curNode)->url)==0)
 		{
-			*curNode->state=URL_DOWNLOADED;
+			(*curNode)->state=URL_DOWNLOADED;
 		}
 
 		//LOGI("prevUrl:%s curList->len:%d", prevUrl, curList->len);
@@ -422,7 +422,6 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 			//LOGI("url %d:%s", i, node->url);
 			if (node->state == URL_PENDING)
 			{
-
 				if (scanComplete)
 				{
 					scanComplete = false;
@@ -432,6 +431,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 				else
 				{
 					int curSim = urlSimilarity(prevUrl, node->url);
+
 					if (curSim > urlSim)
 					{
 						urlSim = curSim;
@@ -449,7 +449,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 	if (findNewNode)
 	{
 		//LOGI("curNode->url:%s", curNode->url);
-		return (*env)->NewStringUTF(env, *curNode->url);
+		return (*env)->NewStringUTF(env, (*curNode)->url);
 	}
 
 	return (*env)->NewStringUTF(env, "");
