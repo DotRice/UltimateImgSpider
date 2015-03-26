@@ -90,6 +90,12 @@ public class WatchdogService extends Service
 	        Log.i(LOG_TAG, "registerAshmem "+fd);
 	        jniRegisterAshmem(fd);
         }
+
+		@Override
+        public int getPid() throws RemoteException
+        {
+	        return Process.myPid();
+        }
 	};
 	
 }

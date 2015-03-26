@@ -109,6 +109,9 @@ public class SpiderActivity extends Activity
 		super.onDestroy();
 		Log.i(LOG_TAG, "onDestroy");
 		
+		
+		sendCmdToSpiderService(CMD_CLEAR);
+		
 		unboundSpiderService();
 	}
 	

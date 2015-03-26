@@ -175,7 +175,16 @@ public class SpiderService extends Service
 		switch(cmdVal)
 		{
 			case SpiderActivity.CMD_CLEAR:
-				
+				try
+                {
+	                int watchdogPid=watchdogService.getPid();
+	                Process.killProcess(watchdogPid);
+                }
+                catch (RemoteException e)
+                {
+	                // TODO Auto-generated catch block
+	                e.printStackTrace();
+                }
 				
 				stopSelf();
 				break;
