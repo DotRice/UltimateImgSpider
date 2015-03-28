@@ -83,6 +83,26 @@ public class SpiderService extends Service
 		bindService(watchdogIntent, watchdogConnection, BIND_ABOVE_CLIENT);
 	}
 	
+	public static String  WATCHDOG_CMD="watchdogCmd";
+	public static int WATCHDOG_CMD_NOTHING=0;
+	public static int WATCHDOG_CMD_STOP=1;
+	
+	private void sendCmdToWatchdog(int cmd)
+	{
+		Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
+		watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage()
+		        .getName());
+		
+		Bundle bundle = new Bundle();
+		bundle.putInt(WATCHDOG_CMD, cmd);
+		watchdogIntent.putExtras(bundle);
+		startService(watchdogIntent);
+	}
+	
+	private void stopWatchdog()
+	{
+		sendCmdToWatchdog(WATCHDOG_CMD_STOP);
+	}
 	
 	@Override
 	public void onCreate()
@@ -106,7 +126,7 @@ public class SpiderService extends Service
 			spider.destroy();
 		}
 		
-		jniOnDestroy();
+		jniClearAll();
 		
 		System.exit(0);
 	}
@@ -122,11 +142,11 @@ public class SpiderService extends Service
 			if(url.startsWith("http://")||url.startsWith("https://"))
 			{
 				
-				if(!srcUrl.equals(url))
+				if(!srcUrl.equals(url)||curUrl.isEmpty())
 				{
 					srcUrl=url;
 		
-					jniOnDestroy();
+					jniClearAll();
 					if(!jniUrlListInit())
 					{
 						stopSelf();
@@ -175,16 +195,7 @@ public class SpiderService extends Service
 		switch(cmdVal)
 		{
 			case SpiderActivity.CMD_CLEAR:
-				try
-                {
-	                int watchdogPid=watchdogService.getPid();
-	                Process.killProcess(watchdogPid);
-                }
-                catch (RemoteException e)
-                {
-	                // TODO Auto-generated catch block
-	                e.printStackTrace();
-                }
+				stopWatchdog();
 				
 				stopSelf();
 				break;
@@ -323,7 +334,7 @@ public class SpiderService extends Service
 	public native String stringFromJNI(String srcStr);
 	public native boolean jniUrlListInit();
 	// Activity onDestory时调用，与jniAddUrl、jniFindNextUrlToLoad不在同一线程，可能会出错。
-	public native void jniOnDestroy();
+	public native void jniClearAll();
 	public native int jniAddUrl(String url, int hashCode, int type);
 	private native String jniFindNextUrlToLoad(String prevUrl, int type);
 	
@@ -390,7 +401,7 @@ public class SpiderService extends Service
 	
 	private void spiderWebViewInit()
 	{
-		spider = new WebView(getApplicationContext()); 
+		spider = new WebView(this); 
 		
 		spider.setWebViewClient(new WebViewClient()
 		{
@@ -465,15 +476,6 @@ public class SpiderService extends Service
 		setting.setJavaScriptEnabled(true);
 		setting.setJavaScriptCanOpenWindowsAutomatically(false);
 		
-		// 启用缩放
-		setting.setSupportZoom(true);
-		setting.setBuiltInZoomControls(true);
-		setting.setUseWideViewPort(true);
-		setting.setDisplayZoomControls(false);
-		
-		// 自适应屏幕
-		setting.setLoadWithOverviewMode(true);
-		
 		spider.addJavascriptInterface(this, "SpiderCrawl");
 		
 	}
@@ -508,7 +510,10 @@ public class SpiderService extends Service
 				{
 					findNextUrlToLoad();
 				}
-				cmdVal=SpiderActivity.CMD_NOTHING;
+				else
+				{
+					cmdVal=SpiderActivity.CMD_NOTHING;
+				}
 			}
 		};
 		

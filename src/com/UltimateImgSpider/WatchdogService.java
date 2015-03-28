@@ -62,6 +62,12 @@ public class WatchdogService extends Service
 	{
 		Log.i(LOG_TAG, "onStartCommand "+startId);
 		
+		int cmd=intent.getIntExtra(SpiderService.WATCHDOG_CMD, SpiderService.WATCHDOG_CMD_NOTHING);
+		if(cmd==SpiderService.WATCHDOG_CMD_STOP)
+		{
+			stopSelf();
+		}
+		
 		return START_REDELIVER_INTENT;
 	}
 	

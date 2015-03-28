@@ -455,7 +455,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 	return (*env)->NewStringUTF(env, "");
 }
 
-void Java_com_UltimateImgSpider_SpiderService_jniOnDestroy(JNIEnv* env,
+void Java_com_UltimateImgSpider_SpiderService_jniClearAll(JNIEnv* env,
 		jobject thiz)
 {
 	int i;
