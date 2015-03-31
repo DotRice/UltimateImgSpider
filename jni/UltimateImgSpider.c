@@ -149,10 +149,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 	return (*env)->NewStringUTF(env, "test jni !");
 }
 
-
-
-
-
+#define MAX_SIZE_PER_URL	4096
 
 enum URL_STATE
 {
@@ -162,28 +159,39 @@ enum URL_STATE
 #define URL_TYPE_PAGE	0
 #define URL_TYPE_IMG	1
 
+#define POOL_PTR_INVALID	0xFFFFFFFF
+
 typedef struct
 {
-	char *url;
+	u32 poolPtr;
+	u32 offset;
+} urlNodeRelativeAddr;
+
+typedef struct
+{
 	int hashCode;
-	u8 state;
+	u32 state;
+	urlNodeRelativeAddr nextNodeAddr;
+} nodePara;
+
+typedef struct
+{
+	nodePara para;
+	char url[MAX_SIZE_PER_URL];
 } urlNode;
 
 typedef struct
 {
-	urlNode *list;
+	urlNode *head;
+	urlNode *tail;
 	urlNode *curNode;
-	int len;
-	int max;
-} urlList;
+	u32 processed;
+	u32 len;
+} urlChain;
 
-urlList pageUrlList;
-urlList imgUrlList;
+urlChain pageUrlChain;
+urlChain imgUrlChain;
 
-#define MAX_PAGE_ONE_SITE	200000
-#define MAX_IMG_ONE_SITE	200000
-
-#define MAX_SIZE_PER_URL	4096
 
 #define SIZE_PER_URLPOOL	(1024*1024-16)
 typedef struct memPool
@@ -194,28 +202,120 @@ typedef struct memPool
 } t_urlPool;
 
 t_urlPool *firstUrlPool = NULL;
-char *urlMalloc(u32 size)
+
+void nodeAddrAbsToRelative(urlNode *node, urlNodeRelativeAddr *RelativeAddr)
 {
+	t_urlPool *pool=firstUrlPool;
+	u32 i=0;
+
+	if(pool!=NULL)
+	{
+		do
+		{
+			s64 ofs=(u32)node-(u32)pool;
+			if(ofs>=0&&ofs<sizeof(t_urlPool))
+			{
+				RelativeAddr->poolPtr=i;
+				RelativeAddr->offset=ofs;
+				return;
+			}
+			pool=pool->next;
+			i++;
+		}while(pool->next!=NULL);
+	}
+}
+
+void nodeAddrRelativeToAbs(urlNodeRelativeAddr *RelativeAddr, urlNode **node)
+{
+	t_urlPool *pool=firstUrlPool;
+	u32 i=0;
+
+	if(pool!=NULL)
+	{
+		while(pool->next!=NULL&&i<RelativeAddr->poolPtr)
+		{
+			pool=pool->next;
+			i++;
+		}
+
+		if(i==RelativeAddr->poolPtr&&RelativeAddr->offset<sizeof(t_urlPool))
+		{
+			(*node)=(urlNode *)(((u32)pool)+RelativeAddr->offset);
+		}
+	}
+}
+
+
+t_urlPool *findUrlPoolByIndex(u32 index)
+{
+	t_urlPool *pool=firstUrlPool;
+	u32 i=0;
+
+	if(pool!=NULL)
+	{
+		while(i<index&&pool->next!=NULL)
+		{
+			pool=pool->next;
+			i++;
+		}
+	}
+
+	return (i<index)?NULL:pool;
+}
+
+urlNode *gotoNextNode(urlNode *curNode)
+{
+	t_urlPool *pool=findUrlPoolByIndex(curNode->para.nextNodeAddr.poolPtr);
+
+	if(pool!=NULL)
+	{
+		return (urlNode*)(pool->mem+curNode->para.nextNodeAddr.offset);
+	}
+
+	return NULL;
+}
+
+urlNode *urlNodeAllocFromPool(u32 urlSize, urlNode *prevNode)
+{
+	urlNode *node=NULL;
 	t_urlPool *urlPool = firstUrlPool;
+	u32 poolIndex=0;
+	u32 offset=0;
+	u32 size=((urlSize+sizeof(nodePara))+3)&0xFFFFFFFC;
+
 
 	if ((size > MAX_SIZE_PER_URL) || (urlPool == NULL ))
 	{
-		return NULL ;
+		return NULL;
 	}
 
 	while (true)
 	{
 		if ((urlPool->idleMemPtr + size) <= SIZE_PER_URLPOOL)
 		{
-			u32 retPtr = urlPool->idleMemPtr;
+			offset = urlPool->idleMemPtr;
 			urlPool->idleMemPtr += size;
-			return urlPool->mem + retPtr;
+
+			node=(urlNode*)(urlPool->mem + offset);
+			break;
+		}
+
+		poolIndex++;
+		if (urlPool->next != NULL)
+		{
+			urlPool = urlPool->next;
 		}
 		else
 		{
+			urlPool->next = malloc(sizeof(t_urlPool));
 			if (urlPool->next != NULL)
 			{
 				urlPool = urlPool->next;
+
+				urlPool->idleMemPtr = 0;
+				urlPool->next = NULL;
+
+				LOGI("init new urlPool Success");
 			}
 			else
 			{
@@ -224,47 +324,34 @@ char *urlMalloc(u32 size)
 		}
 	}
 
-	urlPool->next = malloc(sizeof(t_urlPool));
-	if (urlPool->next != NULL)
+	if(node!=NULL)
 	{
-		urlPool = urlPool->next;
+		if(prevNode!=NULL)
+		{
+			prevNode->para.nextNodeAddr.poolPtr=poolIndex;
+			prevNode->para.nextNodeAddr.offset=offset;
+		}
+		node->para.nextNodeAddr.poolPtr=POOL_PTR_INVALID;
 
-		urlPool->idleMemPtr = size;
-		urlPool->next = NULL;
-
-		LOGI("init new urlPool Success");
-
-		return urlPool->mem;
+		//LOGI("urlNodeAlloc %d %d", (u32)node-(u32)firstUrlPool, firstUrlPool->idleMemPtr);
 	}
 
-	return NULL ;
+	return node;
 }
 
-jboolean urlListInit()
+void urlListInit()
 {
-	pageUrlList.list = malloc(MAX_PAGE_ONE_SITE * sizeof(urlNode));
-	if (pageUrlList.list == NULL)
-	{
-		LOGI("malloc Fail!");
-		return false;
-	}
+	pageUrlChain.head=NULL;
+	pageUrlChain.tail=NULL;
+	pageUrlChain.curNode=NULL;
+	pageUrlChain.processed=NULL;
+	pageUrlChain.len=0;
 
-	imgUrlList.list = malloc(MAX_IMG_ONE_SITE * sizeof(urlNode));
-	if (imgUrlList.list == NULL)
-	{
-		LOGI("malloc Fail!");
-		return false;
-	}
-
-	pageUrlList.curNode=NULL;
-	pageUrlList.len = 0;
-	pageUrlList.max = MAX_PAGE_ONE_SITE;
-
-	imgUrlList.curNode=NULL;
-	imgUrlList.len = 0;
-	imgUrlList.max = MAX_IMG_ONE_SITE;
-
-	return true;
+	imgUrlChain.head=NULL;
+	imgUrlChain.tail=NULL;
+	imgUrlChain.curNode=NULL;
+	imgUrlChain.processed=NULL;
+	imgUrlChain.len=0;
 }
 
 jboolean urlRemPoolInit()
@@ -288,72 +375,71 @@ jboolean urlRemPoolInit()
 jboolean Java_com_UltimateImgSpider_SpiderService_jniUrlListInit(JNIEnv* env,
 		jobject thiz)
 {
-	if(!urlListInit())
-	{
-		return false;
-	}
-
 	if(!urlRemPoolInit())
 	{
 		return false;
 	}
 
+	urlListInit();
+
 	return true;
 }
 
-//添加URL 返回添加完成后的列表大小，返回0表示内存分配失败
+
+
+//添加URL 返回列表大小
 jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 		jobject thiz, jstring jUrl, jint jHashCode, jint jType)
 {
-	int i;
-	int ret = 0;
-	urlList *curList =
-			(jType == URL_TYPE_PAGE) ? (&pageUrlList) : (&imgUrlList);
-	urlNode *node = &(curList->list[0]);
-
+	u8 UrlAlreadyInChain=false;
+	urlChain *curChain =
+			(jType == URL_TYPE_PAGE) ? (&pageUrlChain) : (&imgUrlChain);
 	const u8 *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
-	//LOGI("url:%s hashCode:%d type:%d", url, jHashCode, jType);
+	//LOGI("url:%s %d hashCode:%d type:%d", url, strlen(url), jHashCode, jType);
 
-	for (i = 0; i < curList->len; i++)
+	urlNode *node=curChain->head;
+	if(node!=NULL)
 	{
-		node = &(curList->list[i]);
-		if (node->hashCode == jHashCode)
+		u32 i;
+		for(i=0; i<curChain->len; i++)
 		{
-			if (strcmp(node->url, url) == 0)
+			if (node->para.hashCode == jHashCode)
 			{
-				break;
+				if (strcmp(node->url, url) == 0)
+				{
+					UrlAlreadyInChain=true;
+					break;
+				}
 			}
+
+			node=gotoNextNode(node);
 		}
 	}
 
-	while (true)
+	if (!UrlAlreadyInChain)
 	{
-		if ((i == curList->len) && (curList->len < curList->max))
+		urlNode *newNode = urlNodeAllocFromPool(strlen(url) + 1, curChain->tail);
+		if (newNode != NULL)
 		{
-			char *newUrl = urlMalloc(strlen(url) + 1);
-			if (newUrl == NULL)
-			{
-				break;
-			}
-			else
-			{
-				strcpy(newUrl, url);
+			//LOGI("newNode %d %d", (u32)newNode-(u32)firstUrlPool, firstUrlPool->idleMemPtr);
 
-				node = &(curList->list[i]);
-				node->url = newUrl;
-				node->hashCode = jHashCode;
-				node->state = URL_PENDING;
-				curList->len++;
+			strcpy(newNode->url, url);
+			newNode->para.hashCode = jHashCode;
+			newNode->para.state = URL_PENDING;
+
+			if(curChain->head==NULL)
+			{
+				curChain->head=newNode;
 			}
+			curChain->tail=newNode;
+			curChain->len++;
+
 		}
-
-		ret = curList->len;
-		break;
 	}
 
 	(*env)->ReleaseStringUTFChars(env, jUrl, url);
 
-	return ret;
+	return curChain->len;
 }
 
 u32 urlSimilarity(const char *url1, const char *url2)
@@ -379,10 +465,10 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		JNIEnv* env, jobject thiz, jstring jPrevUrl, jint jType)
 {
 	int i;
-	urlList *curList =
-			(jType == URL_TYPE_PAGE) ? (&pageUrlList) : (&imgUrlList);
+	urlChain *curChain =
+			(jType == URL_TYPE_PAGE) ? (&pageUrlChain) : (&imgUrlChain);
 
-	urlNode **curNode = &(curList->curNode);
+	urlNode **curNode = &(curChain->curNode);
 	bool findNewNode=false;
 	urlNode *node;
 
@@ -391,36 +477,41 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 
 	if (jPrevUrl == NULL)
 	{
-		for (i = 0; i < curList->len; i++)
+		node = curChain->head;
+		for (i = 0; i < curChain->len; i++)
 		{
-			node = &(curList->list[i]);
-			if (node->state == URL_PENDING)
+			if (node->para.state == URL_PENDING)
 			{
 				*curNode = node;
 				findNewNode=true;
 				break;
 			}
+
+			node=gotoNextNode(node);
 		}
 	}
 	else
 	{
 		bool scanComplete = true;
-		int urlSim = 0;
+		u32 urlSim = 0;
 		const u8 *prevUrl = (*env)->GetStringUTFChars(env, jPrevUrl, NULL);
 
-		if(strcmp(prevUrl, (*curNode)->url)==0)
+		if(*curNode!=NULL)
 		{
-			(*curNode)->state=URL_DOWNLOADED;
+			if(strcmp(prevUrl, (*curNode)->url)==0)
+			{
+				(*curNode)->para.state=URL_DOWNLOADED;
+				curChain->processed++;
+			}
 		}
 
-		//LOGI("prevUrl:%s curList->len:%d", prevUrl, curList->len);
+		//LOGI("prevUrl:%s curChain->len:%d", prevUrl, curChain->len);
 
-		for (i = 0; i < (curList->len); i++)
+		node = curChain->head;
+		for (i = 0; i < curChain->len; i++)
 		{
-			node = &(curList->list[i]);
-
 			//LOGI("url %d:%s", i, node->url);
-			if (node->state == URL_PENDING)
+			if (node->para.state == URL_PENDING)
 			{
 				if (scanComplete)
 				{
@@ -430,7 +521,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 				}
 				else
 				{
-					int curSim = urlSimilarity(prevUrl, node->url);
+					u32 curSim = urlSimilarity(prevUrl, node->url);
 
 					if (curSim > urlSim)
 					{
@@ -441,6 +532,8 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 
 				findNewNode=true;
 			}
+
+			node=gotoNextNode(node);
 		}
 
 		(*env)->ReleaseStringUTFChars(env, jPrevUrl, prevUrl);
@@ -460,10 +553,7 @@ void Java_com_UltimateImgSpider_SpiderService_jniClearAll(JNIEnv* env,
 {
 	int i;
 
-	pageUrlList.len = 0;
-	imgUrlList.len = 0;
-	free(pageUrlList.list);
-	free(imgUrlList.list);
+	urlListInit();
 
 	if (firstUrlPool != NULL)
 	{
