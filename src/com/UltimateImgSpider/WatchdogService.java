@@ -35,6 +35,8 @@ public class WatchdogService extends Service
 	private final String LOG_TAG = "WatchdogService";
 	
 	public native void jniRegisterAshmem(int fd);
+	public native int jniGetAshmem(String name, int size);
+	
 	static
 	{
 		System.loadLibrary("UltimateImgSpider");
@@ -101,6 +103,22 @@ public class WatchdogService extends Service
         public int getPid() throws RemoteException
         {
 	        return Process.myPid();
+        }
+
+		@Override
+        public ParcelFileDescriptor getAshmem(String name, int size) throws RemoteException
+        {
+			ParcelFileDescriptor parcelFd=null;
+			try
+            {
+	        	parcelFd=ParcelFileDescriptor.fromFd(jniGetAshmem(name, size));
+            }
+            catch (IOException e)
+            {
+	            e.printStackTrace();
+            }
+			
+			return parcelFd;
         }
 	};
 	

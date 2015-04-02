@@ -12,8 +12,9 @@
 
 /*
  * 使用共享内存存储urlList，实现重启下载服务进程后能恢复工作现场。
- * 需要新申请一段内存时，新建一段共享内存，并把文件描述符发送给看门狗服务进程，
- * 看门狗服务进程用这个文件描述符映射此段共享内存到自己虚拟内存空间。
+ * Spider需要新申请一段内存时，向看门狗进程发出命令，并提供共享内存段名称和大小。
+ * 看门狗进程创建共享内存，并将其映射到自己的内存空间，然后向Spider进程返回共享内存的文件描述符。
+ * Spider进程用这个文件描述符映射此段共享内存到自己的内存空间。
  */
 
 
@@ -54,81 +55,95 @@ int ashmem_create_region(const char *name, u32 size)
 }
 
 
-jmethodID registerAshmemPoolMID=NULL;
+int Java_com_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
+		jobject thiz, jstring jname, jint size)
+{
+	int i, fd;
+	u8* mAddr = NULL;
+	const char *name = (*env)->GetStringUTFChars(env, jname, NULL);
+
+	fd = ashmem_create_region(name, size);
+
+	(*env)->ReleaseStringUTFChars(env, jname, name);
+
+	if (fd >= 0)
+	{
+		LOGI("create ashmem name:%s size:%d fd:%d success!", name, size, fd);
+
+		mAddr = (u8*) mmap(NULL, size, PROT_READ | PROT_WRITE,
+		MAP_SHARED, fd, 0);
+		if (mAddr != NULL)
+		{
+			LOGI("ashmem mmap %d to watchdog process success!", (u32 )mAddr);
+
+			for(i=0; i<8; i++)
+			{
+				mAddr[i]=i;
+			}
+
+			return fd;
+		}
+	}
+
+	return -1;
+}
+
+
+jmethodID getAshmemFromWatchdogMID=NULL;
 jclass SpiderServiceClass=NULL;
 jobject SpiderServiceInstance=NULL;
 
-void registerAshmemPool(JNIEnv* env, int fd)
+void* spiderGetAshmemFromWatchdog(JNIEnv* env, const char *name, int size)
 {
-	if(registerAshmemPoolMID==NULL)
+	void *ashmem=NULL;
+
+	if(getAshmemFromWatchdogMID==NULL)
 	{
 		SpiderServiceClass = (*env)->FindClass(env,
 			"com/UltimateImgSpider/SpiderService");
 		if (SpiderServiceClass != NULL)
 		{
-			LOGI("find class");
-
-			registerAshmemPoolMID = (*env)->GetMethodID(env, SpiderServiceClass, "registerAshmemPool",
-					"(I)Z");
+			getAshmemFromWatchdogMID = (*env)->GetMethodID(env, SpiderServiceClass, "getAshmemFromWatchdog",
+					"(Ljava/lang/String;I)I");
 		}
 	}
 
-	if (registerAshmemPoolMID != NULL)
+	if (getAshmemFromWatchdogMID != NULL)
 	{
-		LOGI("find Method");
-		(*env)->CallBooleanMethod(env, SpiderServiceInstance, registerAshmemPoolMID, fd);
-	}
-
-}
-
-
-#define ASHMEM_FILESIZE	32
-void* ashmemTest(JNIEnv* env, char* ashmName)
-{
-	int i, fd;
-	u8* mAddr = NULL;
-
-	fd = ashmem_create_region(ashmName, ASHMEM_FILESIZE);
-
-	if (fd >= 0)
-	{
-		mAddr = (u8*) mmap(NULL, ASHMEM_FILESIZE, PROT_READ | PROT_WRITE,
-		MAP_SHARED, fd, 0);
-		if (mAddr != NULL)
+		jstring jname=(*env)->NewStringUTF(env, name);
+		int fd=(*env)->CallIntMethod(env, SpiderServiceInstance, getAshmemFromWatchdogMID, jname, size);
+		if(fd>=0)
 		{
-			LOGI("mmap %d success!", (u32 )mAddr);
-
-			for(i=0; i<ASHMEM_FILESIZE; i++)
-			{
-				mAddr[i]=i;
-			}
-
-			registerAshmemPool(env, fd);
+			ashmem=(u8*) mmap(NULL, size, PROT_READ | PROT_WRITE,
+						MAP_SHARED, fd, 0);
 		}
+
 	}
 
-	return mAddr;
+	return ashmem;
 }
 
-void Java_com_UltimateImgSpider_WatchdogService_jniRegisterAshmem(JNIEnv* env,
-		jobject thiz, jint fd)
+
+
+
+void ashmemTest(JNIEnv* env, char* ashmName)
 {
-	LOGI("handleAshmem %d", fd);
-	u8 *addr=(u8*) mmap(NULL, ASHMEM_FILESIZE, PROT_READ | PROT_WRITE,
-			MAP_SHARED, fd, 0);
+	u8 *ashm=spiderGetAshmemFromWatchdog(env, "urlChains", 32);
 
-	if(addr!=NULL)
+	if(ashm!=NULL)
 	{
-		int i;
-
-		LOGI("data:");
-		for(i=0; i<ASHMEM_FILESIZE; i++)
+		u8 i;
+		for(i=0; i<8; i++)
 		{
-			LOGI("%d", addr[i]);
+			LOGI("%d", ashm[i]);
 		}
 	}
-
 }
+
+
+
+
+
 
 jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 		jobject thiz, jstring jSrcStr)
@@ -139,7 +154,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 
 	SpiderServiceInstance=thiz;
 
-	u8 *mWrite = ashmemTest(env, "write");
+	ashmemTest(env, "write");
 
 	if((*env)->ExceptionOccurred(env)) {
 	   return NULL;

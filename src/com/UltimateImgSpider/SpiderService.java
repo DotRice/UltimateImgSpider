@@ -190,6 +190,25 @@ public class SpiderService extends Service
 		return true;
 	}
 	
+	public int getAshmemFromWatchdog(String name, int size)
+	{
+		int fd=-1;
+		try
+        {
+			ParcelFileDescriptor parcelFd=watchdogService.getAshmem(name, size);
+			if(parcelFd!=null)
+			{
+				fd=parcelFd.getFd();
+			}
+        }
+        catch (RemoteException e)
+        {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		return fd;
+	}
+	
 	private void handleCmd()
 	{
 		switch(cmdVal)

@@ -56,6 +56,24 @@ this.registerAshmem(_arg0);
 reply.writeNoException();
 return true;
 }
+case TRANSACTION_getAshmem:
+{
+data.enforceInterface(DESCRIPTOR);
+java.lang.String _arg0;
+_arg0 = data.readString();
+int _arg1;
+_arg1 = data.readInt();
+android.os.ParcelFileDescriptor _result = this.getAshmem(_arg0, _arg1);
+reply.writeNoException();
+if ((_result!=null)) {
+reply.writeInt(1);
+_result.writeToParcel(reply, android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
+}
+else {
+reply.writeInt(0);
+}
+return true;
+}
 case TRANSACTION_getPid:
 {
 data.enforceInterface(DESCRIPTOR);
@@ -103,6 +121,30 @@ _reply.recycle();
 _data.recycle();
 }
 }
+@Override public android.os.ParcelFileDescriptor getAshmem(java.lang.String name, int size) throws android.os.RemoteException
+{
+android.os.Parcel _data = android.os.Parcel.obtain();
+android.os.Parcel _reply = android.os.Parcel.obtain();
+android.os.ParcelFileDescriptor _result;
+try {
+_data.writeInterfaceToken(DESCRIPTOR);
+_data.writeString(name);
+_data.writeInt(size);
+mRemote.transact(Stub.TRANSACTION_getAshmem, _data, _reply, 0);
+_reply.readException();
+if ((0!=_reply.readInt())) {
+_result = android.os.ParcelFileDescriptor.CREATOR.createFromParcel(_reply);
+}
+else {
+_result = null;
+}
+}
+finally {
+_reply.recycle();
+_data.recycle();
+}
+return _result;
+}
 @Override public int getPid() throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
@@ -122,8 +164,10 @@ return _result;
 }
 }
 static final int TRANSACTION_registerAshmem = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
-static final int TRANSACTION_getPid = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
+static final int TRANSACTION_getAshmem = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
+static final int TRANSACTION_getPid = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
 }
 public void registerAshmem(android.os.ParcelFileDescriptor pfd) throws android.os.RemoteException;
+public android.os.ParcelFileDescriptor getAshmem(java.lang.String name, int size) throws android.os.RemoteException;
 public int getPid() throws android.os.RemoteException;
 }
