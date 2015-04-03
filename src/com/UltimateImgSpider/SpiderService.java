@@ -168,28 +168,6 @@ public class SpiderService extends Service
 		return START_REDELIVER_INTENT;
 	}
 	
-	public boolean registerAshmemPool(int fd)
-	{
-		try
-        {
-	        try
-            {
-	            watchdogService.registerAshmem(ParcelFileDescriptor.fromFd(fd));
-            }
-            catch (IOException e)
-            {
-	            // TODO Auto-generated catch block
-	            e.printStackTrace();
-            }
-        }
-        catch (RemoteException e)
-        {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-		return true;
-	}
-	
 	public int getAshmemFromWatchdog(String name, int size)
 	{
 		int fd=-1;

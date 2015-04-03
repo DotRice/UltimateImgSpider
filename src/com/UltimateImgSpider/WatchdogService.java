@@ -34,7 +34,6 @@ public class WatchdogService extends Service
 {
 	private final String LOG_TAG = "WatchdogService";
 	
-	public native void jniRegisterAshmem(int fd);
 	public native int jniGetAshmem(String name, int size);
 	
 	static
@@ -96,7 +95,6 @@ public class WatchdogService extends Service
         {
 			int fd=pfd.getFd();
 	        Log.i(LOG_TAG, "registerAshmem "+fd);
-	        jniRegisterAshmem(fd);
         }
 
 		@Override
