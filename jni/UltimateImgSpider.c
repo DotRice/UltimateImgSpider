@@ -17,12 +17,12 @@
  * Spider进程用这个文件描述符映射此段共享内存到自己的内存空间。
  */
 
-
+#define ASHM_NAME_SIZE 32
 
 int ashmem_create_region(const char *name, u32 size)
 {
 	int fd, ret;
-	char buf[ASHMEM_NAME_LEN];
+	char buf[ASHM_NAME_SIZE];
 
 	while (name && size)
 	{
@@ -55,37 +55,97 @@ int ashmem_create_region(const char *name, u32 size)
 }
 
 
+typedef struct t_ashm
+{
+	char name[ASHM_NAME_SIZE+1];
+	int size;
+	int fd;
+	void *addr;
+	struct t_ashm *next;
+} t_ashmNode;
+
+
+t_ashmNode *ashmemChainHead=NULL;
+t_ashmNode *ashmemChainTail=NULL;
+
+
+t_ashmNode *findAshmemByNameAndSize(char *name, int size)
+{
+	t_ashmNode *ashmNode=ashmemChainHead;
+
+	while(ashmNode!=NULL)
+	{
+		if(strcmp(ashmNode->name, name)==0)
+		{
+			return ashmNode;
+		}
+
+		ashmNode=ashmNode->next;
+	}
+
+	return NULL;
+}
+
 int Java_com_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
 		jobject thiz, jstring jname, jint size)
 {
-	int i, fd;
+	int i, fd=-1;
 	u8* mAddr = NULL;
 	const char *name = (*env)->GetStringUTFChars(env, jname, NULL);
 
-	fd = ashmem_create_region(name, size);
-
-	(*env)->ReleaseStringUTFChars(env, jname, name);
-
-	if (fd >= 0)
+	t_ashmNode *ashmNode=findAshmemByNameAndSize(name, size);
+	if(ashmNode!=NULL)
 	{
-		LOGI("create ashmem name:%s size:%d fd:%d success!", name, size, fd);
-
-		mAddr = (u8*) mmap(NULL, size, PROT_READ | PROT_WRITE,
-		MAP_SHARED, fd, 0);
-		if (mAddr != NULL)
+		fd=ashmNode->fd;
+	}
+	else
+	{
+		fd = ashmem_create_region(name, size);
+		if (fd >= 0)
 		{
-			LOGI("ashmem mmap %d to watchdog process success!", (u32 )mAddr);
+			LOGI("create ashmem name:%s size:%d fd:%d success!", name, size, fd);
 
-			for(i=0; i<8; i++)
+			mAddr = (u8*) mmap(NULL, size, PROT_READ | PROT_WRITE,
+			MAP_SHARED, fd, 0);
+			if (mAddr != NULL)
 			{
-				mAddr[i]=i;
-			}
+				t_ashmNode *newAshmNode=malloc(sizeof(t_ashmNode));
+				if(newAshmNode!=NULL)
+				{
+					newAshmNode->addr=mAddr;
+					newAshmNode->fd=fd;
+					strncpy(newAshmNode->name, name, ASHM_NAME_SIZE);
+					newAshmNode->next=NULL;
+					newAshmNode->size=size;
 
-			return fd;
+					if(ashmemChainHead==NULL)
+					{
+						ashmemChainHead=newAshmNode;
+					}
+
+					if(ashmemChainTail!=NULL)
+					{
+						ashmemChainTail->next=newAshmNode;
+					}
+					ashmemChainTail=newAshmNode;
+
+
+					LOGI("ashmem mmap %d to watchdog process success!", (u32 )mAddr);
+
+					if(strcmp(name, ashmTest)==0)
+					{
+						for(i=0; i<8; i++)
+						{
+							mAddr[i]=i;
+						}
+					}
+				}
+			}
 		}
 	}
 
-	return -1;
+	(*env)->ReleaseStringUTFChars(env, jname, name);
+	return fd;
 }
 
 
@@ -126,9 +186,9 @@ void* spiderGetAshmemFromWatchdog(JNIEnv* env, const char *name, int size)
 
 
 
-void ashmemTest(JNIEnv* env, char* ashmName)
+void ashmemTest(JNIEnv* env)
 {
-	u8 *ashm=spiderGetAshmemFromWatchdog(env, "urlChains", 32);
+	u8 *ashm=spiderGetAshmemFromWatchdog(env, "ashmTest", 32);
 
 	if(ashm!=NULL)
 	{
@@ -154,7 +214,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 
 	SpiderServiceInstance=thiz;
 
-	ashmemTest(env, "write");
+	ashmemTest(env);
 
 	if((*env)->ExceptionOccurred(env)) {
 	   return NULL;
@@ -231,20 +291,17 @@ void nodeAddrAbsToRelative(urlNode *node, urlNodeRelativeAddr *RelativeAddr)
 	t_urlPool *pool=firstUrlPool;
 	u32 i=0;
 
-	if(pool!=NULL)
+	while(pool!=NULL)
 	{
-		do
+		s64 ofs=(u32)node-(u32)pool;
+		if(ofs>=0&&ofs<sizeof(t_urlPool))
 		{
-			s64 ofs=(u32)node-(u32)pool;
-			if(ofs>=0&&ofs<sizeof(t_urlPool))
-			{
-				RelativeAddr->poolPtr=i;
-				RelativeAddr->offset=ofs;
-				return;
-			}
-			pool=pool->next;
-			i++;
-		}while(pool!=NULL);
+			RelativeAddr->poolPtr=i;
+			RelativeAddr->offset=ofs;
+			return;
+		}
+		pool=pool->next;
+		i++;
 	}
 }
 
