@@ -17,11 +17,12 @@
  * Spider进程用这个文件描述符映射此段共享内存到自己的内存空间。
  */
 
-#define ASHM_NAME_SIZE 32
+#define ASHM_NAME_SIZE	32
+#define ASHM_EXIST	0x12345678
 
 int ashmem_create_region(const char *name, u32 size)
 {
-	int fd, ret;
+	int fd, fdWithOption;
 	char buf[ASHM_NAME_SIZE];
 
 	while (name && size)
@@ -35,14 +36,14 @@ int ashmem_create_region(const char *name, u32 size)
 		LOGI("ashmem open success %d", fd);
 
 		strlcpy(buf, name, sizeof(buf));
-		ret = ioctl(fd, ASHMEM_SET_NAME, buf);
-		if (ret < 0)
+		fdWithOption = ioctl(fd, ASHMEM_SET_NAME, buf);
+		if (fdWithOption < 0)
 		{
 			close(fd);
 			break;
 		}
-		ret = ioctl(fd, ASHMEM_SET_SIZE, size);
-		if (ret < 0)
+		fdWithOption = ioctl(fd, ASHMEM_SET_SIZE, size);
+		if (fdWithOption < 0)
 		{
 			close(fd);
 			break;
@@ -60,7 +61,7 @@ typedef struct t_ashm
 	char name[ASHM_NAME_SIZE+1];
 	int size;
 	int fd;
-	void *addr;
+	u32 *addr;
 	struct t_ashm *next;
 } t_ashmNode;
 
@@ -69,7 +70,7 @@ t_ashmNode *ashmemChainHead=NULL;
 t_ashmNode *ashmemChainTail=NULL;
 
 
-t_ashmNode *findAshmemByNameAndSize(char *name, int size)
+t_ashmNode *findAshmemByNameAndSize(const char *name, int size)
 {
 	t_ashmNode *ashmNode=ashmemChainHead;
 
@@ -90,17 +91,19 @@ int Java_com_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
 		jobject thiz, jstring jname, jint size)
 {
 	int i, fd=-1;
+	s64 fdWithOption;
 	u8* mAddr = NULL;
 	const char *name = (*env)->GetStringUTFChars(env, jname, NULL);
 
 	t_ashmNode *ashmNode=findAshmemByNameAndSize(name, size);
 	if(ashmNode!=NULL)
 	{
+		*ashmNode->addr=ASHM_EXIST;
 		fd=ashmNode->fd;
 	}
 	else
 	{
-		fd = ashmem_create_region(name, size);
+		fd = ashmem_create_region(name, size+4);
 		if (fd >= 0)
 		{
 			LOGI("create ashmem name:%s size:%d fd:%d success!", name, size, fd);
@@ -112,7 +115,9 @@ int Java_com_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
 				t_ashmNode *newAshmNode=malloc(sizeof(t_ashmNode));
 				if(newAshmNode!=NULL)
 				{
-					newAshmNode->addr=mAddr;
+					*(u32*)mAddr=0;
+
+					newAshmNode->addr=(u32*)mAddr;
 					newAshmNode->fd=fd;
 					strncpy(newAshmNode->name, name, ASHM_NAME_SIZE);
 					newAshmNode->next=NULL;
@@ -132,11 +137,11 @@ int Java_com_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
 
 					LOGI("ashmem mmap %d to watchdog process success!", (u32 )mAddr);
 
-					if(strcmp(name, ashmTest)==0)
+					if(strcmp(name, "ashmTest")==0)
 					{
 						for(i=0; i<8; i++)
 						{
-							mAddr[i]=i;
+							mAddr[i+4]=i;
 						}
 					}
 				}
@@ -145,6 +150,7 @@ int Java_com_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
 	}
 
 	(*env)->ReleaseStringUTFChars(env, jname, name);
+
 	return fd;
 }
 
@@ -174,7 +180,7 @@ void* spiderGetAshmemFromWatchdog(JNIEnv* env, const char *name, int size)
 		int fd=(*env)->CallIntMethod(env, SpiderServiceInstance, getAshmemFromWatchdogMID, jname, size);
 		if(fd>=0)
 		{
-			ashmem=(u8*) mmap(NULL, size, PROT_READ | PROT_WRITE,
+			ashmem=mmap(NULL, size, PROT_READ | PROT_WRITE,
 						MAP_SHARED, fd, 0);
 		}
 
@@ -195,7 +201,11 @@ void ashmemTest(JNIEnv* env)
 		u8 i;
 		for(i=0; i<8; i++)
 		{
-			LOGI("%d", ashm[i]);
+			LOGI("%d", ashm[i+4]);
+		}
+		if(*(u32*)ashm==ASHM_EXIST)
+		{
+			LOGI("ashmem already exist");
 		}
 	}
 }

@@ -192,7 +192,7 @@ public class SpiderService extends Service
 		switch(cmdVal)
 		{
 			case SpiderActivity.CMD_CLEAR:
-				stopWatchdog();
+				//stopWatchdog();
 				
 				stopSelf();
 				break;
