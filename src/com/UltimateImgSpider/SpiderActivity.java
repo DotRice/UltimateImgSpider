@@ -53,7 +53,7 @@ public class SpiderActivity extends Activity
 	public final static int CMD_CLEAR = 1;
 	public final static int CMD_PAUSE = 2;
 	public final static int CMD_CONTINUE = 3;
-	public final static int CMD_PREPARE_RESTART=4;
+	public final static int CMD_STOP=4;
 	
 	private ImageTextButton btPauseOrContinue;
 	private ImageTextButton btSelSrc;
@@ -146,8 +146,6 @@ public class SpiderActivity extends Activity
 			@Override
 			public void onClick(View v)
 			{
-				Log.i(LOG_TAG, "Start pause go-on");
-				
 				String cmd = btPauseOrContinue.textView.getText().toString();
 				
 				if (cmd.equals(getString(R.string.pause)))
@@ -180,8 +178,6 @@ public class SpiderActivity extends Activity
 			@Override
 			public void onClick(View v)
 			{
-				Log.i(LOG_TAG, "SelSrc");
-				
 				Intent intent = new Intent(SpiderActivity.this,
 				        SelSrcActivity.class);
 				startActivityForResult(intent, REQUST_SRC_URL);
@@ -195,8 +191,8 @@ public class SpiderActivity extends Activity
 			@Override
 			public void onClick(View v)
 			{
-				Log.i(LOG_TAG, "Clear");
-				sendCmdToSpiderService(CMD_CLEAR);
+				sendCmdToSpiderService(CMD_STOP);
+				
 				btPauseOrContinue.changeView(R.drawable.start, R.string.start);
 			}
 		});
@@ -311,7 +307,7 @@ public class SpiderActivity extends Activity
 		 * main thread like most other things -- so, to update the UI, we need
 		 * to use a Handler to hop over there.
 		 */
-		public void valueChanged(String value)
+		public void reportStatus(String value)
 		{
 			mHandler.sendMessage(mHandler.obtainMessage(BUMP_MSG, value));
 		}
@@ -345,7 +341,6 @@ public class SpiderActivity extends Activity
 					if(msgStr.contains("siteScanCompleted"))
 					{
 						theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
-						theActivity.sendCmdToSpiderService(CMD_PAUSE);
 					}
 				break;
 				default:

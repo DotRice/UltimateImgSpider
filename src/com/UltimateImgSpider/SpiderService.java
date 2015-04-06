@@ -41,6 +41,7 @@ public class SpiderService extends Service
 	
 	private int cmdVal=SpiderActivity.CMD_NOTHING;
 	
+	private boolean isPaused;
 	
 	/** The primary interface we will be calling on the service. */
 	IRemoteWatchdogService watchdogService = null;
@@ -57,6 +58,13 @@ public class SpiderService extends Service
 			watchdogService = IRemoteWatchdogService.Stub.asInterface(service);
 			
 			stringFromJNI("ashmem");
+
+			if(!jniSpiderInit())
+			{
+				stopSelf();
+			}
+			
+			spiderInit();
 			
 			Log.i(LOG_TAG, "onServiceConnected");
 		}
@@ -83,27 +91,6 @@ public class SpiderService extends Service
 		bindService(watchdogIntent, watchdogConnection, BIND_ABOVE_CLIENT);
 	}
 	
-	public static String  WATCHDOG_CMD="watchdogCmd";
-	public static int WATCHDOG_CMD_NOTHING=0;
-	public static int WATCHDOG_CMD_STOP=1;
-	
-	private void sendCmdToWatchdog(int cmd)
-	{
-		Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
-		watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage()
-		        .getName());
-		
-		Bundle bundle = new Bundle();
-		bundle.putInt(WATCHDOG_CMD, cmd);
-		watchdogIntent.putExtras(bundle);
-		startService(watchdogIntent);
-	}
-	
-	private void stopWatchdog()
-	{
-		sendCmdToWatchdog(WATCHDOG_CMD_STOP);
-	}
-	
 	@Override
 	public void onCreate()
 	{
@@ -126,50 +113,62 @@ public class SpiderService extends Service
 			spider.destroy();
 		}
 		
-		jniClearAll();
-		
 		System.exit(0);
 	}
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
-		String url=intent.getStringExtra(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
-		if(url!=null)
+		if(intent!=null)
 		{
-			Log.i(LOG_TAG, "onStartCommand url:"+url);
-		
-			if(url.startsWith("http://")||url.startsWith("https://"))
+			String url=intent.getStringExtra(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
+			if(url!=null)
 			{
-				
-				if(!srcUrl.equals(url)||curUrl.isEmpty())
+				Log.i(LOG_TAG, "onStartCommand url:"+url);
+			
+				if((url.startsWith("http://")||url.startsWith("https://"))&&srcUrl.equals(SRCURL_DEFAULT_VALUE))
 				{
 					srcUrl=url;
-		
-					jniClearAll();
-					if(!jniUrlListInit())
+				}
+			}
+			
+			cmdVal=intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY, SpiderActivity.CMD_NOTHING);
+			Log.i(LOG_TAG, "onStartCommand "+cmdVal);
+	
+			switch(cmdVal)
+			{
+				case SpiderActivity.CMD_CLEAR:
+					stopService(new Intent(this, WatchdogService.class));
+					stopSelf();
+					break;
+				case SpiderActivity.CMD_CONTINUE:
+					findNextUrlToLoad();
+					break;
+				case SpiderActivity.CMD_STOP:
+					if(isPaused)
 					{
 						stopSelf();
-						return START_NOT_STICKY;
 					}
-					
-					spiderInit();
-					
-				}
+					else
+					{
+						if(urlLoadTimer.get()!=0)
+						{
+							urlLoadTimer.set(1);
+						}
+					}
+					break;
+				default:
+					break;
 			}
 		}
 		
-		
-		cmdVal=intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY, SpiderActivity.CMD_NOTHING);
-		Log.i(LOG_TAG, "onStartCommand "+cmdVal);
-
-		handleCmd();
-		
-		return START_REDELIVER_INTENT;
+		return START_STICKY;
 	}
 	
 	public int getAshmemFromWatchdog(String name, int size)
 	{
+		Log.i(LOG_TAG, "getAshmemFromWatchdog name:"+name+" size:"+size);
+		
 		int fd=-1;
 		try
         {
@@ -187,24 +186,11 @@ public class SpiderService extends Service
 		return fd;
 	}
 	
-	private void handleCmd()
+	
+	public void recvProcess(int imgUrlProcess, int pageUrlProcess)
 	{
-		switch(cmdVal)
-		{
-			case SpiderActivity.CMD_CLEAR:
-				//stopWatchdog();
-				
-				stopSelf();
-				break;
-			case SpiderActivity.CMD_CONTINUE:
-				findNextUrlToLoad();
-				break;
-			case SpiderActivity.CMD_PREPARE_RESTART:
-				stopSelf();
-				break;
-			default:
-				break;
-		}
+		imgDownloadCnt=imgUrlProcess;
+		pageScanCnt=pageUrlProcess;
 	}
 	
 	@Override
@@ -273,11 +259,6 @@ public class SpiderService extends Service
 			if (cb != null)
 				mCallbacks.unregister(cb);
 		}
-		
-		public int getPid()
-		{
-			return Process.myPid();
-		}
 	};
 	
 	
@@ -298,7 +279,8 @@ public class SpiderService extends Service
 	 * 下载并将源URL存入列表，以下载序号作为文件名，如果此图片存在alt则将alt加下载序号作为文件名。
 	 */
 	
-	private String srcUrl="about:blank";
+	private final static String SRCURL_DEFAULT_VALUE="about:blank";
+	private String srcUrl=SRCURL_DEFAULT_VALUE;
 	private String srcHost;
 	
 	private final int URL_TYPE_PAGE = 0;
@@ -316,6 +298,7 @@ public class SpiderService extends Service
 	private long loadTime;
 	private long scanTimer;
 	private long scanTime;
+	private long searchTime;
 	
 	private WebView spider;
 	
@@ -327,11 +310,11 @@ public class SpiderService extends Service
 	private AtomicInteger urlLoadTimer = new AtomicInteger(URL_TIME_OUT);
 	private AtomicBoolean urlLoadPostSuccess = new AtomicBoolean(true);
 	
+	private final static int MAX_SIZE_PER_URL=4096;
 	
 	public native String stringFromJNI(String srcStr);
-	public native boolean jniUrlListInit();
+	public native boolean jniSpiderInit();
 	// Activity onDestory时调用，与jniAddUrl、jniFindNextUrlToLoad不在同一线程，可能会出错。
-	public native void jniClearAll();
 	public native int jniAddUrl(String url, int hashCode, int type);
 	private native String jniFindNextUrlToLoad(String prevUrl, int type);
 	
@@ -358,7 +341,7 @@ public class SpiderService extends Service
 		log = log+"VM:"+(rt.totalMemory() >> 20) + "M Native:"
 		        + (Debug.getNativeHeapSize() >> 20) + "M pic:" + imgUrlCnt
 		        + " page:" + pageScanCnt + "/" + pageUrlCnt + " loadTime:" + loadTime + " scanTime:"
-		        + scanTime + "\r\n" + curUrl;
+		        + scanTime + " searchTime:" + searchTime + "\r\n" + curUrl;
 		
 		
 		//Log.i(LOG_TAG, log);
@@ -368,7 +351,7 @@ public class SpiderService extends Service
 		{
 			try
 			{
-				mCallbacks.getBroadcastItem(i).valueChanged(log);
+				mCallbacks.getBroadcastItem(i).reportStatus(log);
 			}
 			catch (RemoteException e)
 			{
@@ -386,12 +369,12 @@ public class SpiderService extends Service
 		        + "var img=document.getElementsByTagName(\"img\");"
 		        + "var imgSrc=\"\";"
 		        + "for(i=0; i<img.length; i++)"
-		        + "{imgSrc+=(img[i].src+'分');}"
+		        + "{imgSrc+=(img[i].src+' ');}"
 		        + "SpiderCrawl.recvImgUrl(imgSrc);"
 		        + "var a=document.getElementsByTagName(\"a\");"
 		        + "var aHref=\"\";"
 		        + "for(i=0; i<a.length; i++)"
-		        + "{aHref+=(a[i].href+'分');}"
+		        + "{aHref+=(a[i].href+' ');}"
 		        + "SpiderCrawl.recvPageUrl(aHref);"
 		        + "SpiderCrawl.onCurPageScaned();");
 	}
@@ -479,8 +462,11 @@ public class SpiderService extends Service
 	
 	private void findNextUrlToLoad()
 	{
+		isPaused=false;
+		searchTime=System.currentTimeMillis();
 		curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE);
-		
+		searchTime=System.currentTimeMillis()-searchTime;
+		Log.i(LOG_TAG, "loading:"+curUrl);
 		if(curUrl.isEmpty())
 		{
 			Log.i(LOG_TAG, "site scan complete");
@@ -503,13 +489,18 @@ public class SpiderService extends Service
 			@Override
 			public void run()
 			{
-				if(cmdVal!=SpiderActivity.CMD_PAUSE)
+				if(cmdVal==SpiderActivity.CMD_PAUSE)
 				{
-					findNextUrlToLoad();
+					isPaused=true;
+					cmdVal=SpiderActivity.CMD_NOTHING;
+				}
+				else if(cmdVal==SpiderActivity.CMD_STOP)
+				{
+					stopSelf();
 				}
 				else
 				{
-					cmdVal=SpiderActivity.CMD_NOTHING;
+					findNextUrlToLoad();
 				}
 			}
 		};
@@ -597,21 +588,15 @@ public class SpiderService extends Service
 	{
 		//Log.i(LOG_TAG, "imgUrl:"+imgUrl);
 		
-		String[] list=imgUrl.split("分");
+		String[] list=imgUrl.split(" ");
 
 		//Log.i(LOG_TAG, "length:"+list.length);
 		
 		for(String urlInList:list)
 		{
-			if (urlInList.startsWith("http://") || urlInList.startsWith("https://"))
+			if ((urlInList.startsWith("http://") || urlInList.startsWith("https://"))&&urlInList.length()<MAX_SIZE_PER_URL)
 			{
-				int urlNumAfterAdd = jniAddUrl(urlInList, urlInList.hashCode(),
-				        URL_TYPE_IMG);
-				
-				if (urlNumAfterAdd != 0)
-				{
-					imgUrlCnt = urlNumAfterAdd;
-				}
+				imgUrlCnt = jniAddUrl(urlInList, urlInList.hashCode(), URL_TYPE_IMG);
 			}
 		}
 	}
@@ -621,10 +606,10 @@ public class SpiderService extends Service
 	{
 		//Log.i(LOG_TAG, "pageUrl:"+pageUrl);
 		
-		String[] list=pageUrl.split("分");
+		String[] list=pageUrl.split(" ");
 
 		//Log.i(LOG_TAG, "length:"+list.length);
-		
+
 		for(String urlInList:list)
 		{
 			try
@@ -633,14 +618,10 @@ public class SpiderService extends Service
 				if ((urlInList.startsWith("http://") || urlInList
 				        .startsWith("https://"))
 				        && (url.getHost().equals(srcHost))
-				        && (url.getRef() == null))
+				        && (url.getRef() == null)
+				        && (urlInList.length()<MAX_SIZE_PER_URL))
 				{
-					int urlNumAfterAdd = jniAddUrl(urlInList, urlInList.hashCode(),
-					        URL_TYPE_PAGE);
-					if (urlNumAfterAdd != 0)
-					{
-						pageUrlCnt = urlNumAfterAdd;
-					}
+					pageUrlCnt = jniAddUrl(urlInList, urlInList.hashCode(), URL_TYPE_PAGE);
 				}
 			}
 			catch (MalformedURLException e)

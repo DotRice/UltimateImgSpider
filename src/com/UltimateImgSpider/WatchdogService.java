@@ -63,13 +63,7 @@ public class WatchdogService extends Service
 	{
 		Log.i(LOG_TAG, "onStartCommand "+startId);
 		
-		int cmd=intent.getIntExtra(SpiderService.WATCHDOG_CMD, SpiderService.WATCHDOG_CMD_NOTHING);
-		if(cmd==SpiderService.WATCHDOG_CMD_STOP)
-		{
-			stopSelf();
-		}
-		
-		return START_REDELIVER_INTENT;
+		return START_STICKY;
 	}
 	
 	
@@ -90,19 +84,6 @@ public class WatchdogService extends Service
 	 */
 	private final IRemoteWatchdogService.Stub mBinder = new IRemoteWatchdogService.Stub()
 	{
-		@Override
-        public void registerAshmem(ParcelFileDescriptor pfd) throws RemoteException
-        {
-			int fd=pfd.getFd();
-	        Log.i(LOG_TAG, "registerAshmem "+fd);
-        }
-
-		@Override
-        public int getPid() throws RemoteException
-        {
-	        return Process.myPid();
-        }
-
 		@Override
         public ParcelFileDescriptor getAshmem(String name, int size) throws RemoteException
         {

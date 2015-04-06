@@ -7,5 +7,5 @@ package com.UltimateImgSpider;
  */
 oneway interface IRemoteSpiderServiceCallback {
 
-    void valueChanged(String value);
+    void reportStatus(String value);
 }

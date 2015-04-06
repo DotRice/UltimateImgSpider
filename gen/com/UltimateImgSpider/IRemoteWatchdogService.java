@@ -42,20 +42,6 @@ case INTERFACE_TRANSACTION:
 reply.writeString(DESCRIPTOR);
 return true;
 }
-case TRANSACTION_registerAshmem:
-{
-data.enforceInterface(DESCRIPTOR);
-android.os.ParcelFileDescriptor _arg0;
-if ((0!=data.readInt())) {
-_arg0 = android.os.ParcelFileDescriptor.CREATOR.createFromParcel(data);
-}
-else {
-_arg0 = null;
-}
-this.registerAshmem(_arg0);
-reply.writeNoException();
-return true;
-}
 case TRANSACTION_getAshmem:
 {
 data.enforceInterface(DESCRIPTOR);
@@ -72,14 +58,6 @@ _result.writeToParcel(reply, android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE
 else {
 reply.writeInt(0);
 }
-return true;
-}
-case TRANSACTION_getPid:
-{
-data.enforceInterface(DESCRIPTOR);
-int _result = this.getPid();
-reply.writeNoException();
-reply.writeInt(_result);
 return true;
 }
 }
@@ -99,27 +77,6 @@ return mRemote;
 public java.lang.String getInterfaceDescriptor()
 {
 return DESCRIPTOR;
-}
-@Override public void registerAshmem(android.os.ParcelFileDescriptor pfd) throws android.os.RemoteException
-{
-android.os.Parcel _data = android.os.Parcel.obtain();
-android.os.Parcel _reply = android.os.Parcel.obtain();
-try {
-_data.writeInterfaceToken(DESCRIPTOR);
-if ((pfd!=null)) {
-_data.writeInt(1);
-pfd.writeToParcel(_data, 0);
-}
-else {
-_data.writeInt(0);
-}
-mRemote.transact(Stub.TRANSACTION_registerAshmem, _data, _reply, 0);
-_reply.readException();
-}
-finally {
-_reply.recycle();
-_data.recycle();
-}
 }
 @Override public android.os.ParcelFileDescriptor getAshmem(java.lang.String name, int size) throws android.os.RemoteException
 {
@@ -145,29 +102,8 @@ _data.recycle();
 }
 return _result;
 }
-@Override public int getPid() throws android.os.RemoteException
-{
-android.os.Parcel _data = android.os.Parcel.obtain();
-android.os.Parcel _reply = android.os.Parcel.obtain();
-int _result;
-try {
-_data.writeInterfaceToken(DESCRIPTOR);
-mRemote.transact(Stub.TRANSACTION_getPid, _data, _reply, 0);
-_reply.readException();
-_result = _reply.readInt();
 }
-finally {
-_reply.recycle();
-_data.recycle();
+static final int TRANSACTION_getAshmem = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
 }
-return _result;
-}
-}
-static final int TRANSACTION_registerAshmem = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
-static final int TRANSACTION_getAshmem = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
-static final int TRANSACTION_getPid = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
-}
-public void registerAshmem(android.os.ParcelFileDescriptor pfd) throws android.os.RemoteException;
 public android.os.ParcelFileDescriptor getAshmem(java.lang.String name, int size) throws android.os.RemoteException;
-public int getPid() throws android.os.RemoteException;
 }

@@ -60,14 +60,6 @@ this.unregisterCallback(_arg0);
 reply.writeNoException();
 return true;
 }
-case TRANSACTION_getPid:
-{
-data.enforceInterface(DESCRIPTOR);
-int _result = this.getPid();
-reply.writeNoException();
-reply.writeInt(_result);
-return true;
-}
 }
 return super.onTransact(code, data, reply, flags);
 }
@@ -116,29 +108,10 @@ _reply.recycle();
 _data.recycle();
 }
 }
-@Override public int getPid() throws android.os.RemoteException
-{
-android.os.Parcel _data = android.os.Parcel.obtain();
-android.os.Parcel _reply = android.os.Parcel.obtain();
-int _result;
-try {
-_data.writeInterfaceToken(DESCRIPTOR);
-mRemote.transact(Stub.TRANSACTION_getPid, _data, _reply, 0);
-_reply.readException();
-_result = _reply.readInt();
-}
-finally {
-_reply.recycle();
-_data.recycle();
-}
-return _result;
-}
 }
 static final int TRANSACTION_registerCallback = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
 static final int TRANSACTION_unregisterCallback = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
-static final int TRANSACTION_getPid = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
 }
 public void registerCallback(com.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException;
 public void unregisterCallback(com.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException;
-public int getPid() throws android.os.RemoteException;
 }

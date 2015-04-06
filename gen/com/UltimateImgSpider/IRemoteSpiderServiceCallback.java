@@ -47,12 +47,12 @@ case INTERFACE_TRANSACTION:
 reply.writeString(DESCRIPTOR);
 return true;
 }
-case TRANSACTION_valueChanged:
+case TRANSACTION_reportStatus:
 {
 data.enforceInterface(DESCRIPTOR);
 java.lang.String _arg0;
 _arg0 = data.readString();
-this.valueChanged(_arg0);
+this.reportStatus(_arg0);
 return true;
 }
 }
@@ -73,20 +73,20 @@ public java.lang.String getInterfaceDescriptor()
 {
 return DESCRIPTOR;
 }
-@Override public void valueChanged(java.lang.String value) throws android.os.RemoteException
+@Override public void reportStatus(java.lang.String value) throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
 try {
 _data.writeInterfaceToken(DESCRIPTOR);
 _data.writeString(value);
-mRemote.transact(Stub.TRANSACTION_valueChanged, _data, null, android.os.IBinder.FLAG_ONEWAY);
+mRemote.transact(Stub.TRANSACTION_reportStatus, _data, null, android.os.IBinder.FLAG_ONEWAY);
 }
 finally {
 _data.recycle();
 }
 }
 }
-static final int TRANSACTION_valueChanged = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
+static final int TRANSACTION_reportStatus = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
 }
-public void valueChanged(java.lang.String value) throws android.os.RemoteException;
+public void reportStatus(java.lang.String value) throws android.os.RemoteException;
 }
