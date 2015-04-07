@@ -382,7 +382,7 @@ urlNode *gotoNextNode(urlNode *curNode)
 char urlPoolName[URL_POOL_NAME_SIZE];
 char *urlPoolIndexToName(u32 index)
 {
-	snprintf(urlPoolName, URL_POOL_NAME_SIZE, "urlPool%d", index);
+	snprintf(urlPoolName, URL_POOL_NAME_SIZE, "urlPool_%d", index);
 	LOGI("url pool name:%s", urlPoolName);
 	return urlPoolName;
 }
@@ -455,7 +455,7 @@ urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, urlNode *prevNode)
 
 
 jmethodID spiderReportProcessMID=NULL;
-void spiderReportProcess(JNIEnv* env, int imgUrlProcess, int pageUrlProcess)
+void spiderReportProcess(JNIEnv* env)
 {
 
 	if(spiderReportProcessMID==NULL)
@@ -465,13 +465,13 @@ void spiderReportProcess(JNIEnv* env, int imgUrlProcess, int pageUrlProcess)
 		if (SpiderServiceClass != NULL)
 		{
 			spiderReportProcessMID = (*env)->GetMethodID(env, SpiderServiceClass, "recvProcess",
-					"(II)V");
+					"(IIII)V");
 		}
 	}
 
 	if (spiderReportProcessMID != NULL)
 	{
-		(*env)->CallVoidMethod(env, SpiderServiceInstance, spiderReportProcessMID, imgUrlProcess, pageUrlProcess);
+		(*env)->CallVoidMethod(env, SpiderServiceInstance, spiderReportProcessMID, spiderPara->imgUrlChain.len, spiderPara->imgUrlChain.processed, spiderPara->pageUrlChain.len, spiderPara->pageUrlChain.processed);
 	}
 }
 
@@ -501,7 +501,7 @@ jboolean spiderParaInit(JNIEnv* env)
 		}
 		else
 		{
-			spiderReportProcess(env, spiderPara->imgUrlChain.processed, spiderPara->pageUrlChain.processed);
+			spiderReportProcess(env);
 		}
 		return true;
 	}

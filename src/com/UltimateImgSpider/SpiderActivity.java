@@ -55,6 +55,8 @@ public class SpiderActivity extends Activity
 	public final static int CMD_CONTINUE = 3;
 	public final static int CMD_STOP=4;
 	
+	private boolean isRestart=false;
+	
 	private ImageTextButton btPauseOrContinue;
 	private ImageTextButton btSelSrc;
 	private ImageTextButton btClear;
@@ -240,6 +242,21 @@ public class SpiderActivity extends Activity
 			mService = null;
 			
 			Log.i(LOG_TAG, "onServiceDisconnected");
+			
+			if(isRestart)
+			{
+				isRestart=false;
+				
+				mHandler.postDelayed(new Runnable()
+				{
+					
+					@Override
+					public void run()
+					{
+						startAndBindSpiderService(srcUrl);
+					}
+				}, 500);
+			}
 		}
 	};
 	
@@ -333,14 +350,21 @@ public class SpiderActivity extends Activity
 			{
 				case BUMP_MSG:
 					String msgStr=(String) msg.obj;
+					long freeMem=MemoryInfo.getFreeMemInMb(theActivity);
+					int memUsedBySpider=Integer.parseInt(msgStr.substring(msgStr.indexOf("Native:")+7, msgStr.indexOf("M pic:")));
+					//Log.i(theActivity.LOG_TAG, "mem:"+freeMem+" "+memUsedBySpider);
 					
 					theActivity.spiderLog.setText("Total:" + MemoryInfo.getTotalMemInMb()
-					        + "M Free:"
-					        + MemoryInfo.getFreeMemInMb(theActivity)
+					        + "M Free:" + freeMem
 					        + "M\r\n" + msgStr);
 					if(msgStr.contains("siteScanCompleted"))
 					{
 						theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
+					}
+					else if(freeMem<50||memUsedBySpider>100)
+					{
+						theActivity.isRestart=true;
+						theActivity.sendCmdToSpiderService(CMD_STOP);
 					}
 				break;
 				default:

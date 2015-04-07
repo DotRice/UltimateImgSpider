@@ -187,10 +187,12 @@ public class SpiderService extends Service
 	}
 	
 	
-	public void recvProcess(int imgUrlProcess, int pageUrlProcess)
+	public void recvProcess(int imgUrlLen, int imgUrlProcess, int pageUrlLen, int pageUrlProcess)
 	{
-		imgDownloadCnt=imgUrlProcess;
-		pageScanCnt=pageUrlProcess;
+		imgUrlCnt=imgUrlLen;
+		imgProcess=imgUrlProcess;
+		pageUrlCnt=pageUrlLen;
+		pageProcess=pageUrlProcess;
 	}
 	
 	@Override
@@ -269,8 +271,6 @@ public class SpiderService extends Service
 	/*
 	 * 遍历一个网站所有页面，并且下载所有图片。
 	 * 
-	 * 深度优先搜索
-	 * 
 	 * 网页遍历算法： 扫描当前网页上每一个本站URL，查找所有不在网页列表中的URL，存入列表并设置为等待状态。
 	 * 扫描网页列表中所有等待状态的URL，将与当前页面URL最相似的URL作为下次要扫描的页面并标记为已下载状态。
 	 * 如果列表中全部都为已下载页面，则遍历结束。
@@ -289,9 +289,9 @@ public class SpiderService extends Service
 	private String curUrl;
 	
 	private int pageUrlCnt = 0;
-	private int pageScanCnt = 0;
+	private int pageProcess = 0;
 	private int imgUrlCnt = 0;
-	private int imgDownloadCnt = 0;
+	private int imgProcess = 0;
 	
 	private boolean pageFinished = false;
 	private long loadTimer;
@@ -334,13 +334,13 @@ public class SpiderService extends Service
 		}
 		else
 		{
-			pageScanCnt++;
+			pageProcess++;
 		}
 		
 		Runtime rt = Runtime.getRuntime();
 		log = log+"VM:"+(rt.totalMemory() >> 20) + "M Native:"
 		        + (Debug.getNativeHeapSize() >> 20) + "M pic:" + imgUrlCnt
-		        + " page:" + pageScanCnt + "/" + pageUrlCnt + " loadTime:" + loadTime + " scanTime:"
+		        + " page:" + pageProcess + "/" + pageUrlCnt + " loadTime:" + loadTime + " scanTime:"
 		        + scanTime + " searchTime:" + searchTime + "\r\n" + curUrl;
 		
 		
