@@ -677,27 +677,25 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 	urlChain *curChain =
 			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlChain)) : (&(spiderPara->imgUrlChain));
 
-	urlNode *curNode = nodeAddrRelativeToAbs(&(curChain->curNode));
+	char *nextUrl="";
+
+	urlNode *curNode = NULL;
 	urlNode *node = nodeAddrRelativeToAbs(&(curChain->head));
-	char *nextUrl;
 	//LOGI("jPrevUrl:%X head:%X", (u32)jPrevUrl, (u32)node);
 
 	if(node!=NULL)
 	{
 		if (jPrevUrl == NULL)
 		{
-			if(curNode==NULL)
+			for (i = 0; i < curChain->len; i++)
 			{
-				for (i = 0; i < curChain->len; i++)
+				if (node->para.state == URL_PENDING)
 				{
-					if (node->para.state == URL_PENDING)
-					{
-						curNode = node;
-						break;
-					}
-
-					node=gotoNextNode(node);
+					curNode = node;
+					break;
 				}
+
+				node=gotoNextNode(node);
 			}
 		}
 		else
@@ -712,6 +710,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 				LOGI("URL NOT ALIGN!");
 			}
 
+			curNode = nodeAddrRelativeToAbs(&(curChain->curNode));
 			if(curNode!=NULL)
 			{
 				if(strcmp(prevUrl, curNode->url)==0)
@@ -719,14 +718,16 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 					curNode->para.state=URL_DOWNLOADED;
 					curChain->processed++;
 				}
+
+				curNode=NULL;
 			}
 
 			//LOGI("prevUrl:%s curChain->len:%d", prevUrl, curChain->len);
 			for (i = 0; i < curChain->len; i++)
 			{
+				//LOGI("url %d:%s", i, node->url);
 				if (node->para.state == URL_PENDING)
 				{
-					//LOGI("url %d:%s", i, node->url);
 					if (scanComplete)
 					{
 						scanComplete = false;
@@ -752,9 +753,14 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		}
 	}
 
-	nextUrl=curNode->url;
+
+	if(curNode!=NULL)
+	{
+		nextUrl=curNode->url;
+		nodeAddrAbsToRelative(curNode, &(curChain->curNode));
+	}
+
 	//LOGI("nextUrl:%s", nextUrl);
-	nodeAddrAbsToRelative(curNode, &(curChain->curNode));
 	return (*env)->NewStringUTF(env, nextUrl);
 }
 
