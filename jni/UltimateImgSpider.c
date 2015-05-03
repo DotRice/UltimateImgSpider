@@ -243,6 +243,23 @@ jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 	return (*env)->NewStringUTF(env, "test jni !");
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #define MAX_SIZE_PER_URL	4096
 #define SIZE_PER_URLPOOL	(1024*1024-12)
 
@@ -269,6 +286,11 @@ typedef struct
 	u16 state;
 	u16 len;
 	urlNodeRelativeAddr nextNodeAddr;
+
+	urlNodeRelativeAddr left;
+	urlNodeRelativeAddr right;
+	urlNodeRelativeAddr parent;
+	u32 color;
 } nodePara;
 
 typedef struct
@@ -281,16 +303,20 @@ typedef struct
 {
 	urlNodeRelativeAddr head;
 	urlNodeRelativeAddr tail;
+
+	urlNodeRelativeAddr root;
+
 	urlNodeRelativeAddr curNode;
 	u32 processed;
 	u32 len;
-} urlChain;
+} urlTree;
+
 
 
 typedef struct
 {
-	urlChain pageUrlChain;
-	urlChain imgUrlChain;
+	urlTree pageUrlTree;
+	urlTree imgUrlTree;
 	u32 urlPoolNum;
 } t_spiderPara;
 
@@ -306,6 +332,7 @@ typedef struct memPool
 t_spiderPara *spiderPara=NULL;
 
 t_urlPool *firstUrlPool = NULL;
+
 
 void nodeAddrAbsToRelative(urlNode *node, urlNodeRelativeAddr *RelativeAddr)
 {
@@ -347,6 +374,80 @@ urlNode *nodeAddrRelativeToAbs(urlNodeRelativeAddr *RelativeAddr)
 
 	return NULL;
 }
+
+bool isRelativeAddrEqu(urlNodeRelativeAddr *src, urlNodeRelativeAddr *dst)
+{
+	return (src->poolPtr==dst->poolPtr && src->offset==dst->offset)?true:false;
+}
+
+
+void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
+{
+	urlNode *downNode=nodeAddrRelativeToAbs(&downNodeAddr);
+	urlNodeRelativeAddr downNodeAddr=upNode->para.right;
+
+	urlNodeRelativeAddr upNodeAddr;
+	nodeAddrAbsToRelative(upNode, &upNodeAddr);
+
+	upNode->para.right=downNode->para.left;
+	if(downNode->para.left.poolPtr!=POOL_PTR_INVALID)
+	{
+		nodeAddrRelativeToAbs(downNode->para.left)->para.parent=upNodeAddr;
+	}
+
+	downNode->para.parent=upNode->para.parent;
+
+	if(upNode->para.parent.poolPtr==POOL_PTR_INVALID)
+	{
+		tree->root=downNodeAddr;
+	}
+	else if(upNode==nodeAddrRelativeToAbs(nodeAddrRelativeToAbs(upNode->para.parent)->para.left))
+	{
+		nodeAddrRelativeToAbs(upNode->para.parent)->para.left=downNodeAddr;
+	}
+	else
+	{
+		nodeAddrRelativeToAbs(upNode->para.parent)->para.right=downNodeAddr;
+	}
+
+	downNode->para.left=upNodeAddr;
+	upNode->para.parent=downNodeAddr;
+}
+
+
+void urlTreeRightRotate(urlTree *tree, urlNode *upNode)
+{
+	urlNode *downNode=nodeAddrRelativeToAbs(&downNodeAddr);
+	urlNodeRelativeAddr downNodeAddr=upNode->para.left;
+
+	urlNodeRelativeAddr upNodeAddr;
+	nodeAddrAbsToRelative(upNode, &upNodeAddr);
+
+	upNode->para.left=downNode->para.right;
+	if(downNode->para.right.poolPtr!=POOL_PTR_INVALID)
+	{
+		nodeAddrRelativeToAbs(downNode->para.right)->para.parent=upNodeAddr;
+	}
+
+	downNode->para.parent=upNode->para.parent;
+
+	if(upNode->para.parent.poolPtr==POOL_PTR_INVALID)
+	{
+		tree->root=downNodeAddr;
+	}
+	else if(upNode==nodeAddrRelativeToAbs(nodeAddrRelativeToAbs(upNode->para.parent)->para.left))
+	{
+		nodeAddrRelativeToAbs(upNode->para.parent)->para.left=downNodeAddr;
+	}
+	else
+	{
+		nodeAddrRelativeToAbs(upNode->para.parent)->para.right=downNodeAddr;
+	}
+
+	downNode->para.left=upNodeAddr;
+	upNode->para.parent=downNodeAddr;
+}
+
 
 
 t_urlPool *findUrlPoolByIndex(u32 index)
@@ -471,7 +572,7 @@ void spiderReportProcess(JNIEnv* env)
 
 	if (spiderReportProcessMID != NULL)
 	{
-		(*env)->CallVoidMethod(env, SpiderServiceInstance, spiderReportProcessMID, spiderPara->imgUrlChain.len, spiderPara->imgUrlChain.processed, spiderPara->pageUrlChain.len, spiderPara->pageUrlChain.processed);
+		(*env)->CallVoidMethod(env, SpiderServiceInstance, spiderReportProcessMID, spiderPara->imgUrlTree.len, spiderPara->imgUrlTree.processed, spiderPara->pageUrlTree.len, spiderPara->pageUrlTree.processed);
 	}
 }
 
@@ -485,17 +586,17 @@ jboolean spiderParaInit(JNIEnv* env)
 		spiderPara=(t_spiderPara*)(ashm->data);
 		if(ashm->ashmStat!=ASHM_EXIST)
 		{
-			spiderPara->pageUrlChain.head.poolPtr=POOL_PTR_INVALID;
-			spiderPara->pageUrlChain.tail.poolPtr=POOL_PTR_INVALID;
-			spiderPara->pageUrlChain.curNode.poolPtr=POOL_PTR_INVALID;
-			spiderPara->pageUrlChain.processed=0;
-			spiderPara->pageUrlChain.len=0;
+			spiderPara->pageUrlTree.head.poolPtr=POOL_PTR_INVALID;
+			spiderPara->pageUrlTree.tail.poolPtr=POOL_PTR_INVALID;
+			spiderPara->pageUrlTree.curNode.poolPtr=POOL_PTR_INVALID;
+			spiderPara->pageUrlTree.processed=0;
+			spiderPara->pageUrlTree.len=0;
 
-			spiderPara->imgUrlChain.head.poolPtr=POOL_PTR_INVALID;
-			spiderPara->imgUrlChain.tail.poolPtr=POOL_PTR_INVALID;
-			spiderPara->imgUrlChain.curNode.poolPtr=POOL_PTR_INVALID;
-			spiderPara->imgUrlChain.processed=0;
-			spiderPara->imgUrlChain.len=0;
+			spiderPara->imgUrlTree.head.poolPtr=POOL_PTR_INVALID;
+			spiderPara->imgUrlTree.tail.poolPtr=POOL_PTR_INVALID;
+			spiderPara->imgUrlTree.curNode.poolPtr=POOL_PTR_INVALID;
+			spiderPara->imgUrlTree.processed=0;
+			spiderPara->imgUrlTree.len=0;
 
 			spiderPara->urlPoolNum=0;
 		}
@@ -586,27 +687,27 @@ jboolean Java_com_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv* env,
 jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 		jobject thiz, jstring jUrl, jint jHashCode, jint jType)
 {
-	u8 UrlAlreadyInChain=false;
-	urlChain *curChain =
-			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlChain)) : (&(spiderPara->imgUrlChain));
+	u8 UrlAlreadyInTree=false;
+	urlTree *curTree =
+			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
 	const u8 *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
 
-	urlNode *node=nodeAddrRelativeToAbs(&(curChain->head));
+	urlNode *node=nodeAddrRelativeToAbs(&(curTree->head));
 
 	SpiderServiceInstance=thiz;
 
-	//LOGI("head:%X len:%d url:%s %d hashCode:%d type:%d",(u32)node, curChain->len, url, strlen(url), jHashCode, jType);
+	//LOGI("head:%X len:%d url:%s %d hashCode:%d type:%d",(u32)node, curTree->len, url, strlen(url), jHashCode, jType);
 
 	if(node!=NULL)
 	{
 		u32 i;
-		for(i=0; i<curChain->len; i++)
+		for(i=0; i<curTree->len; i++)
 		{
 			if (node->para.hashCode == jHashCode)
 			{
 				if (strcmp(node->url, url) == 0)
 				{
-					UrlAlreadyInChain=true;
+					UrlAlreadyInTree=true;
 					break;
 				}
 			}
@@ -615,10 +716,10 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 		}
 	}
 
-	if (!UrlAlreadyInChain)
+	if (!UrlAlreadyInTree)
 	{
 		u16 urlLen=strlen(url);
-		urlNode *newNode = urlNodeAllocFromPool(env, urlLen+1 , nodeAddrRelativeToAbs(&(curChain->tail)));
+		urlNode *newNode = urlNodeAllocFromPool(env, urlLen+1 , nodeAddrRelativeToAbs(&(curTree->tail)));
 		if (newNode != NULL)
 		{
 			//LOGI("newNode:%X", (u32)newNode);
@@ -627,19 +728,19 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 			newNode->para.state = URL_PENDING;
 			newNode->para.len=urlLen;
 
-			if(curChain->head.poolPtr==POOL_PTR_INVALID)
+			if(curTree->head.poolPtr==POOL_PTR_INVALID)
 			{
-				nodeAddrAbsToRelative(newNode, &(curChain->head));
+				nodeAddrAbsToRelative(newNode, &(curTree->head));
 			}
 
-			nodeAddrAbsToRelative(newNode, &(curChain->tail));
-			curChain->len++;
+			nodeAddrAbsToRelative(newNode, &(curTree->tail));
+			curTree->len++;
 		}
 	}
 
 	(*env)->ReleaseStringUTFChars(env, jUrl, url);
 
-	return curChain->len;
+	return curTree->len;
 }
 
 
@@ -674,20 +775,20 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		JNIEnv* env, jobject thiz, jstring jPrevUrl, jint jType)
 {
 	int i;
-	urlChain *curChain =
-			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlChain)) : (&(spiderPara->imgUrlChain));
+	urlTree *curTree =
+			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
 
 	char *nextUrl="";
 
 	urlNode *curNode = NULL;
-	urlNode *node = nodeAddrRelativeToAbs(&(curChain->head));
+	urlNode *node = nodeAddrRelativeToAbs(&(curTree->head));
 	//LOGI("jPrevUrl:%X head:%X", (u32)jPrevUrl, (u32)node);
 
 	if(node!=NULL)
 	{
 		if (jPrevUrl == NULL)
 		{
-			for (i = 0; i < curChain->len; i++)
+			for (i = 0; i < curTree->len; i++)
 			{
 				if (node->para.state == URL_PENDING)
 				{
@@ -710,20 +811,20 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 				LOGI("URL NOT ALIGN!");
 			}
 
-			curNode = nodeAddrRelativeToAbs(&(curChain->curNode));
+			curNode = nodeAddrRelativeToAbs(&(curTree->curNode));
 			if(curNode!=NULL)
 			{
 				if(strcmp(prevUrl, curNode->url)==0)
 				{
 					curNode->para.state=URL_DOWNLOADED;
-					curChain->processed++;
+					curTree->processed++;
 				}
 
 				curNode=NULL;
 			}
 
-			//LOGI("prevUrl:%s curChain->len:%d", prevUrl, curChain->len);
-			for (i = 0; i < curChain->len; i++)
+			//LOGI("prevUrl:%s curTree->len:%d", prevUrl, curTree->len);
+			for (i = 0; i < curTree->len; i++)
 			{
 				//LOGI("url %d:%s", i, node->url);
 				if (node->para.state == URL_PENDING)
@@ -757,7 +858,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 	if(curNode!=NULL)
 	{
 		nextUrl=curNode->url;
-		nodeAddrAbsToRelative(curNode, &(curChain->curNode));
+		nodeAddrAbsToRelative(curNode, &(curTree->curNode));
 	}
 
 	//LOGI("nextUrl:%s", nextUrl);

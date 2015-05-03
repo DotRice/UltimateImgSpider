@@ -65,7 +65,7 @@ input:focus, a:focus, div:focus
 .backMaskBox
 {
 	position:absolute;
-	width:100px;
+	width:150px;
 	height:100%;
 	left:0px;
 	top:0px;
