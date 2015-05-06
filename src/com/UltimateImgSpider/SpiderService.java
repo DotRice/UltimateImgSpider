@@ -3,6 +3,8 @@ package com.UltimateImgSpider;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -310,12 +312,14 @@ public class SpiderService extends Service
 	private AtomicInteger urlLoadTimer = new AtomicInteger(URL_TIME_OUT);
 	private AtomicBoolean urlLoadPostSuccess = new AtomicBoolean(true);
 	
+	private MessageDigest md5;
+	
 	private final static int MAX_SIZE_PER_URL=4096;
 	
 	public native String stringFromJNI(String srcStr);
 	public native boolean jniSpiderInit();
 	// Activity onDestory时调用，与jniAddUrl、jniFindNextUrlToLoad不在同一线程，可能会出错。
-	public native int jniAddUrl(String url, int hashCode, int type);
+	public native int jniAddUrl(String url, byte[] md5, int type);
 	private native String jniFindNextUrlToLoad(String prevUrl, int type);
 	
 	static
@@ -469,7 +473,7 @@ public class SpiderService extends Service
 		Log.i(LOG_TAG, "loading:"+curUrl);
 		if(curUrl.isEmpty())
 		{
-			Log.i(LOG_TAG, "site scan complete");
+			//Log.i(LOG_TAG, "site scan complete");
 			reportSpiderLog(true);
 			stopSelf();
 		}
@@ -521,15 +525,21 @@ public class SpiderService extends Service
 		
 		try
 		{
+	        md5=MessageDigest.getInstance("MD5");
+			
 			srcHost = new URL(srcUrl).getHost();
-			pageUrlCnt = jniAddUrl(srcUrl, srcUrl.hashCode(), URL_TYPE_PAGE);
+			pageUrlCnt = jniAddUrl(srcUrl, md5.digest(srcUrl.getBytes()), URL_TYPE_PAGE);
 			
 			findNextUrlToLoad();
 		}
 		catch (MalformedURLException e)
 		{
-			// Log.e(LOG_TAG,e.toString());
+	        e.printStackTrace();
 		}
+        catch (NoSuchAlgorithmException e)
+        {
+	        e.printStackTrace();
+        }
 	}
 	
 	private class timerThread extends Thread
@@ -596,7 +606,7 @@ public class SpiderService extends Service
 		{
 			if ((urlInList.startsWith("http://") || urlInList.startsWith("https://"))&&urlInList.length()<MAX_SIZE_PER_URL)
 			{
-				imgUrlCnt = jniAddUrl(urlInList, urlInList.hashCode(), URL_TYPE_IMG);
+				imgUrlCnt = jniAddUrl(urlInList, md5.digest(urlInList.getBytes()), URL_TYPE_IMG);
 			}
 		}
 	}
@@ -621,7 +631,7 @@ public class SpiderService extends Service
 				        && (url.getRef() == null)
 				        && (urlInList.length()<MAX_SIZE_PER_URL))
 				{
-					pageUrlCnt = jniAddUrl(urlInList, urlInList.hashCode(), URL_TYPE_PAGE);
+					pageUrlCnt = jniAddUrl(urlInList, md5.digest(urlInList.getBytes()), URL_TYPE_PAGE);
 				}
 			}
 			catch (MalformedURLException e)

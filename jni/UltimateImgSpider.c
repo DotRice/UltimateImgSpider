@@ -282,7 +282,7 @@ typedef struct
 
 typedef struct
 {
-	int hashCode;
+	u64 md5_64;
 	u16 state;
 	u16 len;
 	urlNodeRelativeAddr nextNodeAddr;
@@ -377,14 +377,14 @@ urlNode *nodeAddrRelativeToAbs(urlNodeRelativeAddr *RelativeAddr)
 
 bool isRelativeAddrEqu(urlNodeRelativeAddr *src, urlNodeRelativeAddr *dst)
 {
-	return (src->poolPtr==dst->poolPtr && src->offset==dst->offset)?true:false;
+	return src->poolPtr==dst->poolPtr && src->offset==dst->offset;
 }
 
 
 void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
 {
-	urlNode *downNode=nodeAddrRelativeToAbs(&downNodeAddr);
 	urlNodeRelativeAddr downNodeAddr=upNode->para.right;
+	urlNode *downNode=nodeAddrRelativeToAbs(&downNodeAddr);
 
 	urlNodeRelativeAddr upNodeAddr;
 	nodeAddrAbsToRelative(upNode, &upNodeAddr);
@@ -392,7 +392,7 @@ void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
 	upNode->para.right=downNode->para.left;
 	if(downNode->para.left.poolPtr!=POOL_PTR_INVALID)
 	{
-		nodeAddrRelativeToAbs(downNode->para.left)->para.parent=upNodeAddr;
+		nodeAddrRelativeToAbs(&(downNode->para.left))->para.parent=upNodeAddr;
 	}
 
 	downNode->para.parent=upNode->para.parent;
@@ -401,13 +401,13 @@ void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
 	{
 		tree->root=downNodeAddr;
 	}
-	else if(upNode==nodeAddrRelativeToAbs(nodeAddrRelativeToAbs(upNode->para.parent)->para.left))
+	else if(upNode==nodeAddrRelativeToAbs(&(nodeAddrRelativeToAbs(&(upNode->para.parent))->para.left)))
 	{
-		nodeAddrRelativeToAbs(upNode->para.parent)->para.left=downNodeAddr;
+		nodeAddrRelativeToAbs(&(upNode->para.parent))->para.left=downNodeAddr;
 	}
 	else
 	{
-		nodeAddrRelativeToAbs(upNode->para.parent)->para.right=downNodeAddr;
+		nodeAddrRelativeToAbs(&(upNode->para.parent))->para.right=downNodeAddr;
 	}
 
 	downNode->para.left=upNodeAddr;
@@ -417,8 +417,8 @@ void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
 
 void urlTreeRightRotate(urlTree *tree, urlNode *upNode)
 {
-	urlNode *downNode=nodeAddrRelativeToAbs(&downNodeAddr);
 	urlNodeRelativeAddr downNodeAddr=upNode->para.left;
+	urlNode *downNode=nodeAddrRelativeToAbs(&downNodeAddr);
 
 	urlNodeRelativeAddr upNodeAddr;
 	nodeAddrAbsToRelative(upNode, &upNodeAddr);
@@ -426,7 +426,7 @@ void urlTreeRightRotate(urlTree *tree, urlNode *upNode)
 	upNode->para.left=downNode->para.right;
 	if(downNode->para.right.poolPtr!=POOL_PTR_INVALID)
 	{
-		nodeAddrRelativeToAbs(downNode->para.right)->para.parent=upNodeAddr;
+		nodeAddrRelativeToAbs(&(downNode->para.right))->para.parent=upNodeAddr;
 	}
 
 	downNode->para.parent=upNode->para.parent;
@@ -435,13 +435,13 @@ void urlTreeRightRotate(urlTree *tree, urlNode *upNode)
 	{
 		tree->root=downNodeAddr;
 	}
-	else if(upNode==nodeAddrRelativeToAbs(nodeAddrRelativeToAbs(upNode->para.parent)->para.left))
+	else if(upNode==nodeAddrRelativeToAbs(&(nodeAddrRelativeToAbs(&(upNode->para.parent))->para.left)))
 	{
-		nodeAddrRelativeToAbs(upNode->para.parent)->para.left=downNodeAddr;
+		nodeAddrRelativeToAbs(&(upNode->para.parent))->para.left=downNodeAddr;
 	}
 	else
 	{
-		nodeAddrRelativeToAbs(upNode->para.parent)->para.right=downNodeAddr;
+		nodeAddrRelativeToAbs(&(upNode->para.parent))->para.right=downNodeAddr;
 	}
 
 	downNode->para.left=upNodeAddr;
@@ -680,12 +680,9 @@ jboolean Java_com_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv* env,
 	return true;
 }
 
-
-
-
 //添加URL 返回列表大小
 jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
-		jobject thiz, jstring jUrl, jint jHashCode, jint jType)
+		jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType)
 {
 	u8 UrlAlreadyInTree=false;
 	urlTree *curTree =
@@ -694,16 +691,20 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 
 	urlNode *node=nodeAddrRelativeToAbs(&(curTree->head));
 
+	u8 *md5=(*env)->GetByteArrayElements(env, jMd5, NULL);
+	u64 md5_64;
+	memcpy((u8*)&md5_64, md5+4, 8);
+
 	SpiderServiceInstance=thiz;
 
-	//LOGI("head:%X len:%d url:%s %d hashCode:%d type:%d",(u32)node, curTree->len, url, strlen(url), jHashCode, jType);
+	//LOGI("head:%X len:%d url:%s %d md5_64:%d type:%d",(u32)node, curTree->len, url, strlen(url), jHashCode, jType);
 
 	if(node!=NULL)
 	{
 		u32 i;
 		for(i=0; i<curTree->len; i++)
 		{
-			if (node->para.hashCode == jHashCode)
+			if (node->para.md5_64 == md5_64)
 			{
 				if (strcmp(node->url, url) == 0)
 				{
@@ -722,9 +723,8 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 		urlNode *newNode = urlNodeAllocFromPool(env, urlLen+1 , nodeAddrRelativeToAbs(&(curTree->tail)));
 		if (newNode != NULL)
 		{
-			//LOGI("newNode:%X", (u32)newNode);
 			strcpy(newNode->url, url);
-			newNode->para.hashCode = jHashCode;
+			newNode->para.md5_64 = md5_64;
 			newNode->para.state = URL_PENDING;
 			newNode->para.len=urlLen;
 
@@ -735,11 +735,13 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 
 			nodeAddrAbsToRelative(newNode, &(curTree->tail));
 			curTree->len++;
+
+
 		}
 	}
 
 	(*env)->ReleaseStringUTFChars(env, jUrl, url);
-
+	(*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
 	return curTree->len;
 }
 
