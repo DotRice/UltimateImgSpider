@@ -336,20 +336,27 @@ t_urlPool *firstUrlPool = NULL;
 
 void nodeAddrAbsToRelative(urlNode *node, urlNodeRelativeAddr *RelativeAddr)
 {
-	t_urlPool *pool=firstUrlPool;
-	u32 i=0;
-
-	while(pool!=NULL)
+	if(node!=NULL)
 	{
-		s64 ofs=(u32)node-(u32)pool;
-		if(ofs>=0&&ofs<sizeof(t_urlPool))
+		t_urlPool *pool=firstUrlPool;
+		u32 i=0;
+
+		while(pool!=NULL)
 		{
-			RelativeAddr->poolPtr=i;
-			RelativeAddr->offset=ofs;
-			return;
+			s64 ofs=(u32)node-(u32)pool;
+			if(ofs>=0&&ofs<sizeof(t_urlPool))
+			{
+				RelativeAddr->poolPtr=i;
+				RelativeAddr->offset=ofs;
+				return;
+			}
+			pool=pool->next;
+			i++;
 		}
-		pool=pool->next;
-		i++;
+	}
+	else
+	{
+		RelativeAddr->poolPtr=POOL_PTR_INVALID;
 	}
 }
 
@@ -488,7 +495,7 @@ char *urlPoolIndexToName(u32 index)
 	return urlPoolName;
 }
 
-urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, urlNode *prevNode)
+urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, urlNodeRelativeAddr *direction)
 {
 	urlNode *node=NULL;
 	t_urlPool *urlPool = firstUrlPool;
@@ -543,11 +550,12 @@ urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, urlNode *prevNode)
 
 	if(node!=NULL)
 	{
-		if(prevNode!=NULL)
+		if(direction!=NULL)
 		{
-			prevNode->para.nextNodeAddr.poolPtr=poolIndex;
-			prevNode->para.nextNodeAddr.offset=offset;
+			direction->poolPtr=poolIndex;
+			direction->offset=offset;
 		}
+		
 		node->para.nextNodeAddr.poolPtr=POOL_PTR_INVALID;
 	}
 
@@ -588,12 +596,14 @@ jboolean spiderParaInit(JNIEnv* env)
 		{
 			spiderPara->pageUrlTree.head.poolPtr=POOL_PTR_INVALID;
 			spiderPara->pageUrlTree.tail.poolPtr=POOL_PTR_INVALID;
+			spiderPara->pageUrlTree.root.poolPtr=POOL_PTR_INVALID;
 			spiderPara->pageUrlTree.curNode.poolPtr=POOL_PTR_INVALID;
 			spiderPara->pageUrlTree.processed=0;
 			spiderPara->pageUrlTree.len=0;
 
 			spiderPara->imgUrlTree.head.poolPtr=POOL_PTR_INVALID;
 			spiderPara->imgUrlTree.tail.poolPtr=POOL_PTR_INVALID;
+			spiderPara->imgUrlTree.root.poolPtr=POOL_PTR_INVALID;
 			spiderPara->imgUrlTree.curNode.poolPtr=POOL_PTR_INVALID;
 			spiderPara->imgUrlTree.processed=0;
 			spiderPara->imgUrlTree.len=0;
@@ -680,6 +690,63 @@ jboolean Java_com_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv* env,
 	return true;
 }
 
+
+void rbUrlTreeFixup(urlTree *tree, urlNode *node)
+{
+	
+}
+
+void urlTreeInsert(JNIEnv* env, urlTree *tree, u8 *newUrl, u64 newMd5_64)
+{
+	urlNodeRelativeAddr *direction=&(tree->root);
+	urlNode *node=nodeAddrRelativeToAbs(direction);
+	urlNode *parent=NULL;
+	
+	while(node!=NULL)
+	{
+		if(newMd5_64>node->para.md5_64)
+		{
+			direction=&(node->para.right);
+		}
+		else if(newMd5_64<node->para.md5_64)
+		{
+			direction=&(node->para.left);
+		}
+		else
+		{
+			return;
+		}
+		
+		parent=node;
+		node=nodeAddrRelativeToAbs(direction);
+	}
+	
+	{
+		u16 urlLen=strlen(newUrl);
+		node=urlNodeAllocFromPool(env, urlLen+1 , direction);
+		if(node!=NULL)
+		{
+			strcpy(node->url, newUrl);
+			node->para.md5_64 = newMd5_64;
+			node->para.state = URL_PENDING;
+			node->para.len=urlLen;
+			
+			node->para.left.poolPtr=POOL_PTR_INVALID;
+			node->para.right.poolPtr=POOL_PTR_INVALID;
+			
+			nodeAddrAbsToRelative(parent, &(node->para.parent));
+			
+			tree->tail=*direction;
+			if(tree->head.poolPtr==POOL_PTR_INVALID)
+			{
+				tree->head=*direction;
+			}
+			
+			tree->len++;
+		}
+	}
+}
+
 //添加URL 返回列表大小
 jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 		jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType)
@@ -720,7 +787,9 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 	if (!UrlAlreadyInTree)
 	{
 		u16 urlLen=strlen(url);
-		urlNode *newNode = urlNodeAllocFromPool(env, urlLen+1 , nodeAddrRelativeToAbs(&(curTree->tail)));
+		urlNode *tail=nodeAddrRelativeToAbs(&(curTree->tail));
+		urlNodeRelativeAddr *direction=(tail==NULL)?NULL:&(tail->para.nextNodeAddr);
+		urlNode *newNode = urlNodeAllocFromPool(env, urlLen+1 , direction);
 		if (newNode != NULL)
 		{
 			strcpy(newNode->url, url);
