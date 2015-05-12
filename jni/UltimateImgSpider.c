@@ -271,6 +271,9 @@ enum URL_STATE
 #define URL_TYPE_PAGE	0
 #define URL_TYPE_IMG	1
 
+#define RBT_RED     0
+#define RBT_BLACK   1
+
 #define POOL_PTR_INVALID	0xFFFFFFFF
 
 #pragma pack(1)
@@ -690,27 +693,63 @@ jboolean Java_com_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv* env,
 	return true;
 }
 
-
 void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 {
-	
+	while(nodeAddrRelativeToAbs(&(node->para.parent))->para.color==RBT_RED)
+    {
+        urlNode *parent=nodeAddrRelativeToAbs(&(node->para.parent));
+        urlNode *grandParent=nodeAddrRelativeToAbs(&(parent->para.parent));
+        
+        urlNode *uncle;
+        urlNode *other;
+        
+        if(parent==nodeAddrRelativeToAbs(&(grandParent->para.left)))
+        {
+            uncle=nodeAddrRelativeToAbs(&(grandParent->para.right));
+            other=nodeAddrRelativeToAbs(&(parent->para.left));
+        }
+        else
+        {
+            uncle=nodeAddrRelativeToAbs(&(grandParent->para.left));
+            other=nodeAddrRelativeToAbs(&(parent->para.right));
+        }
+        
+        if(uncle->para.color==RBT_RED)
+        {
+            parent->para.color=RBT_BLACK;
+            uncle->para.color=RBT_BLACK;
+            grandParent->para.color=RBT_RED;
+            node=grandParent;
+        }
+        else if(node==other)
+        {
+            node=parent;
+            urlTreeLeftRotate(tree, node);
+        }
+        
+        parent->para.color=RBT_BLACK;
+        grandParent->para.color=RBT_RED;
+        urlTreeRightRotate(tree, grandParent);
+    }
+    
+    nodeAddrRelativeToAbs(&(tree->root))->para.color=RBT_BLACK;
 }
 
 void urlTreeInsert(JNIEnv* env, urlTree *tree, u8 *newUrl, u64 newMd5_64)
 {
-	urlNodeRelativeAddr *direction=&(tree->root);
-	urlNode *node=nodeAddrRelativeToAbs(direction);
+	urlNodeRelativeAddr *nextNodeAddr=&(tree->root);
+	urlNode *node=nodeAddrRelativeToAbs(nextNodeAddr);
 	urlNode *parent=NULL;
 	
 	while(node!=NULL)
 	{
 		if(newMd5_64>node->para.md5_64)
 		{
-			direction=&(node->para.right);
+			nextNodeAddr=&(node->para.right);
 		}
 		else if(newMd5_64<node->para.md5_64)
 		{
-			direction=&(node->para.left);
+			nextNodeAddr=&(node->para.left);
 		}
 		else
 		{
@@ -718,12 +757,12 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, u8 *newUrl, u64 newMd5_64)
 		}
 		
 		parent=node;
-		node=nodeAddrRelativeToAbs(direction);
+		node=nodeAddrRelativeToAbs(nextNodeAddr);
 	}
 	
 	{
 		u16 urlLen=strlen(newUrl);
-		node=urlNodeAllocFromPool(env, urlLen+1 , direction);
+		node=urlNodeAllocFromPool(env, urlLen+1 , nextNodeAddr);
 		if(node!=NULL)
 		{
 			strcpy(node->url, newUrl);
@@ -736,10 +775,10 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, u8 *newUrl, u64 newMd5_64)
 			
 			nodeAddrAbsToRelative(parent, &(node->para.parent));
 			
-			tree->tail=*direction;
+			tree->tail=*nextNodeAddr;
 			if(tree->head.poolPtr==POOL_PTR_INVALID)
 			{
-				tree->head=*direction;
+				tree->head=*nextNodeAddr;
 			}
 			
 			tree->len++;
