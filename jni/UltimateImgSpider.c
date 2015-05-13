@@ -233,7 +233,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 
 	SpiderServiceInstance=thiz;
 
-	ashmemTest(env);
+	//ashmemTest(env);
 
 	if((*env)->ExceptionOccurred(env)) {
 	   return NULL;
@@ -695,52 +695,97 @@ jboolean Java_com_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv* env,
 
 void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 {
-	while(nodeAddrRelativeToAbs(&(node->para.parent))->para.color==RBT_RED)
+    urlNode *parent=nodeAddrRelativeToAbs(&(node->para.parent));
+	
+	while(parent!=NULL)
     {
-        urlNode *parent=nodeAddrRelativeToAbs(&(node->para.parent));
         urlNode *grandParent=nodeAddrRelativeToAbs(&(parent->para.parent));
         
-        urlNode *uncle;
-        urlNode *other;
-        
+		if(parent->para.color!=RBT_RED)
+		{
+			break;
+		}
+		
+		
         if(parent==nodeAddrRelativeToAbs(&(grandParent->para.left)))
         {
-            uncle=nodeAddrRelativeToAbs(&(grandParent->para.right));
-            other=nodeAddrRelativeToAbs(&(parent->para.left));
+            urlNode *uncle=nodeAddrRelativeToAbs(&(grandParent->para.right));
+			
+			
+			while(true)
+			{
+				if(uncle!=NULL)
+				{
+					if(uncle->para.color==RBT_RED)
+					{
+						parent->para.color=RBT_BLACK;
+						uncle->para.color=RBT_BLACK;
+						grandParent->para.color=RBT_RED;
+						node=grandParent;
+						
+						break;
+					}
+				}
+				
+				if(node==nodeAddrRelativeToAbs(&(parent->para.left)))
+				{
+					node=parent;
+					urlTreeLeftRotate(tree, node);
+				}
+				break;
+			}
+			
+			parent->para.color=RBT_BLACK;
+			grandParent->para.color=RBT_RED;
+			urlTreeRightRotate(tree, grandParent);
         }
         else
         {
-            uncle=nodeAddrRelativeToAbs(&(grandParent->para.left));
-            other=nodeAddrRelativeToAbs(&(parent->para.right));
+            urlNode *uncle=nodeAddrRelativeToAbs(&(grandParent->para.left));
+			
+			
+			while(true)
+			{
+				if(uncle!=NULL)
+				{
+					if(uncle->para.color==RBT_RED)
+					{
+						parent->para.color=RBT_BLACK;
+						uncle->para.color=RBT_BLACK;
+						grandParent->para.color=RBT_RED;
+						node=grandParent;
+						
+						break;
+					}
+				}
+				
+				if(node==nodeAddrRelativeToAbs(&(parent->para.right)))
+				{
+					node=parent;
+					urlTreeRightRotate(tree, node);
+				}
+				break;
+			}
+			
+			parent->para.color=RBT_BLACK;
+			grandParent->para.color=RBT_RED;
+			urlTreeLeftRotate(tree, grandParent);
         }
         
-        if(uncle->para.color==RBT_RED)
-        {
-            parent->para.color=RBT_BLACK;
-            uncle->para.color=RBT_BLACK;
-            grandParent->para.color=RBT_RED;
-            node=grandParent;
-        }
-        else if(node==other)
-        {
-            node=parent;
-            urlTreeLeftRotate(tree, node);
-        }
-        
-        parent->para.color=RBT_BLACK;
-        grandParent->para.color=RBT_RED;
-        urlTreeRightRotate(tree, grandParent);
+		parent=nodeAddrRelativeToAbs(&(node->para.parent));
     }
     
     nodeAddrRelativeToAbs(&(tree->root))->para.color=RBT_BLACK;
 }
 
-void urlTreeInsert(JNIEnv* env, urlTree *tree, u8 *newUrl, u64 newMd5_64)
+void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 {
 	urlNodeRelativeAddr *nextNodeAddr=&(tree->root);
 	urlNode *node=nodeAddrRelativeToAbs(nextNodeAddr);
 	urlNode *parent=NULL;
 	
+	u16 urlLen=strlen(newUrl);
+
 	while(node!=NULL)
 	{
 		if(newMd5_64>node->para.md5_64)
@@ -760,29 +805,61 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, u8 *newUrl, u64 newMd5_64)
 		node=nodeAddrRelativeToAbs(nextNodeAddr);
 	}
 	
+	node=urlNodeAllocFromPool(env, urlLen+1 , nextNodeAddr);
+	if(node!=NULL)
 	{
-		u16 urlLen=strlen(newUrl);
-		node=urlNodeAllocFromPool(env, urlLen+1 , nextNodeAddr);
-		if(node!=NULL)
+		strcpy(node->url, newUrl);
+		node->para.md5_64 = newMd5_64;
+		node->para.state = URL_PENDING;
+		node->para.len=urlLen;
+
+		node->para.left.poolPtr=POOL_PTR_INVALID;
+		node->para.right.poolPtr=POOL_PTR_INVALID;
+
+		nodeAddrAbsToRelative(parent, &(node->para.parent));
+
+		if(parent==NULL)
 		{
-			strcpy(node->url, newUrl);
-			node->para.md5_64 = newMd5_64;
-			node->para.state = URL_PENDING;
-			node->para.len=urlLen;
-			
-			node->para.left.poolPtr=POOL_PTR_INVALID;
-			node->para.right.poolPtr=POOL_PTR_INVALID;
-			
-			nodeAddrAbsToRelative(parent, &(node->para.parent));
-			
-			tree->tail=*nextNodeAddr;
-			if(tree->head.poolPtr==POOL_PTR_INVALID)
-			{
-				tree->head=*nextNodeAddr;
-			}
-			
-			tree->len++;
+			node->para.color=RBT_BLACK;
 		}
+		else
+		{
+			node->para.color=RBT_RED;
+
+			if(nodeAddrRelativeToAbs(&(parent->para.parent))!=NULL)
+			{
+				rbUrlTreeFixup(tree, node);
+			}
+		}
+
+		tree->tail=*nextNodeAddr;
+		if(tree->head.poolPtr==POOL_PTR_INVALID)
+		{
+			tree->head=*nextNodeAddr;
+		}
+
+		tree->len++;
+		
+		if(tree->len==10)
+			urlTreeTraversal(nodeAddrRelativeToAbs(&(tree->root)));
+	}
+}
+
+void urlTreeTraversal(urlNode *node)
+{
+	urlNode *left=nodeAddrRelativeToAbs(&(node->para.left));
+	urlNode *right=nodeAddrRelativeToAbs(&(node->para.right));
+
+	if(left!=NULL)
+	{
+		urlTreeTraversal(left);
+	}
+
+	LOGI("%08X %s", (u32)(node->para.md5_64>>32), node->url);
+
+	if(right!=NULL)
+	{
+		urlTreeTraversal(right);
 	}
 }
 
@@ -795,7 +872,7 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
 	const u8 *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
 
-	urlNode *node=nodeAddrRelativeToAbs(&(curTree->head));
+	//urlNode *node=nodeAddrRelativeToAbs(&(curTree->head));
 
 	u8 *md5=(*env)->GetByteArrayElements(env, jMd5, NULL);
 	u64 md5_64;
@@ -803,8 +880,13 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 
 	SpiderServiceInstance=thiz;
 
-	//LOGI("head:%X len:%d url:%s %d md5_64:%d type:%d",(u32)node, curTree->len, url, strlen(url), jHashCode, jType);
+	LOGI("len:%d url:%s %d md5_64:%d type:%d",curTree->len, url, strlen(url), (u32)(md5_64>>32), jType);
 
+	if(curTree->len<10)
+	urlTreeInsert(env, curTree, url, md5_64);
+
+
+	/*
 	if(node!=NULL)
 	{
 		u32 i;
@@ -847,6 +929,7 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 
 		}
 	}
+	*/
 
 	(*env)->ReleaseStringUTFChars(env, jUrl, url);
 	(*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
