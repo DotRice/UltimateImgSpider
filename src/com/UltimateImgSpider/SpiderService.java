@@ -189,14 +189,6 @@ public class SpiderService extends Service
 	}
 	
 	
-	public void recvProcess(int imgUrlLen, int imgUrlProcess, int pageUrlLen, int pageUrlProcess)
-	{
-		imgUrlCnt=imgUrlLen;
-		imgProcess=imgUrlProcess;
-		pageUrlCnt=pageUrlLen;
-		pageProcess=pageUrlProcess;
-	}
-	
 	@Override
 	public void onTrimMemory(int level)
 	{
@@ -290,10 +282,12 @@ public class SpiderService extends Service
 	
 	private String curUrl;
 	
-	private int pageUrlCnt = 0;
-	private int pageProcess = 0;
-	private int imgUrlCnt = 0;
-	private int imgProcess = 0;
+	private static int TOTAL=0;
+	private static int PROCESSED=1;
+	private static int HEIGHT=2;
+	
+	private int[] pageProcParam;
+	private int[] imgProcParam;
 	
 	private boolean pageFinished = false;
 	private long loadTimer;
@@ -319,8 +313,8 @@ public class SpiderService extends Service
 	public native String stringFromJNI(String srcStr);
 	public native boolean jniSpiderInit();
 	// Activity onDestory时调用，与jniAddUrl、jniFindNextUrlToLoad不在同一线程，可能会出错。
-	public native int jniAddUrl(String url, byte[] md5, int type);
-	private native String jniFindNextUrlToLoad(String prevUrl, int type);
+	public native int jniAddUrl(String url, byte[] md5, int type, int[] param);
+	private native String jniFindNextUrlToLoad(String prevUrl, int type, int[] param);
 	
 	static
 	{
@@ -336,15 +330,11 @@ public class SpiderService extends Service
 		{
 			log="siteScanCompleted\r\n";
 		}
-		else
-		{
-			pageProcess++;
-		}
 		
 		Runtime rt = Runtime.getRuntime();
 		log = log+"VM:"+(rt.totalMemory() >> 20) + "M Native:"
-		        + (Debug.getNativeHeapSize() >> 20) + "M pic:" + imgUrlCnt
-		        + " page:" + pageProcess + "/" + pageUrlCnt + " loadTime:" + loadTime + " scanTime:"
+		        + (Debug.getNativeHeapSize() >> 20) + "M pic:" + imgProcParam[PROCESSED] + "/" + imgProcParam[TOTAL] + "|" + imgProcParam[HEIGHT]
+		        + " page:" + pageProcParam[PROCESSED] + "/" + pageProcParam[TOTAL] + "|" + pageProcParam[HEIGHT] + " loadTime:" + loadTime + " scanTime:"
 		        + scanTime + " searchTime:" + searchTime + "\r\n" + curUrl;
 		
 		
@@ -468,7 +458,7 @@ public class SpiderService extends Service
 	{
 		isPaused=false;
 		searchTime=System.currentTimeMillis();
-		curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE);
+		curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE, pageProcParam);
 		searchTime=System.currentTimeMillis()-searchTime;
 		Log.i(LOG_TAG, "loading:"+curUrl);
 		if(curUrl.isEmpty())
@@ -487,6 +477,9 @@ public class SpiderService extends Service
 	private void spiderInit()
 	{
 		spiderWebViewInit();
+		
+		pageProcParam=new int[3];
+		imgProcParam=new int[3];
 		
 		loadNextUrlAfterScan = new Runnable()
 		{
@@ -528,7 +521,7 @@ public class SpiderService extends Service
 	        md5=MessageDigest.getInstance("MD5");
 			
 			srcHost = new URL(srcUrl).getHost();
-			pageUrlCnt = jniAddUrl(srcUrl, md5.digest(srcUrl.getBytes()), URL_TYPE_PAGE);
+			jniAddUrl(srcUrl, md5.digest(srcUrl.getBytes()), URL_TYPE_PAGE, pageProcParam);
 			
 			findNextUrlToLoad();
 		}
@@ -606,7 +599,7 @@ public class SpiderService extends Service
 		{
 			if ((urlInList.startsWith("http://") || urlInList.startsWith("https://"))&&urlInList.length()<MAX_SIZE_PER_URL)
 			{
-				imgUrlCnt = jniAddUrl(urlInList, md5.digest(urlInList.getBytes()), URL_TYPE_IMG);
+				jniAddUrl(urlInList, md5.digest(urlInList.getBytes()), URL_TYPE_IMG, imgProcParam);
 			}
 		}
 	}
@@ -631,7 +624,7 @@ public class SpiderService extends Service
 				        && (url.getRef() == null)
 				        && (urlInList.length()<MAX_SIZE_PER_URL))
 				{
-					pageUrlCnt = jniAddUrl(urlInList, md5.digest(urlInList.getBytes()), URL_TYPE_PAGE);
+					jniAddUrl(urlInList, md5.digest(urlInList.getBytes()), URL_TYPE_PAGE, pageProcParam);
 				}
 			}
 			catch (MalformedURLException e)
