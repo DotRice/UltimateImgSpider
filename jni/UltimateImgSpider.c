@@ -263,11 +263,6 @@ jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 #define MAX_SIZE_PER_URL	4096
 #define SIZE_PER_URLPOOL	(1024*1024-12)
 
-enum URL_STATE
-{
-	URL_PENDING, URL_DOWNLOADED
-};
-
 #define URL_TYPE_PAGE	0
 #define URL_TYPE_IMG	1
 
@@ -286,8 +281,8 @@ typedef struct
 typedef struct
 {
 	u64 md5_64;
-	u8  state;
-	u8  color;
+	u8 pad;
+	u8 color;
 	u16 len;
 	urlNodeRelativeAddr nextNodeAddr;
 	urlNodeRelativeAddr prevNodeAddr;
@@ -471,36 +466,6 @@ void urlTreeRightRotate(urlTree *tree, urlNode *upNode)
 	upNode->para.parent=downNodeAddr;
 }
 
-
-
-t_urlPool *findUrlPoolByIndex(u32 index)
-{
-	t_urlPool *pool=firstUrlPool;
-	u32 i=0;
-
-	if(pool!=NULL)
-	{
-		while(i<index&&pool->next!=NULL)
-		{
-			pool=pool->next;
-			i++;
-		}
-	}
-
-	return (i<index)?NULL:pool;
-}
-
-urlNode *gotoNextNode(urlNode *curNode)
-{
-	t_urlPool *pool=findUrlPoolByIndex(curNode->para.nextNodeAddr.poolPtr);
-
-	if(pool!=NULL)
-	{
-		return (urlNode*)(pool->mem+curNode->para.nextNodeAddr.offset);
-	}
-
-	return NULL;
-}
 
 #define URL_POOL_NAME_SIZE	20
 char urlPoolName[URL_POOL_NAME_SIZE];
@@ -857,7 +822,6 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 
 		strcpy(node->url, newUrl);
 		node->para.md5_64 = newMd5_64;
-		node->para.state = URL_PENDING;
 		node->para.len=urlLen;
 
 		node->para.left.poolPtr=POOL_PTR_INVALID;
@@ -936,15 +900,13 @@ jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
 	const u8 *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
 
-	//urlNode *node=nodeAddrRelativeToAbs(&(curTree->head));
-
 	u8 *md5=(*env)->GetByteArrayElements(env, jMd5, NULL);
 	u64 md5_64;
 	memcpy((u8*)&md5_64, md5+4, 8);
 
 	SpiderServiceInstance=thiz;
 
-	//if(curTree->len<10)
+	//if(curTree->len<500)
 	{
 		//LOGI("len:%d %d md5_64:%08X type:%d url:%s",curTree->len, strlen(url), (u32)(md5_64>>32), jType, url);
 
@@ -994,97 +956,113 @@ u16 urlSimilarity(const char *url1, u16 len1, const char *url2, u16 len2)
 	return i;
 }
 
+#define SEARCH_STEP_MAX	5000
+
 jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		JNIEnv* env, jobject thiz, jstring jPrevUrl, jint jType, jintArray jParam)
 {
-	int i;
 	urlTree *curTree =
 			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
 
 	char *nextUrl="";
 
-	urlNode *curNode = NULL;
-	urlNode *node = nodeAddrRelativeToAbs(&(curTree->head));
-	//LOGI("jPrevUrl:%X head:%X", (u32)jPrevUrl, (u32)node);
+	//LOGI("jPrevUrl:%X", (u32)jPrevUrl);
 
-	if(node!=NULL)
+	urlNode *nextNode=NULL;
+	urlNode *curNode = nodeAddrRelativeToAbs(&(curTree->curNode));
+	if(curNode==NULL||jPrevUrl==NULL)
 	{
-		if (jPrevUrl == NULL)
-		{
-			for (i = 0; i < curTree->len; i++)
-			{
-				if (node->para.state == URL_PENDING)
-				{
-					curNode = node;
-					break;
-				}
+		nextNode=nodeAddrRelativeToAbs(&(curTree->head));
+	}
+	else
+	{
+		int i;
+		int urlSim = -1;
+		const char *prevUrl = (*env)->GetStringUTFChars(env, jPrevUrl, NULL);
+		u16 prevUrlLen=strlen(prevUrl);
+		urlNode *node;
 
-				node=gotoNextNode(node);
+		//LOGI("prevUrl:%s curTree->len:%d", prevUrl, curTree->len);
+		//当前url已经被下载，从未下载url链表中删除
+		if(strcmp(prevUrl, curNode->url)==0)
+		{
+			curTree->processed++;
+
+			urlNode *prev=nodeAddrRelativeToAbs(&(curNode->para.prevNodeAddr));
+			if(prev==NULL)
+			{
+				curTree->head=curNode->para.nextNodeAddr;
+			}
+			else
+			{
+				prev->para.nextNodeAddr=curNode->para.nextNodeAddr;
+			}
+
+			urlNode *next=nodeAddrRelativeToAbs(&(curNode->para.nextNodeAddr));
+			if(next==NULL)
+			{
+				curTree->tail=curNode->para.prevNodeAddr;
+			}
+			else
+			{
+				next->para.prevNodeAddr=curNode->para.prevNodeAddr;
 			}
 		}
-		else
+
+		node=curNode;
+		for (i = 0; i < SEARCH_STEP_MAX; i++)
 		{
-			bool scanComplete = true;
-			u32 urlSim = 0;
-			const char *prevUrl = (*env)->GetStringUTFChars(env, jPrevUrl, NULL);
-			u16 prevUrlLen=strlen(prevUrl);
-
-			if(((u32)prevUrl)&0x03!=0)
+			//LOGI("next %d:%s", i, node->url);
+			node=nodeAddrRelativeToAbs(&(node->para.nextNodeAddr));
+			if(node==NULL)
 			{
-				LOGI("URL NOT ALIGN!");
+				break;
 			}
-
-			curNode = nodeAddrRelativeToAbs(&(curTree->curNode));
-			if(curNode!=NULL)
+			else
 			{
-				if(strcmp(prevUrl, curNode->url)==0)
+				int curSim = urlSimilarity(prevUrl, prevUrlLen, node->url, node->para.len);
+				if (curSim > urlSim)
 				{
-					curNode->para.state=URL_DOWNLOADED;
-					curTree->processed++;
+					urlSim = curSim;
+					nextNode = node;
 				}
-
-				curNode=NULL;
 			}
-
-			LOGI("prevUrl:%s curTree->len:%d", prevUrl, curTree->len);
-			for (i = 0; i < curTree->len; i++)
-			{
-				//LOGI("url %d:%s", i, node->url);
-				if (node->para.state == URL_PENDING)
-				{
-					if (scanComplete)
-					{
-						scanComplete = false;
-						urlSim = urlSimilarity(prevUrl, prevUrlLen, node->url, node->para.len);
-						curNode = node;
-					}
-					else
-					{
-						u32 curSim = urlSimilarity(prevUrl, prevUrlLen, node->url, node->para.len);
-
-						if (curSim > urlSim)
-						{
-							urlSim = curSim;
-							curNode = node;
-						}
-					}
-				}
-
-				node=gotoNextNode(node);
-			}
-
-			(*env)->ReleaseStringUTFChars(env, jPrevUrl, prevUrl);
 		}
+
+
+		node=curNode;
+		for (i = 0; i < SEARCH_STEP_MAX; i++)
+		{
+			//LOGI("prev %d:%s", i, node->url);
+			node=nodeAddrRelativeToAbs(&(node->para.prevNodeAddr));
+			if(node==NULL)
+			{
+				break;
+			}
+			else
+			{
+				int curSim = urlSimilarity(prevUrl, prevUrlLen, node->url, node->para.len);
+				if (curSim > urlSim)
+				{
+					urlSim = curSim;
+					nextNode = node;
+				}
+			}
+		}
+
+		(*env)->ReleaseStringUTFChars(env, jPrevUrl, prevUrl);
 	}
 	
+
+
 	int *param=(*env)->GetIntArrayElements(env, jParam, NULL);
 	param[PROCESSED]=curTree->processed;
-	(*env)->ReleaseByteArrayElements(env, jParam, param, 0);
+	(*env)->ReleaseByteArrayElements(env, jParam, param, NULL);
 	
-	if(curNode!=NULL)
+	if(nextNode!=NULL)
 	{
-		nextUrl=curNode->url;
-		nodeAddrAbsToRelative(curNode, &(curTree->curNode));
+		nextUrl=nextNode->url;
+		nodeAddrAbsToRelative(nextNode, &(curTree->curNode));
 	}
 
 	//LOGI("nextUrl:%s", nextUrl);

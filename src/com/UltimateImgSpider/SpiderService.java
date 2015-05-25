@@ -282,9 +282,9 @@ public class SpiderService extends Service
 	
 	private String curUrl;
 	
-	private static int TOTAL=0;
-	private static int PROCESSED=1;
-	private static int HEIGHT=2;
+	private final static int TOTAL=0;
+	private final static int PROCESSED=1;
+	private final static int HEIGHT=2;
 	
 	private int[] pageProcParam;
 	private int[] imgProcParam;
@@ -302,7 +302,7 @@ public class SpiderService extends Service
 	private Runnable urlLoadTimeOut;
 	private Handler spiderHandler = new Handler();
 	private boolean timerRunning = true;
-	private final int URL_TIME_OUT = 10;
+	private final static int URL_TIME_OUT = 10;
 	private AtomicInteger urlLoadTimer = new AtomicInteger(URL_TIME_OUT);
 	private AtomicBoolean urlLoadPostSuccess = new AtomicBoolean(true);
 	
