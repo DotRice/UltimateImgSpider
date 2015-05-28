@@ -55,7 +55,13 @@ public class SpiderActivity extends Activity
 	public final static int CMD_CONTINUE = 3;
 	public final static int CMD_STOP=4;
 	
-	private boolean isRestart=false;
+	private final int STATE_IDLE=0;
+	private final int STATE_CONNECTED=1;
+	private final int STATE_WAIT_DISCONNECT=2;
+	private final int STATE_WAIT_CONNECT=3;
+	private final int STATE_DISCONNECTED=4;
+	
+	private int serviceState=STATE_IDLE;
 	
 	private ImageTextButton btPauseOrContinue;
 	private ImageTextButton btSelSrc;
@@ -133,7 +139,18 @@ public class SpiderActivity extends Activity
 				{
 					srcUrl = data.getAction();
 					Log.i(LOG_TAG, "REQUST_SRC_URL " + srcUrl);
-					startAndBindSpiderService(srcUrl);
+					
+					if(serviceState==STATE_CONNECTED||serviceState==STATE_WAIT_CONNECT)
+					{
+						sendCmdToSpiderService(CMD_CLEAR);
+						serviceState=STATE_WAIT_DISCONNECT;
+					}
+					else if(serviceState==STATE_DISCONNECTED||serviceState==STATE_WAIT_DISCONNECT)
+					{
+						startAndBindSpiderService(srcUrl);
+						btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
+						serviceState=STATE_WAIT_CONNECT;
+					}
 				}
 			}
 		}
@@ -193,8 +210,7 @@ public class SpiderActivity extends Activity
 			@Override
 			public void onClick(View v)
 			{
-				sendCmdToSpiderService(CMD_STOP);
-				
+				sendCmdToSpiderService(CMD_CLEAR);
 				btPauseOrContinue.changeView(R.drawable.start, R.string.start);
 			}
 		});
@@ -232,6 +248,7 @@ public class SpiderActivity extends Activity
 				// so there is no need to do anything here.
 			}
 			
+			serviceState=STATE_CONNECTED;
 			Log.i(LOG_TAG, "onServiceConnected");
 		}
 		
@@ -243,19 +260,22 @@ public class SpiderActivity extends Activity
 			
 			Log.i(LOG_TAG, "onServiceDisconnected");
 			
-			if(isRestart)
+			if(serviceState==STATE_WAIT_DISCONNECT)
 			{
-				isRestart=false;
-				
 				mHandler.postDelayed(new Runnable()
 				{
 					
 					@Override
 					public void run()
 					{
+						serviceState=STATE_WAIT_CONNECT;
 						startAndBindSpiderService(srcUrl);
 					}
 				}, 500);
+			}
+			else
+			{
+				serviceState=STATE_DISCONNECTED;
 			}
 		}
 	};
@@ -363,7 +383,7 @@ public class SpiderActivity extends Activity
 					}
 					else if(freeMem<50||memUsedBySpider>100)
 					{
-						theActivity.isRestart=true;
+						theActivity.serviceState=theActivity.STATE_WAIT_DISCONNECT;
 						theActivity.sendCmdToSpiderService(CMD_STOP);
 					}
 				break;

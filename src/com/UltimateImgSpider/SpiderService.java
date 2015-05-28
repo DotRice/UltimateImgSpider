@@ -618,6 +618,7 @@ public class SpiderService extends Service
 			try
 			{
 				URL url = new URL(urlInList);
+				
 				if ((urlInList.startsWith("http://") || urlInList
 				        .startsWith("https://"))
 				        && (url.getHost().equals(srcHost))

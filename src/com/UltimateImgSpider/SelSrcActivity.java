@@ -146,7 +146,7 @@ public class SelSrcActivity extends Activity
         if (Protocol.startsWith("http://") || Protocol.startsWith("https://"))
         {
             browser.loadUrl(URL);
-
+            setBrowserTitle(URL);
             btnSelSearchEngine.setImageResource(R.drawable.site);
             setUrlCmd(URL_CANCEL);
         }
