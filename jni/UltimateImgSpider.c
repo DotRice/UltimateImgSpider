@@ -258,7 +258,7 @@ jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 
 
 
-
+#define MAX_RAM_TOTAL_POOL	1024*1024*1024
 
 #define MAX_SIZE_PER_URL	4096
 #define SIZE_PER_URLPOOL	(1024*1024-12)
@@ -323,35 +323,31 @@ typedef struct
 
 typedef struct memPool
 {
-	char mem[SIZE_PER_URLPOOL];
+	u8 mem[SIZE_PER_URLPOOL];
 	u32 idleMemPtr;
-	struct memPool* next;
 } t_urlPool;
 #pragma pack()
 
 t_spiderPara *spiderPara=NULL;
 
-t_urlPool *firstUrlPool = NULL;
+#define TOTAL_POOL (MAX_RAM_TOTAL_POOL/sizeof(t_urlPool))
+t_urlPool *urlPools[TOTAL_POOL];
 
 
 void nodeAddrAbsToRelative(urlNode *node, urlNodeRelativeAddr *RelativeAddr)
 {
 	if(node!=NULL)
 	{
-		t_urlPool *pool=firstUrlPool;
-		u32 i=0;
-
-		while(pool!=NULL)
+		u32 i;
+		for(i=0; i<spiderPara->urlPoolNum; i++)
 		{
-			s64 ofs=(u32)node-(u32)pool;
+			s64 ofs=(u32)node-(u32)(urlPools[i]);
 			if(ofs>=0&&ofs<sizeof(t_urlPool))
 			{
 				RelativeAddr->poolPtr=i;
 				RelativeAddr->offset=ofs;
 				return;
 			}
-			pool=pool->next;
-			i++;
 		}
 	}
 	else
@@ -360,31 +356,19 @@ void nodeAddrAbsToRelative(urlNode *node, urlNodeRelativeAddr *RelativeAddr)
 	}
 }
 
-urlNode *nodeAddrRelativeToAbs(urlNodeRelativeAddr *RelativeAddr)
+urlNode *nodeAddrRelativeToAbs(urlNodeRelativeAddr *relativeAddr)
 {
-	t_urlPool *pool=firstUrlPool;
-	u32 i=0;
-
-	if(pool!=NULL)
+	if(relativeAddr->poolPtr < spiderPara->urlPoolNum)
 	{
-		while(pool->next!=NULL&&i<RelativeAddr->poolPtr)
-		{
-			pool=pool->next;
-			i++;
-		}
+		t_urlPool *pool=urlPools[relativeAddr->poolPtr];
 
-		if(i==RelativeAddr->poolPtr&&RelativeAddr->offset<sizeof(t_urlPool))
+		if(relativeAddr->offset < (pool->idleMemPtr-sizeof(nodePara)))
 		{
-			return (urlNode *)(((u32)pool)+RelativeAddr->offset);
+			return (urlNode*)(pool->mem+relativeAddr->offset);
 		}
 	}
 
 	return NULL;
-}
-
-bool isRelativeAddrEqu(urlNodeRelativeAddr *src, urlNodeRelativeAddr *dst)
-{
-	return src->poolPtr==dst->poolPtr && src->offset==dst->offset;
 }
 
 
@@ -467,61 +451,56 @@ char *urlPoolIndexToName(u32 index)
 urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, urlNodeRelativeAddr *direction)
 {
 	urlNode *node=NULL;
-	t_urlPool *urlPool = firstUrlPool;
-	u32 poolIndex=0;
+	t_urlPool *urlPool;
+	u32 poolIndex;
 	u32 offset=0;
 	u32 size=((urlSize+sizeof(nodePara))+3)&0xFFFFFFFC;
 
 
-	if ((size > MAX_SIZE_PER_URL) || (urlPool == NULL ))
+	if ((size > MAX_SIZE_PER_URL) || (spiderPara->urlPoolNum == 0 ))
 	{
 		return NULL;
 	}
 
-	while (true)
+	for(poolIndex=0; poolIndex<spiderPara->urlPoolNum; poolIndex++)
 	{
+		urlPool=urlPools[poolIndex];
 		if ((urlPool->idleMemPtr + size) <= SIZE_PER_URLPOOL)
 		{
-			offset = urlPool->idleMemPtr;
-
-			//LOGI("alloc at %d", offset);
-
-			urlPool->idleMemPtr += size;
-
-			node=(urlNode*)(urlPool->mem + offset);
 			break;
 		}
+	}
 
-		poolIndex++;
-		if (urlPool->next != NULL)
-		{
-			urlPool = urlPool->next;
-		}
-		else
+	if(poolIndex==spiderPara->urlPoolNum)
+	{
+		urlPool=NULL;
+		if(spiderPara->urlPoolNum<TOTAL_POOL)
 		{
 			t_ashmBlock *ashm=spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(spiderPara->urlPoolNum), sizeof(t_urlPool));
 			if(ashm!=NULL)
 			{
 				LOGI("init new urlPool Success");
 
-				spiderPara->urlPoolNum++;
-
-				urlPool->next=(t_urlPool*)(ashm->data);
 				urlPool = (t_urlPool*)(ashm->data);
-
 				urlPool->idleMemPtr = 0;
-				urlPool->next = NULL;
+				urlPools[spiderPara->urlPoolNum]=urlPool;
 
-			}
-			else
-			{
-				break;
+				spiderPara->urlPoolNum++;
 			}
 		}
 	}
 
-	if(node!=NULL)
+
+	if(urlPool!=NULL)
 	{
+		offset = urlPool->idleMemPtr;
+
+		//LOGI("alloc at %d", offset);
+
+		urlPool->idleMemPtr += size;
+
+		node=(urlNode*)(urlPool->mem + offset);
+
 		if(direction!=NULL)
 		{
 			direction->poolPtr=poolIndex;
@@ -532,27 +511,6 @@ urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, urlNodeRelativeAddr *dir
 	return node;
 }
 
-
-jmethodID spiderReportProcessMID=NULL;
-void spiderReportProcess(JNIEnv* env)
-{
-
-	if(spiderReportProcessMID==NULL)
-	{
-		SpiderServiceClass = (*env)->FindClass(env,
-			"com/UltimateImgSpider/SpiderService");
-		if (SpiderServiceClass != NULL)
-		{
-			spiderReportProcessMID = (*env)->GetMethodID(env, SpiderServiceClass, "recvProcess",
-					"(IIII)V");
-		}
-	}
-
-	if (spiderReportProcessMID != NULL)
-	{
-		(*env)->CallVoidMethod(env, SpiderServiceInstance, spiderReportProcessMID, spiderPara->imgUrlTree.len, spiderPara->imgUrlTree.processed, spiderPara->pageUrlTree.len, spiderPara->pageUrlTree.processed);
-	}
-}
 
 jboolean spiderParaInit(JNIEnv* env)
 {
@@ -590,22 +548,20 @@ jboolean spiderParaInit(JNIEnv* env)
 
 jboolean urlPoolInit(JNIEnv* env)
 {
-	u32 i;
-
 	if(spiderPara->urlPoolNum==0)
 	{
 		t_ashmBlock *ashm=spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(0), sizeof(t_urlPool));
 		if(ashm!=NULL)
 		{
-			firstUrlPool=(t_urlPool*)(ashm->data);
-			firstUrlPool->idleMemPtr = 0;
-			firstUrlPool->next = NULL;
+			urlPools[0]=(t_urlPool*)(ashm->data);
+			urlPools[0]->idleMemPtr = 0;
 			spiderPara->urlPoolNum=1;
 			return true;
 		}
 	}
 	else
 	{
+		u32 i;
 		t_urlPool *urlPool;
 		for(i=0; i<spiderPara->urlPoolNum; i++)
 		{
@@ -619,16 +575,7 @@ jboolean urlPoolInit(JNIEnv* env)
 				break;
 			}
 
-			if(i==0)
-			{
-				firstUrlPool=(t_urlPool*)(ashm->data);
-				urlPool=firstUrlPool;
-			}
-			else
-			{
-				urlPool->next=(t_urlPool*)(ashm->data);
-				urlPool=(t_urlPool*)(ashm->data);
-			}
+			urlPools[i]=(t_urlPool*)(ashm->data);
 		}
 
 		if(i==spiderPara->urlPoolNum)

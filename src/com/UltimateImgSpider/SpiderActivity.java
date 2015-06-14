@@ -161,7 +161,6 @@ public class SpiderActivity extends Activity
 		btPauseOrContinue = (ImageTextButton) findViewById(R.id.buttonPauseOrContinue);
 		btPauseOrContinue.setOnClickListener(new View.OnClickListener()
 		{
-			
 			@Override
 			public void onClick(View v)
 			{
