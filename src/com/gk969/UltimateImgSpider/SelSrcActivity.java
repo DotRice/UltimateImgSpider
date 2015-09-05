@@ -782,7 +782,8 @@ public class SelSrcActivity extends Activity
     {
         super.onDestroy();
         Log.i(LOG_TAG, "onDestroy");
-        
+
+        Log.i(LOG_TAG, "clearCache");
         browser.stopLoading();
         browser.clearCache(true);
         browser.destroy();

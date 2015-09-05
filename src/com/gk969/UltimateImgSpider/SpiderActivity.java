@@ -235,10 +235,12 @@ public class SpiderActivity extends Activity
 		super.onDestroy();
 		Log.i(LOG_TAG, "onDestroy");
 		
-		
-		sendCmdToSpiderService(CMD_CLEAR);
-		
-		unboundSpiderService();
+		if(serviceState!=STATE_DISCONNECTED)
+		{
+	        Log.i(LOG_TAG, "CMD_CLEAR");
+    		sendCmdToSpiderService(CMD_CLEAR);
+    		unboundSpiderService();
+		}
 	}
 	
 	
@@ -465,7 +467,6 @@ public class SpiderActivity extends Activity
 		 */
 		public void reportStatus(String value)
 		{
-			Log.i(LOG_TAG, value);
 			mHandler.sendMessage(mHandler.obtainMessage(BUMP_MSG, value));
 		}
 	};

@@ -110,6 +110,7 @@ public class SpiderService extends Service
 		timerRunning = false;
 		if(spider!=null)
 		{
+		    Log.i(LOG_TAG, "clearCache");
 			spider.stopLoading();
 			spider.clearCache(true);
 			spider.destroy();
@@ -469,7 +470,6 @@ public class SpiderService extends Service
 		{
 			//Log.i(LOG_TAG, "site scan complete");
 			reportSpiderLog(true);
-			stopSelf();
 		}
 		else
 		{

@@ -60,6 +60,8 @@ public class ParaConfigActivity extends Activity
 
         if(wvParaConfig!=null)
         {
+
+            Log.i(LOG_TAG, "clearCache");
 	        wvParaConfig.clearCache(true);
 	        wvParaConfig.destroy();
         }
