@@ -1,7 +1,7 @@
-package com.View;
+package com.gk969.View;
  
-import com.Utils.Utils;
-import com.UltimateImgSpider.R;
+import com.gk969.Utils.Utils;
+import com.gk969.UltimateImgSpider.R;
 
 import android.content.Context;
 import android.util.AttributeSet;

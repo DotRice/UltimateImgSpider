@@ -1,4 +1,4 @@
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 
 /**
  * Example of a callback interface used by IRemoteService to send

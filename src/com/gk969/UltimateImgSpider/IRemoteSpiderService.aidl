@@ -1,6 +1,6 @@
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 
-import com.UltimateImgSpider.IRemoteSpiderServiceCallback;
+import com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback;
 
 interface IRemoteSpiderService {
     void registerCallback(IRemoteSpiderServiceCallback cb);

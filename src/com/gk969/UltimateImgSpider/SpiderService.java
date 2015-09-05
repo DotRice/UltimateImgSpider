@@ -1,4 +1,4 @@
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -263,14 +263,18 @@ public class SpiderService extends Service
 	
 
 	/*
-	 * ±éÀúÒ»¸öÍøÕ¾ËùÓĞÒ³Ãæ£¬²¢ÇÒÏÂÔØËùÓĞÍ¼Æ¬¡£
+	 * éå†ä¸€ä¸ªç½‘ç«™æ‰€æœ‰é¡µé¢ï¼Œå¹¶ä¸”ä¸‹è½½æ‰€æœ‰å›¾ç‰‡ã€‚
 	 * 
-	 * ÍøÒ³±éÀúËã·¨£º É¨Ãèµ±Ç°ÍøÒ³ÉÏÃ¿Ò»¸ö±¾Õ¾URL£¬²éÕÒËùÓĞ²»ÔÚÍøÒ³ÁĞ±íÖĞµÄURL£¬´æÈëÁĞ±í²¢ÉèÖÃÎªµÈ´ı×´Ì¬¡£
-	 * É¨ÃèÍøÒ³ÁĞ±íÖĞËùÓĞµÈ´ı×´Ì¬µÄURL£¬½«Óëµ±Ç°Ò³ÃæURL×îÏàËÆµÄURL×÷ÎªÏÂ´ÎÒªÉ¨ÃèµÄÒ³Ãæ²¢±ê¼ÇÎªÒÑÏÂÔØ×´Ì¬¡£
-	 * Èç¹ûÁĞ±íÖĞÈ«²¿¶¼ÎªÒÑÏÂÔØÒ³Ãæ£¬Ôò±éÀú½áÊø¡£
+	 * ç½‘é¡µéå†ç®—æ³•ï¼š æ‰«æå½“å‰ç½‘é¡µä¸Šæ¯ä¸€ä¸ªæœ¬ç«™URLï¼ŒæŸ¥æ‰¾æ‰€æœ‰ä¸åœ¨ç½‘é¡µåˆ—è¡¨ä¸­çš„URLï¼Œå­˜å…¥åˆ—è¡¨å¹¶è®¾ç½®ä¸ºç­‰å¾…çŠ¶æ€ã€‚
+	 * æ‰«æç½‘é¡µåˆ—è¡¨ä¸­æ‰€æœ‰ç­‰å¾…çŠ¶æ€çš„URLï¼Œå°†ä¸å½“å‰é¡µé¢URLæœ€ç›¸ä¼¼çš„URLä½œä¸ºä¸‹æ¬¡è¦æ‰«æçš„é¡µé¢å¹¶æ ‡è®°ä¸ºå·²ä¸‹è½½çŠ¶æ€ã€‚
+	 * å¦‚æœåˆ—è¡¨ä¸­å…¨éƒ¨éƒ½ä¸ºå·²ä¸‹è½½é¡µé¢ï¼Œåˆ™éå†ç»“æŸã€‚
 	 * 
-	 * ×ÊÔ´ÏÂÔØËã·¨£º É¨Ãèµ±Ç°ÍøÒ³ÉÏµÄËùÓĞÍ¼Æ¬£¬²éÕÒÔ´URL²»ÔÚÍ¼Æ¬ÁĞ±íÖĞµÄÍ¼Æ¬¡£
-	 * ÏÂÔØ²¢½«Ô´URL´æÈëÁĞ±í£¬ÒÔÏÂÔØĞòºÅ×÷ÎªÎÄ¼şÃû£¬Èç¹û´ËÍ¼Æ¬´æÔÚaltÔò½«alt¼ÓÏÂÔØĞòºÅ×÷ÎªÎÄ¼şÃû¡£
+	 * èµ„æºä¸‹è½½ç®—æ³•ï¼š æ‰«æå½“å‰ç½‘é¡µä¸Šçš„æ‰€æœ‰å›¾ç‰‡ï¼ŒæŸ¥æ‰¾æºURLä¸åœ¨å›¾ç‰‡åˆ—è¡¨ä¸­çš„å›¾ç‰‡ã€‚
+	 * ä¸‹è½½å¹¶å°†æºURLå­˜å…¥åˆ—è¡¨ï¼Œä»¥ä¸‹è½½åºå·ä½œä¸ºæ–‡ä»¶åï¼Œå¦‚æœæ­¤å›¾ç‰‡å­˜åœ¨altåˆ™å°†altåŠ ä¸‹è½½åºå·ä½œä¸ºæ–‡ä»¶åã€‚
+	 * 
+	 * å›¾ç‰‡ä¸‹è½½ä¸æ˜¾ç¤ºï¼šå›¾ç‰‡é¦–å…ˆè¢«ä¸‹è½½è‡³å†…å­˜ï¼Œç„¶ååˆ¤æ–­å›¾ç‰‡å°ºå¯¸ï¼Œé•¿æˆ–å®½å°äº200çš„è§†ä¸ºæ— æ•ˆå›¾ç‰‡ç›´æ¥åˆ é™¤ã€‚
+	 * æœ‰æ•ˆå›¾ç‰‡å­˜å‚¨ä½ç½®ä¸ºå¤–éƒ¨å­˜å‚¨å™¨ï¼Œæ¯æ¬¡ä»»åŠ¡å¼€å§‹æˆ–è€…æ¢å¤æ—¶çš„å‰10å¼ å›¾ç‰‡ä¸‹è½½ä¸€å¼ å­˜ä¸€å¼ ã€‚ä¹‹åçš„å…ˆç”¨å†…å­˜ç¼“å­˜ï¼Œ
+	 * ç¼“å­˜å›¾ç‰‡æ€»å¤§å°è¶…è¿‡5MBåä¸€èµ·å†™å…¥å¤–éƒ¨å­˜å‚¨å™¨ã€‚
 	 */
 	
 	private final static String SRCURL_DEFAULT_VALUE="about:blank";
@@ -312,7 +316,7 @@ public class SpiderService extends Service
 	
 	public native String stringFromJNI(String srcStr);
 	public native boolean jniSpiderInit();
-	// Activity onDestoryÊ±µ÷ÓÃ£¬ÓëjniAddUrl¡¢jniFindNextUrlToLoad²»ÔÚÍ¬Ò»Ïß³Ì£¬¿ÉÄÜ»á³ö´í¡£
+	// Activity onDestoryæ—¶è°ƒç”¨ï¼Œä¸jniAddUrlã€jniFindNextUrlToLoadä¸åœ¨åŒä¸€çº¿ç¨‹ï¼Œå¯èƒ½ä¼šå‡ºé”™ã€‚
 	public native int jniAddUrl(String url, byte[] md5, int type, int[] param);
 	private native String jniFindNextUrlToLoad(String prevUrl, int type, int[] param);
 	
@@ -441,12 +445,12 @@ public class SpiderService extends Service
 		WebSettings setting = spider.getSettings();
 		setting.setUserAgentString(ParaConfig.getUserAgent(this));
 		
-		// ×èÖ¹Í¼Æ¬
+		// é˜»æ­¢å›¾ç‰‡
 		setting.setLoadsImagesAutomatically(false);
 		
 		setting.setCacheMode(WebSettings.LOAD_DEFAULT);
 		
-		// Ê¹ÄÜjavascript
+		// ä½¿èƒ½javascript
 		setting.setJavaScriptEnabled(true);
 		setting.setJavaScriptCanOpenWindowsAutomatically(false);
 		

@@ -1,4 +1,4 @@
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

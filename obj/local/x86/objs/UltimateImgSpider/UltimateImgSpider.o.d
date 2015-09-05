@@ -20,6 +20,10 @@ obj/local/x86/objs/UltimateImgSpider/UltimateImgSpider.o: \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/sys/sysmacros.h \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/string.h \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/malloc.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/stdlib.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/alloca.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/strings.h \
+ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/memory.h \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/jni.h \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/android/log.h \
  G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/linux/ashmem.h \
@@ -75,6 +79,14 @@ G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/sys
 G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/string.h:
 
 G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/malloc.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/stdlib.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/alloca.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/strings.h:
+
+G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/memory.h:
 
 G:/Develop/android/android-ndk-r9d/platforms/android-19/arch-x86/usr/include/jni.h:
 

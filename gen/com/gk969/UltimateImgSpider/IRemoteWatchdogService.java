@@ -1,33 +1,33 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: D:\\android\\UltimateImgSpider\\src\\com\\UltimateImgSpider\\IRemoteWatchdogService.aidl
+ * Original file: D:\\android\\UltimateImgSpider\\src\\com\\gk969\\UltimateImgSpider\\IRemoteWatchdogService.aidl
  */
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 public interface IRemoteWatchdogService extends android.os.IInterface
 {
 /** Local-side IPC implementation stub class. */
-public static abstract class Stub extends android.os.Binder implements com.UltimateImgSpider.IRemoteWatchdogService
+public static abstract class Stub extends android.os.Binder implements com.gk969.UltimateImgSpider.IRemoteWatchdogService
 {
-private static final java.lang.String DESCRIPTOR = "com.UltimateImgSpider.IRemoteWatchdogService";
+private static final java.lang.String DESCRIPTOR = "com.gk969.UltimateImgSpider.IRemoteWatchdogService";
 /** Construct the stub at attach it to the interface. */
 public Stub()
 {
 this.attachInterface(this, DESCRIPTOR);
 }
 /**
- * Cast an IBinder object into an com.UltimateImgSpider.IRemoteWatchdogService interface,
+ * Cast an IBinder object into an com.gk969.UltimateImgSpider.IRemoteWatchdogService interface,
  * generating a proxy if needed.
  */
-public static com.UltimateImgSpider.IRemoteWatchdogService asInterface(android.os.IBinder obj)
+public static com.gk969.UltimateImgSpider.IRemoteWatchdogService asInterface(android.os.IBinder obj)
 {
 if ((obj==null)) {
 return null;
 }
 android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);
-if (((iin!=null)&&(iin instanceof com.UltimateImgSpider.IRemoteWatchdogService))) {
-return ((com.UltimateImgSpider.IRemoteWatchdogService)iin);
+if (((iin!=null)&&(iin instanceof com.gk969.UltimateImgSpider.IRemoteWatchdogService))) {
+return ((com.gk969.UltimateImgSpider.IRemoteWatchdogService)iin);
 }
-return new com.UltimateImgSpider.IRemoteWatchdogService.Stub.Proxy(obj);
+return new com.gk969.UltimateImgSpider.IRemoteWatchdogService.Stub.Proxy(obj);
 }
 @Override public android.os.IBinder asBinder()
 {
@@ -63,7 +63,7 @@ return true;
 }
 return super.onTransact(code, data, reply, flags);
 }
-private static class Proxy implements com.UltimateImgSpider.IRemoteWatchdogService
+private static class Proxy implements com.gk969.UltimateImgSpider.IRemoteWatchdogService
 {
 private android.os.IBinder mRemote;
 Proxy(android.os.IBinder remote)

@@ -96,7 +96,7 @@ t_ashmNode *findAshmemByName(const char *name)
 	return NULL;
 }
 
-int Java_com_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
+int Java_com_gk969_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
 		jobject thiz, jstring jname, jint size)
 {
 	int i, fd=-1;
@@ -176,7 +176,7 @@ void* spiderGetAshmemFromWatchdog(JNIEnv* env, const char *name, int size)
 	if(getAshmemFromWatchdogMID==NULL)
 	{
 		SpiderServiceClass = (*env)->FindClass(env,
-			"com/UltimateImgSpider/SpiderService");
+			"com/gk969/UltimateImgSpider/SpiderService");
 		if (SpiderServiceClass != NULL)
 		{
 			getAshmemFromWatchdogMID = (*env)->GetMethodID(env, SpiderServiceClass, "getAshmemFromWatchdog",
@@ -224,7 +224,7 @@ void ashmemTest(JNIEnv* env)
 
 
 
-jstring Java_com_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
+jstring Java_com_gk969_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
 		jobject thiz, jstring jSrcStr)
 {
 	int i;
@@ -284,6 +284,9 @@ typedef struct
 	u8 pad;
 	u8 color;
 	u16 len;
+	
+	urlNodeRelativeAddr containerPage;
+	
 	urlNodeRelativeAddr nextNodeAddr;
 	urlNodeRelativeAddr prevNodeAddr;
 
@@ -312,7 +315,6 @@ typedef struct
 } urlTree;
 
 
-
 typedef struct
 {
 	urlTree pageUrlTree;
@@ -326,6 +328,9 @@ typedef struct memPool
 	u8 mem[SIZE_PER_URLPOOL];
 	u32 idleMemPtr;
 } t_urlPool;
+
+
+
 #pragma pack()
 
 t_spiderPara *spiderPara=NULL;
@@ -587,7 +592,7 @@ jboolean urlPoolInit(JNIEnv* env)
 	return false;
 }
 
-jboolean Java_com_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv* env,
+jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv* env,
 		jobject thiz)
 {
 	SpiderServiceInstance=thiz;
@@ -784,6 +789,8 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 
 		nodeAddrAbsToRelative(parent, &(node->para.parent));
 
+		node->para.containerPage=tree->curNode;
+		
 		node->para.nextNodeAddr.poolPtr=POOL_PTR_INVALID;
 		node->para.prevNodeAddr=tree->tail;
 		if(tree->tail.poolPtr!=POOL_PTR_INVALID)
@@ -833,7 +840,7 @@ enum
 };
 
 //添加URL 返回列表大小
-jint Java_com_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
+jint Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 		jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jintArray jParam)
 {
 	u8 UrlAlreadyInTree=false;
@@ -901,7 +908,7 @@ u16 urlSimilarity(const char *url1, u16 len1, const char *url2, u16 len2)
 
 #define SEARCH_STEP_MAX	5000
 
-jstring Java_com_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
+jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		JNIEnv* env, jobject thiz, jstring jPrevUrl, jint jType, jintArray jParam)
 {
 	urlTree *curTree =

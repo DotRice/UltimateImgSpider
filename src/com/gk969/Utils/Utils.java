@@ -1,9 +1,21 @@
-package com.Utils;
+package com.gk969.Utils;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 import android.content.Context;
+import android.os.Handler;
+import android.util.Log;
 
 public class Utils
 {
+	static String TAG="Utils";
+	
 	static public int strSimilarity(String s1, String s2)
 	{
 		int len = (s1.length() < s2.length()) ? s1.length() : s2.length();
@@ -20,19 +32,63 @@ public class Utils
 		return i;
 	}
 	
+	
+	
+	public static boolean isNetworkEffective()
+	{
+		String stableWebUrl[]={"http://www.baidu.com", "http://www.qq.com"};
+		
+		for(String webUrl:stableWebUrl)
+		{
+	        try
+	        {
+	        	URL url = new URL(webUrl);
+		        
+				HttpURLConnection urlConn=(HttpURLConnection)url.openConnection();
+				
+				try
+				{
+					urlConn.setConnectTimeout(10000);
+					urlConn.setReadTimeout(5000);
+					
+					if(urlConn.getResponseCode()==200)
+					{
+						urlConn.disconnect();
+						Log.i(TAG, "isNetworkEffective "+webUrl);
+						return true;
+					}
+				}
+				finally
+				{
+					if(urlConn!=null)urlConn.disconnect(); 
+				}
+	        }
+	        catch (MalformedURLException e)
+	        {
+		        e.printStackTrace();
+	        }
+	        catch (IOException e)
+	        {
+	            e.printStackTrace();
+	        }
+		}
+        return false;
+	}
+	
+	
 	/**
-	 * dp¡¢sp ×ª»»Îª px µÄ¹¤¾ßÀà
+	 * dpã€sp è½¬æ¢ä¸º px çš„å·¥å…·ç±»
 	 * 
 	 * 
 	 */
 	public static class DisplayUtil
 	{
 		/**
-		 * ½«pxÖµ×ª»»Îªdip»òdpÖµ£¬±£Ö¤³ß´ç´óÐ¡²»±ä
+		 * å°†pxå€¼è½¬æ¢ä¸ºdipæˆ–dpå€¼ï¼Œä¿è¯å°ºå¯¸å¤§å°ä¸å˜
 		 * 
 		 * @param pxValue
 		 * @param scale
-		 *            £¨DisplayMetricsÀàÖÐÊôÐÔdensity£©
+		 *            ï¼ˆDisplayMetricsç±»ä¸­å±žæ€§densityï¼‰
 		 * @return
 		 */
 		public static int pxToDip(Context context, float pxValue)
@@ -42,11 +98,11 @@ public class Utils
 		}
 		
 		/**
-		 * ½«dip»òdpÖµ×ª»»ÎªpxÖµ£¬±£Ö¤³ß´ç´óÐ¡²»±ä
+		 * å°†dipæˆ–dpå€¼è½¬æ¢ä¸ºpxå€¼ï¼Œä¿è¯å°ºå¯¸å¤§å°ä¸å˜
 		 * 
 		 * @param dipValue
 		 * @param scale
-		 *            £¨DisplayMetricsÀàÖÐÊôÐÔdensity£©
+		 *            ï¼ˆDisplayMetricsç±»ä¸­å±žæ€§densityï¼‰
 		 * @return
 		 */
 		public static int dipToPx(Context context, float dipValue)
@@ -56,11 +112,11 @@ public class Utils
 		}
 		
 		/**
-		 * ½«pxÖµ×ª»»ÎªspÖµ£¬±£Ö¤ÎÄ×Ö´óÐ¡²»±ä
+		 * å°†pxå€¼è½¬æ¢ä¸ºspå€¼ï¼Œä¿è¯æ–‡å­—å¤§å°ä¸å˜
 		 * 
 		 * @param pxValue
 		 * @param fontScale
-		 *            £¨DisplayMetricsÀàÖÐÊôÐÔscaledDensity£©
+		 *            ï¼ˆDisplayMetricsç±»ä¸­å±žæ€§scaledDensityï¼‰
 		 * @return
 		 */
 		public static int pxToSp(Context context, float pxValue)
@@ -70,11 +126,11 @@ public class Utils
 		}
 		
 		/**
-		 * ½«spÖµ×ª»»ÎªpxÖµ£¬±£Ö¤ÎÄ×Ö´óÐ¡²»±ä
+		 * å°†spå€¼è½¬æ¢ä¸ºpxå€¼ï¼Œä¿è¯æ–‡å­—å¤§å°ä¸å˜
 		 * 
 		 * @param spValue
 		 * @param fontScale
-		 *            £¨DisplayMetricsÀàÖÐÊôÐÔscaledDensity£©
+		 *            ï¼ˆDisplayMetricsç±»ä¸­å±žæ€§scaledDensityï¼‰
 		 * @return
 		 */
 		public static int spToPx(Context context, float spValue)

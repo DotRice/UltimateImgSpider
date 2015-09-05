@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.Utils;
+package com.gk969.Utils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

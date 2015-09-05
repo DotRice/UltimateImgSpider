@@ -1,4 +1,4 @@
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 
 import android.os.ParcelFileDescriptor;
 

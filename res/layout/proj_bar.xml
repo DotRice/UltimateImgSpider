@@ -6,7 +6,7 @@
     android:baselineAligned="false"
     android:orientation="horizontal" >
     
-    <com.View.ImageTextButton
+    <com.gk969.View.ImageTextButton
         android:id="@+id/buttonPauseOrContinue"
         android:layout_weight="1"
         android:layout_width="match_parent"
@@ -15,7 +15,7 @@
         image_size="35dp"
         text="@string/pause" />
     
-    <com.View.ImageTextButton
+    <com.gk969.View.ImageTextButton
         android:id="@+id/buttonSelSrc"
         android:layout_weight="1"
         android:layout_width="match_parent"
@@ -24,7 +24,7 @@
         image_size="35dp"
         text="@string/selSrc" />
 	
-    <com.View.ImageTextButton
+    <com.gk969.View.ImageTextButton
         android:id="@+id/buttonClear"
         android:layout_weight="1"
         android:layout_width="match_parent"

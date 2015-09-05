@@ -1,4 +1,4 @@
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -7,13 +7,17 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.Utils.MemoryInfo;
-import com.View.ImageTextButton;
+import com.gk969.Utils.MemoryInfo;
+import com.gk969.Utils.Utils;
+import com.gk969.View.ImageTextButton;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
@@ -71,10 +75,79 @@ public class SpiderActivity extends Activity
 	
 	private TextView spiderLog;
 	
+
+	private MessageHandler mHandler=new MessageHandler(this);
+	
+	private static final int BUMP_MSG = 1;
+	private static class MessageHandler extends Handler
+	{
+		WeakReference<SpiderActivity> mActivity;
+		
+		MessageHandler(SpiderActivity activity)
+		{
+			mActivity = new WeakReference<SpiderActivity>(activity);
+		}
+		
+		@Override
+		public void handleMessage(Message msg)
+		{
+			SpiderActivity theActivity=mActivity.get();
+			switch (msg.what)
+			{
+				case BUMP_MSG:
+					String msgStr=(String) msg.obj;
+					long freeMem=MemoryInfo.getFreeMemInMb(theActivity);
+					int memUsedBySpider=Integer.parseInt(msgStr.substring(msgStr.indexOf("Native:")+7, msgStr.indexOf("M pic:")));
+					//Log.i(theActivity.LOG_TAG, "mem:"+freeMem+" "+memUsedBySpider);
+					
+					theActivity.spiderLog.setText("Total:" + MemoryInfo.getTotalMemInMb()
+					        + "M Free:" + freeMem
+					        + "M\r\n" + msgStr);
+					if(msgStr.contains("siteScanCompleted"))
+					{
+						theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
+					}
+					else if(freeMem<50||memUsedBySpider>100)
+					{
+						theActivity.serviceState=theActivity.STATE_WAIT_DISCONNECT;
+						theActivity.sendCmdToSpiderService(CMD_STOP);
+					}
+				break;
+				default:
+					super.handleMessage(msg);
+			}
+		}
+		
+	};
+	
+	private final static int DLG_NETWORK_PROMPT=0;
+	
+	protected Dialog onCreateDialog(int dlgId)
+    {
+        if(dlgId == DLG_NETWORK_PROMPT)
+        {
+            return new AlertDialog.Builder(this)
+                    .setTitle(R.string.prompt)
+                    .setMessage(R.string.uneffectiveNetworkPrompt)
+                    .setPositiveButton(R.string.OK,
+                            new DialogInterface.OnClickListener()
+                            {
+                                public void onClick(DialogInterface dialog,
+                                        int whichButton)
+                                {
+                                    
+                                }
+                            })
+                    .create();
+        }
+        return null;
+    }
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.activity_spider_crawl);
 		
 		Log.i(LOG_TAG, "onCreate");
@@ -82,7 +155,52 @@ public class SpiderActivity extends Activity
 		spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
 		projBarInit();
 		
-		startAndBindSpiderService(srcUrl);
+		firstRunOperat();
+		
+		checkNetwork();
+	}
+	
+	private void checkNetwork()
+	{
+		new Thread(new Runnable()
+		{
+			
+			@Override
+			public void run()
+			{
+				if(Utils.isNetworkEffective())
+				{
+					mHandler.post(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							startAndBindSpiderService(srcUrl);
+						}
+					});
+				}
+				else
+				{
+					mHandler.post(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							showDialog(DLG_NETWORK_PROMPT);
+						}
+					});
+				}
+			}
+		}).start();
+	}
+	
+	private void firstRunOperat()
+	{
+		if(ParaConfig.isFirstRun(this))
+		{
+			Toast.makeText(this, "first run", Toast.LENGTH_SHORT).show();
+			ParaConfig.setFirstRun(this);
+		}
 	}
 	
 	protected void onStart()
@@ -123,6 +241,8 @@ public class SpiderActivity extends Activity
 		unboundSpiderService();
 	}
 	
+	
+	//返回至SelSrcActivity
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
 	{
@@ -345,52 +465,9 @@ public class SpiderActivity extends Activity
 		 */
 		public void reportStatus(String value)
 		{
+			Log.i(LOG_TAG, value);
 			mHandler.sendMessage(mHandler.obtainMessage(BUMP_MSG, value));
 		}
-	};
-	
-	private MessageHandler mHandler=new MessageHandler(this);
-	
-	private static final int BUMP_MSG = 1;
-	private static class MessageHandler extends Handler
-	{
-		WeakReference<SpiderActivity> mActivity;
-		
-		MessageHandler(SpiderActivity activity)
-		{
-			mActivity = new WeakReference<SpiderActivity>(activity);
-		}
-		
-		@Override
-		public void handleMessage(Message msg)
-		{
-			SpiderActivity theActivity=mActivity.get();
-			switch (msg.what)
-			{
-				case BUMP_MSG:
-					String msgStr=(String) msg.obj;
-					long freeMem=MemoryInfo.getFreeMemInMb(theActivity);
-					int memUsedBySpider=Integer.parseInt(msgStr.substring(msgStr.indexOf("Native:")+7, msgStr.indexOf("M pic:")));
-					//Log.i(theActivity.LOG_TAG, "mem:"+freeMem+" "+memUsedBySpider);
-					
-					theActivity.spiderLog.setText("Total:" + MemoryInfo.getTotalMemInMb()
-					        + "M Free:" + freeMem
-					        + "M\r\n" + msgStr);
-					if(msgStr.contains("siteScanCompleted"))
-					{
-						theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
-					}
-					else if(freeMem<50||memUsedBySpider>100)
-					{
-						theActivity.serviceState=theActivity.STATE_WAIT_DISCONNECT;
-						theActivity.sendCmdToSpiderService(CMD_STOP);
-					}
-				break;
-				default:
-					super.handleMessage(msg);
-			}
-		}
-		
 	};
 	
 	@Override
@@ -413,7 +490,7 @@ public class SpiderActivity extends Activity
 		{
 			if (SystemClock.uptimeMillis() - exitTim > 2000)
 			{
-				Toast.makeText(this, getString(R.string.keyBackExitConfirm)+getString(R.string.app_name)+"��",
+				Toast.makeText(this, getString(R.string.keyBackExitConfirm)+getString(R.string.app_name)+"。",
 				        Toast.LENGTH_SHORT).show();
 				;
 				exitTim = SystemClock.uptimeMillis();

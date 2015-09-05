@@ -1,4 +1,4 @@
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 
 import android.content.Context;
 import android.content.SharedPreferences.Editor;
@@ -21,8 +21,8 @@ public class ParaConfig
             "http://www.sogou.com/web?query=",
             "https://www.google.com/search?q="           };
     public static final String       SEARCH_ENGINE_KEY    = "searchEngine";
-    public static final CharSequence SEARCH_ENGINE_NAME[] = { "∞Ÿ∂»", "Bing",
-            "À—π∑", "Google"                               };
+    public static final CharSequence SEARCH_ENGINE_NAME[] = { "ÁôæÂ∫¶", "Bing",
+            "ÊêúÁãó", "Google"                               };
 
     public static boolean setSearchEngine(Context ctx, int searchEngineIndex)
     {
@@ -103,5 +103,19 @@ public class ParaConfig
     {
         return ctx.getSharedPreferences(SPMAIN_NAME, 0).getString(USER_AGENT_KEY,
                 ctx.getString(R.string.defaultUserAgent));
+    }
+    
+    public static boolean isFirstRun(Context ctx)
+    {
+    	return ctx.getSharedPreferences(SPMAIN_NAME, 0).getBoolean("firstRun", true);
+    }
+    
+    public static void setFirstRun(Context ctx)
+    {
+    	Editor editor = ctx.getSharedPreferences(SPMAIN_NAME, 0).edit();
+        editor.putBoolean("firstRun", false);
+        editor.commit();
+        
+        setUserAgent(ctx, ctx.getString(R.string.defaultUserAgent));
     }
 }

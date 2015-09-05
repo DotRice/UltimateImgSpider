@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.UltimateImgSpider.ParaConfigActivity"
+    tools:context="com.gk969.UltimateImgSpider.ParaConfigActivity"
     tools:ignore="MergeRootFrame" >
 
     <WebView

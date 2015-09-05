@@ -1,8 +1,8 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: D:\\android\\UltimateImgSpider\\src\\com\\UltimateImgSpider\\IRemoteSpiderServiceCallback.aidl
+ * Original file: D:\\android\\UltimateImgSpider\\src\\com\\gk969\\UltimateImgSpider\\IRemoteSpiderServiceCallback.aidl
  */
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 /**
  * Example of a callback interface used by IRemoteService to send
  * synchronous notifications back to its clients.  Note that this is a
@@ -11,28 +11,28 @@ package com.UltimateImgSpider;
 public interface IRemoteSpiderServiceCallback extends android.os.IInterface
 {
 /** Local-side IPC implementation stub class. */
-public static abstract class Stub extends android.os.Binder implements com.UltimateImgSpider.IRemoteSpiderServiceCallback
+public static abstract class Stub extends android.os.Binder implements com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback
 {
-private static final java.lang.String DESCRIPTOR = "com.UltimateImgSpider.IRemoteSpiderServiceCallback";
+private static final java.lang.String DESCRIPTOR = "com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback";
 /** Construct the stub at attach it to the interface. */
 public Stub()
 {
 this.attachInterface(this, DESCRIPTOR);
 }
 /**
- * Cast an IBinder object into an com.UltimateImgSpider.IRemoteSpiderServiceCallback interface,
+ * Cast an IBinder object into an com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback interface,
  * generating a proxy if needed.
  */
-public static com.UltimateImgSpider.IRemoteSpiderServiceCallback asInterface(android.os.IBinder obj)
+public static com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback asInterface(android.os.IBinder obj)
 {
 if ((obj==null)) {
 return null;
 }
 android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);
-if (((iin!=null)&&(iin instanceof com.UltimateImgSpider.IRemoteSpiderServiceCallback))) {
-return ((com.UltimateImgSpider.IRemoteSpiderServiceCallback)iin);
+if (((iin!=null)&&(iin instanceof com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback))) {
+return ((com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback)iin);
 }
-return new com.UltimateImgSpider.IRemoteSpiderServiceCallback.Stub.Proxy(obj);
+return new com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback.Stub.Proxy(obj);
 }
 @Override public android.os.IBinder asBinder()
 {
@@ -58,7 +58,7 @@ return true;
 }
 return super.onTransact(code, data, reply, flags);
 }
-private static class Proxy implements com.UltimateImgSpider.IRemoteSpiderServiceCallback
+private static class Proxy implements com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback
 {
 private android.os.IBinder mRemote;
 Proxy(android.os.IBinder remote)

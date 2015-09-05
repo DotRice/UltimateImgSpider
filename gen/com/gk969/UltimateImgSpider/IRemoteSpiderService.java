@@ -1,33 +1,33 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: D:\\android\\UltimateImgSpider\\src\\com\\UltimateImgSpider\\IRemoteSpiderService.aidl
+ * Original file: D:\\android\\UltimateImgSpider\\src\\com\\gk969\\UltimateImgSpider\\IRemoteSpiderService.aidl
  */
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 public interface IRemoteSpiderService extends android.os.IInterface
 {
 /** Local-side IPC implementation stub class. */
-public static abstract class Stub extends android.os.Binder implements com.UltimateImgSpider.IRemoteSpiderService
+public static abstract class Stub extends android.os.Binder implements com.gk969.UltimateImgSpider.IRemoteSpiderService
 {
-private static final java.lang.String DESCRIPTOR = "com.UltimateImgSpider.IRemoteSpiderService";
+private static final java.lang.String DESCRIPTOR = "com.gk969.UltimateImgSpider.IRemoteSpiderService";
 /** Construct the stub at attach it to the interface. */
 public Stub()
 {
 this.attachInterface(this, DESCRIPTOR);
 }
 /**
- * Cast an IBinder object into an com.UltimateImgSpider.IRemoteSpiderService interface,
+ * Cast an IBinder object into an com.gk969.UltimateImgSpider.IRemoteSpiderService interface,
  * generating a proxy if needed.
  */
-public static com.UltimateImgSpider.IRemoteSpiderService asInterface(android.os.IBinder obj)
+public static com.gk969.UltimateImgSpider.IRemoteSpiderService asInterface(android.os.IBinder obj)
 {
 if ((obj==null)) {
 return null;
 }
 android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);
-if (((iin!=null)&&(iin instanceof com.UltimateImgSpider.IRemoteSpiderService))) {
-return ((com.UltimateImgSpider.IRemoteSpiderService)iin);
+if (((iin!=null)&&(iin instanceof com.gk969.UltimateImgSpider.IRemoteSpiderService))) {
+return ((com.gk969.UltimateImgSpider.IRemoteSpiderService)iin);
 }
-return new com.UltimateImgSpider.IRemoteSpiderService.Stub.Proxy(obj);
+return new com.gk969.UltimateImgSpider.IRemoteSpiderService.Stub.Proxy(obj);
 }
 @Override public android.os.IBinder asBinder()
 {
@@ -45,8 +45,8 @@ return true;
 case TRANSACTION_registerCallback:
 {
 data.enforceInterface(DESCRIPTOR);
-com.UltimateImgSpider.IRemoteSpiderServiceCallback _arg0;
-_arg0 = com.UltimateImgSpider.IRemoteSpiderServiceCallback.Stub.asInterface(data.readStrongBinder());
+com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback _arg0;
+_arg0 = com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback.Stub.asInterface(data.readStrongBinder());
 this.registerCallback(_arg0);
 reply.writeNoException();
 return true;
@@ -54,8 +54,8 @@ return true;
 case TRANSACTION_unregisterCallback:
 {
 data.enforceInterface(DESCRIPTOR);
-com.UltimateImgSpider.IRemoteSpiderServiceCallback _arg0;
-_arg0 = com.UltimateImgSpider.IRemoteSpiderServiceCallback.Stub.asInterface(data.readStrongBinder());
+com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback _arg0;
+_arg0 = com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback.Stub.asInterface(data.readStrongBinder());
 this.unregisterCallback(_arg0);
 reply.writeNoException();
 return true;
@@ -63,7 +63,7 @@ return true;
 }
 return super.onTransact(code, data, reply, flags);
 }
-private static class Proxy implements com.UltimateImgSpider.IRemoteSpiderService
+private static class Proxy implements com.gk969.UltimateImgSpider.IRemoteSpiderService
 {
 private android.os.IBinder mRemote;
 Proxy(android.os.IBinder remote)
@@ -78,7 +78,7 @@ public java.lang.String getInterfaceDescriptor()
 {
 return DESCRIPTOR;
 }
-@Override public void registerCallback(com.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException
+@Override public void registerCallback(com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
 android.os.Parcel _reply = android.os.Parcel.obtain();
@@ -93,7 +93,7 @@ _reply.recycle();
 _data.recycle();
 }
 }
-@Override public void unregisterCallback(com.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException
+@Override public void unregisterCallback(com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
 android.os.Parcel _reply = android.os.Parcel.obtain();
@@ -112,6 +112,6 @@ _data.recycle();
 static final int TRANSACTION_registerCallback = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
 static final int TRANSACTION_unregisterCallback = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
 }
-public void registerCallback(com.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException;
-public void unregisterCallback(com.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException;
+public void registerCallback(com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException;
+public void unregisterCallback(com.gk969.UltimateImgSpider.IRemoteSpiderServiceCallback cb) throws android.os.RemoteException;
 }

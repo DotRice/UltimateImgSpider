@@ -1,4 +1,4 @@
-package com.UltimateImgSpider;
+package com.gk969.UltimateImgSpider;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -91,7 +91,7 @@ public class ParaConfigActivity extends Activity
 
         wsParaConfig = wvParaConfig.getSettings();
 
-        //  πƒ‹javascript
+        // ‰ΩøËÉΩjavascript
         wsParaConfig.setJavaScriptEnabled(true);
         wsParaConfig.setJavaScriptCanOpenWindowsAutomatically(false);
 
@@ -117,7 +117,7 @@ public class ParaConfigActivity extends Activity
             {
                 ParaConfig.setHomeURL(this, URL);
 
-                Toast.makeText(this, "“—…Ë÷√÷˜“≥:" + URL, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Â∑≤ËÆæÁΩÆ‰∏ªÈ°µ:" + URL, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -138,7 +138,7 @@ public class ParaConfigActivity extends Activity
         {
             ParaConfig.setUserAgent(this, ua);
 
-            Toast.makeText(this, "“—…Ë÷√UA:" + ua, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Â∑≤ËÆæÁΩÆUA:" + ua, Toast.LENGTH_SHORT).show();
         }
     }
     
@@ -155,7 +155,7 @@ public class ParaConfigActivity extends Activity
         
         if(ParaConfig.setSearchEngine(this, seIndex))
         {
-            Toast.makeText(this, "“—…Ë÷√À—À˜“˝«Ê:" + ParaConfig.getSearchEngineName(this), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Â∑≤ËÆæÁΩÆÊêúÁ¥¢ÂºïÊìé:" + ParaConfig.getSearchEngineName(this), Toast.LENGTH_SHORT).show();
         }
     }
 
