@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="appPackageName">UltimateImgSpider</string>
     <string name="OK">确定</string>
     <string name="cancel">取消</string>
     <string name="app_name">优优看图</string>
@@ -37,5 +38,6 @@
     <string name="option">选项</string>
     <string name="prompt">提示</string>
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
+    <string name="badExternalStoragePrompt">外部存储空间出错！</string>
     
 </resources>

@@ -1,5 +1,6 @@
 package com.gk969.UltimateImgSpider;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -75,6 +76,7 @@ public class SpiderActivity extends Activity
 	
 	private TextView spiderLog;
 	
+	private File appDir;
 
 	private MessageHandler mHandler=new MessageHandler(this);
 	
@@ -120,26 +122,47 @@ public class SpiderActivity extends Activity
 		
 	};
 	
+
+    public Dialog sysFaultAlert(String title, String desc, final boolean exit)
+    {
+        return new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(desc)
+                .setPositiveButton(exit?R.string.exit:R.string.OK,
+                        new DialogInterface.OnClickListener()
+                        {
+                            public void onClick(DialogInterface dialog,
+                                    int whichButton)
+                            {
+                                if (exit)
+                                {
+                                    SpiderActivity.this.finish();
+                                }
+                            }
+                        }).create();
+    }
+
+	
 	private final static int DLG_NETWORK_PROMPT=0;
+    private final static int DLG_STORAGE_ERROR=1;
 	
 	protected Dialog onCreateDialog(int dlgId)
     {
-        if(dlgId == DLG_NETWORK_PROMPT)
+        switch(dlgId)
         {
-            return new AlertDialog.Builder(this)
-                    .setTitle(R.string.prompt)
-                    .setMessage(R.string.uneffectiveNetworkPrompt)
-                    .setPositiveButton(R.string.OK,
-                            new DialogInterface.OnClickListener()
-                            {
-                                public void onClick(DialogInterface dialog,
-                                        int whichButton)
-                                {
-                                    
-                                }
-                            })
-                    .create();
+            case DLG_NETWORK_PROMPT:
+            {
+                return sysFaultAlert(getString(R.string.prompt), 
+                        getString(R.string.uneffectiveNetworkPrompt), true);
+            }
+            
+            case DLG_STORAGE_ERROR:
+            {
+                return sysFaultAlert(getString(R.string.prompt), 
+                        getString(R.string.badExternalStoragePrompt), true);
+            }
         }
+        
         return null;
     }
 	
@@ -156,6 +179,13 @@ public class SpiderActivity extends Activity
 		projBarInit();
 		
 		firstRunOperat();
+		
+		appDir=Utils.getDirInExtSto(getString(R.string.appPackageName)+"/download");
+		if(appDir==null)
+		{
+		    showDialog(DLG_STORAGE_ERROR);
+		    return;
+		}
 		
 		checkNetwork();
 	}
