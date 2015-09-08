@@ -41,29 +41,24 @@ public class Utils
         if (Environment.getExternalStorageState().equals(
                 android.os.Environment.MEDIA_MOUNTED))
         {
-            String[] dirs=path.split("/");
-            String step=Environment.getExternalStorageDirectory().getPath();
-            
-            for(String mdir:dirs)
+            if(!path.startsWith("/"))
             {
-                if(!mdir.isEmpty())
+                path="/"+path;
+            }
+            
+            dir = new File(Environment.getExternalStorageDirectory()+path);
+            if (!dir.exists())
+            {
+                Log.i(TAG, "Dir:" + dir.toString() + " Not Exist!");
+                dir.mkdirs();
+                if (!dir.exists())
                 {
-                    step+=("/"+mdir);
-                    dir = new File(step);
-                    if (!dir.exists())
-                    {
-                        Log.i(TAG, "Dir:" + dir.toString() + " Not Exist!");
-                        dir.mkdir();
-                        if (!dir.exists())
-                        {
-                            return null;
-                        }
-                    }
-                    else
-                    {
-                        Log.i(TAG, "Dir:" + dir.toString() + " Already Exist!");
-                    }
+                    return null;
                 }
+            }
+            else
+            {
+                Log.i(TAG, "Dir:" + dir.toString() + " Already Exist!");
             }
         }
         else

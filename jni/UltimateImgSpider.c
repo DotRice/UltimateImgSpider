@@ -959,47 +959,53 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 			}
 		}
 
-		node=curNode;
-		for (i = 0; i < SEARCH_STEP_MAX; i++)
+		if(jType == URL_TYPE_PAGE)
 		{
-			//LOGI("next %d:%s", i, node->url);
-			node=nodeAddrRelativeToAbs(&(node->para.nextNodeAddr));
-			if(node==NULL)
+			node=curNode;
+			for (i = 0; i < SEARCH_STEP_MAX; i++)
 			{
-				break;
-			}
-			else
-			{
-				int curSim = urlSimilarity(prevUrl, prevUrlLen, node->url, node->para.len);
-				if (curSim > urlSim)
+				//LOGI("next %d:%s", i, node->url);
+				node=nodeAddrRelativeToAbs(&(node->para.nextNodeAddr));
+				if(node==NULL)
 				{
-					urlSim = curSim;
-					nextNode = node;
+					break;
+				}
+				else
+				{
+					int curSim = urlSimilarity(prevUrl, prevUrlLen, node->url, node->para.len);
+					if (curSim > urlSim)
+					{
+						urlSim = curSim;
+						nextNode = node;
+					}
+				}
+			}
+
+
+			node=curNode;
+			for (i = 0; i < SEARCH_STEP_MAX; i++)
+			{
+				//LOGI("prev %d:%s", i, node->url);
+				node=nodeAddrRelativeToAbs(&(node->para.prevNodeAddr));
+				if(node==NULL)
+				{
+					break;
+				}
+				else
+				{
+					int curSim = urlSimilarity(prevUrl, prevUrlLen, node->url, node->para.len);
+					if (curSim > urlSim)
+					{
+						urlSim = curSim;
+						nextNode = node;
+					}
 				}
 			}
 		}
-
-
-		node=curNode;
-		for (i = 0; i < SEARCH_STEP_MAX; i++)
+		else
 		{
-			//LOGI("prev %d:%s", i, node->url);
-			node=nodeAddrRelativeToAbs(&(node->para.prevNodeAddr));
-			if(node==NULL)
-			{
-				break;
-			}
-			else
-			{
-				int curSim = urlSimilarity(prevUrl, prevUrlLen, node->url, node->para.len);
-				if (curSim > urlSim)
-				{
-					urlSim = curSim;
-					nextNode = node;
-				}
-			}
+			nextNode=nodeAddrRelativeToAbs(&(node->para.nextNodeAddr));
 		}
-
 		(*env)->ReleaseStringUTFChars(env, jPrevUrl, prevUrl);
 	}
 	

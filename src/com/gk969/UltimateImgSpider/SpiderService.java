@@ -45,6 +45,14 @@ public class SpiderService extends Service
 	
 	private boolean isPaused;
 	
+	private final static int STAT_IDLE=0;
+	private final static int STAT_DOWNLOAD_PAGE=1;
+	private final static int STAT_SCAN_PAGE=2;
+	private final static int STAT_DOWNLOAD_IMG=3;
+	private final static int STAT_PAUSE=4;
+	private final static int STAT_COMPLETE=5;
+	private int state=STAT_IDLE;
+	
 	/** The primary interface we will be calling on the service. */
 	IRemoteWatchdogService watchdogService = null;
 	
@@ -143,16 +151,20 @@ public class SpiderService extends Service
 				case SpiderActivity.CMD_CLEAR:
 					stopService(new Intent(this, WatchdogService.class));
 					stopSelf();
+					state=STAT_IDLE;
 					break;
 				case SpiderActivity.CMD_CONTINUE:
-					findNextUrlToLoad();
+					if(state==STAT_PAUSE)
+					{
+						findNextUrlToLoad();
+					}
 					break;
 				case SpiderActivity.CMD_STOP:
-					if(isPaused)
+					if(state==STAT_PAUSE)
 					{
 						stopSelf();
 					}
-					else
+					else if(state==STAT_DOWNLOAD_PAGE)
 					{
 						if(urlLoadTimer.get()!=0)
 						{
@@ -183,7 +195,6 @@ public class SpiderService extends Service
         }
         catch (RemoteException e)
         {
-	        // TODO Auto-generated catch block
 	        e.printStackTrace();
         }
 		return fd;
@@ -285,7 +296,8 @@ public class SpiderService extends Service
 	private final int URL_TYPE_PAGE = 0;
 	private final int URL_TYPE_IMG = 1;
 	
-	private String curUrl;
+	private String curPageUrl;
+	private String curImgUrl;
 	
 	private final static int TOTAL=0;
 	private final static int PROCESSED=1;
@@ -303,7 +315,7 @@ public class SpiderService extends Service
 	
 	private WebView spider;
 	
-	private Runnable loadNextUrlAfterScan;
+	private Runnable runnableAfterScanPage;
 	private Runnable urlLoadTimeOut;
 	private Handler spiderHandler = new Handler();
 	private boolean timerRunning = true;
@@ -315,10 +327,10 @@ public class SpiderService extends Service
 	
 	private final static int MAX_SIZE_PER_URL=4096;
 	
-	public native String stringFromJNI(String srcStr);
-	public native boolean jniSpiderInit();
+	private native String stringFromJNI(String srcStr);
+	private native boolean jniSpiderInit();
 	// Activity onDestory时调用，与jniAddUrl、jniFindNextUrlToLoad不在同一线程，可能会出错。
-	public native int jniAddUrl(String url, byte[] md5, int type, int[] param);
+	private native int jniAddUrl(String url, byte[] md5, int type, int[] param);
 	private native String jniFindNextUrlToLoad(String prevUrl, int type, int[] param);
 	
 	static
@@ -340,7 +352,7 @@ public class SpiderService extends Service
 		log = log+"VM:"+(rt.totalMemory() >> 20) + "M Native:"
 		        + (Debug.getNativeHeapSize() >> 20) + "M pic:" + imgProcParam[PROCESSED] + "/" + imgProcParam[TOTAL] + "|" + imgProcParam[HEIGHT]
 		        + " page:" + pageProcParam[PROCESSED] + "/" + pageProcParam[TOTAL] + "|" + pageProcParam[HEIGHT] + " loadTime:" + loadTime + " scanTime:"
-		        + scanTime + " searchTime:" + searchTime + "\r\n" + curUrl;
+		        + scanTime + " searchTime:" + searchTime + "\r\n" + curPageUrl;
 		
 		
 		//Log.i(LOG_TAG, log);
@@ -361,8 +373,10 @@ public class SpiderService extends Service
 		
 	}
 
+	//javascript回调不在主线程。
 	private void scanPageWithJS()
 	{
+		state=STAT_SCAN_PAGE;
 		scanTimer = System.currentTimeMillis();
 		spider.loadUrl("javascript:" + "var i;"
 		        + "var img=document.getElementsByTagName(\"img\");"
@@ -397,7 +411,7 @@ public class SpiderService extends Service
 				if (!pageFinished)
 				{
 					pageFinished = true;
-					if (curUrl.equals(url))
+					if (curPageUrl.equals(url))
 					{
 						urlLoadTimer.set(0);
 						scanPageWithJS();
@@ -407,7 +421,7 @@ public class SpiderService extends Service
 			
 			public void onPageStarted(WebView view, String url, Bitmap favicon)
 			{
-				//Log.i(LOG_TAG, "onPageStarted " + url);
+				Log.i(LOG_TAG, "onPageStarted " + url);
 				loadTimer = System.currentTimeMillis();
 				pageFinished = false;
 			}
@@ -417,7 +431,7 @@ public class SpiderService extends Service
 			        String url)
 			{
 				WebResourceResponse response = null;
-				if (!curUrl.equals(url))
+				if (!curPageUrl.equals(url))
 				{
 					response = new WebResourceResponse("image/png", "UTF-8",
 					        null);
@@ -463,18 +477,41 @@ public class SpiderService extends Service
 	{
 		isPaused=false;
 		searchTime=System.currentTimeMillis();
-		curUrl = jniFindNextUrlToLoad(curUrl, URL_TYPE_PAGE, pageProcParam);
+		curPageUrl = jniFindNextUrlToLoad(curPageUrl, URL_TYPE_PAGE, pageProcParam);
 		searchTime=System.currentTimeMillis()-searchTime;
-		Log.i(LOG_TAG, "loading:"+curUrl);
-		if(curUrl.isEmpty())
+		Log.i(LOG_TAG, "loading:"+curPageUrl);
+		if(curPageUrl.isEmpty())
 		{
+			state=STAT_COMPLETE;
 			//Log.i(LOG_TAG, "site scan complete");
 			reportSpiderLog(true);
 		}
 		else
 		{
-			spiderLoadUrl(curUrl);
+			state=STAT_DOWNLOAD_PAGE;
+			spiderLoadUrl(curPageUrl);
 			reportSpiderLog(false);
+		}
+	}
+	
+	private downloadFileViaHTTP(String url, File file)
+	{
+		
+	}
+	
+	private void downloadImgAfterScan()
+	{
+		while(true)
+		{
+			curImgUrl = jniFindNextUrlToLoad(curImgUrl, URL_TYPE_IMG, imgProcParam);
+			if(curImgUrl.isEmpty())
+			{
+				break;
+			}
+			else
+			{
+				
+			}
 		}
 	}
 	
@@ -485,7 +522,7 @@ public class SpiderService extends Service
 		pageProcParam=new int[3];
 		imgProcParam=new int[3];
 		
-		loadNextUrlAfterScan = new Runnable()
+		runnableAfterScanPage = new Runnable()
 		{
 			@Override
 			public void run()
@@ -568,7 +605,7 @@ public class SpiderService extends Service
 				{
 					Log.i(LOG_TAG, "try again urlLoadpost");
 					urlLoadPostSuccess.set(spiderHandler
-					        .post(loadNextUrlAfterScan));
+					        .post(runnableAfterScanPage));
 				}
 				
 				try
@@ -642,8 +679,9 @@ public class SpiderService extends Service
 	@JavascriptInterface
 	public void onCurPageScaned()
 	{
+	    Log.i(LOG_TAG, "onCurPageScaned");
 		scanTime = System.currentTimeMillis() - scanTimer;
-		urlLoadPostSuccess.set(spiderHandler.post(loadNextUrlAfterScan));
+		urlLoadPostSuccess.set(spiderHandler.post(runnableAfterScanPage));
 	}
 	
 }
