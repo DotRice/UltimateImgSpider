@@ -32,7 +32,7 @@ import android.util.Log;
 public class MemoryInfo
 {
 	
-	private static final String LOG_TAG = MemoryInfo.class.getSimpleName();
+	private static final String TAG = MemoryInfo.class.getSimpleName();
 	
 	public static long getTotalMemInMb()
 	{
@@ -56,12 +56,12 @@ public class MemoryInfo
 			localBufferedReader.close();
 			String[] memKb = memTotal.split(" ");
 			memTotal = memKb[0].trim();
-			//Log.d(LOG_TAG, "memTotal: " + memTotal);
+			//Log.d(TAG, "memTotal: " + memTotal);
 			memory = Long.parseLong(memTotal);
 		}
 		catch (IOException e)
 		{
-			Log.e(LOG_TAG, "IOException: " + e.getMessage());
+			Log.e(TAG, "IOException: " + e.getMessage());
 		}
 		return memory>>10;
 	}

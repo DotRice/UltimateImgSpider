@@ -52,7 +52,7 @@ import android.widget.Toast;
 
 public class SelSrcActivity extends Activity
 {
-    private final String         LOG_TAG        = "SelSrcActivity";
+    private final String         TAG        = "SelSrcActivity";
     
     private WebView              browser;
     private ProgressBar          pbWebView;
@@ -147,7 +147,7 @@ public class SelSrcActivity extends Activity
                                     public void onClick(DialogInterface dialog,
                                             int whichButton)
                                     {
-                                        Log.i(LOG_TAG, "whichButton:"
+                                        Log.i(TAG, "whichButton:"
                                                 + whichButton);
                                         ParaConfig.setSearchEngine(
                                                 SelSrcActivity.this,
@@ -197,7 +197,7 @@ public class SelSrcActivity extends Activity
             
             public void onPageFinished(WebView view, String url)
             {
-                Log.i(LOG_TAG, "onPageFinished " + url);
+                Log.i(TAG, "onPageFinished " + url);
                 setUrlCmd(URL_REFRESH);
                 
                 String title = browser.getTitle();
@@ -210,7 +210,7 @@ public class SelSrcActivity extends Activity
             
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
-                Log.i(LOG_TAG, "onPageStarted " + url);
+                Log.i(TAG, "onPageStarted " + url);
                 setBrowserTitle(url);
                 setUrlCmd(URL_CANCEL);
                 
@@ -224,7 +224,7 @@ public class SelSrcActivity extends Activity
             public void onReceivedError(WebView view, int errorCode,
                     String description, String failingUrl)
             {
-                Log.i(LOG_TAG, failingUrl + " ReceivedError " + errorCode
+                Log.i(TAG, failingUrl + " ReceivedError " + errorCode
                         + "  " + description);
             }
         });
@@ -459,7 +459,7 @@ public class SelSrcActivity extends Activity
                         break;
                         
                         default:
-                            Log.i(LOG_TAG, "oclBrowserBtn Unknown Button");
+                            Log.i(TAG, "oclBrowserBtn Unknown Button");
                         break;
                     }
                     
@@ -552,7 +552,7 @@ public class SelSrcActivity extends Activity
             @Override
             public void onClick(View v)
             {
-                // Log.i(LOG_TAG, "mask Clicked");
+                // Log.i(TAG, "mask Clicked");
                 focusOnWebView();
             }
         });
@@ -736,26 +736,26 @@ public class SelSrcActivity extends Activity
             @Override
             public void run()
             {
-                Log.i(LOG_TAG, "spiderGo");
+                Log.i(TAG, "spiderGo");
                 spiderGo();
             }
         };
         
         mHandler.postDelayed(tr, 500);
         */
-        Log.i(LOG_TAG, "onCreate");
+        Log.i(TAG, "onCreate");
     }
     
     protected void onStart()
     {
         super.onStart();
-        Log.i(LOG_TAG, "onStart");
+        Log.i(TAG, "onStart");
     }
     
     protected void onResume()
     {
         super.onResume();
-        Log.i(LOG_TAG, "onResume");
+        Log.i(TAG, "onResume");
         
         if (browser != null)
         {
@@ -767,13 +767,13 @@ public class SelSrcActivity extends Activity
     protected void onPause()
     {
         super.onPause();
-        Log.i(LOG_TAG, "onPause");
+        Log.i(TAG, "onPause");
         
     }
     
     protected void onStop()
     {
-        Log.i(LOG_TAG, "onStop");
+        Log.i(TAG, "onStop");
         
         super.onStop();
     }
@@ -781,9 +781,9 @@ public class SelSrcActivity extends Activity
     protected void onDestroy()
     {
         super.onDestroy();
-        Log.i(LOG_TAG, "onDestroy");
+        Log.i(TAG, "onDestroy");
 
-        Log.i(LOG_TAG, "clearCache");
+        Log.i(TAG, "clearCache");
         browser.stopLoading();
         browser.clearCache(true);
         browser.destroy();
@@ -792,7 +792,7 @@ public class SelSrcActivity extends Activity
     
     private void openSettingPage()
     {
-        Log.i(LOG_TAG, "openSettingPage");
+        Log.i(TAG, "openSettingPage");
         
         Intent intent = new Intent(this, ParaConfigActivity.class);
         
@@ -809,7 +809,7 @@ public class SelSrcActivity extends Activity
     {
         String srcUrl = browser.getUrl();
         
-        Log.i(LOG_TAG, "spiderGo srcUrl:" + srcUrl);
+        Log.i(TAG, "spiderGo srcUrl:" + srcUrl);
         
         if (srcUrl != null)
         {
@@ -820,7 +820,7 @@ public class SelSrcActivity extends Activity
     
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        Log.i(LOG_TAG, "onKeyDown " + keyCode);
+        Log.i(TAG, "onKeyDown " + keyCode);
         
         if (keyCode == KeyEvent.KEYCODE_BACK)
         {
@@ -849,11 +849,11 @@ public class SelSrcActivity extends Activity
         
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
-            Log.i(LOG_TAG, "Landscape");
+            Log.i(TAG, "Landscape");
         }
         else
         {
-            Log.i(LOG_TAG, "Portrait");
+            Log.i(TAG, "Portrait");
         }
     }
 }

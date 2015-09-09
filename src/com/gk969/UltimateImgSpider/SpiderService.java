@@ -1,12 +1,21 @@
 package com.gk969.UltimateImgSpider;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.gk969.Utils.Utils;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -38,8 +47,11 @@ import android.widget.Toast;
 
 public class SpiderService extends Service
 {
-	private final String LOG_TAG = "SpiderService";
+	private final String TAG = "SpiderService";
 	final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
+	
+	private final static int IMG_FILE_SIZE_MAX=10*1024*1024;
+    private final static int IMG_FILE_CACHE_SIZE=5*1024*1024;
 	
 	private final static int STAT_IDLE=0;
 	private final static int STAT_DOWNLOAD_PAGE=1;
@@ -50,7 +62,10 @@ public class SpiderService extends Service
     private final static int STAT_STOP=6;
     private final static int STAT_PRE_PAUSE=7;
     private final static int STAT_PRE_STOP=8;
-	private int state=STAT_IDLE;
+	private AtomicInteger state=new AtomicInteger(STAT_IDLE);
+	
+	private String curSiteDirPath;
+	private String userAgent;
 	
 	/** The primary interface we will be calling on the service. */
 	IRemoteWatchdogService watchdogService = null;
@@ -75,7 +90,7 @@ public class SpiderService extends Service
 			
 			spiderInit();
 			
-			Log.i(LOG_TAG, "onServiceConnected");
+			Log.i(TAG, "onServiceConnected");
 		}
 		
 		public void onServiceDisconnected(ComponentName className)
@@ -84,13 +99,13 @@ public class SpiderService extends Service
 			// unexpectedly disconnected -- that is, its process crashed.
 			watchdogService = null;
 			
-			Log.i(LOG_TAG, "onServiceDisconnected");
+			Log.i(TAG, "onServiceDisconnected");
 		}
 	};
 	
 	private void startWatchdog()
 	{
-		Log.i(LOG_TAG, "startWatchdog");
+		Log.i(TAG, "startWatchdog");
 		
 		Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
 		watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage()
@@ -103,21 +118,21 @@ public class SpiderService extends Service
 	@Override
 	public void onCreate()
 	{
-		Log.i(LOG_TAG, "onCreate");
+		Log.i(TAG, "onCreate");
 		startWatchdog();
 	}
 	
 	@Override
 	public void onDestroy()
 	{
-		Log.i(LOG_TAG, "onDestroy");
+		Log.i(TAG, "onDestroy");
 		// Unregister all callbacks.
 		mCallbacks.kill();
 		
 		timerRunning = false;
 		if(spider!=null)
 		{
-		    Log.i(LOG_TAG, "clearCache");
+		    Log.i(TAG, "clearCache");
 			spider.stopLoading();
 			spider.clearCache(true);
 			spider.destroy();
@@ -134,38 +149,57 @@ public class SpiderService extends Service
 			String url=intent.getStringExtra(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
 			if(url!=null)
 			{
-				Log.i(LOG_TAG, "onStartCommand url:"+url);
+				Log.i(TAG, "onStartCommand url:"+url);
 			
 				if((url.startsWith("http://")||url.startsWith("https://"))&&srcUrl.equals(SRCURL_DEFAULT_VALUE))
 				{
 					srcUrl=url;
+					try
+                    {
+                        srcHost = new URL(srcUrl).getHost();
+                    }
+                    catch (MalformedURLException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        stopSelf();
+                    }
+					File siteDir=Utils.getDirInExtSto(getString(R.string.appPackageName)+"/download/"+srcHost);
+			        if(siteDir==null)
+			        {
+                        stopSelf();
+			        }
+			        else
+			        {
+			            curSiteDirPath=siteDir.getPath();
+			        }
 				}
 			}
 			
 			int cmdVal=intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY, SpiderActivity.CMD_NOTHING);
-			Log.i(LOG_TAG, "onStartCommand "+cmdVal);
+			Log.i(TAG, "onStartCommand "+cmdVal);
 	
 			switch(cmdVal)
 			{
 				case SpiderActivity.CMD_CLEAR:
 					stopService(new Intent(this, WatchdogService.class));
 					stopSelf();
-					state=STAT_IDLE;
+					state.set(STAT_IDLE);
 					break;
 				case SpiderActivity.CMD_CONTINUE:
-					if(state==STAT_PAUSE)
+					if(state.get()==STAT_PAUSE)
 					{
 						findNextUrlToLoad();
 					}
 					break;
 				case SpiderActivity.CMD_STOP:
-					if(state==STAT_PAUSE)
+					if(state.get()==STAT_PAUSE)
 					{
 						stopSelf();
 					}
-					else if(state==STAT_DOWNLOAD_PAGE)
+					else if(state.get()==STAT_DOWNLOAD_PAGE)
 					{
-					    state=STAT_PRE_STOP;
+					    state.set(STAT_PRE_STOP);
 					    if(urlLoadTimer.get()!=0)
 						{
 							urlLoadTimer.set(1);
@@ -173,7 +207,7 @@ public class SpiderService extends Service
 					}
 					break;
 				case SpiderActivity.CMD_PAUSE:
-                    state=STAT_PRE_PAUSE;
+                    state.set(STAT_PRE_PAUSE);
                     if(urlLoadTimer.get()!=0)
                     {
                         urlLoadTimer.set(1);
@@ -189,7 +223,7 @@ public class SpiderService extends Service
 	
 	public int getAshmemFromWatchdog(String name, int size)
 	{
-		Log.i(LOG_TAG, "getAshmemFromWatchdog name:"+name+" size:"+size);
+		Log.i(TAG, "getAshmemFromWatchdog name:"+name+" size:"+size);
 		
 		int fd=-1;
 		try
@@ -242,7 +276,7 @@ public class SpiderService extends Service
 	@Override
 	public IBinder onBind(Intent intent)
 	{
-		Log.i(LOG_TAG, "onBind:"+intent.getAction());
+		Log.i(TAG, "onBind:"+intent.getAction());
 		
 		if (IRemoteSpiderService.class.getName().equals(intent.getAction()))
 		{
@@ -322,13 +356,12 @@ public class SpiderService extends Service
 	
 	private WebView spider;
 	
-	private Runnable runnableAfterScanPage;
+	private Runnable runnableGetNextPageUrl;
 	private Runnable urlLoadTimeOut;
 	private Handler spiderHandler = new Handler();
 	private boolean timerRunning = true;
 	private final static int URL_TIME_OUT = 10;
 	private AtomicInteger urlLoadTimer = new AtomicInteger(URL_TIME_OUT);
-	private AtomicBoolean urlLoadPostSuccess = new AtomicBoolean(true);
 	
 	private MessageDigest md5;
 	
@@ -362,7 +395,7 @@ public class SpiderService extends Service
 		        + scanTime + " searchTime:" + searchTime + "\r\n" + curPageUrl;
 		
 		
-		//Log.i(LOG_TAG, log);
+		//Log.i(TAG, log);
 		
 		int numOfCallback = mCallbacks.beginBroadcast();
 		for (int i = 0; i < numOfCallback; i++)
@@ -383,7 +416,7 @@ public class SpiderService extends Service
 	//javascript回调不在主线程。
 	private void scanPageWithJS()
 	{
-		state=STAT_SCAN_PAGE;
+		state.set(STAT_SCAN_PAGE);
 		scanTimer = System.currentTimeMillis();
 		spider.loadUrl("javascript:" + "var i;"
 		        + "var img=document.getElementsByTagName(\"img\");"
@@ -413,7 +446,7 @@ public class SpiderService extends Service
 			public void onPageFinished(WebView view, String url)
 			{
 				loadTime = System.currentTimeMillis() - loadTimer;
-				//Log.i(LOG_TAG, "onPageFinished " + url + " loadTime:" + loadTime);
+				//Log.i(TAG, "onPageFinished " + url + " loadTime:" + loadTime);
 				
 				if (!pageFinished)
 				{
@@ -428,7 +461,7 @@ public class SpiderService extends Service
 			
 			public void onPageStarted(WebView view, String url, Bitmap favicon)
 			{
-				Log.i(LOG_TAG, "onPageStarted " + url);
+				Log.i(TAG, "onPageStarted " + url);
 				loadTimer = System.currentTimeMillis();
 				pageFinished = false;
 			}
@@ -449,7 +482,7 @@ public class SpiderService extends Service
 			public void onReceivedError(WebView view, int errorCode,
 			        String description, String failingUrl)
 			{
-				Log.i(LOG_TAG, failingUrl + " ReceivedError " + errorCode + "  " + description);
+				Log.i(TAG, failingUrl + " ReceivedError " + errorCode + "  " + description);
 			}
 		});
 		
@@ -464,8 +497,10 @@ public class SpiderService extends Service
 			}
 		});
 		
+		userAgent=ParaConfig.getUserAgent(this);
+		
 		WebSettings setting = spider.getSettings();
-		setting.setUserAgentString(ParaConfig.getUserAgent(this));
+		setting.setUserAgentString(userAgent);
 		
 		// 阻止图片
 		setting.setLoadsImagesAutomatically(false);
@@ -482,19 +517,21 @@ public class SpiderService extends Service
 	
 	private void findNextUrlToLoad()
 	{
+	    
+	    
 		searchTime=System.currentTimeMillis();
 		curPageUrl = jniFindNextUrlToLoad(curPageUrl, URL_TYPE_PAGE, pageProcParam);
 		searchTime=System.currentTimeMillis()-searchTime;
-		Log.i(LOG_TAG, "loading:"+curPageUrl);
-		if(curPageUrl.isEmpty())
+		Log.i(TAG, "loading:"+curPageUrl);
+		if(curPageUrl==null)
 		{
-			state=STAT_COMPLETE;
-			//Log.i(LOG_TAG, "site scan complete");
+			state.set(STAT_COMPLETE);
+			//Log.i(TAG, "site scan complete");
 			reportSpiderLog(true);
 		}
 		else
 		{
-			state=STAT_DOWNLOAD_PAGE;
+			state.set(STAT_DOWNLOAD_PAGE);
 			spiderLoadUrl(curPageUrl);
 			reportSpiderLog(false);
 		}
@@ -502,11 +539,62 @@ public class SpiderService extends Service
 	
 	private void downloadCurImg()
 	{
+        Log.i(TAG, "downloadCurImg "+curImgUrl);
 	    
+        try
+        {
+            URL url=new URL(curImgUrl);
+            HttpURLConnection urlConn=(HttpURLConnection)url.openConnection();
+            OutputStream output=null;
+            try
+            {
+                urlConn.setConnectTimeout(5000);
+                urlConn.setReadTimeout(10000);
+                urlConn.setDoInput(true);
+                urlConn.setRequestProperty("Referer", curPageUrl);
+                urlConn.setRequestProperty("User-Agent", userAgent);
+                
+                if(urlConn.getResponseCode()==200)
+                {
+                    String[] urlSplit=curImgUrl.split("\\.");
+                    String imgFileExt=urlSplit[urlSplit.length-1];
+                    File file=new File(curSiteDirPath+"/"+imgProcParam[PROCESSED]+
+                            "."+imgFileExt);
+                    int i=0;
+                    while(file.exists())
+                    {
+                        file=new File(curSiteDirPath+"/"+imgProcParam[PROCESSED]+
+                                "("+i+")"+"."+imgFileExt);
+                        i++;
+                    }
+                    InputStream input=urlConn.getInputStream();
+                    output=new FileOutputStream(file);
+                    byte[] buffer=new byte[4*1024];
+                    int len;
+                    while((len=input.read(buffer))!=-1){  
+                        output.write(buffer, 0, len);  
+                    }
+                    output.flush();
+                }
+            }
+            finally
+            {
+                if(urlConn!=null)urlConn.disconnect();
+                if(output!=null)output.close();
+            }
+            
+        } catch (MalformedURLException e)
+        {
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
 	}
 	
 	private void downloadNewImgAfterScan()
 	{
+	    Log.i(TAG, "downloadNewImgAfterScan");
 		new Thread(new Runnable()
         {
             @Override
@@ -514,22 +602,25 @@ public class SpiderService extends Service
             {
                 while(true)
                 {
-                    if(state==STAT_PRE_PAUSE)
+                    if(state.get()==STAT_PRE_PAUSE)
                     {
-                        state=STAT_PAUSE;
+                        state.set(STAT_PAUSE);
                         break;
                     }
-                    else if(state==STAT_PRE_STOP)
+                    else if(state.get()==STAT_PRE_STOP)
                     {
-                        state=STAT_STOP;
-                        stopSelf();
+                        state.set(STAT_STOP);
+                        SpiderService.this.stopSelf();
                         break;
                     }
                     else
                     {
                         curImgUrl = jniFindNextUrlToLoad(curImgUrl, URL_TYPE_IMG, imgProcParam);
-                        if(curImgUrl.isEmpty())
+                        reportSpiderLog(false);
+                        if(curImgUrl==null)
                         {
+                            Log.i(TAG, "new img downloaded");
+                            spiderHandler.post(runnableGetNextPageUrl);
                             break;
                         }
                         else
@@ -549,24 +640,12 @@ public class SpiderService extends Service
 		pageProcParam=new int[3];
 		imgProcParam=new int[3];
 		
-		runnableAfterScanPage = new Runnable()
+		runnableGetNextPageUrl = new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				if(state==STAT_PRE_PAUSE)
-				{
-				    state=STAT_PAUSE;
-				}
-				else if(state==STAT_PRE_STOP)
-				{
-					state=STAT_STOP;
-				    stopSelf();
-				}
-				else
-				{
-					findNextUrlToLoad();
-				}
+			    findNextUrlToLoad();
 			}
 		};
 		
@@ -576,7 +655,7 @@ public class SpiderService extends Service
 			@Override
 			public void run()
 			{
-				Log.i(LOG_TAG, "Load TimeOut!!");
+				Log.i(TAG, "Load TimeOut!!");
 				spider.stopLoading();
 				scanPageWithJS();
 			}
@@ -588,14 +667,9 @@ public class SpiderService extends Service
 		{
 	        md5=MessageDigest.getInstance("MD5");
 			
-			srcHost = new URL(srcUrl).getHost();
 			jniAddUrl(srcUrl, md5.digest(srcUrl.getBytes()), URL_TYPE_PAGE, pageProcParam);
 			
 			findNextUrlToLoad();
-		}
-		catch (MalformedURLException e)
-		{
-	        e.printStackTrace();
 		}
         catch (NoSuchAlgorithmException e)
         {
@@ -606,33 +680,19 @@ public class SpiderService extends Service
 	private class timerThread extends Thread
 	{
 		private final int TIMER_INTERVAL = 1000;
-		private boolean urlTimeOutPostSuccess = true;
 		
 		public void run()
 		{
 			while (timerRunning)
 			{
-				// Log.i(LOG_TAG, "Timer");
+				// Log.i(TAG, "Timer");
 				
 				if (urlLoadTimer.get() != 0)
 				{
 					if (urlLoadTimer.decrementAndGet() == 0)
 					{
-						urlTimeOutPostSuccess = spiderHandler
-						        .post(urlLoadTimeOut);
+						spiderHandler.post(urlLoadTimeOut);
 					}
-				}
-				else if (!urlTimeOutPostSuccess)
-				{
-					Log.i(LOG_TAG, "try again urlTimeOutPost");
-					urlTimeOutPostSuccess = spiderHandler.post(urlLoadTimeOut);
-				}
-				
-				if (!urlLoadPostSuccess.get())
-				{
-					Log.i(LOG_TAG, "try again urlLoadpost");
-					urlLoadPostSuccess.set(spiderHandler
-					        .post(runnableAfterScanPage));
 				}
 				
 				try
@@ -641,7 +701,7 @@ public class SpiderService extends Service
 				}
 				catch (InterruptedException e)
 				{
-					// Log.e(LOG_TAG,e.toString());
+					// Log.e(TAG,e.toString());
 				}
 			}
 		}
@@ -649,7 +709,7 @@ public class SpiderService extends Service
 	
 	private void spiderLoadUrl(String url)
 	{
-        //Log.i(LOG_TAG, "spiderLoadUrl:"+url);
+        //Log.i(TAG, "spiderLoadUrl:"+url);
 		spider.loadUrl(url);
 		urlLoadTimer.set(URL_TIME_OUT);
 	}
@@ -657,11 +717,11 @@ public class SpiderService extends Service
 	@JavascriptInterface
 	public void recvImgUrl(String imgUrl)
 	{
-		//Log.i(LOG_TAG, "imgUrl:"+imgUrl);
+		//Log.i(TAG, "imgUrl:"+imgUrl);
 		
 		String[] list=imgUrl.split(" ");
 
-		//Log.i(LOG_TAG, "length:"+list.length);
+		//Log.i(TAG, "length:"+list.length);
 		
 		for(String urlInList:list)
 		{
@@ -675,11 +735,11 @@ public class SpiderService extends Service
 	@JavascriptInterface
 	public void recvPageUrl(String pageUrl)
 	{
-		//Log.i(LOG_TAG, "pageUrl:"+pageUrl);
+		//Log.i(TAG, "pageUrl:"+pageUrl);
 		
 		String[] list=pageUrl.split(" ");
 
-		//Log.i(LOG_TAG, "length:"+list.length);
+		//Log.i(TAG, "length:"+list.length);
 
 		for(String urlInList:list)
 		{
@@ -698,7 +758,7 @@ public class SpiderService extends Service
 			}
 			catch (MalformedURLException e)
 			{
-				// Log.e(LOG_TAG,e.toString());
+				// Log.e(TAG,e.toString());
 			}
 		}
 	}
@@ -706,9 +766,31 @@ public class SpiderService extends Service
 	@JavascriptInterface
 	public void onCurPageScaned()
 	{
-	    Log.i(LOG_TAG, "onCurPageScaned");
+	    Log.i(TAG, "onCurPageScaned");
 		scanTime = System.currentTimeMillis() - scanTimer;
-		urlLoadPostSuccess.set(spiderHandler.post(runnableAfterScanPage));
+		
+		if(state.get()==STAT_PRE_PAUSE)
+        {
+            state.set(STAT_PAUSE);
+        }
+        else if(state.get()==STAT_PRE_STOP)
+        {
+            state.set(STAT_STOP);
+            SpiderService.this.stopSelf();
+        }
+        else
+        {
+            /*
+            spiderHandler.post(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    
+                }
+            });*/
+            downloadNewImgAfterScan();
+        }
 	}
 	
 }

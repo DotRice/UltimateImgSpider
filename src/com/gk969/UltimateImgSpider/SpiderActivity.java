@@ -48,7 +48,7 @@ import android.widget.Toast;
 
 public class SpiderActivity extends Activity
 {
-	private final String LOG_TAG = "SpiderActivity";
+	private final String TAG = "SpiderActivity";
 	public final static int REQUST_SRC_URL = 0;
 	
 	final static String SOURCE_URL_BUNDLE_KEY = "SourceUrl";
@@ -100,7 +100,7 @@ public class SpiderActivity extends Activity
 					String msgStr=(String) msg.obj;
 					long freeMem=MemoryInfo.getFreeMemInMb(theActivity);
 					int memUsedBySpider=Integer.parseInt(msgStr.substring(msgStr.indexOf("Native:")+7, msgStr.indexOf("M pic:")));
-					//Log.i(theActivity.LOG_TAG, "mem:"+freeMem+" "+memUsedBySpider);
+					//Log.i(theActivity.TAG, "mem:"+freeMem+" "+memUsedBySpider);
 					
 					theActivity.spiderLog.setText("Total:" + MemoryInfo.getTotalMemInMb()
 					        + "M Free:" + freeMem
@@ -173,7 +173,7 @@ public class SpiderActivity extends Activity
 		
 		setContentView(R.layout.activity_spider_crawl);
 		
-		Log.i(LOG_TAG, "onCreate");
+		Log.i(TAG, "onCreate");
 		
 		spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
 		projBarInit();
@@ -236,38 +236,38 @@ public class SpiderActivity extends Activity
 	protected void onStart()
 	{
 		super.onStart();
-		Log.i(LOG_TAG, "onStart");
+		Log.i(TAG, "onStart");
 	}
 	
 	protected void onResume()
 	{
 		super.onResume();
-		Log.i(LOG_TAG, "onResume");
+		Log.i(TAG, "onResume");
 		
 	}
 	
 	protected void onPause()
 	{
 		super.onPause();
-		Log.i(LOG_TAG, "onPause");
+		Log.i(TAG, "onPause");
 		
 	}
 	
 	protected void onStop()
 	{
 		super.onStop();
-		Log.i(LOG_TAG, "onStop");
+		Log.i(TAG, "onStop");
 		
 	}
 	
 	protected void onDestroy()
 	{
 		super.onDestroy();
-		Log.i(LOG_TAG, "onDestroy");
+		Log.i(TAG, "onDestroy");
 		
 		if(serviceState!=STATE_DISCONNECTED)
 		{
-	        Log.i(LOG_TAG, "CMD_CLEAR");
+	        Log.i(TAG, "CMD_CLEAR");
     		sendCmdToSpiderService(CMD_CLEAR);
     		unboundSpiderService();
 		}
@@ -283,14 +283,14 @@ public class SpiderActivity extends Activity
 		{
 			if (resultCode == RESULT_CANCELED)
 			{
-				Log.i(LOG_TAG, "REQUST_SRC_URL cancelled!");
+				Log.i(TAG, "REQUST_SRC_URL cancelled!");
 			}
 			else
 			{
 				if (data != null)
 				{
 					srcUrl = data.getAction();
-					Log.i(LOG_TAG, "REQUST_SRC_URL " + srcUrl);
+					Log.i(TAG, "REQUST_SRC_URL " + srcUrl);
 					
 					if(serviceState==STATE_CONNECTED||serviceState==STATE_WAIT_CONNECT)
 					{
@@ -400,7 +400,7 @@ public class SpiderActivity extends Activity
 			}
 			
 			serviceState=STATE_CONNECTED;
-			Log.i(LOG_TAG, "onServiceConnected");
+			Log.i(TAG, "onServiceConnected");
 		}
 		
 		public void onServiceDisconnected(ComponentName className)
@@ -409,7 +409,7 @@ public class SpiderActivity extends Activity
 			// unexpectedly disconnected -- that is, its process crashed.
 			mService = null;
 			
-			Log.i(LOG_TAG, "onServiceDisconnected");
+			Log.i(TAG, "onServiceDisconnected");
 			
 			if(serviceState==STATE_WAIT_DISCONNECT)
 			{
@@ -449,14 +449,14 @@ public class SpiderActivity extends Activity
 			
 			// Detach our existing connection.
 			unbindService(mConnection);
-			Log.i(LOG_TAG, "unbound SpiderService");
+			Log.i(TAG, "unbound SpiderService");
 		}
 		
 	}
 	
 	private Intent sendUrlToSpiderService(String url)
 	{
-		Log.i(LOG_TAG, "startAndBindSpiderService src:" + url);
+		Log.i(TAG, "startAndBindSpiderService src:" + url);
 		
 		Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
 		spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
@@ -506,7 +506,7 @@ public class SpiderActivity extends Activity
 	{
 		super.onConfigurationChanged(newConfig);
 		
-		Log.i(LOG_TAG,
+		Log.i(TAG,
 		        (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) ? "Landscape"
 		                : "Portrait");
 	}
@@ -515,7 +515,7 @@ public class SpiderActivity extends Activity
 	
 	public boolean onKeyDown(int keyCode, KeyEvent event)
 	{
-		Log.i(LOG_TAG, "onKeyDown " + keyCode);
+		Log.i(TAG, "onKeyDown " + keyCode);
 		
 		if (keyCode == KeyEvent.KEYCODE_BACK)
 		{

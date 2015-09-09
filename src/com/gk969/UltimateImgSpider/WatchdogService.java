@@ -32,7 +32,7 @@ import android.widget.Toast;
 
 public class WatchdogService extends Service
 {
-	private final String LOG_TAG = "WatchdogService";
+	private final String TAG = "WatchdogService";
 	
 	public native int jniGetAshmem(String name, int size);
 	
@@ -47,13 +47,13 @@ public class WatchdogService extends Service
 	@Override
 	public void onCreate()
 	{
-		Log.i(LOG_TAG, "onCreate");
+		Log.i(TAG, "onCreate");
 	}
 	
 	@Override
 	public void onDestroy()
 	{
-		Log.i(LOG_TAG, "onDestroy");
+		Log.i(TAG, "onDestroy");
 		
 		System.exit(0);
 	}
@@ -61,7 +61,7 @@ public class WatchdogService extends Service
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
-		Log.i(LOG_TAG, "onStartCommand "+startId);
+		Log.i(TAG, "onStartCommand "+startId);
 		
 		return START_STICKY;
 	}
@@ -70,7 +70,7 @@ public class WatchdogService extends Service
 	@Override
 	public IBinder onBind(Intent intent)
 	{
-		Log.i(LOG_TAG, "onBind:"+intent.getAction());
+		Log.i(TAG, "onBind:"+intent.getAction());
 		
 		if (IRemoteWatchdogService.class.getName().equals(intent.getAction()))
 		{

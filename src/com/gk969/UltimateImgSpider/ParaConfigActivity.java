@@ -24,7 +24,7 @@ import android.widget.Toast;
 public class ParaConfigActivity extends Activity
 {
     private String      curUrl;
-    private String      LOG_TAG      = "ParaConfigActivity";
+    private String      TAG      = "ParaConfigActivity";
 
     private WebView     wvParaConfig;
     private WebSettings wsParaConfig;
@@ -39,13 +39,13 @@ public class ParaConfigActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_para_config);
         
-        Log.i(LOG_TAG, "onCreate");
+        Log.i(TAG, "onCreate");
         
         curUrl = getIntent().getExtras().getString(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
 
         if (curUrl != null)
         {
-            Log.i(LOG_TAG, "curUrl:" + curUrl);
+            Log.i(TAG, "curUrl:" + curUrl);
             webViewInit();
         }
         
@@ -56,12 +56,12 @@ public class ParaConfigActivity extends Activity
     protected void onDestroy()
     {
         super.onDestroy();
-        Log.i(LOG_TAG, "onDestroy");
+        Log.i(TAG, "onDestroy");
 
         if(wvParaConfig!=null)
         {
 
-            Log.i(LOG_TAG, "clearCache");
+            Log.i(TAG, "clearCache");
 	        wvParaConfig.clearCache(true);
 	        wvParaConfig.destroy();
         }
@@ -78,7 +78,7 @@ public class ParaConfigActivity extends Activity
         {
             public boolean shouldOverrideUrlLoading(WebView view, String URL)
             {
-                Log.i(LOG_TAG, "UrlLoading " + URL);
+                Log.i(TAG, "UrlLoading " + URL);
                 return false;
             }
         });
@@ -106,7 +106,7 @@ public class ParaConfigActivity extends Activity
     @JavascriptInterface
     public void setHomeUrl(String URL)
     {
-        Log.i(LOG_TAG, "setHomeUrl");
+        Log.i(TAG, "setHomeUrl");
 
         if (!URL.isEmpty())
         {
@@ -134,7 +134,7 @@ public class ParaConfigActivity extends Activity
     @JavascriptInterface
     public void setUserAgent(String ua)
     {
-        Log.i(LOG_TAG, "setHomeUrl");
+        Log.i(TAG, "setHomeUrl");
 
         if (!ua.isEmpty())
         {
@@ -153,7 +153,7 @@ public class ParaConfigActivity extends Activity
     @JavascriptInterface
     public void setSearchEngine(int seIndex)
     {
-        Log.i(LOG_TAG, "setHomeUrl");
+        Log.i(TAG, "setHomeUrl");
         
         if(ParaConfig.setSearchEngine(this, seIndex))
         {
@@ -181,11 +181,11 @@ public class ParaConfigActivity extends Activity
 
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        Log.i(LOG_TAG, "onKeyDown " + keyCode);
+        Log.i(TAG, "onKeyDown " + keyCode);
 
         if (keyCode == KeyEvent.KEYCODE_BACK)
         {
-            Log.i(LOG_TAG, "goBack ");
+            Log.i(TAG, "goBack ");
             wvParaConfig.loadUrl("javascript:goback()");
             return true;
         }
@@ -199,11 +199,11 @@ public class ParaConfigActivity extends Activity
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
-            Log.i(LOG_TAG, "Landscape");
+            Log.i(TAG, "Landscape");
         }
         else
         {
-            Log.i(LOG_TAG, "Portrait");
+            Log.i(TAG, "Portrait");
         }
     }
 }

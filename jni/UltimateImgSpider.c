@@ -914,9 +914,9 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 	urlTree *curTree =
 			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
 
-	char *nextUrl="";
+	char *nextUrl=NULL;
 
-	//LOGI("jPrevUrl:%X", (u32)jPrevUrl);
+	LOGI("jPrevUrl:%X", (u32)jPrevUrl);
 
 	urlNode *nextNode=NULL;
 	urlNode *curNode = nodeAddrRelativeToAbs(&(curTree->curNode));
@@ -930,7 +930,6 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		int urlSim = -1;
 		const char *prevUrl = (*env)->GetStringUTFChars(env, jPrevUrl, NULL);
 		u16 prevUrlLen=strlen(prevUrl);
-		urlNode *node;
 
 		//LOGI("prevUrl:%s curTree->len:%d", prevUrl, curTree->len);
 		//当前url已经被下载，从未下载url链表中删除
@@ -961,7 +960,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 
 		if(jType == URL_TYPE_PAGE)
 		{
-			node=curNode;
+			urlNode *node=curNode;
 			for (i = 0; i < SEARCH_STEP_MAX; i++)
 			{
 				//LOGI("next %d:%s", i, node->url);
@@ -1004,7 +1003,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		}
 		else
 		{
-			nextNode=nodeAddrRelativeToAbs(&(node->para.nextNodeAddr));
+			nextNode=nodeAddrRelativeToAbs(&(curNode->para.nextNodeAddr));
 		}
 		(*env)->ReleaseStringUTFChars(env, jPrevUrl, prevUrl);
 	}
@@ -1021,7 +1020,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		nodeAddrAbsToRelative(nextNode, &(curTree->curNode));
 	}
 
-	//LOGI("nextUrl:%s", nextUrl);
+	LOGI("nextUrl:%s", nextUrl);
 	return (*env)->NewStringUTF(env, nextUrl);
 }
 
