@@ -521,9 +521,9 @@ public class SpiderActivity extends Activity
 		{
 			if (SystemClock.uptimeMillis() - exitTim > 2000)
 			{
-				Toast.makeText(this, getString(R.string.keyBackExitConfirm)+getString(R.string.app_name)+"。",
+				Toast.makeText(this, getString(R.string.keyBackExitConfirm)+getString(R.string.app_name),
 				        Toast.LENGTH_SHORT).show();
-				;
+				
 				exitTim = SystemClock.uptimeMillis();
 				return true;
 			}

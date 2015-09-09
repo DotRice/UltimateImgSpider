@@ -41,16 +41,15 @@ public class SpiderService extends Service
 	private final String LOG_TAG = "SpiderService";
 	final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
 	
-	private int cmdVal=SpiderActivity.CMD_NOTHING;
-	
-	private boolean isPaused;
-	
 	private final static int STAT_IDLE=0;
 	private final static int STAT_DOWNLOAD_PAGE=1;
 	private final static int STAT_SCAN_PAGE=2;
 	private final static int STAT_DOWNLOAD_IMG=3;
 	private final static int STAT_PAUSE=4;
 	private final static int STAT_COMPLETE=5;
+    private final static int STAT_STOP=6;
+    private final static int STAT_PRE_PAUSE=7;
+    private final static int STAT_PRE_STOP=8;
 	private int state=STAT_IDLE;
 	
 	/** The primary interface we will be calling on the service. */
@@ -143,7 +142,7 @@ public class SpiderService extends Service
 				}
 			}
 			
-			cmdVal=intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY, SpiderActivity.CMD_NOTHING);
+			int cmdVal=intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY, SpiderActivity.CMD_NOTHING);
 			Log.i(LOG_TAG, "onStartCommand "+cmdVal);
 	
 			switch(cmdVal)
@@ -166,12 +165,20 @@ public class SpiderService extends Service
 					}
 					else if(state==STAT_DOWNLOAD_PAGE)
 					{
-						if(urlLoadTimer.get()!=0)
+					    state=STAT_PRE_STOP;
+					    if(urlLoadTimer.get()!=0)
 						{
 							urlLoadTimer.set(1);
 						}
 					}
 					break;
+				case SpiderActivity.CMD_PAUSE:
+                    state=STAT_PRE_PAUSE;
+                    if(urlLoadTimer.get()!=0)
+                    {
+                        urlLoadTimer.set(1);
+                    }
+                    break;
 				default:
 					break;
 			}
@@ -475,7 +482,6 @@ public class SpiderService extends Service
 	
 	private void findNextUrlToLoad()
 	{
-		isPaused=false;
 		searchTime=System.currentTimeMillis();
 		curPageUrl = jniFindNextUrlToLoad(curPageUrl, URL_TYPE_PAGE, pageProcParam);
 		searchTime=System.currentTimeMillis()-searchTime;
@@ -494,25 +500,46 @@ public class SpiderService extends Service
 		}
 	}
 	
-	private downloadFileViaHTTP(String url, File file)
+	private void downloadCurImg()
 	{
-		
+	    
 	}
 	
-	private void downloadImgAfterScan()
+	private void downloadNewImgAfterScan()
 	{
-		while(true)
-		{
-			curImgUrl = jniFindNextUrlToLoad(curImgUrl, URL_TYPE_IMG, imgProcParam);
-			if(curImgUrl.isEmpty())
-			{
-				break;
-			}
-			else
-			{
-				
-			}
-		}
+		new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                while(true)
+                {
+                    if(state==STAT_PRE_PAUSE)
+                    {
+                        state=STAT_PAUSE;
+                        break;
+                    }
+                    else if(state==STAT_PRE_STOP)
+                    {
+                        state=STAT_STOP;
+                        stopSelf();
+                        break;
+                    }
+                    else
+                    {
+                        curImgUrl = jniFindNextUrlToLoad(curImgUrl, URL_TYPE_IMG, imgProcParam);
+                        if(curImgUrl.isEmpty())
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            downloadCurImg();
+                        }
+                    }
+                }
+            }
+        }).start();
 	}
 	
 	private void spiderInit()
@@ -527,14 +554,14 @@ public class SpiderService extends Service
 			@Override
 			public void run()
 			{
-				if(cmdVal==SpiderActivity.CMD_PAUSE)
+				if(state==STAT_PRE_PAUSE)
 				{
-					isPaused=true;
-					cmdVal=SpiderActivity.CMD_NOTHING;
+				    state=STAT_PAUSE;
 				}
-				else if(cmdVal==SpiderActivity.CMD_STOP)
+				else if(state==STAT_PRE_STOP)
 				{
-					stopSelf();
+					state=STAT_STOP;
+				    stopSelf();
 				}
 				else
 				{
