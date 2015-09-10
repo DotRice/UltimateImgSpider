@@ -12,10 +12,10 @@
 
 
 /*
- * Ê¹ÓÃ¹²ÏíÄÚ´æ´æ´¢urlList£¬ÊµÏÖÖØÆôÏÂÔØ·þÎñ½ø³ÌºóÄÜ»Ö¸´¹¤×÷ÏÖ³¡¡£
- * SpiderÐèÒªÐÂÉêÇëÒ»¶ÎÄÚ´æÊ±£¬Ïò¿´ÃÅ¹·½ø³Ì·¢³öÃüÁî£¬²¢Ìá¹©¹²ÏíÄÚ´æ¶ÎÃû³ÆºÍ´óÐ¡¡£
- * ¿´ÃÅ¹·½ø³Ì´´½¨¹²ÏíÄÚ´æ£¬²¢½«ÆäÓ³Éäµ½×Ô¼ºµÄÄÚ´æ¿Õ¼ä£¬È»ºóÏòSpider½ø³Ì·µ»Ø¹²ÏíÄÚ´æµÄÎÄ¼þÃèÊö·û¡£
- * Spider½ø³ÌÓÃÕâ¸öÎÄ¼þÃèÊö·ûÓ³Éä´Ë¶Î¹²ÏíÄÚ´æµ½×Ô¼ºµÄÄÚ´æ¿Õ¼ä¡£
+ * ä½¿ç”¨å…±äº«å†…å­˜å­˜å‚¨urlListï¼Œå®žçŽ°é‡å¯ä¸‹è½½æœåŠ¡è¿›ç¨‹åŽèƒ½æ¢å¤å·¥ä½œçŽ°åœºã€‚
+ * Spideréœ€è¦æ–°ç”³è¯·ä¸€æ®µå†…å­˜æ—¶ï¼Œå‘çœ‹é—¨ç‹—è¿›ç¨‹å‘å‡ºå‘½ä»¤ï¼Œå¹¶æä¾›å…±äº«å†…å­˜æ®µåç§°å’Œå¤§å°ã€‚
+ * çœ‹é—¨ç‹—è¿›ç¨‹åˆ›å»ºå…±äº«å†…å­˜ï¼Œå¹¶å°†å…¶æ˜ å°„åˆ°è‡ªå·±çš„å†…å­˜ç©ºé—´ï¼Œç„¶åŽå‘Spiderè¿›ç¨‹è¿”å›žå…±äº«å†…å­˜çš„æ–‡ä»¶æè¿°ç¬¦ã€‚
+ * Spiderè¿›ç¨‹ç”¨è¿™ä¸ªæ–‡ä»¶æè¿°ç¬¦æ˜ å°„æ­¤æ®µå…±äº«å†…å­˜åˆ°è‡ªå·±çš„å†…å­˜ç©ºé—´ã€‚
  */
 
 #define ASHM_NAME_SIZE	32
@@ -839,7 +839,7 @@ enum
     HEIGHT
 };
 
-//Ìí¼ÓURL ·µ»ØÁÐ±í´óÐ¡
+//é”Ÿæ–¤æ‹·é”ŸçµŒRL é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿå«æ†‹æ‹·é”Ÿå«?
 jint Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 		jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jintArray jParam)
 {
@@ -916,7 +916,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 
 	char *nextUrl=NULL;
 
-	LOGI("jPrevUrl:%X", (u32)jPrevUrl);
+	//LOGI("jPrevUrl:%X", (u32)jPrevUrl);
 
 	urlNode *nextNode=NULL;
 	urlNode *curNode = nodeAddrRelativeToAbs(&(curTree->curNode));
@@ -932,7 +932,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		u16 prevUrlLen=strlen(prevUrl);
 
 		//LOGI("prevUrl:%s curTree->len:%d", prevUrl, curTree->len);
-		//µ±Ç°urlÒÑ¾­±»ÏÂÔØ£¬´ÓÎ´ÏÂÔØurlÁ´±íÖÐÉ¾³ý
+		//é”Ÿæ–¤æ‹·å‰urlé”Ÿçª–æ’…æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæˆªï½æ‹·é”Ÿæ–¤æ‹·æœªé”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·urlé”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·åˆ é”Ÿæ–¤æ‹·
 		if(strcmp(prevUrl, curNode->url)==0)
 		{
 			curTree->processed++;
@@ -1020,7 +1020,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		nodeAddrAbsToRelative(nextNode, &(curTree->curNode));
 	}
 
-	LOGI("nextUrl:%s", nextUrl);
+	//LOGI("nextUrl:%s", nextUrl);
 	return (*env)->NewStringUTF(env, nextUrl);
 }
 

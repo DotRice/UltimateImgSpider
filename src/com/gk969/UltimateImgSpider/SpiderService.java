@@ -1,5 +1,6 @@
 package com.gk969.UltimateImgSpider;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
@@ -52,7 +54,10 @@ public class SpiderService extends Service
 	final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
 	
 	private final static int IMG_FILE_SIZE_MAX=10*1024*1024;
-    private final static int IMG_FILE_CACHE_SIZE=5*1024*1024;
+    private final static int IMG_VALID_FILE_MIN=500*1024;
+    private final static int IMG_VALID_WIDTH_MIN=200;
+    private final static int IMG_VALID_HEIGHT_MIN=200;
+    
 	
 	private final static int STAT_IDLE=0;
 	private final static int STAT_DOWNLOAD_PAGE=1;
@@ -67,15 +72,6 @@ public class SpiderService extends Service
 	
 	private String curSiteDirPath;
 	private String userAgent;
-	
-	private class ImgFileCache
-	{
-	    byte[] fileBuf;
-	    String url;
-	}
-	
-	private ArrayList<ImgFileCache> imgFileCacheList= new ArrayList<ImgFileCache>();
-	private int FileCacheLength=0;
 	
 	/** The primary interface we will be calling on the service. */
 	IRemoteWatchdogService watchdogService = null;
@@ -336,8 +332,7 @@ public class SpiderService extends Service
 	 * 下载并将源URL存入列表，以下载序号作为文件名，如果此图片存在alt则将alt加下载序号作为文件名。
 	 * 
 	 * 图片下载与显示：图片首先被下载至内存，然后判断图片尺寸，长或宽小于200的视为无效图片直接删除。
-	 * 有效图片存储位置为外部存储器，每次任务开始或者恢复时的前10张图片下载一张存一张。之后的先用内存缓存，
-	 * 缓存图片总大小超过5MB后一起写入外部存储器。
+	 * 
 	 */
 	
 	private final static String SRCURL_DEFAULT_VALUE="about:blank";
@@ -547,12 +542,21 @@ public class SpiderService extends Service
 		}
 	}
 	
-	private File getCurImgDownloadFile()
+	private File getImgDownloadFile(String imgUrl)
 	{
-	    String[] urlSplit=curImgUrl.split("\\.");
-        String imgFileExt=urlSplit[urlSplit.length-1];
+	    String[] urlSplit=imgUrl.split("/");
+		String imgFileRawName=urlSplit[urlSplit.length-1];
+		
+		int extPos=imgFileRawName.lastIndexOf("\\.");
+		if(extPos==-1)
+		{
+		    return null;
+		}
+		String imgFileName=imgFileRawName.substring(0, extPos);
+		
+        String imgFileExt=imgFileRawName.substring(extPos+1, imgFileRawName.length()-1);
         
-        File file=new File(curSiteDirPath+"/"+imgProcParam[PROCESSED]+
+        File file=new File(curSiteDirPath+"/"+imgFileName+"-"+imgProcParam[PROCESSED]+
                 "."+imgFileExt);
         int i=0;
         while(file.exists())
@@ -563,11 +567,6 @@ public class SpiderService extends Service
         }
         
         return file;
-	}
-	
-	private void storeAllImgFileCache()
-	{
-	    
 	}
 	
 	private void downloadCurImg()
@@ -592,25 +591,38 @@ public class SpiderService extends Service
                     int len=urlConn.getContentLength();
                     if(len<IMG_FILE_SIZE_MAX)
                     {
-                        if(FileCacheLength+len>IMG_FILE_CACHE_SIZE)
+						InputStream input=urlConn.getInputStream();
+						
+                        if(len>IMG_VALID_FILE_MIN)
                         {
-                            
-                            File file=getCurImgDownloadFile();
-                            
-                            InputStream input=urlConn.getInputStream();
-                            output=new FileOutputStream(file);
-                            byte[] buffer=new byte[4*1024];
-                            while((len=input.read(buffer))!=-1){  
-                                output.write(buffer, 0, len);  
+                            output=new FileOutputStream(getImgDownloadFile(curImgUrl));
+                            byte[] buf=new byte[4*1024];
+                            while((len=input.read(buf))!=-1){  
+                                output.write(buf, 0, len);  
                             }
                             output.flush();
-                            
-                            storeAllImgFileCache();
                         }
                         else
                         {
-                           
+                            BitmapFactory.Options opts = new BitmapFactory.Options();
+                            opts.inJustDecodeBounds = true;
+                            BitmapFactory.decodeStream(input, null, opts);
+                            
+                            Log.i(TAG, opts.outWidth+"*"+opts.outHeight);
+                            
+                            if(opts.outHeight>IMG_VALID_HEIGHT_MIN && opts.outWidth>IMG_VALID_WIDTH_MIN)
+                            {
+    						    byte[] buf=new byte[len];
+    						    
+    						    if(input.read(buf)!=-1)
+    						    {
+        	                        output=new FileOutputStream(getImgDownloadFile(curImgUrl));
+        				            output.write(buf, 0, len);
+        				            output.flush();
+    						    }
+                            }
                         }
+                        
                     }
                 }
             }
