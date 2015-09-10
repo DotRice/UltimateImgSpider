@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,6 +67,15 @@ public class SpiderService extends Service
 	
 	private String curSiteDirPath;
 	private String userAgent;
+	
+	private class ImgFileCache
+	{
+	    byte[] fileBuf;
+	    String url;
+	}
+	
+	private ArrayList<ImgFileCache> imgFileCacheList= new ArrayList<ImgFileCache>();
+	private int FileCacheLength=0;
 	
 	/** The primary interface we will be calling on the service. */
 	IRemoteWatchdogService watchdogService = null;
@@ -537,6 +547,29 @@ public class SpiderService extends Service
 		}
 	}
 	
+	private File getCurImgDownloadFile()
+	{
+	    String[] urlSplit=curImgUrl.split("\\.");
+        String imgFileExt=urlSplit[urlSplit.length-1];
+        
+        File file=new File(curSiteDirPath+"/"+imgProcParam[PROCESSED]+
+                "."+imgFileExt);
+        int i=0;
+        while(file.exists())
+        {
+            file=new File(curSiteDirPath+"/"+imgProcParam[PROCESSED]+
+                    "("+i+")"+"."+imgFileExt);
+            i++;
+        }
+        
+        return file;
+	}
+	
+	private void storeAllImgFileCache()
+	{
+	    
+	}
+	
 	private void downloadCurImg()
 	{
         Log.i(TAG, "downloadCurImg "+curImgUrl);
@@ -556,25 +589,29 @@ public class SpiderService extends Service
                 
                 if(urlConn.getResponseCode()==200)
                 {
-                    String[] urlSplit=curImgUrl.split("\\.");
-                    String imgFileExt=urlSplit[urlSplit.length-1];
-                    File file=new File(curSiteDirPath+"/"+imgProcParam[PROCESSED]+
-                            "."+imgFileExt);
-                    int i=0;
-                    while(file.exists())
+                    int len=urlConn.getContentLength();
+                    if(len<IMG_FILE_SIZE_MAX)
                     {
-                        file=new File(curSiteDirPath+"/"+imgProcParam[PROCESSED]+
-                                "("+i+")"+"."+imgFileExt);
-                        i++;
+                        if(FileCacheLength+len>IMG_FILE_CACHE_SIZE)
+                        {
+                            
+                            File file=getCurImgDownloadFile();
+                            
+                            InputStream input=urlConn.getInputStream();
+                            output=new FileOutputStream(file);
+                            byte[] buffer=new byte[4*1024];
+                            while((len=input.read(buffer))!=-1){  
+                                output.write(buffer, 0, len);  
+                            }
+                            output.flush();
+                            
+                            storeAllImgFileCache();
+                        }
+                        else
+                        {
+                           
+                        }
                     }
-                    InputStream input=urlConn.getInputStream();
-                    output=new FileOutputStream(file);
-                    byte[] buffer=new byte[4*1024];
-                    int len;
-                    while((len=input.read(buffer))!=-1){  
-                        output.write(buffer, 0, len);  
-                    }
-                    output.flush();
                 }
             }
             finally
