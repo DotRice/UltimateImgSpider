@@ -34,6 +34,48 @@ public class Utils
         return i;
     }
     
+    public static class ReadWaitLock
+    {
+        private boolean isLocked = false;
+        
+        public synchronized void waitIfLocked()
+        {
+            while (isLocked)
+            {
+                try
+                {
+                    wait();
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        public synchronized void lock()
+        {
+            while (isLocked)
+            {
+                try
+                {
+                    wait();
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            isLocked = true;
+        }
+        
+        public synchronized void unlock()
+        {
+            isLocked = false;
+            notify();
+        }
+    }
+    
     public static File getDirInExtSto(String path)
     {
         File dir = null;
@@ -41,12 +83,12 @@ public class Utils
         if (Environment.getExternalStorageState().equals(
                 android.os.Environment.MEDIA_MOUNTED))
         {
-            if(!path.startsWith("/"))
+            if (!path.startsWith("/"))
             {
-                path="/"+path;
+                path = "/" + path;
             }
             
-            dir = new File(Environment.getExternalStorageDirectory()+path);
+            dir = new File(Environment.getExternalStorageDirectory() + path);
             if (!dir.exists())
             {
                 Log.i(TAG, "Dir:" + dir.toString() + " Not Exist!");
@@ -69,7 +111,6 @@ public class Utils
         return dir;
     }
     
-
     public static String getSDKVersion()
     {
         return android.os.Build.VERSION.RELEASE;

@@ -247,15 +247,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env
 
 
 
-
-
-
-
-
-
-
-
-
+#define DOWNLOADER_NUM	10
 
 
 #define MAX_RAM_TOTAL_POOL	1024*1024*1024
@@ -285,7 +277,9 @@ typedef struct
 	u8 color;
 	u16 len;
 	
-	urlNodeRelativeAddr containerPage;
+	
+	
+	//urlNodeRelativeAddr containerPage;
 	
 	urlNodeRelativeAddr nextNodeAddr;
 	urlNodeRelativeAddr prevNodeAddr;
@@ -317,6 +311,8 @@ typedef struct
 
 typedef struct
 {
+	urlNodeRelativeAddr downloadingImg[DOWNLOADER_NUM];
+	
 	urlTree pageUrlTree;
 	urlTree imgUrlTree;
 	u32 urlPoolNum;
@@ -789,7 +785,7 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 
 		nodeAddrAbsToRelative(parent, &(node->para.parent));
 
-		node->para.containerPage=tree->curNode;
+		//node->para.containerPage=tree->curNode;
 		
 		node->para.nextNodeAddr.poolPtr=POOL_PTR_INVALID;
 		node->para.prevNodeAddr=tree->tail;
@@ -839,8 +835,8 @@ enum
     HEIGHT
 };
 
-//锟斤拷锟経RL 锟斤拷锟斤拷锟叫憋拷锟叫?
-jint Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
+
+void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 		jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jintArray jParam)
 {
 	u8 UrlAlreadyInTree=false;
@@ -875,7 +871,6 @@ jint Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 
 	(*env)->ReleaseStringUTFChars(env, jUrl, url);
 	(*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
-	return curTree->len;
 }
 
 
@@ -932,7 +927,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		u16 prevUrlLen=strlen(prevUrl);
 
 		//LOGI("prevUrl:%s curTree->len:%d", prevUrl, curTree->len);
-		//锟斤拷前url锟窖撅拷锟斤拷锟斤拷锟截ｏ拷锟斤拷未锟斤拷锟斤拷url锟斤拷锟斤拷锟斤拷删锟斤拷
+		//当前url已经被下载，从未下载url链表中删除
 		if(strcmp(prevUrl, curNode->url)==0)
 		{
 			curTree->processed++;
