@@ -291,7 +291,8 @@ public class SpiderActivity extends Activity
 				{
 					srcUrl = data.getAction();
 					Log.i(TAG, "REQUST_SRC_URL " + srcUrl);
-					
+
+                    btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
 					if(serviceState==STATE_CONNECTED||serviceState==STATE_WAIT_CONNECT)
 					{
 						sendCmdToSpiderService(CMD_CLEAR);
@@ -300,7 +301,6 @@ public class SpiderActivity extends Activity
 					else if(serviceState==STATE_DISCONNECTED||serviceState==STATE_WAIT_DISCONNECT)
 					{
 						startAndBindSpiderService(srcUrl);
-						btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
 						serviceState=STATE_WAIT_CONNECT;
 					}
 				}

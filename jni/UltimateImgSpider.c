@@ -853,7 +853,8 @@ enum
 {
 	TOTAL=0,
     PROCESSED,
-    HEIGHT
+    HEIGHT,
+    PAYLOAD
 };
 
 
@@ -959,7 +960,8 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 	
 	int i;
 
-	LOGI("jniFindNextUrlToLoad type:%d", jType);
+	int *param=(*env)->GetIntArrayElements(env, jParam, NULL);
+	//LOGI("jniFindNextUrlToLoad type:%d", jType);
 	
 	urlNode *curNode=NULL;
 	urlNode *nextNode=NULL;
@@ -1043,17 +1045,17 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 			memcpy((u8*)&md5_64, md5+4, 8);
 			(*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
 			
-			LOGI("md5:%08X", (u32)(md5_64>>32));
+			//LOGI("md5:%08X", (u32)(md5_64>>32));
 
 			curNode=findUrlNodeByMd5(curTree, md5_64);
 
-			LOGI("prev url:%s", curNode->url);
+			//LOGI("prev url:%s", curNode->url);
 			deleteUrlNodeFromList(curTree, curNode);
 			
 			downloadingImgNum--;
 		}
 		
-		LOGI("downloadingImgNum:%d", downloadingImgNum);
+		//LOGI("downloadingImgNum:%d", downloadingImgNum);
 
 		nextNode=nodeAddrRelativeToAbs(&(curTree->head));
 		for(i=0; i<10; i++)
@@ -1062,7 +1064,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 			{
 				break;
 			}
-			LOGI("img%d:%s", i, nextNode->url);
+			//LOGI("img%d:%s", i, nextNode->url);
 
 			nextNode=nodeAddrRelativeToAbs(&(nextNode->para.nextNodeAddr));
 		}
@@ -1087,15 +1089,16 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 
 			sprintf(nextUrl, "%s %s", nextNode->url, nodeAddrRelativeToAbs(&(nextNode->para.containerPage))->url);
 		}
+		param[PAYLOAD]=downloadingImgNum;
 	}
 
 
-	int *param=(*env)->GetIntArrayElements(env, jParam, NULL);
 	param[PROCESSED]=curTree->processed;
+
 	(*env)->ReleaseByteArrayElements(env, jParam, param, NULL);
 	
 
-	LOGI("nextUrl:%s", nextUrl);
+	//LOGI("nextUrl:%s", nextUrl);
 	return (*env)->NewStringUTF(env, nextUrl);
 }
 

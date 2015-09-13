@@ -2,6 +2,7 @@ package com.gk969.UltimateImgSpider;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -341,9 +342,10 @@ public class SpiderService extends Service
 	
 	private String curPageUrl;
 	
-	private final static int TOTAL=0;
-	private final static int PROCESSED=1;
-	private final static int HEIGHT=2;
+	private final static int PARA_TOTAL=0;
+	private final static int PARA_PROCESSED=1;
+	private final static int PARA_HEIGHT=2;
+	private final static int PARA_PAYLOAD=3;
 	
 	private int[] pageProcParam;
 	private int[] imgProcParam;
@@ -377,7 +379,7 @@ public class SpiderService extends Service
 	
 	private Utils.ReadWaitLock pageProcessLock=new Utils.ReadWaitLock();
 	
-	private static final int IMG_DOWNLOADER_NUM=5;
+	private static final int IMG_DOWNLOADER_NUM=10;
 	
 	static
 	{
@@ -448,15 +450,7 @@ public class SpiderService extends Service
 	                imgUrl=urls[0];
 	                containerUrl=urls[1];
 	                
-	                try
-                    {
-                        sleep(1000);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
-	                //downloadImg(imgUrl);
+	                downloadImg(imgUrl);
 
                     spiderHandler.post(new Runnable()
                     {
@@ -469,6 +463,8 @@ public class SpiderService extends Service
 	            }
 	            else
 	            {
+	                imgUrl=null;
+	                
 	                pageProcessLock.lock();
 	                spiderHandler.post(new Runnable()
 	                {
@@ -494,8 +490,9 @@ public class SpiderService extends Service
 		
 		Runtime rt = Runtime.getRuntime();
 		log = log+"VM:"+(rt.totalMemory() >> 20) + "M Native:"
-		        + (Debug.getNativeHeapSize() >> 20) + "M pic:" + imgProcParam[PROCESSED] + "/" + imgProcParam[TOTAL] + "|" + imgProcParam[HEIGHT]
-		        + " page:" + pageProcParam[PROCESSED] + "/" + pageProcParam[TOTAL] + "|" + pageProcParam[HEIGHT] + " loadTime:" + loadTime + " scanTime:"
+		        + (Debug.getNativeHeapSize() >> 20) + "M pic:" + imgProcParam[PARA_PAYLOAD] + "/" 
+		        + imgProcParam[PARA_PROCESSED] + "/" + imgProcParam[PARA_TOTAL] + "|" + imgProcParam[PARA_HEIGHT]
+		        + " page:" + pageProcParam[PARA_PROCESSED] + "/" + pageProcParam[PARA_TOTAL] + "|" + pageProcParam[PARA_HEIGHT] + " loadTime:" + loadTime + " scanTime:"
 		        + scanTime + " searchTime:" + searchTime + "\r\n" + curPageUrl;
 		
 		
@@ -644,21 +641,23 @@ public class SpiderService extends Service
 	    String[] urlSplit=imgUrl.split("/");
 		String imgFileRawName=urlSplit[urlSplit.length-1];
 		
-		int extPos=imgFileRawName.lastIndexOf("\\.");
+		Log.i(TAG, "imgFileRawName:"+imgFileRawName);
+		int extPos=imgFileRawName.lastIndexOf(".");
 		if(extPos==-1)
 		{
 		    return null;
 		}
 		String imgFileName=imgFileRawName.substring(0, extPos);
 		
-        String imgFileExt=imgFileRawName.substring(extPos+1, imgFileRawName.length()-1);
+        String imgFileExt=imgFileRawName.substring(extPos+1, imgFileRawName.length());
         
-        File file=new File(curSiteDirPath+"/"+imgFileName+"-"+imgProcParam[PROCESSED]+
+        File file=new File(curSiteDirPath+"/"+imgFileName+"-"+imgProcParam[PARA_PROCESSED]+
                 "."+imgFileExt);
+        Log.i(TAG, file.getPath());
         int i=0;
         while(file.exists())
         {
-            file=new File(curSiteDirPath+"/"+imgProcParam[PROCESSED]+
+            file=new File(curSiteDirPath+"/"+imgProcParam[PARA_PROCESSED]+
                     "("+i+")"+"."+imgFileExt);
             i++;
         }
@@ -677,8 +676,8 @@ public class SpiderService extends Service
             OutputStream output=null;
             try
             {
-                urlConn.setConnectTimeout(10000);
-                urlConn.setReadTimeout(30000);
+                urlConn.setConnectTimeout(30000);
+                urlConn.setReadTimeout(60000);
                 urlConn.setDoInput(true);
                 urlConn.setRequestProperty("Referer", curPageUrl);
                 urlConn.setRequestProperty("User-Agent", userAgent);
@@ -689,35 +688,25 @@ public class SpiderService extends Service
                     if(len<IMG_FILE_SIZE_MAX)
                     {
 						InputStream input=urlConn.getInputStream();
-						
-                        if(len>IMG_VALID_FILE_MIN)
-                        {
-                            File file=getImgDownloadFile(imgUrl);
-                            output=new FileOutputStream(file);
-                            byte[] buf=new byte[4*1024];
-                            while((len=input.read(buf))!=-1){
-                                output.write(buf, 0, len);
-                            }
-                            output.flush();
+					
+                        File file=getImgDownloadFile(imgUrl);
+                        output=new FileOutputStream(file);
+                        byte[] buf=new byte[4*1024];
+                        while((len=input.read(buf))!=-1){
+                            output.write(buf, 0, len);
                         }
-                        else
+                        output.flush();
+                        if(len<IMG_VALID_FILE_MIN)
                         {
                             BitmapFactory.Options opts = new BitmapFactory.Options();
                             opts.inJustDecodeBounds = true;
-                            BitmapFactory.decodeStream(input, null, opts);
+                            BitmapFactory.decodeStream(new FileInputStream(file), null, opts);
                             
                             Log.i(TAG, opts.outWidth+"*"+opts.outHeight);
                             
-                            if(opts.outHeight>IMG_VALID_HEIGHT_MIN && opts.outWidth>IMG_VALID_WIDTH_MIN)
+                            if(opts.outHeight<IMG_VALID_HEIGHT_MIN || opts.outWidth<IMG_VALID_WIDTH_MIN)
                             {
-    						    byte[] buf=new byte[len];
-    						    
-    						    if(input.read(buf)!=-1)
-    						    {
-        	                        output=new FileOutputStream(getImgDownloadFile(imgUrl));
-        				            output.write(buf, 0, len);
-        				            output.flush();
-    						    }
+                                file.delete();
                             }
                         }
                         
@@ -744,7 +733,7 @@ public class SpiderService extends Service
 		spiderWebViewInit();
 		
 		pageProcParam=new int[3];
-		imgProcParam=new int[3];
+		imgProcParam=new int[4];
 		
 		
 		new timerThread().start();
