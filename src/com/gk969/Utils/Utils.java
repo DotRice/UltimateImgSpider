@@ -72,7 +72,7 @@ public class Utils
         public synchronized void unlock()
         {
             isLocked = false;
-            notify();
+            notifyAll();
         }
     }
     
