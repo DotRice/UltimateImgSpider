@@ -37,6 +37,7 @@
     <string name="clear">清空</string>
     <string name="option">选项</string>
     <string name="prompt">提示</string>
+    <string name="retry">重试</string>
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
     <string name="badExternalStoragePrompt">外部存储空间出错！</string>
     

@@ -55,7 +55,7 @@ public class SpiderService extends Service
 	private final String TAG = "SpiderService";
 	final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
 	
-	private final static int IMG_FILE_SIZE_MAX=10*1024*1024;
+	private final static int IMG_FILE_SIZE_MAX=20*1024*1024;
     private final static int IMG_VALID_FILE_MIN=500*1024;
     private final static int IMG_VALID_WIDTH_MIN=200;
     private final static int IMG_VALID_HEIGHT_MIN=200;
@@ -381,6 +381,8 @@ public class SpiderService extends Service
 	
 	private static final int IMG_DOWNLOADER_NUM=10;
 	
+	private static final int IMG_DOWNLOAD_BLOCK=4096;
+	
 	static
 	{
 		System.loadLibrary("UltimateImgSpider");
@@ -677,7 +679,7 @@ public class SpiderService extends Service
             try
             {
                 urlConn.setConnectTimeout(30000);
-                urlConn.setReadTimeout(60000);
+                urlConn.setReadTimeout(120000);
                 urlConn.setDoInput(true);
                 urlConn.setRequestProperty("Referer", curPageUrl);
                 urlConn.setRequestProperty("User-Agent", userAgent);
@@ -685,31 +687,44 @@ public class SpiderService extends Service
                 if(urlConn.getResponseCode()==200)
                 {
                     int len=urlConn.getContentLength();
+                    Log.i(TAG, "len "+len);
                     if(len<IMG_FILE_SIZE_MAX)
                     {
 						InputStream input=urlConn.getInputStream();
-					
-                        File file=getImgDownloadFile(imgUrl);
-                        output=new FileOutputStream(file);
-                        byte[] buf=new byte[4*1024];
-                        while((len=input.read(buf))!=-1){
-                            output.write(buf, 0, len);
-                        }
-                        output.flush();
-                        if(len<IMG_VALID_FILE_MIN)
+                        
+                        if(len>IMG_VALID_FILE_MIN)
                         {
+                            File file=getImgDownloadFile(imgUrl);
+                            output=new FileOutputStream(file);
+                            byte[] buf=new byte[IMG_DOWNLOAD_BLOCK];
+                            while((len=input.read(buf))!=-1){
+                                output.write(buf, 0, len);
+                            }
+                            output.flush();
+                        }
+                        else
+                        {
+                            byte[] buf=new byte[len*2];
+                            int ofs=0;
+                            while((len=input.read(buf, ofs, IMG_DOWNLOAD_BLOCK))!=-1)
+                            {
+                                ofs+=len;
+                            }
+                            
                             BitmapFactory.Options opts = new BitmapFactory.Options();
                             opts.inJustDecodeBounds = true;
-                            BitmapFactory.decodeStream(new FileInputStream(file), null, opts);
+                            BitmapFactory.decodeByteArray(buf, 0, ofs, opts);
                             
-                            Log.i(TAG, opts.outWidth+"*"+opts.outHeight);
+                            Log.i(TAG, "size:"+ofs+" "+opts.outWidth+"*"+opts.outHeight);
                             
-                            if(opts.outHeight<IMG_VALID_HEIGHT_MIN || opts.outWidth<IMG_VALID_WIDTH_MIN)
+                            if(opts.outHeight>IMG_VALID_HEIGHT_MIN && opts.outWidth>IMG_VALID_WIDTH_MIN)
                             {
-                                file.delete();
+                                File file=getImgDownloadFile(imgUrl);
+                                output=new FileOutputStream(file);
+                                output.write(buf, 0, ofs);
+                                output.flush();
                             }
                         }
-                        
                     }
                 }
             }

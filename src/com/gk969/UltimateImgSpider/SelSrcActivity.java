@@ -163,9 +163,11 @@ public class SelSrcActivity extends Activity
     
     private void browserLoadUrl(String URL)
     {
-        String Protocol = URL.substring(0, 7).toLowerCase();
+        String Protocol = URL.toLowerCase();
         if (Protocol.startsWith("http://") || Protocol.startsWith("https://"))
         {
+            browser.stopLoading();
+            browser.loadUrl("about:blank");
             browser.loadUrl(URL);
             setBrowserTitle(URL);
             btnSelSearchEngine.setImageResource(R.drawable.site);

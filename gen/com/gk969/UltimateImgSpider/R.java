@@ -100,7 +100,7 @@ public final class R {
         public static final int appPackageName=0x7f060000;
         public static final int app_name=0x7f060003;
         public static final int back=0x7f060008;
-        public static final int badExternalStoragePrompt=0x7f060026;
+        public static final int badExternalStoragePrompt=0x7f060027;
         public static final int cancel=0x7f060002;
         public static final int clear=0x7f060022;
         public static final int colorAction=0x7f060017;
@@ -123,6 +123,7 @@ public final class R {
         public static final int pause=0x7f06001d;
         public static final int prompt=0x7f060024;
         public static final int refresh=0x7f06000e;
+        public static final int retry=0x7f060025;
         public static final int search=0x7f060014;
         public static final int searchOrInputURL=0x7f060013;
         public static final int selSearchEngine=0x7f060018;
@@ -134,7 +135,7 @@ public final class R {
         public static final int srcUrlHint=0x7f060010;
         public static final int start=0x7f06001c;
         public static final int stop=0x7f06001f;
-        public static final int uneffectiveNetworkPrompt=0x7f060025;
+        public static final int uneffectiveNetworkPrompt=0x7f060026;
     }
     public static final class style {
         /** 

@@ -139,7 +139,17 @@ public class SpiderActivity extends Activity
                                     SpiderActivity.this.finish();
                                 }
                             }
-                        }).create();
+                        })
+                .setNegativeButton(R.string.retry,
+                        new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                checkAndStart();
+                            }
+                        })
+                .create();
     }
 
 	
@@ -180,14 +190,19 @@ public class SpiderActivity extends Activity
 		
 		firstRunOperat();
 		
-		appDir=Utils.getDirInExtSto(getString(R.string.appPackageName)+"/download");
-		if(appDir==null)
-		{
-		    showDialog(DLG_STORAGE_ERROR);
-		    return;
-		}
-		
-		checkNetwork();
+		checkAndStart();
+	}
+	
+	private void checkAndStart()
+	{
+        appDir=Utils.getDirInExtSto(getString(R.string.appPackageName)+"/download");
+        if(appDir==null)
+        {
+            showDialog(DLG_STORAGE_ERROR);
+            return;
+        }
+        
+        checkNetwork();
 	}
 	
 	private void checkNetwork()
