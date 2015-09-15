@@ -436,7 +436,7 @@ public class SpiderService extends Service
 	    private final static int IMG_VALID_WIDTH_MIN=200;
 	    private final static int IMG_VALID_HEIGHT_MIN=200;
 
-	    private final static int IMG_DOWNLOAD_BLOCK=32*1024;
+	    private final static int IMG_DOWNLOAD_BLOCK=16*1024;
 	    
         String containerUrl=null;
         String imgUrl=null;
@@ -539,12 +539,12 @@ public class SpiderService extends Service
                         int totalLen=0;
                         while(true)
                         {
-                            byte[] dataBlock=new byte[IMG_DOWNLOAD_BLOCK];
-                            
-                            int len=input.read(dataBlock);
-                            
+                            byte[] buf=new byte[IMG_DOWNLOAD_BLOCK];
+                            int len=input.read(buf);
                             if(len!=-1)
                             {
+                                byte[] dataBlock=new byte[len];
+                                System.arraycopy(buf, 0, dataBlock, 0, len);
                                 if(totalLen<IMG_VALID_FILE_MIN)
                                 {
                                     imgDataList.add(dataBlock);
@@ -553,18 +553,15 @@ public class SpiderService extends Service
                                     {
                                         output=new FileOutputStream(getImgDownloadFile(imgUrl));
                                         
-                                        int remainderLen=totalLen;
                                         for(byte[]cachedDataBlock:imgDataList)
                                         {
-                                            output.write(cachedDataBlock, 0, 
-                                                    (remainderLen<IMG_DOWNLOAD_BLOCK)?remainderLen:IMG_DOWNLOAD_BLOCK);
-                                            remainderLen-=IMG_DOWNLOAD_BLOCK;
+                                            output.write(cachedDataBlock);
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    output.write(dataBlock);
+                                    output.write(buf, 0, len);
                                     totalLen+=len;
                                 }
                             }
@@ -578,23 +575,13 @@ public class SpiderService extends Service
                         {
                             int ofs=0;
                             byte[] totalData=new byte[totalLen];
-                            
-                            while(true)
-                            {
-                                byte[]cachedDataBlock=imgDataList.poll();
-                                if(cachedDataBlock!=null)
-                                {
-                                    int remainderLen=totalLen-ofs;
-                                    int blockLen=(remainderLen<IMG_DOWNLOAD_BLOCK)?remainderLen:IMG_DOWNLOAD_BLOCK;
-                                    System.arraycopy(cachedDataBlock, 0, totalData, ofs, blockLen);
-                                    ofs+=blockLen;
-                                }
-                                else
-                                {
-                                    break;
-                                }
-                            }
 
+                            for(byte[] cachedDataBlock:imgDataList)
+                            {
+                                System.arraycopy(cachedDataBlock, 0, totalData, 
+                                        ofs, cachedDataBlock.length);
+                                ofs+=cachedDataBlock.length;
+                            }
                             
                             BitmapFactory.Options opts = new BitmapFactory.Options();
                             opts.inJustDecodeBounds = true;
