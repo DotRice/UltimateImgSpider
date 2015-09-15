@@ -13,6 +13,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,11 +56,6 @@ public class SpiderService extends Service
 	private final String TAG = "SpiderService";
 	final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
 	
-	private final static int IMG_FILE_SIZE_MAX=20*1024*1024;
-    private final static int IMG_VALID_FILE_MIN=500*1024;
-    private final static int IMG_VALID_WIDTH_MIN=200;
-    private final static int IMG_VALID_HEIGHT_MIN=200;
-    
 	private final static int STAT_IDLE=0;
 	private final static int STAT_DOWNLOAD_PAGE=1;
 	private final static int STAT_SCAN_PAGE=2;
@@ -381,7 +377,6 @@ public class SpiderService extends Service
 	
 	private static final int IMG_DOWNLOADER_NUM=10;
 	
-	private static final int IMG_DOWNLOAD_BLOCK=4096;
 	
 	static
 	{
@@ -436,6 +431,13 @@ public class SpiderService extends Service
 	
 	class ImgDownloader extends Thread
 	{
+	    private final static int IMG_FILE_SIZE_MAX=20*1024*1024;
+	    private final static int IMG_VALID_FILE_MIN=512*1024;
+	    private final static int IMG_VALID_WIDTH_MIN=200;
+	    private final static int IMG_VALID_HEIGHT_MIN=200;
+
+	    private final static int IMG_DOWNLOAD_BLOCK=32*1024;
+	    
         String containerUrl=null;
         String imgUrl=null;
 	    public void run()
@@ -477,6 +479,158 @@ public class SpiderService extends Service
 	                    }
 	                });
 	            }
+	        }
+	    }
+	    
+
+	    private File getImgDownloadFile(String imgUrl)
+	    {
+	        String[] urlSplit=imgUrl.split("/");
+	        String imgFileRawName=urlSplit[urlSplit.length-1];
+	        
+	        Log.i(TAG, "imgFileRawName:"+imgFileRawName);
+	        int extPos=imgFileRawName.lastIndexOf(".");
+	        if(extPos==-1)
+	        {
+	            return null;
+	        }
+	        String imgFileName=imgFileRawName.substring(0, extPos);
+	        
+	        String imgFileExt=imgFileRawName.substring(extPos+1, imgFileRawName.length());
+	        
+	        File file=new File(curSiteDirPath+"/"+imgFileName+"-"+imgProcParam[PARA_PROCESSED]+
+	                "."+imgFileExt);
+	        Log.i(TAG, file.getPath());
+	        int i=0;
+	        while(file.exists())
+	        {
+	            file=new File(curSiteDirPath+"/"+imgProcParam[PARA_PROCESSED]+
+	                    "("+i+")"+"."+imgFileExt);
+	            i++;
+	        }
+	        
+	        return file;
+	    }
+	    
+	    
+	    
+	    private void downloadImg(String imgUrl)
+	    {
+	        Log.i(TAG, "downloadImg "+imgUrl);
+	        
+	        try
+	        {
+	            URL url=new URL(imgUrl);
+	            HttpURLConnection urlConn=(HttpURLConnection)url.openConnection();
+	            OutputStream output=null;
+	            try
+	            {
+	                urlConn.setConnectTimeout(30000);
+	                urlConn.setReadTimeout(120000);
+	                urlConn.setDoInput(true);
+	                urlConn.setRequestProperty("Referer", curPageUrl);
+	                urlConn.setRequestProperty("User-Agent", userAgent);
+	                
+	                if(urlConn.getResponseCode()==200)
+	                {
+                        InputStream input=urlConn.getInputStream();
+                        LinkedList<byte[]> imgDataList=new LinkedList<byte[]>();
+                        
+                        int totalLen=0;
+                        while(true)
+                        {
+                            byte[] dataBlock=new byte[IMG_DOWNLOAD_BLOCK];
+                            
+                            int len=input.read(dataBlock);
+                            
+                            if(len!=-1)
+                            {
+                                if(totalLen<IMG_VALID_FILE_MIN)
+                                {
+                                    imgDataList.add(dataBlock);
+                                    totalLen+=len;
+                                    if(totalLen>=IMG_VALID_FILE_MIN)
+                                    {
+                                        output=new FileOutputStream(getImgDownloadFile(imgUrl));
+                                        
+                                        int remainderLen=totalLen;
+                                        for(byte[]cachedDataBlock:imgDataList)
+                                        {
+                                            output.write(cachedDataBlock, 0, 
+                                                    (remainderLen<IMG_DOWNLOAD_BLOCK)?remainderLen:IMG_DOWNLOAD_BLOCK);
+                                            remainderLen-=IMG_DOWNLOAD_BLOCK;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    output.write(dataBlock);
+                                    totalLen+=len;
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        
+                        if(totalLen<IMG_VALID_FILE_MIN)
+                        {
+                            int ofs=0;
+                            byte[] totalData=new byte[totalLen];
+                            
+                            while(true)
+                            {
+                                byte[]cachedDataBlock=imgDataList.poll();
+                                if(cachedDataBlock!=null)
+                                {
+                                    int remainderLen=totalLen-ofs;
+                                    int blockLen=(remainderLen<IMG_DOWNLOAD_BLOCK)?remainderLen:IMG_DOWNLOAD_BLOCK;
+                                    System.arraycopy(cachedDataBlock, 0, totalData, ofs, blockLen);
+                                    ofs+=blockLen;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+
+                            
+                            BitmapFactory.Options opts = new BitmapFactory.Options();
+                            opts.inJustDecodeBounds = true;
+                            BitmapFactory.decodeByteArray(totalData, 0, ofs, opts);
+                            
+                            Log.i(TAG, "size:"+ofs+" "+opts.outWidth+"*"+opts.outHeight);
+                            
+                            if(opts.outHeight>IMG_VALID_HEIGHT_MIN && opts.outWidth>IMG_VALID_WIDTH_MIN)
+                            {
+                                output=new FileOutputStream(getImgDownloadFile(imgUrl));
+                                output.write(totalData, 0, totalLen);
+                                output.flush();
+                            }
+                        }
+	                }
+	            }
+	            finally
+	            {
+	                if(urlConn!=null)
+                    {
+	                    urlConn.disconnect();
+                    }
+	                
+	                if(output!=null)
+	                {
+	                    output.flush();
+	                    output.close();
+	                }
+	            }
+	            
+	        } catch (MalformedURLException e)
+	        {
+	            e.printStackTrace();
+	        } catch (IOException e)
+	        {
+	            e.printStackTrace();
 	        }
 	    }
 	}
@@ -638,110 +792,6 @@ public class SpiderService extends Service
 		}
 	}
 	
-	private File getImgDownloadFile(String imgUrl)
-	{
-	    String[] urlSplit=imgUrl.split("/");
-		String imgFileRawName=urlSplit[urlSplit.length-1];
-		
-		Log.i(TAG, "imgFileRawName:"+imgFileRawName);
-		int extPos=imgFileRawName.lastIndexOf(".");
-		if(extPos==-1)
-		{
-		    return null;
-		}
-		String imgFileName=imgFileRawName.substring(0, extPos);
-		
-        String imgFileExt=imgFileRawName.substring(extPos+1, imgFileRawName.length());
-        
-        File file=new File(curSiteDirPath+"/"+imgFileName+"-"+imgProcParam[PARA_PROCESSED]+
-                "."+imgFileExt);
-        Log.i(TAG, file.getPath());
-        int i=0;
-        while(file.exists())
-        {
-            file=new File(curSiteDirPath+"/"+imgProcParam[PARA_PROCESSED]+
-                    "("+i+")"+"."+imgFileExt);
-            i++;
-        }
-        
-        return file;
-	}
-	
-	private void downloadImg(String imgUrl)
-	{
-        Log.i(TAG, "downloadImg "+imgUrl);
-	    
-        try
-        {
-            URL url=new URL(imgUrl);
-            HttpURLConnection urlConn=(HttpURLConnection)url.openConnection();
-            OutputStream output=null;
-            try
-            {
-                urlConn.setConnectTimeout(30000);
-                urlConn.setReadTimeout(120000);
-                urlConn.setDoInput(true);
-                urlConn.setRequestProperty("Referer", curPageUrl);
-                urlConn.setRequestProperty("User-Agent", userAgent);
-                
-                if(urlConn.getResponseCode()==200)
-                {
-                    int len=urlConn.getContentLength();
-                    Log.i(TAG, "len "+len);
-                    if(len<IMG_FILE_SIZE_MAX)
-                    {
-						InputStream input=urlConn.getInputStream();
-                        
-                        if(len>IMG_VALID_FILE_MIN)
-                        {
-                            File file=getImgDownloadFile(imgUrl);
-                            output=new FileOutputStream(file);
-                            byte[] buf=new byte[IMG_DOWNLOAD_BLOCK];
-                            while((len=input.read(buf))!=-1){
-                                output.write(buf, 0, len);
-                            }
-                            output.flush();
-                        }
-                        else
-                        {
-                            byte[] buf=new byte[len*2];
-                            int ofs=0;
-                            while((len=input.read(buf, ofs, IMG_DOWNLOAD_BLOCK))!=-1)
-                            {
-                                ofs+=len;
-                            }
-                            
-                            BitmapFactory.Options opts = new BitmapFactory.Options();
-                            opts.inJustDecodeBounds = true;
-                            BitmapFactory.decodeByteArray(buf, 0, ofs, opts);
-                            
-                            Log.i(TAG, "size:"+ofs+" "+opts.outWidth+"*"+opts.outHeight);
-                            
-                            if(opts.outHeight>IMG_VALID_HEIGHT_MIN && opts.outWidth>IMG_VALID_WIDTH_MIN)
-                            {
-                                File file=getImgDownloadFile(imgUrl);
-                                output=new FileOutputStream(file);
-                                output.write(buf, 0, ofs);
-                                output.flush();
-                            }
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                if(urlConn!=null)urlConn.disconnect();
-                if(output!=null)output.close();
-            }
-            
-        } catch (MalformedURLException e)
-        {
-            e.printStackTrace();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-	}
 	
 	private void spiderInit()
 	{
