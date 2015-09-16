@@ -16,7 +16,7 @@ import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.MemoryFile;
-import android.os.ParcelFileDescriptor; 
+import android.os.ParcelFileDescriptor;
 import android.os.Message;
 import android.os.Process;
 import android.os.RemoteCallbackList;
@@ -32,73 +32,70 @@ import android.widget.Toast;
 
 public class WatchdogService extends Service
 {
-	private final String TAG = "WatchdogService";
-	
-	public native int jniGetAshmem(String name, int size);
-	
-	static
-	{
-		System.loadLibrary("UltimateImgSpider");
-	}
-	
-	
-	
-	
-	@Override
-	public void onCreate()
-	{
-		Log.i(TAG, "onCreate");
-	}
-	
-	@Override
-	public void onDestroy()
-	{
-		Log.i(TAG, "onDestroy");
-		
-		System.exit(0);
-	}
-	
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId)
-	{
-		Log.i(TAG, "onStartCommand "+startId);
-		
-		return START_STICKY;
-	}
-	
-	
-	@Override
-	public IBinder onBind(Intent intent)
-	{
-		Log.i(TAG, "onBind:"+intent.getAction());
-		
-		if (IRemoteWatchdogService.class.getName().equals(intent.getAction()))
-		{
-			return mBinder;
-		}
-		return null;
-	}
-	
-	/**
-	 * The IRemoteInterface is defined through IDL
-	 */
-	private final IRemoteWatchdogService.Stub mBinder = new IRemoteWatchdogService.Stub()
-	{
-		@Override
-        public ParcelFileDescriptor getAshmem(String name, int size) throws RemoteException
+    private final String TAG = "WatchdogService";
+    
+    public native int jniGetAshmem(String name, int size);
+    
+    static
+    {
+        System.loadLibrary("UltimateImgSpider");
+    }
+    
+    @Override
+    public void onCreate()
+    {
+        Log.i(TAG, "onCreate");
+    }
+    
+    @Override
+    public void onDestroy()
+    {
+        Log.i(TAG, "onDestroy");
+        
+        System.exit(0);
+    }
+    
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
+        Log.i(TAG, "onStartCommand " + startId);
+        
+        return START_STICKY;
+    }
+    
+    @Override
+    public IBinder onBind(Intent intent)
+    {
+        Log.i(TAG, "onBind:" + intent.getAction());
+        
+        if (IRemoteWatchdogService.class.getName().equals(intent.getAction()))
         {
-			ParcelFileDescriptor parcelFd=null;
-			try
+            return mBinder;
+        }
+        return null;
+    }
+    
+    /**
+     * The IRemoteInterface is defined through IDL
+     */
+    private final IRemoteWatchdogService.Stub mBinder = new IRemoteWatchdogService.Stub()
+    {
+        @Override
+        public ParcelFileDescriptor getAshmem(String name, int size)
+                throws RemoteException
+        {
+            ParcelFileDescriptor parcelFd = null;
+            try
             {
-	        	parcelFd=ParcelFileDescriptor.fromFd(jniGetAshmem(name, size));
+                parcelFd = ParcelFileDescriptor.fromFd(jniGetAshmem(name,
+                        size));
             }
             catch (IOException e)
             {
-	            e.printStackTrace();
+                e.printStackTrace();
             }
-			
-			return parcelFd;
+            
+            return parcelFd;
         }
-	};
-	
+    };
 }

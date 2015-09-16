@@ -24,15 +24,15 @@ import android.widget.Toast;
 public class ParaConfigActivity extends Activity
 {
     private String      curUrl;
-    private String      TAG      = "ParaConfigActivity";
-
+    private String      TAG          = "ParaConfigActivity";
+    
     private WebView     wvParaConfig;
     private WebSettings wsParaConfig;
-
+    
     private Handler     mHandler     = new Handler();
-
+    
     final static String assetParaUrl = "file:///android_asset/paraConfig.html";
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -41,8 +41,9 @@ public class ParaConfigActivity extends Activity
         
         Log.i(TAG, "onCreate");
         
-        curUrl = getIntent().getExtras().getString(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
-
+        curUrl = getIntent().getExtras().getString(
+                SpiderActivity.SOURCE_URL_BUNDLE_KEY);
+        
         if (curUrl != null)
         {
             Log.i(TAG, "curUrl:" + curUrl);
@@ -51,29 +52,28 @@ public class ParaConfigActivity extends Activity
         
     }
     
-
     @Override
     protected void onDestroy()
     {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
-
-        if(wvParaConfig!=null)
+        
+        if (wvParaConfig != null)
         {
-
+            
             Log.i(TAG, "clearCache");
-	        wvParaConfig.clearCache(true);
-	        wvParaConfig.destroy();
+            wvParaConfig.clearCache(true);
+            wvParaConfig.destroy();
         }
     }
-
+    
     @SuppressLint({ "JavascriptInterface", "SetJavaScriptEnabled" })
     private void webViewInit()
     {
         wvParaConfig = (WebView) findViewById(R.id.webViewParaConfig);
-
+        
         wvParaConfig.requestFocus();
-
+        
         wvParaConfig.setWebViewClient(new WebViewClient()
         {
             public boolean shouldOverrideUrlLoading(WebView view, String URL)
@@ -82,7 +82,7 @@ public class ParaConfigActivity extends Activity
                 return false;
             }
         });
-
+        
         wvParaConfig.setOnLongClickListener(new WebView.OnLongClickListener()
         {
             public boolean onLongClick(View v)
@@ -90,56 +90,55 @@ public class ParaConfigActivity extends Activity
                 return true;
             }
         });
-
+        
         wsParaConfig = wvParaConfig.getSettings();
-
+        
         // 使能javascript
         wsParaConfig.setJavaScriptEnabled(true);
         wsParaConfig.setJavaScriptCanOpenWindowsAutomatically(false);
-
+        
         wvParaConfig.addJavascriptInterface(this, "paraConfig");
-
+        
         wvParaConfig.loadUrl(assetParaUrl);
-
+        
     }
-
+    
     @JavascriptInterface
     public void setHomeUrl(String URL)
     {
         Log.i(TAG, "setHomeUrl");
-
+        
         if (!URL.isEmpty())
         {
             if (URL.equals("curUrl"))
             {
                 URL = curUrl;
             }
-
+            
             if (URLUtil.isNetworkUrl(URL))
             {
                 ParaConfig.setHomeURL(this, URL);
-
+                
                 Toast.makeText(this, "已设置主页:" + URL, Toast.LENGTH_SHORT).show();
             }
         }
     }
-
+    
     @JavascriptInterface
     public String getHomeUrl()
     {
         return ParaConfig.getHomeURL(this);
     }
-
-
+    
     @JavascriptInterface
     public void setUserAgent(String ua)
     {
         Log.i(TAG, "setHomeUrl");
-
+        
         if (!ua.isEmpty())
         {
             ParaConfig.setUserAgent(this, ua);
-
+            
             Toast.makeText(this, "已设置UA:" + ua, Toast.LENGTH_SHORT).show();
         }
     }
@@ -149,24 +148,26 @@ public class ParaConfigActivity extends Activity
     {
         return ParaConfig.getUserAgent(this);
     }
-
+    
     @JavascriptInterface
     public void setSearchEngine(int seIndex)
     {
         Log.i(TAG, "setHomeUrl");
         
-        if(ParaConfig.setSearchEngine(this, seIndex))
+        if (ParaConfig.setSearchEngine(this, seIndex))
         {
-            Toast.makeText(this, "已设置搜索引擎:" + ParaConfig.getSearchEngineName(this), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "已设置搜索引擎:" + ParaConfig.getSearchEngineName(this),
+                    Toast.LENGTH_SHORT).show();
         }
     }
-
+    
     @JavascriptInterface
     public String getSearchEngine()
     {
         return ParaConfig.getSearchEngineName(this);
     }
-
+    
     @JavascriptInterface
     public void finishConfig()
     {
@@ -178,11 +179,11 @@ public class ParaConfigActivity extends Activity
             }
         });
     }
-
+    
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
         Log.i(TAG, "onKeyDown " + keyCode);
-
+        
         if (keyCode == KeyEvent.KEYCODE_BACK)
         {
             Log.i(TAG, "goBack ");
@@ -191,12 +192,12 @@ public class ParaConfigActivity extends Activity
         }
         return super.onKeyDown(keyCode, event);
     }
-
+    
     @Override
     public void onConfigurationChanged(Configuration newConfig)
     {
         super.onConfigurationChanged(newConfig);
-
+        
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
             Log.i(TAG, "Landscape");

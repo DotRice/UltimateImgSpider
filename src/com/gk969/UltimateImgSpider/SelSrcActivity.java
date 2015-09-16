@@ -52,7 +52,7 @@ import android.widget.Toast;
 
 public class SelSrcActivity extends Activity
 {
-    private final String         TAG        = "SelSrcActivity";
+    private final String         TAG            = "SelSrcActivity";
     
     private WebView              browser;
     private ProgressBar          pbWebView;
@@ -72,7 +72,6 @@ public class SelSrcActivity extends Activity
     private RelativeLayout       urlBar;
     
     private Button               btnURLcmd;
-    
     
     private final int            URL_CANCEL     = 0;
     private final int            URL_REFRESH    = 1;
@@ -147,8 +146,7 @@ public class SelSrcActivity extends Activity
                                     public void onClick(DialogInterface dialog,
                                             int whichButton)
                                     {
-                                        Log.i(TAG, "whichButton:"
-                                                + whichButton);
+                                        Log.i(TAG, "whichButton:" + whichButton);
                                         ParaConfig.setSearchEngine(
                                                 SelSrcActivity.this,
                                                 whichButton);
@@ -220,14 +218,14 @@ public class SelSrcActivity extends Activity
                         R.drawable.site);
                 btnSelSearchEngine.setImageBitmap(browserIcon);
                 
-                urlToDisp=url;
+                urlToDisp = url;
             }
             
             public void onReceivedError(WebView view, int errorCode,
                     String description, String failingUrl)
             {
-                Log.i(TAG, failingUrl + " ReceivedError " + errorCode
-                        + "  " + description);
+                Log.i(TAG, failingUrl + " ReceivedError " + errorCode + "  "
+                        + description);
             }
         });
         
@@ -664,7 +662,7 @@ public class SelSrcActivity extends Activity
                 {
                     String url = s.toString();
                     
-                    urlToDisp=url;
+                    urlToDisp = url;
                     if (URLUtil.isNetworkUrl(url))
                     {
                         setUrlCmd(URL_ENTER);
@@ -685,7 +683,6 @@ public class SelSrcActivity extends Activity
                                 .getSearchEngineIcon(SelSrcActivity.this));
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
                     }
-                    
                     
                 }
             }
@@ -784,7 +781,7 @@ public class SelSrcActivity extends Activity
     {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
-
+        
         Log.i(TAG, "clearCache");
         browser.stopLoading();
         browser.clearCache(true);
