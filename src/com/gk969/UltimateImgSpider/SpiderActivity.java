@@ -73,7 +73,7 @@ public class SpiderActivity extends Activity
     private ImageTextButton  btSelSrc;
     private ImageTextButton  btClear;
     
-    String                   srcUrl                = "http://www.umei.cc/";
+    String                   srcUrl;
     
     private TextView         spiderLog;
     
@@ -261,6 +261,8 @@ public class SpiderActivity extends Activity
         projBarInit();
         
         firstRunOperat();
+        
+        srcUrl=ParaConfig.getHomeURL(this);
         
         serviceInterfaceInit();
         checkAndStart();

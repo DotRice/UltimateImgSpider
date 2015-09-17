@@ -7,9 +7,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -455,11 +458,14 @@ public class SpiderService extends Service
         
         private final static int IMG_DOWNLOAD_BLOCK   = 16 * 1024;
         
+        private final static int REDIRECT_MAX         = 5;
+        
         private byte[]           cache                = new byte[IMG_VALID_FILE_MIN];
         private byte[]           blockBuf             = new byte[IMG_DOWNLOAD_BLOCK];
         
         String                   containerUrl         = null;
         String                   imgUrl               = null;
+        
         
         public void run()
         {
@@ -507,7 +513,15 @@ public class SpiderService extends Service
         private File getImgDownloadFile(String imgUrl)
         {
             String[] urlSplit = imgUrl.split("/");
-            String imgFileRawName = urlSplit[urlSplit.length - 1];
+            String imgFileRawName=null;
+            try
+            {
+                imgFileRawName = URLDecoder.decode(urlSplit[urlSplit.length - 1], "utf-8");
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                e.printStackTrace();
+            }
             
             Log.i(TAG, "imgFileRawName:" + imgFileRawName);
             int extPos = imgFileRawName.lastIndexOf(".");
@@ -520,14 +534,14 @@ public class SpiderService extends Service
             String imgFileExt = imgFileRawName.substring(extPos + 1,
                     imgFileRawName.length());
             
-            File file = new File(curSiteDirPath + "/" + imgFileName + "-"
-                    + imgProcParam[PARA_PROCESSED] + "." + imgFileExt);
+            File file = new File(curSiteDirPath + "/" 
+                    + imgProcParam[PARA_PROCESSED] + " " + imgFileName + "." + imgFileExt);
             Log.i(TAG, file.getPath());
             int i = 0;
             while (file.exists())
             {
                 file = new File(curSiteDirPath + "/"
-                        + imgProcParam[PARA_PROCESSED] + "(" + i + ")" + "."
+                        + imgProcParam[PARA_PROCESSED] + " " + imgFileName + "-(" + i + ")" + "."
                         + imgFileExt);
                 i++;
             }
@@ -535,7 +549,7 @@ public class SpiderService extends Service
             return file;
         }
         
-        private void recvImgDataLoop(InputStream input, OutputStream output) throws IOException
+        private void recvImgDataLoop(InputStream input, OutputStream output, String url) throws IOException
         {
             int totalLen = 0;
             int cacheUsege=0;
@@ -553,9 +567,9 @@ public class SpiderService extends Service
                     {
                         if (output == null)
                         {
-                            output = new FileOutputStream(getImgDownloadFile(imgUrl));
+                            output = new FileOutputStream(getImgDownloadFile(url));
                         }
-                        
+                        Log.i(TAG, totalLen+" "+url);
                         output.write(cache, 0, cacheUsege);
                         System.arraycopy(blockBuf, 0, cache, 0, len);
                         cacheUsege=len;
@@ -580,59 +594,88 @@ public class SpiderService extends Service
                 if (opts.outHeight > IMG_VALID_HEIGHT_MIN
                         && opts.outWidth > IMG_VALID_WIDTH_MIN)
                 {
-                    output = new FileOutputStream(getImgDownloadFile(imgUrl));
+                    output = new FileOutputStream(getImgDownloadFile(url));
                     output.write(cache, 0, totalLen);
                     output.flush();
                 }
             }
+            else
+            {
+                output.write(cache, 0, cacheUsege);
+                output.flush();
+            }
         }
         
-        private void downloadImg(String imgUrl)
+        private void downloadImg(String urlStr)
         {
-            Log.i(TAG, "downloadImg " + imgUrl);
-            
-            try
+            for(int redirectCnt=0; redirectCnt<REDIRECT_MAX; redirectCnt++)
             {
-                URL url = new URL(imgUrl);
-                HttpURLConnection urlConn = (HttpURLConnection) url
-                        .openConnection();
-                OutputStream output = null;
                 try
                 {
-                    urlConn.setConnectTimeout(30000);
-                    urlConn.setReadTimeout(120000);
-                    urlConn.setDoInput(true);
-                    urlConn.setRequestProperty("Referer", curPageUrl);
-                    urlConn.setRequestProperty("User-Agent", userAgent);
+                    URL url = new URL(urlStr);
+                    HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
+                    OutputStream output = null;
                     
-                    if (urlConn.getResponseCode() == 200)
+                    try
                     {
-                        InputStream input = urlConn.getInputStream();
-                        recvImgDataLoop(input, output);
+                        urlConn.setInstanceFollowRedirects(false);
+                        urlConn.setConnectTimeout(30000);
+                        urlConn.setReadTimeout(120000);
+                        urlConn.setRequestProperty("Referer", containerUrl);
+                        urlConn.setRequestProperty("User-Agent", userAgent);
+                        
+                        int res=urlConn.getResponseCode();
+                        Log.i(TAG, res+" "+urlStr);
+                        
+                        if((res/100) == 3)
+                        {
+                            String redirUrl=urlConn.getHeaderField("Location");
+                            
+                            if(redirUrl!=null)
+                            {
+                                urlStr=redirUrl.replaceAll(" ", "%20");
+                            }
+                            else
+                            {
+                                break;
+                            }
+                            //int fileNamePos=urlStr.lastIndexOf("/")+1;
+                            //urlStr=urlStr.substring(0, fileNamePos)+
+                            //        URLEncoder.encode(urlStr.substring(fileNamePos), "utf_8");
+                        }
+                        else
+                        {
+                            if (res == 200)
+                            {
+                                InputStream input = urlConn.getInputStream();
+                                recvImgDataLoop(input, output, urlStr);
+                            }
+                            break;
+                        }
                     }
+                    finally
+                    {
+                        if (urlConn != null)
+                        {
+                            urlConn.disconnect();
+                        }
+                        
+                        if (output != null)
+                        {
+                            output.flush();
+                            output.close();
+                        }
+                    }
+                    
                 }
-                finally
+                catch (MalformedURLException e)
                 {
-                    if (urlConn != null)
-                    {
-                        urlConn.disconnect();
-                    }
-                    
-                    if (output != null)
-                    {
-                        output.flush();
-                        output.close();
-                    }
+                    e.printStackTrace();
                 }
-                
-            }
-            catch (MalformedURLException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
             }
         }
     }

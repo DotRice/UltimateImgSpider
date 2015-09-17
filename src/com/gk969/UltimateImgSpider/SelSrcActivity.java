@@ -439,8 +439,7 @@ public class SelSrcActivity extends Activity
                         break;
                         
                         case R.id.buttonHome:
-                            browserLoadUrl(ParaConfig
-                                    .getHomeURL(SelSrcActivity.this));
+                            browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
                         break;
                         
                         case R.id.buttonMenu:
