@@ -460,6 +460,8 @@ public class SpiderService extends Service
         
         private final static int REDIRECT_MAX         = 5;
         
+        private final static String CACHE_MARK        = ".cache";
+        
         private byte[]           cache                = new byte[IMG_VALID_FILE_MIN];
         private byte[]           blockBuf             = new byte[IMG_DOWNLOAD_BLOCK];
         
@@ -524,85 +526,116 @@ public class SpiderService extends Service
             }
             
             Log.i(TAG, "imgFileRawName:" + imgFileRawName);
-            int extPos = imgFileRawName.lastIndexOf(".");
-            if (extPos == -1)
-            {
-                return null;
-            }
-            String imgFileName = imgFileRawName.substring(0, extPos);
-            
-            String imgFileExt = imgFileRawName.substring(extPos + 1,
-                    imgFileRawName.length());
             
             File file = new File(curSiteDirPath + "/" 
-                    + imgProcParam[PARA_PROCESSED] + " " + imgFileName + "." + imgFileExt);
-            Log.i(TAG, file.getPath());
-            int i = 0;
-            while (file.exists())
-            {
-                file = new File(curSiteDirPath + "/"
-                        + imgProcParam[PARA_PROCESSED] + " " + imgFileName + "-(" + i + ")" + "."
-                        + imgFileExt);
-                i++;
-            }
+                    + imgFileRawName + CACHE_MARK);
             
             return file;
         }
         
-        private void recvImgDataLoop(InputStream input, OutputStream output, String url) throws IOException
+        private void changeFileNameAfterDownload(File file)
+        {
+            String imgFileRawName=file.getName();
+            imgFileRawName=imgFileRawName.substring(0, imgFileRawName.length()-CACHE_MARK.length());
+            int extPos = imgFileRawName.lastIndexOf(".");
+            if(extPos==-1)
+            {
+                extPos=imgFileRawName.length();
+            }
+            
+            String imgFileName = imgFileRawName.substring(0, extPos);
+            
+            String imgFileExt = imgFileRawName.substring(extPos,
+                    imgFileRawName.length());
+            
+            File testFile = new File(curSiteDirPath + "/" 
+                    + imgFileRawName);
+            
+            int i = 0;
+            while (testFile.exists())
+            {
+                testFile = new File(curSiteDirPath + "/"
+                        + imgFileName + "-(" + i + ")"
+                        + imgFileExt);
+                i++;
+            }
+            
+            file.renameTo(testFile);
+        }
+        
+        private void recvImgDataLoop(InputStream input, String url) throws IOException
         {
             int totalLen = 0;
             int cacheUsege=0;
-            while (true)
+            File imgFile=null;
+            OutputStream output = null;
+            
+            try
             {
-                int len = input.read(blockBuf);
-                if (len != -1)
+                while (true)
                 {
-                    if ((cacheUsege + len) < IMG_VALID_FILE_MIN)
+                    int len = input.read(blockBuf);
+                    if (len != -1)
                     {
-                        System.arraycopy(blockBuf, 0, cache, cacheUsege, len);
-                        cacheUsege += len;
+                        if ((cacheUsege + len) < IMG_VALID_FILE_MIN)
+                        {
+                            System.arraycopy(blockBuf, 0, cache, cacheUsege, len);
+                            cacheUsege += len;
+                        }
+                        else
+                        {
+                            if (output == null)
+                            {
+                                imgFile=getImgDownloadFile(url);
+                                output = new FileOutputStream(imgFile);
+                            }
+                            Log.i(TAG, totalLen+" "+url);
+                            output.write(cache, 0, cacheUsege);
+                            System.arraycopy(blockBuf, 0, cache, 0, len);
+                            cacheUsege=len;
+                        }
+                        
+                        totalLen += len;
                     }
                     else
                     {
-                        if (output == null)
-                        {
-                            output = new FileOutputStream(getImgDownloadFile(url));
-                        }
-                        Log.i(TAG, totalLen+" "+url);
-                        output.write(cache, 0, cacheUsege);
-                        System.arraycopy(blockBuf, 0, cache, 0, len);
-                        cacheUsege=len;
+                        break;
                     }
+                }
+                
+                if (totalLen < IMG_VALID_FILE_MIN)
+                {
+                    BitmapFactory.Options opts = new BitmapFactory.Options();
+                    opts.inJustDecodeBounds = true;
+                    BitmapFactory.decodeByteArray(cache, 0, totalLen, opts);
                     
-                    totalLen += len;
+                    Log.i(TAG, "size:" + totalLen + " " + opts.outWidth + "*" + opts.outHeight);
+                    
+                    if (opts.outHeight > IMG_VALID_HEIGHT_MIN
+                            && opts.outWidth > IMG_VALID_WIDTH_MIN)
+                    {
+                        imgFile=getImgDownloadFile(url);
+                        output = new FileOutputStream(imgFile);
+                        output.write(cache, 0, totalLen);
+                    }
                 }
                 else
                 {
-                    break;
+                    output.write(cache, 0, cacheUsege);
+                }
+            }
+            finally
+            {
+                if (output != null)
+                {
+                    output.flush();
+                    output.close();
                 }
             }
             
-            if (totalLen < IMG_VALID_FILE_MIN)
+            if(imgFile!=null)
             {
-                BitmapFactory.Options opts = new BitmapFactory.Options();
-                opts.inJustDecodeBounds = true;
-                BitmapFactory.decodeByteArray(cache, 0, totalLen, opts);
-                
-                Log.i(TAG, "size:" + totalLen + " " + opts.outWidth + "*" + opts.outHeight);
-                
-                if (opts.outHeight > IMG_VALID_HEIGHT_MIN
-                        && opts.outWidth > IMG_VALID_WIDTH_MIN)
-                {
-                    output = new FileOutputStream(getImgDownloadFile(url));
-                    output.write(cache, 0, totalLen);
-                    output.flush();
-                }
-            }
-            else
-            {
-                output.write(cache, 0, cacheUsege);
-                output.flush();
+                changeFileNameAfterDownload(imgFile);
             }
         }
         
@@ -614,7 +647,6 @@ public class SpiderService extends Service
                 {
                     URL url = new URL(urlStr);
                     HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
-                    OutputStream output = null;
                     
                     try
                     {
@@ -648,7 +680,7 @@ public class SpiderService extends Service
                             if (res == 200)
                             {
                                 InputStream input = urlConn.getInputStream();
-                                recvImgDataLoop(input, output, urlStr);
+                                recvImgDataLoop(input, urlStr);
                             }
                             break;
                         }
@@ -658,12 +690,6 @@ public class SpiderService extends Service
                         if (urlConn != null)
                         {
                             urlConn.disconnect();
-                        }
-                        
-                        if (output != null)
-                        {
-                            output.flush();
-                            output.close();
                         }
                     }
                     
