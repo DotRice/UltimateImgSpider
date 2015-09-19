@@ -55,10 +55,24 @@ public class WatchdogService extends Service
         System.exit(0);
     }
     
+    private void storeCurProjectData()
+    {
+        
+    }
+    
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         Log.i(TAG, "onStartCommand " + startId);
+        
+        int cmdVal = intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY,SpiderActivity.CMD_NOTHING);
+        Log.i(TAG, "onStartCommand " + cmdVal);
+        
+        if(cmdVal==SpiderActivity.CMD_STOP_STORE)
+        {
+            storeCurProjectData();
+            stopSelf();
+        }
         
         return START_STICKY;
     }

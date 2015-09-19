@@ -59,7 +59,7 @@ public class SpiderActivity extends Activity
     public final static int  CMD_PAUSE             = 2;
     public final static int  CMD_CONTINUE          = 3;
     public final static int  CMD_RESTART           = 4;
-    public final static int  CMD_STOP              = 5;
+    public final static int  CMD_STOP_STORE        = 5;
     
     private final int        STATE_IDLE            = 0;
     private final int        STATE_CONNECTED       = 1;
@@ -80,6 +80,8 @@ public class SpiderActivity extends Activity
     private File             appDir;
     
     private MessageHandler   mHandler              = new MessageHandler(this);
+    
+    private boolean          shouldFinish          = false;
     
     private static final int BUMP_MSG              = 1;
     
@@ -341,7 +343,18 @@ public class SpiderActivity extends Activity
     {
         super.onPause();
         Log.i(TAG, "onPause");
-        
+        if(shouldFinish)
+        {
+            mHandler.postDelayed(new Runnable()
+            {
+                
+                @Override
+                public void run()
+                {
+                    finish();
+                }
+            }, 500);
+        }
     }
     
     protected void onStop()
@@ -544,16 +557,15 @@ public class SpiderActivity extends Activity
         {
             if (SystemClock.uptimeMillis() - exitTim > 2000)
             {
-                Toast.makeText(
-                        this,
-                        getString(R.string.keyBackExitConfirm)
-                                + getString(R.string.app_name),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,getString(R.string.keyBackExitConfirm)
+                                + getString(R.string.app_name),Toast.LENGTH_SHORT).show();
                 
                 exitTim = SystemClock.uptimeMillis();
                 return true;
             }
         }
+        
+        shouldFinish=true;
         return super.onKeyDown(keyCode, event);
     }
 }

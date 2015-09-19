@@ -94,7 +94,7 @@ public class SpiderService extends Service
         }
     };
     
-    private void serviceInterfaceInit()
+    private void watchdogInterfaceInit()
     {
         watchdogConnection = new ServiceConnection()
         {
@@ -102,14 +102,13 @@ public class SpiderService extends Service
                     IBinder service)
             {
                 
-                watchdogService = IRemoteWatchdogService.Stub
-                        .asInterface(service);
+                watchdogService = IRemoteWatchdogService.Stub.asInterface(service);
                 
                 stringFromJNI("ashmem");
                 
                 if (!jniSpiderInit())
                 {
-                    stopSelf();
+                    stopSelfAndWatchdog();
                 }
                 
                 spiderInit();
@@ -122,6 +121,8 @@ public class SpiderService extends Service
                 watchdogService = null;
                 
                 Log.i(TAG, "onServiceDisconnected");
+                
+                stopSelf();
             }
         };
     }
@@ -132,18 +133,35 @@ public class SpiderService extends Service
         
         Intent watchdogIntent = new Intent(
                 IRemoteWatchdogService.class.getName());
-        watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage()
-                .getName());
+        watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
         
         startService(watchdogIntent);
         bindService(watchdogIntent, watchdogConnection, BIND_ABOVE_CLIENT);
+    }
+    
+    private void stopSelfAndWatchdog()
+    {
+        stopService(new Intent(this, WatchdogService.class));
+        stopSelf();
+    }
+    
+    private void sendCmdToWatchdog(int cmd)
+    {
+        Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
+        spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
+                .getName());
+        
+        Bundle bundle = new Bundle();
+        bundle.putInt(SpiderActivity.CMD_BUNDLE_KEY, cmd);
+        spiderIntent.putExtras(bundle);
+        startService(spiderIntent);
     }
     
     @Override
     public void onCreate()
     {
         Log.i(TAG, "onCreate");
-        serviceInterfaceInit();
+        watchdogInterfaceInit();
         startWatchdog();
     }
     
@@ -171,8 +189,7 @@ public class SpiderService extends Service
     {
         if (intent != null)
         {
-            String url = intent
-                    .getStringExtra(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
+            String url = intent.getStringExtra(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
             if (url != null)
             {
                 Log.i(TAG, "onStartCommand url:" + url);
@@ -188,14 +205,14 @@ public class SpiderService extends Service
                     catch (MalformedURLException e)
                     {
                         e.printStackTrace();
-                        stopSelf();
+                        stopSelfAndWatchdog();
                     }
                     File siteDir = Utils
                             .getDirInExtSto(getString(R.string.appPackageName)
                                     + "/download/" + srcHost);
                     if (siteDir == null)
                     {
-                        stopSelf();
+                        stopSelfAndWatchdog();
                     }
                     else
                     {
@@ -204,35 +221,40 @@ public class SpiderService extends Service
                 }
             }
             
-            int cmdVal = intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY,
-                    SpiderActivity.CMD_NOTHING);
+            int cmdVal = intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY,SpiderActivity.CMD_NOTHING);
             Log.i(TAG, "onStartCommand " + cmdVal);
             
             cmd.set(cmdVal);
             switch (cmdVal)
             {
                 case SpiderActivity.CMD_CLEAR:
-                    stopService(new Intent(this, WatchdogService.class));
-                    stopSelf();
+                    stopSelfAndWatchdog();
+                break;
+                case SpiderActivity.CMD_STOP_STORE:
+                    sendCmdToWatchdog(SpiderActivity.CMD_STOP_STORE);
                 break;
                 case SpiderActivity.CMD_CONTINUE:
                     if (state.get() == STAT_PAUSE)
                     {
-                        startAllImgDownloader();
+                        mImgDownloader.startAllThread();
                     }
                 break;
                 case SpiderActivity.CMD_RESTART:
-                    if (state.get() == STAT_PAUSE)
+                    switch(state.get())
                     {
-                        stopSelf();
-                    }
-                    else if (state.get() == STAT_DOWNLOAD_PAGE)
-                    {
+                        case STAT_PAUSE:
+                            stopSelf();
+                        break;
+
+                        case STAT_DOWNLOAD_PAGE:
+                            if (urlLoadTimer.get() != 0)
+                            {
+                                urlLoadTimer.set(1);
+                            }
+                        break;
                         
-                        if (urlLoadTimer.get() != 0)
-                        {
-                            urlLoadTimer.set(1);
-                        }
+                        default:
+                        break;
                     }
                 break;
                 case SpiderActivity.CMD_PAUSE:
@@ -363,8 +385,7 @@ public class SpiderService extends Service
     private Handler             spiderHandler        = new Handler();
     private boolean             timerRunning         = true;
     private final static int    URL_TIME_OUT         = 10;
-    private AtomicInteger       urlLoadTimer         = new AtomicInteger(
-                                                             URL_TIME_OUT);
+    private AtomicInteger       urlLoadTimer         = new AtomicInteger(URL_TIME_OUT);
     
     private MessageDigest       md5;
     
@@ -382,10 +403,9 @@ public class SpiderService extends Service
     private native String jniFindNextUrlToLoad(String prevUrl, byte[] md5,
             int type, int[] param);
     
-    private Utils.ReadWaitLock pageProcessLock    = new Utils.ReadWaitLock();
+    private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
     
-    private static final int   IMG_DOWNLOADER_NUM = 10;
-    private ImgDownloader[]    imgDownloaders     = new ImgDownloader[IMG_DOWNLOADER_NUM];
+    private ImgDownloader      mImgDownloader  = new ImgDownloader();
     
     static
     {
@@ -413,45 +433,40 @@ public class SpiderService extends Service
         return null;
     }
     
-    private synchronized boolean cmdIsStopOrPause()
+    private synchronized boolean shouldStopDownloader()
     {
-        boolean ret = false;
-        if (cmd.get() == SpiderActivity.CMD_PAUSE)
+        boolean ret = true;
+        switch(cmd.get())
         {
-            state.set(STAT_PAUSE);
-            ret = true;
-        }
-        else if (cmd.get() == SpiderActivity.CMD_RESTART)
-        {
-            state.set(STAT_STOP);
-            stopSelf();
-            ret = true;
+            case SpiderActivity.CMD_PAUSE:
+                state.set(STAT_PAUSE);
+            break;
+            
+            case SpiderActivity.CMD_RESTART:
+                state.set(STAT_STOP);
+                stopSelf();
+            break;
+            
+            case SpiderActivity.CMD_CLEAR:
+                
+            break;
+            
+            default:
+                ret=false;
+            break;
         }
         
         return ret;
     }
     
-    void startAllImgDownloader()
-    {
-        for (int i = 0; i < IMG_DOWNLOADER_NUM; i++)
-        {
-            if (imgDownloaders[i] != null)
-            {
-                if (!imgDownloaders[i].isAlive())
-                {
-                    imgDownloaders[i].start();
-                }
-            }
-            else
-            {
-                imgDownloaders[i] = new ImgDownloader();
-                imgDownloaders[i].start();
-            }
-        }
-    }
     
-    class ImgDownloader extends Thread
+    class ImgDownloader
     {
+        private static final int   IMG_DOWNLOADER_NUM = 10;
+        private DownloaderThread[] downloaderThreads  = new DownloaderThread[IMG_DOWNLOADER_NUM];
+        private String[] downloadingCacheFilePath     = new String[IMG_DOWNLOADER_NUM];
+        private static final String CACHE_MARK        = ".cache";
+
         private final static int IMG_VALID_FILE_MIN   = 512 * 1024;
         private final static int IMG_VALID_WIDTH_MIN  = 200;
         private final static int IMG_VALID_HEIGHT_MIN = 200;
@@ -460,59 +475,30 @@ public class SpiderService extends Service
         
         private final static int REDIRECT_MAX         = 5;
         
-        private final static String CACHE_MARK        = ".cache";
-        
-        private byte[]           cache                = new byte[IMG_VALID_FILE_MIN];
-        private byte[]           blockBuf             = new byte[IMG_DOWNLOAD_BLOCK];
-        
-        String                   containerUrl         = null;
-        String                   imgUrl               = null;
-        
-        
-        public void run()
+        void startAllThread()
         {
-            while (!cmdIsStopOrPause())
+            for (int i = 0; i < IMG_DOWNLOADER_NUM; i++)
             {
-                pageProcessLock.waitIfLocked();
-                String urlSet = jniOperateUrl(imgUrl, URL_TYPE_IMG,
-                        imgProcParam, JNI_OPERATE_GET);
-                if (urlSet != null)
+                downloadingCacheFilePath[i]="";
+                
+                if (downloaderThreads[i] != null)
                 {
-                    Log.i(TAG, urlSet);
-                    
-                    String[] urls = urlSet.split(" ");
-                    imgUrl = urls[0];
-                    containerUrl = urls[1];
-                    
-                    downloadImg(imgUrl);
-                    
-                    spiderHandler.post(new Runnable()
+                    if (!downloaderThreads[i].isAlive())
                     {
-                        @Override
-                        public void run()
-                        {
-                            reportSpiderLog(false);
-                        }
-                    });
+                        downloaderThreads[i].start();
+                    }
                 }
                 else
                 {
-                    imgUrl = null;
-                    
-                    pageProcessLock.lock();
-                    spiderHandler.post(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            findNextUrlToLoad();
-                        }
-                    });
+                    downloaderThreads[i] = new DownloaderThread();
+                    downloaderThreads[i].numId=i;
+                    downloaderThreads[i].start();
                 }
             }
         }
         
-        private File getImgDownloadFile(String imgUrl)
+
+        private synchronized File getImgDownloadCacheFile(String imgUrl, int tid)
         {
             String[] urlSplit = imgUrl.split("/");
             String imgFileRawName=null;
@@ -525,182 +511,264 @@ public class SpiderService extends Service
                 e.printStackTrace();
             }
             
-            Log.i(TAG, "imgFileRawName:" + imgFileRawName);
+            String cacheFileName=imgFileRawName + CACHE_MARK;
             
-            File file = new File(curSiteDirPath + "/" 
-                    + imgFileRawName + CACHE_MARK);
+            Log.i(TAG, "cacheBuf file name:" + cacheFileName);
             
-            return file;
-        }
-        
-        private void changeFileNameAfterDownload(File file)
-        {
-            String imgFileRawName=file.getName();
-            imgFileRawName=imgFileRawName.substring(0, imgFileRawName.length()-CACHE_MARK.length());
-            int extPos = imgFileRawName.lastIndexOf(".");
-            if(extPos==-1)
+            
+            File cacheFile = new File(curSiteDirPath + "/" + cacheFileName);
+            
+            int i=0;
+            while(cacheFile.exists())
             {
-                extPos=imgFileRawName.length();
-            }
-            
-            String imgFileName = imgFileRawName.substring(0, extPos);
-            
-            String imgFileExt = imgFileRawName.substring(extPos,
-                    imgFileRawName.length());
-            
-            File testFile = new File(curSiteDirPath + "/" 
-                    + imgFileRawName);
-            
-            int i = 0;
-            while (testFile.exists())
-            {
-                testFile = new File(curSiteDirPath + "/"
-                        + imgFileName + "-(" + i + ")"
-                        + imgFileExt);
+                cacheFile = new File(curSiteDirPath + "/"
+                        + "(" + i + ") " + cacheFileName);
                 i++;
             }
             
-            file.renameTo(testFile);
-        }
-        
-        private void recvImgDataLoop(InputStream input, String url) throws IOException
-        {
-            int totalLen = 0;
-            int cacheUsege=0;
-            File imgFile=null;
-            OutputStream output = null;
-            
-            try
+            String cacheFilePath=cacheFile.getPath();
+            while(true)
             {
-                while (true)
+                int h;
+                for(h=0; h<IMG_DOWNLOADER_NUM; h++)
                 {
-                    int len = input.read(blockBuf);
-                    if (len != -1)
-                    {
-                        if ((cacheUsege + len) < IMG_VALID_FILE_MIN)
-                        {
-                            System.arraycopy(blockBuf, 0, cache, cacheUsege, len);
-                            cacheUsege += len;
-                        }
-                        else
-                        {
-                            if (output == null)
-                            {
-                                imgFile=getImgDownloadFile(url);
-                                output = new FileOutputStream(imgFile);
-                            }
-                            Log.i(TAG, totalLen+" "+url);
-                            output.write(cache, 0, cacheUsege);
-                            System.arraycopy(blockBuf, 0, cache, 0, len);
-                            cacheUsege=len;
-                        }
-                        
-                        totalLen += len;
-                    }
-                    else
+                    if(downloadingCacheFilePath[h].equals(cacheFilePath))
                     {
                         break;
                     }
                 }
                 
-                if (totalLen < IMG_VALID_FILE_MIN)
+                if(h<IMG_DOWNLOADER_NUM)
                 {
-                    BitmapFactory.Options opts = new BitmapFactory.Options();
-                    opts.inJustDecodeBounds = true;
-                    BitmapFactory.decodeByteArray(cache, 0, totalLen, opts);
+                    i++;
+                    cacheFilePath=curSiteDirPath + "/"
+                            + "(" + i + ") " + cacheFileName;
                     
-                    Log.i(TAG, "size:" + totalLen + " " + opts.outWidth + "*" + opts.outHeight);
-                    
-                    if (opts.outHeight > IMG_VALID_HEIGHT_MIN
-                            && opts.outWidth > IMG_VALID_WIDTH_MIN)
-                    {
-                        imgFile=getImgDownloadFile(url);
-                        output = new FileOutputStream(imgFile);
-                        output.write(cache, 0, totalLen);
-                    }
                 }
                 else
                 {
-                    output.write(cache, 0, cacheUsege);
+                    break;
                 }
             }
-            finally
+            downloadingCacheFilePath[tid]=cacheFilePath;
+            
+            return new File(cacheFilePath);
+        }
+        
+        private synchronized void changeFileNameAfterDownload(File file)
+        {
+            Log.i(TAG, "chang file name "+file.getName());
+            String imgFileRawName=file.getName();
+            imgFileRawName=imgFileRawName.substring(0, imgFileRawName.length()-CACHE_MARK.length());
+            
+            File finalFile = new File(curSiteDirPath + "/" + imgFileRawName);
+            
+            int i = 0;
+            while(finalFile.exists())
             {
-                if (output != null)
+                finalFile = new File(curSiteDirPath + "/"
+                        + "(" + i + ") " + imgFileRawName);
+                i++;
+            }
+            
+            file.renameTo(finalFile);
+            
+            Log.i(TAG, "new name "+file.getName());
+        }
+        
+        
+        class DownloaderThread extends Thread
+        {
+            private byte[]           cacheBuf             = new byte[IMG_VALID_FILE_MIN];
+            private byte[]           blockBuf             = new byte[IMG_DOWNLOAD_BLOCK];
+            
+            private String           containerUrl         = null;
+            private String           imgUrl               = null;
+            
+            public int               numId;
+            
+            public void run()
+            {
+                while (!shouldStopDownloader())
                 {
-                    output.flush();
-                    output.close();
+                    pageProcessLock.waitIfLocked();
+                    String urlSet = jniOperateUrl(imgUrl, URL_TYPE_IMG,
+                            imgProcParam, JNI_OPERATE_GET);
+                    if (urlSet != null)
+                    {
+                        Log.i(TAG, urlSet);
+                        
+                        String[] urls = urlSet.split(" ");
+                        imgUrl = urls[0];
+                        containerUrl = urls[1];
+                        
+                        downloadImg(imgUrl);
+                        
+                        spiderHandler.post(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                reportSpiderLog(false);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        imgUrl = null;
+                        
+                        pageProcessLock.lock();
+                        spiderHandler.post(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                findNextUrlToLoad();
+                            }
+                        });
+                    }
                 }
             }
             
-            if(imgFile!=null)
+            private void recvImgDataLoop(InputStream input, String url) throws IOException
             {
-                changeFileNameAfterDownload(imgFile);
-            }
-        }
-        
-        private void downloadImg(String urlStr)
-        {
-            for(int redirectCnt=0; redirectCnt<REDIRECT_MAX; redirectCnt++)
-            {
+                int totalLen = 0;
+                int cacheUsege=0;
+                File imgFile=null;
+                OutputStream output = null;
+                
                 try
                 {
-                    URL url = new URL(urlStr);
-                    HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
-                    
-                    try
+                    while (true)
                     {
-                        urlConn.setInstanceFollowRedirects(false);
-                        urlConn.setConnectTimeout(30000);
-                        urlConn.setReadTimeout(120000);
-                        urlConn.setRequestProperty("Referer", containerUrl);
-                        urlConn.setRequestProperty("User-Agent", userAgent);
-                        
-                        int res=urlConn.getResponseCode();
-                        Log.i(TAG, res+" "+urlStr);
-                        
-                        if((res/100) == 3)
+                        int len = input.read(blockBuf);
+                        if (len != -1)
                         {
-                            String redirUrl=urlConn.getHeaderField("Location");
-                            
-                            if(redirUrl!=null)
+                            if ((cacheUsege + len) < IMG_VALID_FILE_MIN)
                             {
-                                urlStr=redirUrl.replaceAll(" ", "%20");
+                                System.arraycopy(blockBuf, 0, cacheBuf, cacheUsege, len);
+                                cacheUsege += len;
                             }
                             else
                             {
-                                break;
+                                if (output == null)
+                                {
+                                    imgFile=getImgDownloadCacheFile(url, numId);
+                                    output = new FileOutputStream(imgFile);
+                                }
+                                Log.i(TAG, totalLen+" "+url);
+                                output.write(cacheBuf, 0, cacheUsege);
+                                System.arraycopy(blockBuf, 0, cacheBuf, 0, len);
+                                cacheUsege=len;
                             }
-                            //int fileNamePos=urlStr.lastIndexOf("/")+1;
-                            //urlStr=urlStr.substring(0, fileNamePos)+
-                            //        URLEncoder.encode(urlStr.substring(fileNamePos), "utf_8");
+                            
+                            totalLen += len;
                         }
                         else
                         {
-                            if (res == 200)
-                            {
-                                InputStream input = urlConn.getInputStream();
-                                recvImgDataLoop(input, urlStr);
-                            }
                             break;
                         }
                     }
-                    finally
+                    
+                    if (totalLen < IMG_VALID_FILE_MIN)
                     {
-                        if (urlConn != null)
+                        BitmapFactory.Options opts = new BitmapFactory.Options();
+                        opts.inJustDecodeBounds = true;
+                        BitmapFactory.decodeByteArray(cacheBuf, 0, totalLen, opts);
+                        
+                        Log.i(TAG, "size:" + totalLen + " " + opts.outWidth + "*" + opts.outHeight);
+                        
+                        if (opts.outHeight > IMG_VALID_HEIGHT_MIN
+                                && opts.outWidth > IMG_VALID_WIDTH_MIN)
                         {
-                            urlConn.disconnect();
+                            imgFile=getImgDownloadCacheFile(url, numId);
+                            output = new FileOutputStream(imgFile);
+                            output.write(cacheBuf, 0, totalLen);
                         }
                     }
-                    
+                    else
+                    {
+                        output.write(cacheBuf, 0, cacheUsege);
+                    }
                 }
-                catch (MalformedURLException e)
+                finally
                 {
-                    e.printStackTrace();
+                    if (output != null)
+                    {
+                        output.flush();
+                        output.close();
+                    }
                 }
-                catch (IOException e)
+                
+                if(imgFile!=null)
                 {
-                    e.printStackTrace();
+                    changeFileNameAfterDownload(imgFile);
+                }
+            }
+            
+            private void downloadImg(String urlStr)
+            {
+                for(int redirectCnt=0; redirectCnt<REDIRECT_MAX; redirectCnt++)
+                {
+                    try
+                    {
+                        URL url = new URL(urlStr);
+                        HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
+                        
+                        try
+                        {
+                            urlConn.setInstanceFollowRedirects(false);
+                            urlConn.setConnectTimeout(30000);
+                            urlConn.setReadTimeout(120000);
+                            urlConn.setRequestProperty("Referer", containerUrl);
+                            urlConn.setRequestProperty("User-Agent", userAgent);
+                            
+                            int res=urlConn.getResponseCode();
+                            Log.i(TAG, res+" "+urlStr);
+                            
+                            if((res/100) == 3)
+                            {
+                                String redirUrl=urlConn.getHeaderField("Location");
+                                
+                                if(redirUrl!=null)
+                                {
+                                    urlStr=redirUrl.replaceAll(" ", "%20");
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                                //int fileNamePos=urlStr.lastIndexOf("/")+1;
+                                //urlStr=urlStr.substring(0, fileNamePos)+
+                                //        URLEncoder.encode(urlStr.substring(fileNamePos), "utf_8");
+                            }
+                            else
+                            {
+                                if (res == 200)
+                                {
+                                    InputStream input = urlConn.getInputStream();
+                                    recvImgDataLoop(input, urlStr);
+                                }
+                                break;
+                            }
+                        }
+                        finally
+                        {
+                            if (urlConn != null)
+                            {
+                                urlConn.disconnect();
+                            }
+                        }
+                        
+                    }
+                    catch (MalformedURLException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -893,7 +961,7 @@ public class SpiderService extends Service
         pageProcessLock.lock();
         findNextUrlToLoad();
         
-        startAllImgDownloader();
+        mImgDownloader.startAllThread();
     }
     
     private class TimerThread extends Thread
