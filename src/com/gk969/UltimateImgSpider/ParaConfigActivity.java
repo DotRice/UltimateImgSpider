@@ -42,7 +42,7 @@ public class ParaConfigActivity extends Activity
         Log.i(TAG, "onCreate");
         
         curUrl = getIntent().getExtras().getString(
-                SpiderActivity.SOURCE_URL_BUNDLE_KEY);
+                SpiderActivity.BUNDLE_KEY_SOURCE_URL);
         
         if (curUrl != null)
         {

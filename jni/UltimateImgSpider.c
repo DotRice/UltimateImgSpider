@@ -96,6 +96,14 @@ t_ashmNode *findAshmemByName(const char *name)
 	return NULL;
 }
 
+void Java_com_gk969_UltimateImgSpider_WatchdogService_jniStoreProjectData(JNIEnv* env,
+		jobject thiz, jstring jPath)
+{
+	LOGI("jniStoreProjectData");
+
+
+}
+
 int Java_com_gk969_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
 		jobject thiz, jstring jname, jint size)
 {
@@ -220,7 +228,21 @@ void ashmemTest(JNIEnv* env)
 }
 
 
+void fileTest()
+{
+	FILE *testFile;
 
+	testFile=fopen("/mnt/sdcard/UltimateImgSpider/download/test.txt", "a");
+	fprintf(testFile, "test ");
+	fclose(testFile);
+
+	char buf[100];
+	testFile=fopen("/mnt/sdcard/UltimateImgSpider/download/test.txt", "r");
+	fread(buf, 99, 1, testFile);
+	fclose(testFile);
+
+	LOGI("test file:%s", buf);
+}
 
 
 
@@ -234,6 +256,8 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env
 	SpiderServiceInstance=thiz;
 
 	//ashmemTest(env);
+
+	//fileTest();
 
 	if((*env)->ExceptionOccurred(env)) {
 	   return NULL;

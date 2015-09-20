@@ -51,8 +51,9 @@ public class SpiderActivity extends Activity
     private final String     TAG                   = "SpiderActivity";
     public final static int  REQUST_SRC_URL        = 0;
     
-    final static String      SOURCE_URL_BUNDLE_KEY = "SourceUrl";
-    final static String      CMD_BUNDLE_KEY        = "cmd";
+    final static String      BUNDLE_KEY_SOURCE_URL = "SourceUrl";
+    final static String      BUNDLE_KEY_CMD        = "cmd";
+    final static String      BUNDLE_KEY_PRJ_PATH   = "projectPath";
     
     public final static int  CMD_NOTHING           = 0;
     public final static int  CMD_CLEAR             = 1;
@@ -372,7 +373,7 @@ public class SpiderActivity extends Activity
         if (serviceState != STATE_DISCONNECTED)
         {
             Log.i(TAG, "CMD_CLEAR");
-            sendCmdToSpiderService(CMD_CLEAR);
+            sendCmdToSpiderService(CMD_STOP_STORE);
             unboundSpiderService();
         }
     }
@@ -513,7 +514,7 @@ public class SpiderActivity extends Activity
                 .getName());
         
         Bundle bundle = new Bundle();
-        bundle.putString(SOURCE_URL_BUNDLE_KEY, url);
+        bundle.putString(BUNDLE_KEY_SOURCE_URL, url);
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
         
@@ -532,7 +533,7 @@ public class SpiderActivity extends Activity
                 .getName());
         
         Bundle bundle = new Bundle();
-        bundle.putInt(CMD_BUNDLE_KEY, cmd);
+        bundle.putInt(BUNDLE_KEY_CMD, cmd);
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
     }

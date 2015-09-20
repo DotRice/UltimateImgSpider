@@ -147,12 +147,12 @@ public class SpiderService extends Service
     
     private void sendCmdToWatchdog(int cmd)
     {
-        Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
-        spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
-                .getName());
+        Intent spiderIntent = new Intent(IRemoteWatchdogService.class.getName());
+        spiderIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
         
         Bundle bundle = new Bundle();
-        bundle.putInt(SpiderActivity.CMD_BUNDLE_KEY, cmd);
+        bundle.putInt(SpiderActivity.BUNDLE_KEY_CMD, cmd);
+        bundle.putString(SpiderActivity.BUNDLE_KEY_PRJ_PATH, curSiteDirPath);
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
     }
@@ -189,7 +189,7 @@ public class SpiderService extends Service
     {
         if (intent != null)
         {
-            String url = intent.getStringExtra(SpiderActivity.SOURCE_URL_BUNDLE_KEY);
+            String url = intent.getStringExtra(SpiderActivity.BUNDLE_KEY_SOURCE_URL);
             if (url != null)
             {
                 Log.i(TAG, "onStartCommand url:" + url);
@@ -221,7 +221,7 @@ public class SpiderService extends Service
                 }
             }
             
-            int cmdVal = intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY,SpiderActivity.CMD_NOTHING);
+            int cmdVal = intent.getIntExtra(SpiderActivity.BUNDLE_KEY_CMD,SpiderActivity.CMD_NOTHING);
             Log.i(TAG, "onStartCommand " + cmdVal);
             
             cmd.set(cmdVal);
@@ -513,7 +513,7 @@ public class SpiderService extends Service
             
             String cacheFileName=imgFileRawName + CACHE_MARK;
             
-            Log.i(TAG, "cacheBuf file name:" + cacheFileName);
+            //Log.i(TAG, "cache file name:" + cacheFileName);
             
             
             File cacheFile = new File(curSiteDirPath + "/" + cacheFileName);
@@ -551,6 +551,8 @@ public class SpiderService extends Service
                 }
             }
             downloadingCacheFilePath[tid]=cacheFilePath;
+            
+            Log.i(TAG, "cache file path:"+cacheFilePath);
             
             return new File(cacheFilePath);
         }
@@ -602,7 +604,7 @@ public class SpiderService extends Service
                         imgUrl = urls[0];
                         containerUrl = urls[1];
                         
-                        downloadImg(imgUrl);
+                        downloadImgByUrl(imgUrl);
                         
                         spiderHandler.post(new Runnable()
                         {
@@ -706,7 +708,7 @@ public class SpiderService extends Service
                 }
             }
             
-            private void downloadImg(String urlStr)
+            private void downloadImgByUrl(String urlStr)
             {
                 for(int redirectCnt=0; redirectCnt<REDIRECT_MAX; redirectCnt++)
                 {

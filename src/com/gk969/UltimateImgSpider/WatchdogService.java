@@ -32,9 +32,12 @@ import android.widget.Toast;
 
 public class WatchdogService extends Service
 {
-    private final String TAG = "WatchdogService";
+    private final static String TAG = "WatchdogService";
+    
+    private final static String PROJECT_FILE_NAME = "project.dat";
     
     public native int jniGetAshmem(String name, int size);
+    public native void jniStoreProjectData(String dataFileFullPath);
     
     static
     {
@@ -55,22 +58,17 @@ public class WatchdogService extends Service
         System.exit(0);
     }
     
-    private void storeCurProjectData()
-    {
-        
-    }
-    
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Log.i(TAG, "onStartCommand " + startId);
+        int cmdVal  = intent.getIntExtra(SpiderActivity.BUNDLE_KEY_CMD,SpiderActivity.CMD_NOTHING);
+        String path = intent.getStringExtra(SpiderActivity.BUNDLE_KEY_PRJ_PATH);
         
-        int cmdVal = intent.getIntExtra(SpiderActivity.CMD_BUNDLE_KEY,SpiderActivity.CMD_NOTHING);
-        Log.i(TAG, "onStartCommand " + cmdVal);
+        Log.i(TAG, "onStartCommand:" + cmdVal+ " path:"+path);
         
         if(cmdVal==SpiderActivity.CMD_STOP_STORE)
         {
-            storeCurProjectData();
+            jniStoreProjectData(path+"/"+PROJECT_FILE_NAME);
             stopSelf();
         }
         
