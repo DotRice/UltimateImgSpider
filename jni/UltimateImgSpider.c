@@ -18,7 +18,7 @@
  * Spider进程用这个文件描述符映射此段共享内存到自己的内存空间。
  */
 
-#define ASHM_NAME_SIZE	32
+#define ASHM_NAME_SIZE	31
 
 int ashmem_create_region(const char *name, u32 size)
 {
@@ -63,6 +63,14 @@ typedef struct
 	u32 ashmStat;
 	u8 data[4];
 } t_ashmBlock;
+
+typedef struct
+{
+	char name[ASHM_NAME_SIZE+1];
+	int size;
+	u32 ashmStat;
+}t_ashmParaStore;
+
 #pragma pack()
 
 typedef struct t_ashm
@@ -97,11 +105,31 @@ t_ashmNode *findAshmemByName(const char *name)
 }
 
 void Java_com_gk969_UltimateImgSpider_WatchdogService_jniStoreProjectData(JNIEnv* env,
-		jobject thiz, jstring jPath)
+		jobject thiz, jstring jDataFileFullPath)
 {
-	LOGI("jniStoreProjectData");
+	const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
 
+	LOGI("jniStoreProjectData path:%s", dataFileFullPath);
 
+	FILE *dataFile=fopen(dataFileFullPath, "wb");
+	if(dataFile!=NULL)
+	{
+		t_ashmNode *ashmNode;
+		for(ashmNode=ashmemChainHead; ashmNode!=NULL; ashmNode=ashmNode->next)
+		{
+			t_ashmParaStore ashmParaStore;
+			strncpy(ashmParaStore.name, ashmNode->name, ASHM_NAME_SIZE);
+			ashmParaStore.size=ashmNode->size;
+			ashmParaStore.ashmStat=ashmNode->ashmem->ashmStat;
+
+			fwrite(&ashmParaStore, sizeof(t_ashmParaStore), 1, dataFile);
+			fwrite(ashmNode->ashmem->data, ashmNode->size, 1, dataFile);
+		}
+
+		fclose(dataFile);
+	}
+
+	(*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
 }
 
 int Java_com_gk969_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
