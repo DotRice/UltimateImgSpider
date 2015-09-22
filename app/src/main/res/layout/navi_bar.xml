@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/navibar_layout_height"
+    android:baselineAligned="false"
+    android:background="#EEE"
+    android:orientation="horizontal" >
+   
+    <ImageButton
+        android:id="@+id/buttonBack"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/back"
+        android:contentDescription="@string/back"
+        android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
+
+    <ImageButton 
+        android:id="@+id/buttonForward"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/forward"
+        android:contentDescription="@string/forward"
+       	android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
+	   
+    <ImageButton 
+        android:id="@+id/buttonSpiderGo"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/spidergo"
+        android:contentDescription="@string/spiderGo"
+       	android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
+	    
+    <ImageButton 
+        android:id="@+id/buttonHome"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/home"
+        android:contentDescription="@string/home"
+      	android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
+	 
+    <ImageButton 
+        android:id="@+id/buttonMenu"
+       	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/navibar_layout_height"
+        android:src="@drawable/menu"
+        android:contentDescription="@string/menu"
+     	android:scaleType="fitCenter"
+    	android:background="@drawable/button_bcakground_selector" />
+
+</LinearLayout>

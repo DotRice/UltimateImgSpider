@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/urlBar"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="#EEE" >
+	
+    <FrameLayout
+        android:id="@+id/FrameLayoutSelSearchEngine"
+    	android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_width="43dp"
+        android:layout_height="42dp"
+        android:paddingTop="7dp"
+        android:paddingLeft="13dp"
+	    android:paddingBottom="5dp" >
+        
+        <FrameLayout 
+        	android:id="@+id/FrameLayoutSSEngineBackground"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:padding="4dp"
+			android:background="#FFF" >
+            
+			<ImageButton
+				android:id="@+id/buttonSelSearchEngine"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+		        android:src="@drawable/site"
+				android:background="#FFF"
+		       	android:scaleType="fitCenter"/>
+        </FrameLayout>
+    </FrameLayout>
+    
+    <FrameLayout 
+	    android:id="@+id/FrameLayoutURLcmd"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_width="45dp"
+        android:layout_height="42dp"
+	    android:paddingLeft="8dp"
+	    android:paddingRight="13dp"
+	    android:paddingTop="10dp"
+	    android:paddingBottom="8dp">
+        
+        <Button
+	        android:id="@+id/buttonURLcmd"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:background="@drawable/cancel"/>
+    </FrameLayout>
+    
+    <EditText
+        android:id="@+id/editTextUrl"
+	    android:layout_height="30dp"
+	    android:layout_width="match_parent"
+        android:layout_marginTop="7dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@id/FrameLayoutURLcmd"
+        android:layout_toRightOf="@id/FrameLayoutSelSearchEngine"
+        android:hint="@string/searchOrInputURL"
+        android:inputType="textUri"
+        android:imeOptions="actionGo"
+        android:paddingLeft="2dp"
+       	android:background="#FFF"
+        android:singleLine="true"
+        android:textSize="16sp" />
+    
+    <ProgressBar
+        android:id="@+id/progressBarWebView"
+        style="@style/ProgressBar_Mini"
+        android:layout_width="match_parent"
+        android:layout_height="1.5dp"
+        android:layout_below="@+id/FrameLayoutURLcmd" />
+    
+
+</RelativeLayout>

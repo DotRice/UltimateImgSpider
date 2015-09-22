@@ -1,0 +1,16 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.gk969.UltimateImgSpider.ParaConfigActivity"
+    tools:ignore="MergeRootFrame" >
+
+    <WebView
+        android:id="@+id/webViewParaConfig"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+
+</FrameLayout>
+<!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/layout/activity_para_config.xml -->

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/arrays.xml -->
+    <eat-comment/>
+    <string-array name="noLongerConfirm">
+        <item>不再提醒</item>
+    </string-array>
+    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/dimens.xml -->
+    <eat-comment/>
+    <dimen name="navibar_layout_height">45dp</dimen>
+    <dimen name="projbar_layout_height">45dp</dimen>
+    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/styles.xml -->
+    <eat-comment/>
+    <drawable name="background_normal">#FFF</drawable>
+    <drawable name="background_pressed">#CFC</drawable>
+    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="OK">确定</string>
+    <string name="appPackageName">UltimateImgSpider</string>
+    <string name="app_name">优优看图</string>
+    <string name="back">后退</string>
+    <string name="badExternalStoragePrompt">外部存储空间出错！</string>
+    <string name="cancel">取消</string>
+    <string name="clear">清空</string>
+    <string name="colorAction">#00B060</string>
+    <string name="colorCancel">#505050</string>
+    <string name="defaultHomeUrl">http://www.baidu.com/</string>
+    <string name="defaultUserAgent">Mozilla/5.0 (Linux; Android 4.2.2; GT-I9505 Build/JDQ39) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.59 Mobile Safari/537.36</string>
+    <string name="delete">删除</string>
+    <string name="enter">进入</string>
+    <string name="exit">退出</string>
+    <string name="forward">前进</string>
+    <string name="goOn">继续</string>
+    <string name="help">帮助</string>
+    <string name="home">主页</string>
+    <string name="keyBackExitConfirm">再按一次返回键，退出</string>
+    <string name="menu">菜单</string>
+    <string name="more">更多</string>
+    <string name="newProj">新建</string>
+    <string name="notSet">未设置</string>
+    <string name="option">选项</string>
+    <string name="pause">暂停</string>
+    <string name="prompt">提示</string>
+    <string name="refresh">刷新</string>
+    <string name="retry">重试</string>
+    <string name="search">搜索</string>
+    <string name="searchOrInputURL">搜索或输入网址</string>
+    <string name="selSearchEngine">选择搜索引擎</string>
+    <string name="selSrc">选择站点</string>
+    <string name="settings">设置</string>
+    <string name="spiderGo">开始抓图</string>
+    <string name="spiderGoConfirm">确定从当前网页开始抓图？</string>
+    <string name="srcUrl">起始地址</string>
+    <string name="srcUrlHint">http://</string>
+    <string name="start">开始</string>
+    <string name="stop">结束</string>
+    <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
+    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/styles.xml -->
+    <eat-comment/>
+    <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
+    </style>
+    <style name="AppTheme" parent="AppBaseTheme">
+        <!--<item name="android:actionBarStyle">@style/MyActionBar</item>-->
+    </style>
+    <style name="ProgressBar_Mini" parent="@android:style/Widget.Holo.Light.ProgressBar.Horizontal">
+        <item name="android:maxHeight">2dp</item>
+        <item name="android:minHeight">2dp</item>
+        <item name="android:progressDrawable">@drawable/progress_bar</item>
+    </style>
+</resources>

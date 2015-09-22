@@ -1,0 +1,32 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+	tools:context="com.gk969.UltimateImgSpider.SpiderCrawlActivity"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+    
+	<RelativeLayout
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:background="#EEE"
+	>
+		
+		<include
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentBottom="true"
+	        layout="@layout/proj_bar" />
+	</RelativeLayout>
+
+
+    <TextView 
+        android:id="@+id/tvSpiderLog"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:textColor="#F00"
+	    android:textSize="18sp"
+	    android:background="#FFF"
+        />
+	
+</FrameLayout>
+<!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/layout/activity_spider_crawl.xml -->
