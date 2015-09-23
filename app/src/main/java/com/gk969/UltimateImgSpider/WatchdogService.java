@@ -33,60 +33,72 @@ import android.widget.Toast;
 public class WatchdogService extends Service
 {
     private final static String TAG = "WatchdogService";
-    
+
     private final static String PROJECT_FILE_NAME = "project.dat";
-    
+
+    private String dataFileFullPath;
+
+    private boolean getFirstAshmem=true;
+
     public native int jniGetAshmem(String name, int size);
-    public native void jniStoreProjectData(String dataFileFullPath);
-    
+
+    public native void jniRestoreProjectData(String path);
+    public native void jniStoreProjectData(String path);
+
+
     static
     {
         System.loadLibrary("UltimateImgSpider");
     }
-    
+
     @Override
     public void onCreate()
     {
         Log.i(TAG, "onCreate");
     }
-    
+
     @Override
     public void onDestroy()
     {
         Log.i(TAG, "onDestroy");
-        
+
         System.exit(0);
     }
-    
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        int cmdVal  = intent.getIntExtra(SpiderActivity.BUNDLE_KEY_CMD,SpiderActivity.CMD_NOTHING);
+        int cmdVal = intent.getIntExtra(SpiderActivity.BUNDLE_KEY_CMD, SpiderActivity.CMD_NOTHING);
         String path = intent.getStringExtra(SpiderActivity.BUNDLE_KEY_PRJ_PATH);
-        
-        Log.i(TAG, "onStartCommand:" + cmdVal+ " path:"+path);
-        
-        if(cmdVal==SpiderActivity.CMD_STOP_STORE)
+
+        Log.i(TAG, "onStartCommand:" + cmdVal + " path:" + path);
+
+        if (path != null)
         {
-            jniStoreProjectData(path+"/"+PROJECT_FILE_NAME);
+            dataFileFullPath = path + "/" + PROJECT_FILE_NAME;
+        }
+
+        if (cmdVal == SpiderActivity.CMD_STOP_STORE)
+        {
+            jniStoreProjectData(dataFileFullPath);
             stopSelf();
         }
-        
+
         return START_STICKY;
     }
-    
+
     @Override
     public IBinder onBind(Intent intent)
     {
         Log.i(TAG, "onBind:" + intent.getAction());
-        
+
         if (IRemoteWatchdogService.class.getName().equals(intent.getAction()))
         {
             return mBinder;
         }
         return null;
     }
-    
+
     /**
      * The IRemoteInterface is defined through IDL
      */
@@ -99,14 +111,18 @@ public class WatchdogService extends Service
             ParcelFileDescriptor parcelFd = null;
             try
             {
+                if(getFirstAshmem)
+                {
+                    jniRestoreProjectData(dataFileFullPath);
+                    getFirstAshmem=false;
+                }
                 parcelFd = ParcelFileDescriptor.fromFd(jniGetAshmem(name,
                         size));
-            }
-            catch (IOException e)
+            } catch (IOException e)
             {
                 e.printStackTrace();
             }
-            
+
             return parcelFd;
         }
     };

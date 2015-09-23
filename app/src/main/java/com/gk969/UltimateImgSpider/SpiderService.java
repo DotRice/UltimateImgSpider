@@ -134,7 +134,10 @@ public class SpiderService extends Service
         Intent watchdogIntent = new Intent(
                 IRemoteWatchdogService.class.getName());
         watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
-        
+
+        Bundle bundle = new Bundle();
+        bundle.putString(SpiderActivity.BUNDLE_KEY_PRJ_PATH, curSiteDirPath);
+        watchdogIntent.putExtras(bundle);
         startService(watchdogIntent);
         bindService(watchdogIntent, watchdogConnection, BIND_ABOVE_CLIENT);
     }
@@ -147,22 +150,19 @@ public class SpiderService extends Service
     
     private void sendCmdToWatchdog(int cmd)
     {
-        Intent spiderIntent = new Intent(IRemoteWatchdogService.class.getName());
-        spiderIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
+        Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
+        watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
         
         Bundle bundle = new Bundle();
         bundle.putInt(SpiderActivity.BUNDLE_KEY_CMD, cmd);
-        bundle.putString(SpiderActivity.BUNDLE_KEY_PRJ_PATH, curSiteDirPath);
-        spiderIntent.putExtras(bundle);
-        startService(spiderIntent);
+        watchdogIntent.putExtras(bundle);
+        startService(watchdogIntent);
     }
     
     @Override
     public void onCreate()
     {
         Log.i(TAG, "onCreate");
-        watchdogInterfaceInit();
-        startWatchdog();
     }
     
     @Override
@@ -217,6 +217,9 @@ public class SpiderService extends Service
                     else
                     {
                         curSiteDirPath = siteDir.getPath();
+
+                        watchdogInterfaceInit();
+                        startWatchdog();
                     }
                 }
             }
@@ -278,8 +281,7 @@ public class SpiderService extends Service
         int fd = -1;
         try
         {
-            ParcelFileDescriptor parcelFd = watchdogService.getAshmem(name,
-                    size);
+            ParcelFileDescriptor parcelFd = watchdogService.getAshmem(name, size);
             if (parcelFd != null)
             {
                 fd = parcelFd.getFd();

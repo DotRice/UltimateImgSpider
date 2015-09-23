@@ -504,26 +504,21 @@ public class SpiderActivity extends Activity
         }
         
     }
-    
-    private Intent sendUrlToSpiderService(String url)
+
+    private void startAndBindSpiderService(String src)
     {
-        Log.i(TAG, "startAndBindSpiderService src:" + url);
-        
+        Log.i(TAG, "startAndBindSpiderService src:" + src);
+
         Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
         spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
                 .getName());
-        
+
         Bundle bundle = new Bundle();
-        bundle.putString(BUNDLE_KEY_SOURCE_URL, url);
+        bundle.putString(BUNDLE_KEY_SOURCE_URL, src);
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
-        
-        return spiderIntent;
-    }
-    
-    private void startAndBindSpiderService(String src)
-    {
-        bindService(sendUrlToSpiderService(src), mConnection, BIND_ABOVE_CLIENT);
+
+        bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
     }
     
     private void sendCmdToSpiderService(int cmd)

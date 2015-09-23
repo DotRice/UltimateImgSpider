@@ -1,0 +1,32 @@
+Applications Memory Usage (kB):
+Uptime: 837807527 Realtime: 3192205530
+
+** MEMINFO in pid 15960 [com.gk969.UltimateImgSpider] **
+                   Pss  Private  Private  Swapped     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap        0        0        0        0     4180     4149       30
+  Dalvik Heap     1981     1740        0        0     7396     6387     1009
+ Dalvik Other     1027      900        0        0                           
+        Stack       20       20        0        0                           
+    Other dev     5359     3220     2120        0                           
+     .so mmap      870      472       24        0                           
+    .apk mmap       47        0        4        0                           
+    .ttf mmap      414        0      252        0                           
+    .dex mmap      653        8      140        0                           
+   Other mmap        9        4        0        0                           
+      Unknown     2549     2532        0        0                           
+        TOTAL    12929     8896     2540        0    11576    10536     1039
+ 
+ Objects
+               Views:       41         ViewRootImpl:        1
+         AppContexts:        3           Activities:        1
+              Assets:        2        AssetManagers:        2
+       Local Binders:        9        Proxy Binders:       17
+    Death Recipients:        1
+     OpenSSL Sockets:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 

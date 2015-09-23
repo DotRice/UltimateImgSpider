@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: F:\\android\\UltimateImgSpider-AS\\app\\src\\main\\aidl\\com\\gk969\\UltimateImgSpider\\IRemoteWatchdogService.aidl
+ * Original file: D:\\android\\UltimateImgSpider\\app\\src\\main\\aidl\\com\\gk969\\UltimateImgSpider\\IRemoteWatchdogService.aidl
  */
 package com.gk969.UltimateImgSpider;
 public interface IRemoteWatchdogService extends android.os.IInterface

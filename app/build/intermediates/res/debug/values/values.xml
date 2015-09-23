@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/arrays.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/arrays.xml -->
     <eat-comment/>
     <string-array name="noLongerConfirm">
         <item>不再提醒</item>
     </string-array>
-    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/dimens.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/dimens.xml -->
     <eat-comment/>
     <dimen name="navibar_layout_height">45dp</dimen>
     <dimen name="projbar_layout_height">45dp</dimen>
-    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/styles.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/styles.xml -->
     <eat-comment/>
     <drawable name="background_normal">#FFF</drawable>
     <drawable name="background_pressed">#CFC</drawable>
-    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/strings.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="OK">确定</string>
     <string name="appPackageName">UltimateImgSpider</string>
@@ -55,7 +55,7 @@
     <string name="start">开始</string>
     <string name="stop">结束</string>
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
-    <!-- From: file:/F:/android/UltimateImgSpider-AS/app/src/main/res/values/styles.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/styles.xml -->
     <eat-comment/>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!--
