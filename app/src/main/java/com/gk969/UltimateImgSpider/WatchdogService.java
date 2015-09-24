@@ -1,6 +1,7 @@
 package com.gk969.UltimateImgSpider;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -85,7 +86,6 @@ public class WatchdogService extends Service
             byte[] md5Value = Utils.getFileMD5(dataFileFullPath);
             OutputStream md5Out = new FileOutputStream(projectPath + "/" + MD5_FILE_NAME);
             md5Out.write(md5Value);
-            md5Out.flush();
             md5Out.close();
         } catch (FileNotFoundException e)
         {
@@ -94,6 +94,29 @@ public class WatchdogService extends Service
         {
             e.printStackTrace();
         }
+    }
+
+    private boolean projectDataIsSafe()
+    {
+        try
+        {
+            byte[] md5Value = Utils.getFileMD5(dataFileFullPath);
+
+            byte[] md5InFile=new byte[16];
+            FileInputStream md5In = new FileInputStream(projectPath + "/" + MD5_FILE_NAME);
+            md5In.read(md5InFile);
+            md5In.close();
+
+            return Utils.isArrayEquals(md5Value, md5InFile);
+        } catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     @Override
@@ -145,7 +168,10 @@ public class WatchdogService extends Service
             {
                 if (getFirstAshmem)
                 {
-                    jniRestoreProjectData(dataFileFullPath);
+                    if(projectDataIsSafe())
+                    {
+                        jniRestoreProjectData(dataFileFullPath);
+                    }
                     getFirstAshmem = false;
                 }
                 parcelFd = ParcelFileDescriptor.fromFd(jniGetAshmem(name,

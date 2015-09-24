@@ -39,9 +39,29 @@ public class Utils
         return i;
     }
 
+    public static boolean isArrayEquals(byte[] array1, byte[] array2)
+    {
+        if(array1.length==array2.length)
+        {
+            int len=array2.length;
+
+            for(int i=0; i<len; i++)
+            {
+                if(array1[i]!=array2[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public static byte[] getFileMD5(String filePath)
     {
-        int bufferSize = 64 * 1024;
+        int bufferSize = 8 * 1024;
         FileInputStream fileInputStream = null;
         DigestInputStream digestInputStream = null;
 

@@ -3,4 +3,4 @@
     <item android:drawable="@drawable/background_normal" android:state_pressed="false"/>
     <item android:drawable="@drawable/background_pressed" android:state_pressed="true"/>
 </selector>
-<!-- From: file:/F:/android/UltimateImgSpider/app/src/main/res/drawable/button_bcakground_selector.xml -->
+<!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/drawable/button_bcakground_selector.xml -->

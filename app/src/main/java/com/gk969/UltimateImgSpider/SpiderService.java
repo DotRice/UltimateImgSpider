@@ -103,16 +103,7 @@ public class SpiderService extends Service
             {
                 
                 watchdogService = IRemoteWatchdogService.Stub.asInterface(service);
-                
-                stringFromJNI("ashmem");
-                
-                if (!jniSpiderInit())
-                {
-                    stopSelfAndWatchdog();
-                }
-                
-                spiderInit();
-                
+
                 Log.i(TAG, "onServiceConnected");
             }
             
@@ -126,7 +117,19 @@ public class SpiderService extends Service
             }
         };
     }
-    
+
+    private void startSpider()
+    {
+        stringFromJNI("ashmem");
+
+        if (!jniSpiderInit())
+        {
+            stopSelfAndWatchdog();
+        }
+
+        spiderInit();
+    }
+
     private void startWatchdog()
     {
         Log.i(TAG, "startWatchdog");
@@ -699,7 +702,6 @@ public class SpiderService extends Service
                 {
                     if (output != null)
                     {
-                        output.flush();
                         output.close();
                     }
                 }

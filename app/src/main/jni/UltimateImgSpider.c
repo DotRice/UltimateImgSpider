@@ -146,6 +146,7 @@ int createNewAshmem(const char *name, int size, u8 **addr)
 
                 if(strcmp(name, "ashmTest")==0)
                 {
+					int i;
                     for(i=0; i<8; i++)
                     {
                         ashm->data[i]=i;
@@ -165,7 +166,7 @@ void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIE
 
     LOGI("jniRestoreProjectData path:%s", dataFileFullPath);
 
-    FIlE *dataFile=fopen(dataFileFullPath, "w");
+    FILE *dataFile=fopen(dataFileFullPath, "w");
     if(dataFile!=NULL)
     {
         t_ashmParaStore ashmParaStore;
@@ -184,7 +185,7 @@ void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIE
                 break;
             }
 
-            if(fread(data, t_ashmParaStore.size, 1, dataFile)!=1)
+            if(fread(data, ashmParaStore.size, 1, dataFile)!=1)
             {
                 break;
             }
