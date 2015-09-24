@@ -1,8 +1,14 @@
 package com.gk969.UltimateImgSpider;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,19 +36,24 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.gk969.Utils.Utils;
+
 public class WatchdogService extends Service
 {
     private final static String TAG = "WatchdogService";
 
     private final static String PROJECT_FILE_NAME = "project.dat";
+    private final static String MD5_FILE_NAME = "md5.dat";
 
+    private String projectPath;
     private String dataFileFullPath;
 
-    private boolean getFirstAshmem=true;
+    private boolean getFirstAshmem = true;
 
     public native int jniGetAshmem(String name, int size);
 
     public native void jniRestoreProjectData(String path);
+
     public native void jniStoreProjectData(String path);
 
 
@@ -65,6 +76,26 @@ public class WatchdogService extends Service
         System.exit(0);
     }
 
+    private void storeProjectData()
+    {
+        jniStoreProjectData(dataFileFullPath);
+
+        try
+        {
+            byte[] md5Value = Utils.getFileMD5(dataFileFullPath);
+            OutputStream md5Out = new FileOutputStream(projectPath + "/" + MD5_FILE_NAME);
+            md5Out.write(md5Value);
+            md5Out.flush();
+            md5Out.close();
+        } catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
@@ -75,12 +106,13 @@ public class WatchdogService extends Service
 
         if (path != null)
         {
+            projectPath = path;
             dataFileFullPath = path + "/" + PROJECT_FILE_NAME;
         }
 
         if (cmdVal == SpiderActivity.CMD_STOP_STORE)
         {
-            jniStoreProjectData(dataFileFullPath);
+            storeProjectData();
             stopSelf();
         }
 
@@ -111,10 +143,10 @@ public class WatchdogService extends Service
             ParcelFileDescriptor parcelFd = null;
             try
             {
-                if(getFirstAshmem)
+                if (getFirstAshmem)
                 {
                     jniRestoreProjectData(dataFileFullPath);
-                    getFirstAshmem=false;
+                    getFirstAshmem = false;
                 }
                 parcelFd = ParcelFileDescriptor.fromFd(jniGetAshmem(name,
                         size));

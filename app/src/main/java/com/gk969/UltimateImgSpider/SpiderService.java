@@ -493,14 +493,14 @@ public class SpiderService extends Service
                 else
                 {
                     downloaderThreads[i] = new DownloaderThread();
-                    downloaderThreads[i].numId=i;
+                    downloaderThreads[i].threadIndex=i;
                     downloaderThreads[i].start();
                 }
             }
         }
         
 
-        private synchronized File getImgDownloadCacheFile(String imgUrl, int tid)
+        private synchronized File getImgDownloadCacheFile(String imgUrl, int threadIndex)
         {
             String[] urlSplit = imgUrl.split("/");
             String imgFileRawName=null;
@@ -552,7 +552,7 @@ public class SpiderService extends Service
                     break;
                 }
             }
-            downloadingCacheFilePath[tid]=cacheFilePath;
+            downloadingCacheFilePath[threadIndex]=cacheFilePath;
             
             Log.i(TAG, "cache file path:"+cacheFilePath);
             
@@ -589,7 +589,7 @@ public class SpiderService extends Service
             private String           containerUrl         = null;
             private String           imgUrl               = null;
             
-            public int               numId;
+            public int               threadIndex;
             
             public void run()
             {
@@ -657,7 +657,7 @@ public class SpiderService extends Service
                             {
                                 if (output == null)
                                 {
-                                    imgFile=getImgDownloadCacheFile(url, numId);
+                                    imgFile=getImgDownloadCacheFile(url, threadIndex);
                                     output = new FileOutputStream(imgFile);
                                 }
                                 Log.i(TAG, totalLen+" "+url);
@@ -685,7 +685,7 @@ public class SpiderService extends Service
                         if (opts.outHeight > IMG_VALID_HEIGHT_MIN
                                 && opts.outWidth > IMG_VALID_WIDTH_MIN)
                         {
-                            imgFile=getImgDownloadCacheFile(url, numId);
+                            imgFile=getImgDownloadCacheFile(url, threadIndex);
                             output = new FileOutputStream(imgFile);
                             output.write(cacheBuf, 0, totalLen);
                         }
