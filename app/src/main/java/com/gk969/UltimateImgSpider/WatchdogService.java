@@ -57,6 +57,8 @@ public class WatchdogService extends Service
 
     public native void jniStoreProjectData(String path);
 
+    final RemoteCallbackList<IRemoteWatchdogServiceCallback> mCallbacks
+            = new RemoteCallbackList<IRemoteWatchdogServiceCallback>();
 
     static
     {
@@ -73,6 +75,7 @@ public class WatchdogService extends Service
     public void onDestroy()
     {
         Log.i(TAG, "onDestroy");
+        mCallbacks.kill();
 
         System.exit(0);
     }
@@ -119,6 +122,23 @@ public class WatchdogService extends Service
         return false;
     }
 
+    private void projectPathRecved()
+    {
+        int numOfCallback = mCallbacks.beginBroadcast();
+        for (int i = 0; i < numOfCallback; i++)
+        {
+            try
+            {
+                mCallbacks.getBroadcastItem(i).reportStatus();
+            }
+            catch (RemoteException e)
+            {
+
+            }
+        }
+        mCallbacks.finishBroadcast();
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
@@ -127,10 +147,11 @@ public class WatchdogService extends Service
 
         Log.i(TAG, "onStartCommand:" + cmdVal + " path:" + path);
 
-        if (path != null)
+        if ((path != null)&&(projectPath==null))
         {
             projectPath = path;
             dataFileFullPath = path + "/" + PROJECT_FILE_NAME;
+
         }
 
         if (cmdVal == SpiderActivity.CMD_STOP_STORE)
@@ -182,6 +203,22 @@ public class WatchdogService extends Service
             }
 
             return parcelFd;
+        }
+
+        public void registerCallback(IRemoteWatchdogServiceCallback cb)
+        {
+            if (cb != null)
+            {
+                mCallbacks.register(cb);
+            }
+        }
+
+        public void unregisterCallback(IRemoteWatchdogServiceCallback cb)
+        {
+            if (cb != null)
+            {
+                mCallbacks.unregister(cb);
+            }
         }
     };
 }

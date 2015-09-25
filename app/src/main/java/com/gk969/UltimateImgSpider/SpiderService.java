@@ -78,24 +78,38 @@ public class SpiderService extends Service
     IRemoteWatchdogService                                 watchdogService    = null;
     
     private ServiceConnection                              watchdogConnection;
+
+    private IRemoteWatchdogServiceCallback                 watchdogCallback;
     
     private final IRemoteSpiderService.Stub                mBinder = new IRemoteSpiderService.Stub()
     {
         public void registerCallback(IRemoteSpiderServiceCallback cb)
         {
             if (cb != null)
+            {
                 mCallbacks.register(cb);
+            }
         }
         
         public void unregisterCallback(IRemoteSpiderServiceCallback cb)
         {
             if (cb != null)
+            {
                 mCallbacks.unregister(cb);
+            }
         }
     };
     
     private void watchdogInterfaceInit()
     {
+        watchdogCallback=new IRemoteWatchdogServiceCallback.Stub()
+        {
+            public void projectPathRecved()
+            {
+                startSpider();
+            }
+        };
+
         watchdogConnection = new ServiceConnection()
         {
             public void onServiceConnected(ComponentName className,
@@ -103,6 +117,15 @@ public class SpiderService extends Service
             {
                 
                 watchdogService = IRemoteWatchdogService.Stub.asInterface(service);
+
+                try
+                {
+                    watchdogService.registerCallback(watchdogCallback);
+                }
+                catch (RemoteException e)
+                {
+
+                }
 
                 Log.i(TAG, "onServiceConnected");
             }

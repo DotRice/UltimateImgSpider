@@ -6,6 +6,5 @@ package com.gk969.UltimateImgSpider;
  * one-way interface so the server does not block waiting for the client.
  */
 oneway interface IRemoteSpiderServiceCallback {
-
     void reportStatus(String value);
 }
