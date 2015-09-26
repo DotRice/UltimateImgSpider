@@ -49,8 +49,6 @@ public class WatchdogService extends Service
     private String projectPath;
     private String dataFileFullPath;
 
-    private boolean getFirstAshmem = true;
-
     public native int jniGetAshmem(String name, int size);
 
     public native void jniRestoreProjectData(String path);
@@ -124,12 +122,19 @@ public class WatchdogService extends Service
 
     private void projectPathRecved()
     {
+        Log.i(TAG, "projectPathRecved");
+
+        if(projectDataIsSafe())
+        {
+            jniRestoreProjectData(dataFileFullPath);
+        }
+
         int numOfCallback = mCallbacks.beginBroadcast();
         for (int i = 0; i < numOfCallback; i++)
         {
             try
             {
-                mCallbacks.getBroadcastItem(i).reportStatus();
+                mCallbacks.getBroadcastItem(i).projectPathRecved();
             }
             catch (RemoteException e)
             {
@@ -151,7 +156,7 @@ public class WatchdogService extends Service
         {
             projectPath = path;
             dataFileFullPath = path + "/" + PROJECT_FILE_NAME;
-
+            projectPathRecved();
         }
 
         if (cmdVal == SpiderActivity.CMD_STOP_STORE)
@@ -187,14 +192,6 @@ public class WatchdogService extends Service
             ParcelFileDescriptor parcelFd = null;
             try
             {
-                if (getFirstAshmem)
-                {
-                    if(projectDataIsSafe())
-                    {
-                        jniRestoreProjectData(dataFileFullPath);
-                    }
-                    getFirstAshmem = false;
-                }
                 parcelFd = ParcelFileDescriptor.fromFd(jniGetAshmem(name,
                         size));
             } catch (IOException e)
@@ -209,6 +206,7 @@ public class WatchdogService extends Service
         {
             if (cb != null)
             {
+                Log.i(TAG, "registerCallback");
                 mCallbacks.register(cb);
             }
         }

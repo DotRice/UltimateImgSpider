@@ -18,7 +18,7 @@
  * Spider进程用这个文件描述符映射此段共享内存到自己的内存空间。
  */
 
-#define ASHM_NAME_SIZE	31
+#define ASHM_NAME_SIZE	32
 
 int ashmem_create_region(const char *name, u32 size)
 {
@@ -66,7 +66,7 @@ typedef struct
 
 typedef struct
 {
-	char name[ASHM_NAME_SIZE+1];
+	char name[ASHM_NAME_SIZE];
 	int size;
 	u32 ashmStat;
 }t_ashmParaStore;
@@ -75,7 +75,7 @@ typedef struct
 
 typedef struct t_ashm
 {
-	char name[ASHM_NAME_SIZE+1];
+	char name[ASHM_NAME_SIZE];
 	int size;
 	int fd;
 	t_ashmBlock *ashmem;
@@ -166,7 +166,7 @@ void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIE
 
     LOGI("jniRestoreProjectData path:%s", dataFileFullPath);
 
-    FILE *dataFile=fopen(dataFileFullPath, "w");
+    FILE *dataFile=fopen(dataFileFullPath, "r");
     if(dataFile!=NULL)
     {
         t_ashmParaStore ashmParaStore;
@@ -175,6 +175,7 @@ void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIE
         {
             if(fread(&ashmParaStore, sizeof(t_ashmParaStore), 1, dataFile)!=1)
             {
+                LOGI("fread ashmParaStore error");
                 break;
             }
 
@@ -182,13 +183,17 @@ void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIE
             int fd=createNewAshmem(ashmParaStore.name, ashmParaStore.size, &data);
             if(fd<0)
             {
+                LOGI("createNewAshmem error");
                 break;
             }
 
             if(fread(data, ashmParaStore.size, 1, dataFile)!=1)
             {
+                LOGI("fread data error");
                 break;
             }
+            
+            LOGI("Restore AshmNode Name:%s Size:%d Success", ashmParaStore.name, ashmParaStore.size);
         }
     }
     (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
@@ -229,9 +234,11 @@ int Java_com_gk969_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
 	s64 fdWithOption;
 	const char *name = (*env)->GetStringUTFChars(env, jname, NULL);
 
+    LOGI("WatchdogService_jniGetAshmem %s", name);
 	t_ashmNode *ashmNode=findAshmemByName(name);
 	if(ashmNode!=NULL)
 	{
+        LOGI("ashmNode %s Exist", name);
 		ashmNode->ashmem->ashmStat=ASHM_EXIST;
 		fd=ashmNode->fd;
 	}

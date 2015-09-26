@@ -106,7 +106,16 @@ public class SpiderService extends Service
         {
             public void projectPathRecved()
             {
-                startSpider();
+                Log.i(TAG, "projectPathRecved");
+
+                spiderHandler.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        startSpider();
+                    }
+                });
             }
         };
 
@@ -115,19 +124,21 @@ public class SpiderService extends Service
             public void onServiceConnected(ComponentName className,
                     IBinder service)
             {
+                Log.i(TAG, "onServiceConnected");
                 
                 watchdogService = IRemoteWatchdogService.Stub.asInterface(service);
 
                 try
                 {
                     watchdogService.registerCallback(watchdogCallback);
+
+                    sendCmdToWatchdog(SpiderActivity.CMD_NOTHING);
                 }
                 catch (RemoteException e)
                 {
 
                 }
 
-                Log.i(TAG, "onServiceConnected");
             }
             
             public void onServiceDisconnected(ComponentName className)
@@ -157,13 +168,9 @@ public class SpiderService extends Service
     {
         Log.i(TAG, "startWatchdog");
         
-        Intent watchdogIntent = new Intent(
-                IRemoteWatchdogService.class.getName());
+        Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
         watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
 
-        Bundle bundle = new Bundle();
-        bundle.putString(SpiderActivity.BUNDLE_KEY_PRJ_PATH, curSiteDirPath);
-        watchdogIntent.putExtras(bundle);
         startService(watchdogIntent);
         bindService(watchdogIntent, watchdogConnection, BIND_ABOVE_CLIENT);
     }
@@ -181,6 +188,7 @@ public class SpiderService extends Service
         
         Bundle bundle = new Bundle();
         bundle.putInt(SpiderActivity.BUNDLE_KEY_CMD, cmd);
+        bundle.putString(SpiderActivity.BUNDLE_KEY_PRJ_PATH, curSiteDirPath);
         watchdogIntent.putExtras(bundle);
         startService(watchdogIntent);
     }
@@ -233,9 +241,8 @@ public class SpiderService extends Service
                         e.printStackTrace();
                         stopSelfAndWatchdog();
                     }
-                    File siteDir = Utils
-                            .getDirInExtSto(getString(R.string.appPackageName)
-                                    + "/download/" + srcHost);
+                    File siteDir = Utils.getDirInExtSto(getString(R.string.appPackageName)
+                            + "/download/" + srcHost);
                     if (siteDir == null)
                     {
                         stopSelfAndWatchdog();
@@ -622,8 +629,7 @@ public class SpiderService extends Service
                 while (!shouldStopDownloader())
                 {
                     pageProcessLock.waitIfLocked();
-                    String urlSet = jniOperateUrl(imgUrl, URL_TYPE_IMG,
-                            imgProcParam, JNI_OPERATE_GET);
+                    String urlSet = jniOperateUrl(imgUrl, URL_TYPE_IMG, imgProcParam, JNI_OPERATE_GET);
                     if (urlSet != null)
                     {
                         Log.i(TAG, urlSet);

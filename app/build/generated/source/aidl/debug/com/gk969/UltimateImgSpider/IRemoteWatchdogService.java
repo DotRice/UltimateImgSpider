@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: F:\\android\\UltimateImgSpider\\app\\src\\main\\aidl\\com\\gk969\\UltimateImgSpider\\IRemoteWatchdogService.aidl
+ * Original file: D:\\android\\UltimateImgSpider\\app\\src\\main\\aidl\\com\\gk969\\UltimateImgSpider\\IRemoteWatchdogService.aidl
  */
 package com.gk969.UltimateImgSpider;
 public interface IRemoteWatchdogService extends android.os.IInterface
@@ -60,6 +60,24 @@ reply.writeInt(0);
 }
 return true;
 }
+case TRANSACTION_registerCallback:
+{
+data.enforceInterface(DESCRIPTOR);
+com.gk969.UltimateImgSpider.IRemoteWatchdogServiceCallback _arg0;
+_arg0 = com.gk969.UltimateImgSpider.IRemoteWatchdogServiceCallback.Stub.asInterface(data.readStrongBinder());
+this.registerCallback(_arg0);
+reply.writeNoException();
+return true;
+}
+case TRANSACTION_unregisterCallback:
+{
+data.enforceInterface(DESCRIPTOR);
+com.gk969.UltimateImgSpider.IRemoteWatchdogServiceCallback _arg0;
+_arg0 = com.gk969.UltimateImgSpider.IRemoteWatchdogServiceCallback.Stub.asInterface(data.readStrongBinder());
+this.unregisterCallback(_arg0);
+reply.writeNoException();
+return true;
+}
 }
 return super.onTransact(code, data, reply, flags);
 }
@@ -102,8 +120,42 @@ _data.recycle();
 }
 return _result;
 }
+@Override public void registerCallback(com.gk969.UltimateImgSpider.IRemoteWatchdogServiceCallback cb) throws android.os.RemoteException
+{
+android.os.Parcel _data = android.os.Parcel.obtain();
+android.os.Parcel _reply = android.os.Parcel.obtain();
+try {
+_data.writeInterfaceToken(DESCRIPTOR);
+_data.writeStrongBinder((((cb!=null))?(cb.asBinder()):(null)));
+mRemote.transact(Stub.TRANSACTION_registerCallback, _data, _reply, 0);
+_reply.readException();
+}
+finally {
+_reply.recycle();
+_data.recycle();
+}
+}
+@Override public void unregisterCallback(com.gk969.UltimateImgSpider.IRemoteWatchdogServiceCallback cb) throws android.os.RemoteException
+{
+android.os.Parcel _data = android.os.Parcel.obtain();
+android.os.Parcel _reply = android.os.Parcel.obtain();
+try {
+_data.writeInterfaceToken(DESCRIPTOR);
+_data.writeStrongBinder((((cb!=null))?(cb.asBinder()):(null)));
+mRemote.transact(Stub.TRANSACTION_unregisterCallback, _data, _reply, 0);
+_reply.readException();
+}
+finally {
+_reply.recycle();
+_data.recycle();
+}
+}
 }
 static final int TRANSACTION_getAshmem = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
+static final int TRANSACTION_registerCallback = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
+static final int TRANSACTION_unregisterCallback = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
 }
 public android.os.ParcelFileDescriptor getAshmem(java.lang.String name, int size) throws android.os.RemoteException;
+public void registerCallback(com.gk969.UltimateImgSpider.IRemoteWatchdogServiceCallback cb) throws android.os.RemoteException;
+public void unregisterCallback(com.gk969.UltimateImgSpider.IRemoteWatchdogServiceCallback cb) throws android.os.RemoteException;
 }
