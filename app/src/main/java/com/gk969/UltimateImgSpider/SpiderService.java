@@ -32,8 +32,11 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.TrafficStats;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
@@ -827,7 +830,8 @@ public class SpiderService extends Service
                 + pageProcParam[PARA_PROCESSED] + "/"
                 + pageProcParam[PARA_TOTAL] + "|" + pageProcParam[PARA_HEIGHT]
                 + " loadTime:" + loadTime + " scanTime:" + scanTime
-                + " searchTime:" + searchTime + "\r\n" + curPageUrl;
+                + " searchTime:" + searchTime + " netTraffic:"+(netTrafficPerSec>>10)+"KB/s"
+                + "\r\n" + curPageUrl;
         
         // Log.i(TAG, log);
         
@@ -852,15 +856,15 @@ public class SpiderService extends Service
     {
         // 扫描页面耗时较少，因此此处不检测暂停或者停止命令
         scanTimer = System.currentTimeMillis();
-        spider.loadUrl("javascript:" 
+        spider.loadUrl("javascript:"
                 + "var i;"
                 + "var img=document.getElementsByTagName(\"img\");"
-                + "var imgSrc=\"\";" 
+                + "var imgSrc=\"\";"
                 + "for(i=0; i<img.length; i++)"
                 + "{imgSrc+=(img[i].src+' ');}"
                 + "SpiderCrawl.recvImgUrl(imgSrc);"
                 + "var a=document.getElementsByTagName(\"a\");"
-                + "var aHref=\"\";" 
+                + "var aHref=\"\";"
                 + "for(i=0; i<a.length; i++)"
                 + "{aHref+=(a[i].href+' ');}"
                 + "SpiderCrawl.recvPageUrl(aHref);"
@@ -998,7 +1002,38 @@ public class SpiderService extends Service
         
         mImgDownloader.startAllThread();
     }
-    
+
+
+    private long netTraffic=0;
+    private long netTrafficPerSec=0;
+    private long lastTraffic=0;
+
+    private void refreshTrafficPerSec()
+    {
+        if(lastTraffic!=0)
+        {
+            netTrafficPerSec=netTraffic-lastTraffic;
+        }
+
+        lastTraffic=netTraffic;
+        netTraffic=getNetTraffic();
+    }
+
+    private long getNetTraffic()
+    {
+        try
+        {
+            ApplicationInfo appInfo = getPackageManager().getApplicationInfo(getPackageName(),
+                    PackageManager.GET_ACTIVITIES);
+            netTraffic=TrafficStats.getUidRxBytes(appInfo.uid)+TrafficStats.getUidTxBytes(appInfo.uid);
+        } catch (PackageManager.NameNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+        return netTraffic;
+    }
+
     private class TimerThread extends Thread
     {
         private final int TIMER_INTERVAL = 1000;
@@ -1007,6 +1042,8 @@ public class SpiderService extends Service
         {
             while (timerRunning)
             {
+                refreshTrafficPerSec();
+
                 // Log.i(TAG, "Timer");
                 
                 if (urlLoadTimer.get() != 0)
