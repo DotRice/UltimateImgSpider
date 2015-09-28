@@ -159,10 +159,21 @@ public class WatchdogService extends Service
             projectPathRecved();
         }
 
-        if (cmdVal == SpiderActivity.CMD_STOP_STORE)
+        switch (cmdVal)
         {
-            storeProjectData();
-            stopSelf();
+            case SpiderActivity.CMD_STOP_STORE:
+            {
+                storeProjectData();
+                stopSelf();
+                break;
+            }
+
+            case SpiderActivity.CMD_CLEAR:
+            {
+                Utils.deleteDir(projectPath);
+                stopSelf();
+                break;
+            }
         }
 
         return START_STICKY;

@@ -217,7 +217,12 @@ public class SpiderService extends Service
             spider.clearCache(true);
             spider.destroy();
         }
-        
+
+        if(cmd.get()==SpiderActivity.CMD_CLEAR)
+        {
+            sendCmdToWatchdog(SpiderActivity.CMD_CLEAR);
+        }
+
         System.exit(0);
     }
     
@@ -267,8 +272,8 @@ public class SpiderService extends Service
             switch (cmdVal)
             {
                 case SpiderActivity.CMD_CLEAR:
-                    stopSelfAndWatchdog();
-                break;
+                    stopSelf();
+                    break;
                 case SpiderActivity.CMD_STOP_STORE:
                     sendCmdToWatchdog(SpiderActivity.CMD_STOP_STORE);
                 break;

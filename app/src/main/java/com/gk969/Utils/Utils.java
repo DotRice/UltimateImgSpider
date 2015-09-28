@@ -42,13 +42,13 @@ public class Utils
 
     public static boolean isArrayEquals(byte[] array1, byte[] array2)
     {
-        if(array1.length==array2.length)
+        if (array1.length == array2.length)
         {
-            int len=array2.length;
+            int len = array2.length;
 
-            for(int i=0; i<len; i++)
+            for (int i = 0; i < len; i++)
             {
-                if(array1[i]!=array2[i])
+                if (array1[i] != array2[i])
                 {
                     return false;
                 }
@@ -58,6 +58,30 @@ public class Utils
         }
 
         return false;
+    }
+
+    public static void deleteDir(String dirPath)
+    {
+        File dirFile = new File(dirPath);
+        if (!dirFile.exists() || !dirFile.isDirectory())
+        {
+            return;
+        }
+
+        File[] files = dirFile.listFiles();
+        for (File file:files)
+        {
+            if (file.isFile())
+            {
+                file.delete();
+            }
+            else
+            {
+                deleteDir(file.getAbsolutePath());
+            }
+        }
+
+        dirFile.delete();
     }
 
     public static byte[] getFileMD5(String filePath)
@@ -88,10 +112,10 @@ public class Utils
             e.printStackTrace();
         } finally
         {
-             try
+            try
             {
-                if(fileInputStream!=null)fileInputStream.close();
-                if(digestInputStream!=null)digestInputStream.close();
+                if (fileInputStream != null) fileInputStream.close();
+                if (digestInputStream != null) digestInputStream.close();
             } catch (IOException e)
             {
                 e.printStackTrace();
