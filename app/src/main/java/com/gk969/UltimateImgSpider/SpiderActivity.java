@@ -346,15 +346,8 @@ public class SpiderActivity extends Activity
         Log.i(TAG, "onPause");
         if(shouldFinish)
         {
-            mHandler.postDelayed(new Runnable()
-            {
-                
-                @Override
-                public void run()
-                {
-                    finish();
-                }
-            }, 500);
+            Log.i(TAG, "shouldFinish");
+            finish();
         }
     }
     

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import com.gk969.Utils.Utils;
@@ -825,6 +826,9 @@ public class SpiderService extends Service
         {
             log = "siteScanCompleted\r\n";
         }
+
+        float fNetTraffic=netTrafficPerSec.get();
+        fNetTraffic/=1024;
         
         Runtime rt = Runtime.getRuntime();
         log = log + "VM:" + (rt.totalMemory() >> 20) + "M Native:"
@@ -835,7 +839,8 @@ public class SpiderService extends Service
                 + pageProcParam[PARA_PROCESSED] + "/"
                 + pageProcParam[PARA_TOTAL] + "|" + pageProcParam[PARA_HEIGHT]
                 + " loadTime:" + loadTime + " scanTime:" + scanTime
-                + " searchTime:" + searchTime + " netTraffic:"+(netTrafficPerSec>>10)+"KB/s"
+                + " searchTime:" + searchTime
+                + " netTraffic:" + String.format("%03.1f", fNetTraffic) + "KB/s"
                 + "\r\n" + curPageUrl;
         
         // Log.i(TAG, log);
@@ -853,7 +858,8 @@ public class SpiderService extends Service
             }
         }
         mCallbacks.finishBroadcast();
-        
+
+        reportStatusTimer.set(0);
     }
     
     // javascript回调不在主线程。
@@ -1008,16 +1014,17 @@ public class SpiderService extends Service
         mImgDownloader.startAllThread();
     }
 
-
+    private int netTrafficCalcTimer=0;
+    private static final int NET_TRAFFIC_CALC_INTVAL=2;
     private long netTraffic=0;
-    private long netTrafficPerSec=0;
+    private AtomicLong netTrafficPerSec = new AtomicLong(0);
     private long lastTraffic=0;
 
     private void refreshTrafficPerSec()
     {
         if(lastTraffic!=0)
         {
-            netTrafficPerSec=netTraffic-lastTraffic;
+            netTrafficPerSec.set((netTraffic-lastTraffic)/NET_TRAFFIC_CALC_INTVAL);
         }
 
         lastTraffic=netTraffic;
@@ -1039,6 +1046,8 @@ public class SpiderService extends Service
         return netTraffic;
     }
 
+    private static final int REPORT_STATUS_MAX_INTVAL=2;
+    private AtomicInteger reportStatusTimer = new AtomicInteger(0);
     private class TimerThread extends Thread
     {
         private final int TIMER_INTERVAL = 1000;
@@ -1047,7 +1056,25 @@ public class SpiderService extends Service
         {
             while (timerRunning)
             {
-                refreshTrafficPerSec();
+                netTrafficCalcTimer++;
+                if(netTrafficCalcTimer==NET_TRAFFIC_CALC_INTVAL)
+                {
+                    refreshTrafficPerSec();
+                    netTrafficCalcTimer = 0;
+                }
+
+                if(reportStatusTimer.getAndIncrement()==REPORT_STATUS_MAX_INTVAL)
+                {
+                    reportStatusTimer.set(0);
+                    spiderHandler.post(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            reportSpiderLog(false);
+                        }
+                    });
+                }
 
                 // Log.i(TAG, "Timer");
                 
