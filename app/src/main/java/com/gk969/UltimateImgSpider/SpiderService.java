@@ -70,10 +70,8 @@ public class SpiderService extends Service
     private final static int                               STAT_PAUSE         = 4;
     private final static int                               STAT_COMPLETE      = 5;
     private final static int                               STAT_STOP          = 6;
-    private AtomicInteger                                  state              = new AtomicInteger(
-                                                                                      STAT_IDLE);
-    private AtomicInteger                                  cmd                = new AtomicInteger(
-                                                                                      SpiderActivity.CMD_NOTHING);
+    private AtomicInteger                                  state              = new AtomicInteger(STAT_IDLE);
+    private AtomicInteger                                  cmd                = new AtomicInteger(SpiderActivity.CMD_NOTHING);
     
     private String                                         curSiteDirPath;
     private String                                         userAgent;

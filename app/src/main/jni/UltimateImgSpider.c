@@ -350,27 +350,49 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env
 	return (*env)->NewStringUTF(env, "test jni !");
 }
 
-
-#define MAX_RAM_TOTAL_POOL	1024*1024*1024
-
 #define MAX_SIZE_PER_URL	4095
-#define SIZE_PER_URLPOOL	(1024*1024-12)
-
 #define URL_TYPE_PAGE	0
 #define URL_TYPE_IMG	1
 
 #define RBT_RED     0
 #define RBT_BLACK   1
 
-#define POOL_PTR_INVALID	0xFFFFFFFF
+//最大可用内存池总大小
+#define MAX_RAM_TOTAL_POOL	1024*1024*1024
+//每个内存池大小
+#define SIZE_PER_URLPOOL	(1024*1024-12)
+
+
+/* 
+相对地址位映射
+PTR:内存池序号
+OFFSET:内存池内偏移量
+31 30 29 28 27 ... 4 3 2 1 0
+PTR            |      OFFSET
+OFFSET低位，PTR高位。
+*/
+//内存池内偏移量在相对地址中占用的位数，必须能够包含SIZE_PER_URLPOOL
+#define POOL_OFFSET_BIT     20
+#define POOL_OFFSET_BITS    (((u32)1<<POOL_OFFSET_BIT)-1)
+//内存池序号在相对地址中占用的位数
+#define POOL_PTR_BIT        (sizeof(u32)-POOL_OFFSET_BITS)
+#define POOL_PTR_BITS       ((((u32)1<<POOL_PTR_BIT)-1)<<POOL_OFFSET_BIT)
+
+#define urlNodeRelativeAddr u32
+#define GET_POOL_OFFSET(addr)           ((addr)&POOL_OFFSET_BITS)
+#define SET_POOL_OFFSET(addr,offset)    addr&=~POOL_OFFSET_BITS;\
+                                        addr|=offset&POOL_OFFSET_BITS;
+
+#define GET_POOL_PTR(addr)              (((addr)&POOL_PTR_BITS)>>POOL_OFFSET_BIT)
+#define SET_POOL_PTR(addr,ptr)          addr&=~POOL_PTR_BITS;\
+                                        addr|=(ptr<<POOL_OFFSET_BIT)&POOL_PTR_BITS;
+
+#define NEW_RELATIVE_ADDR(ptr,offset)   ((((u32)ptr)<<POOL_OFFSET_BIT)|offset)
+
+
+#define POOL_PTR_INVALID    (((u32)1<<POOL_PTR_BIT)-1)
 
 #pragma pack(1)
-typedef struct
-{
-	u32 poolPtr;
-	u32 offset;
-} urlNodeRelativeAddr;
-
 typedef struct
 {
 	u64 md5_64;
@@ -378,12 +400,10 @@ typedef struct
 	u8 color;
 	u16 len;
 
-
-
 	urlNodeRelativeAddr containerPage;
 
-	urlNodeRelativeAddr nextNodeAddr;
-	urlNodeRelativeAddr prevNodeAddr;
+	urlNodeRelativeAddr nextToLoad;
+	urlNodeRelativeAddr prevToLoad;
 
 	urlNodeRelativeAddr left;
 	urlNodeRelativeAddr right;
@@ -393,7 +413,7 @@ typedef struct
 typedef struct
 {
 	nodePara para;
-	char url[MAX_SIZE_PER_URL+1];
+	char url[MAX_SIZE_PER_URL];
 } urlNode;
 
 typedef struct
@@ -435,9 +455,9 @@ u32 downloadingImgNum=0;
 
 char nextImgUrlWithContainerBuf[MAX_SIZE_PER_URL*2+2];
 
-
-void nodeAddrAbsToRelative(urlNode *node, urlNodeRelativeAddr *RelativeAddr)
+urlNodeRelativeAddr nodeAddrAbsToRelative(urlNode *node)
 {
+    urlNodeRelativeAddr relativeAddr;
 	if(node!=NULL)
 	{
 		u32 i;
@@ -446,27 +466,30 @@ void nodeAddrAbsToRelative(urlNode *node, urlNodeRelativeAddr *RelativeAddr)
 			s64 ofs=(u32)node-(u32)(urlPools[i]);
 			if(ofs>=0&&ofs<sizeof(t_urlPool))
 			{
-				RelativeAddr->poolPtr=i;
-				RelativeAddr->offset=ofs;
-				return;
+                relativeAddr=NEW_RELATIVE_ADDR(i, ofs);
+				break;
 			}
 		}
 	}
 	else
 	{
-		RelativeAddr->poolPtr=POOL_PTR_INVALID;
+		relativeAddr=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
 	}
+    
+    return relativeAddr;
 }
 
-urlNode *nodeAddrRelativeToAbs(urlNodeRelativeAddr *relativeAddr)
+urlNode *nodeAddrRelativeToAbs(urlNodeRelativeAddr relativeAddr)
 {
-	if(relativeAddr->poolPtr < spiderPara->urlPoolNum)
+	u32 poolPtr=GET_POOL_PTR(relativeAddr);
+    if(poolPtr < spiderPara->urlPoolNum)
 	{
-		t_urlPool *pool=urlPools[relativeAddr->poolPtr];
+		t_urlPool *pool=urlPools[poolPtr];
 
-		if(relativeAddr->offset < (pool->idleMemPtr-sizeof(nodePara)))
+        u32 offset=GET_POOL_OFFSET(relativeAddr);
+		if(offset < (pool->idleMemPtr-sizeof(nodePara)))
 		{
-			return (urlNode*)(pool->mem+relativeAddr->offset);
+			return (urlNode*)(pool->mem+offset);
 		}
 	}
 
@@ -477,29 +500,32 @@ urlNode *nodeAddrRelativeToAbs(urlNodeRelativeAddr *relativeAddr)
 void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
 {
 	urlNodeRelativeAddr downNodeAddr=upNode->para.right;
-	urlNode *downNode=nodeAddrRelativeToAbs(&downNodeAddr);
+	urlNode *downNode=nodeAddrRelativeToAbs(downNodeAddr);
+    urlNode *left;
+    urlNode *parent;
 
-	urlNodeRelativeAddr upNodeAddr;
-	nodeAddrAbsToRelative(upNode, &upNodeAddr);
+	urlNodeRelativeAddr upNodeAddr=nodeAddrAbsToRelative(upNode);
 
 	upNode->para.right=downNode->para.left;
-	if(downNode->para.left.poolPtr!=POOL_PTR_INVALID)
+    left=nodeAddrRelativeToAbs(downNode->para.left);
+	if(left!=NULL)
 	{
-		nodeAddrRelativeToAbs(&(downNode->para.left))->para.parent=upNodeAddr;
+		left->para.parent=upNodeAddr;
 	}
 
 	downNode->para.parent=upNode->para.parent;
-	if(upNode->para.parent.poolPtr==POOL_PTR_INVALID)
+    parent=nodeAddrRelativeToAbs(upNode->para.parent);
+	if(parent==NULL)
 	{
 		tree->root=downNodeAddr;
 	}
-	else if(upNode==nodeAddrRelativeToAbs(&(nodeAddrRelativeToAbs(&(upNode->para.parent))->para.left)))
+	else if(upNode==nodeAddrRelativeToAbs(parent->para.left))
 	{
-		nodeAddrRelativeToAbs(&(upNode->para.parent))->para.left=downNodeAddr;
+		parent->para.left=downNodeAddr;
 	}
 	else
 	{
-		nodeAddrRelativeToAbs(&(upNode->para.parent))->para.right=downNodeAddr;
+		parent->para.right=downNodeAddr;
 	}
 
 	downNode->para.left=upNodeAddr;
@@ -510,30 +536,32 @@ void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
 void urlTreeRightRotate(urlTree *tree, urlNode *upNode)
 {
 	urlNodeRelativeAddr downNodeAddr=upNode->para.left;
-	urlNode *downNode=nodeAddrRelativeToAbs(&downNodeAddr);
+	urlNode *downNode=nodeAddrRelativeToAbs(downNodeAddr);
+    urlNode *right;
+    urlNode *parent;
 
-	urlNodeRelativeAddr upNodeAddr;
-	nodeAddrAbsToRelative(upNode, &upNodeAddr);
+	urlNodeRelativeAddr upNodeAddr=nodeAddrAbsToRelative(upNode);
 
 	upNode->para.left=downNode->para.right;
-	if(downNode->para.right.poolPtr!=POOL_PTR_INVALID)
+    right=nodeAddrRelativeToAbs(downNode->para.right);
+	if(right!=NULL)
 	{
-		nodeAddrRelativeToAbs(&(downNode->para.right))->para.parent=upNodeAddr;
+		right->para.parent=upNodeAddr;
 	}
 
 	downNode->para.parent=upNode->para.parent;
-
-	if(upNode->para.parent.poolPtr==POOL_PTR_INVALID)
+    parent=nodeAddrRelativeToAbs(upNode->para.parent);
+	if(parent==NULL)
 	{
 		tree->root=downNodeAddr;
 	}
-	else if(upNode==nodeAddrRelativeToAbs(&(nodeAddrRelativeToAbs(&(upNode->para.parent))->para.left)))
+	else if(upNode==nodeAddrRelativeToAbs(parent->para.left))
 	{
-		nodeAddrRelativeToAbs(&(upNode->para.parent))->para.left=downNodeAddr;
+		parent->para.left=downNodeAddr;
 	}
 	else
 	{
-		nodeAddrRelativeToAbs(&(upNode->para.parent))->para.right=downNodeAddr;
+		parent->para.right=downNodeAddr;
 	}
 
 	downNode->para.right=upNodeAddr;
@@ -605,8 +633,7 @@ urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, urlNodeRelativeAddr *dir
 
 		if(direction!=NULL)
 		{
-			direction->poolPtr=poolIndex;
-			direction->offset=offset;
+			*direction=NEW_RELATIVE_ADDR(poolIndex, offset);
 		}
 	}
 
@@ -624,18 +651,18 @@ jboolean spiderParaInit(JNIEnv* env)
 		spiderPara=(t_spiderPara*)(ashm->data);
 		if(ashm->ashmStat!=ASHM_EXIST)
 		{
-			spiderPara->pageUrlTree.head.poolPtr=POOL_PTR_INVALID;
-			spiderPara->pageUrlTree.tail.poolPtr=POOL_PTR_INVALID;
-			spiderPara->pageUrlTree.root.poolPtr=POOL_PTR_INVALID;
-			spiderPara->pageUrlTree.curNode.poolPtr=POOL_PTR_INVALID;
+			spiderPara->pageUrlTree.head=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
+			spiderPara->pageUrlTree.tail=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
+			spiderPara->pageUrlTree.root=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
+			spiderPara->pageUrlTree.curNode=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
 			spiderPara->pageUrlTree.processed=0;
 			spiderPara->pageUrlTree.len=0;
 			spiderPara->pageUrlTree.height=0;
 
-			spiderPara->imgUrlTree.head.poolPtr=POOL_PTR_INVALID;
-			spiderPara->imgUrlTree.tail.poolPtr=POOL_PTR_INVALID;
-			spiderPara->imgUrlTree.root.poolPtr=POOL_PTR_INVALID;
-			spiderPara->imgUrlTree.curNode.poolPtr=POOL_PTR_INVALID;
+			spiderPara->imgUrlTree.head=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
+			spiderPara->imgUrlTree.tail=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
+			spiderPara->imgUrlTree.root=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
+			spiderPara->imgUrlTree.curNode=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
 			spiderPara->imgUrlTree.processed=0;
 			spiderPara->imgUrlTree.len=0;
 			spiderPara->imgUrlTree.height=0;
@@ -713,30 +740,32 @@ jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv* en
 void urlTreeTraversal(urlTree *tree)
 {
 	u32 i;
-	urlNode *node = nodeAddrRelativeToAbs(&(tree->head));
+	urlNode *node = nodeAddrRelativeToAbs(tree->head);
 	for (i = 0; i < tree->len; i++)
 	{
-		urlNode *parent=nodeAddrRelativeToAbs(&(node->para.parent));
+		urlNode *parent=nodeAddrRelativeToAbs(node->para.parent);
 		u32 parentMd5=(parent==NULL)?0:(parent->para.md5_64>>32);
-		urlNode *left=nodeAddrRelativeToAbs(&(node->para.left));
+		urlNode *left=nodeAddrRelativeToAbs(node->para.left);
 		u32 leftMd5=(left==NULL)?0:(left->para.md5_64>>32);
-		urlNode *right=nodeAddrRelativeToAbs(&(node->para.right));
+		urlNode *right=nodeAddrRelativeToAbs(node->para.right);
 		u32 rightMd5=(right==NULL)?0:(right->para.md5_64>>32);
-		LOGI("Chain %08X %c p:%08X l:%08X r:%08X", (u32)(node->para.md5_64>>32), (node->para.color==RBT_BLACK)?'B':'R', parentMd5, leftMd5, rightMd5);
+        
+        LOGI("Chain %08X %c p:%08X l:%08X r:%08X", (u32)(node->para.md5_64>>32), (node->para.color==RBT_BLACK)?'B':'R', parentMd5, leftMd5, rightMd5);
+		//LOGI("Chain %08X %c p:%08X l:%08X r:%08X", (u32)(node->para.md5_64>>32), (node->para.color==RBT_BLACK)?'B':'R', node->para.parent, node->para.left, node->para.right);
 
-		node=nodeAddrRelativeToAbs(&(node->para.nextNodeAddr));
+		node=nodeAddrRelativeToAbs(node->para.nextToLoad);
 	}
 }
 
 
 void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 {
-    urlNode *parent=nodeAddrRelativeToAbs(&(node->para.parent));
+    urlNode *parent=nodeAddrRelativeToAbs(node->para.parent);
 	urlNode *grandParent;
 	urlNode *uncle;
 	if(parent!=NULL)
 	{
-        grandParent=nodeAddrRelativeToAbs(&(parent->para.parent));
+        grandParent=nodeAddrRelativeToAbs(parent->para.parent);
 	}
 
 	while(parent!=NULL)
@@ -746,9 +775,9 @@ void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 			break;
 		}
 
-        if(parent==nodeAddrRelativeToAbs(&(grandParent->para.left)))
+        if(parent==nodeAddrRelativeToAbs(grandParent->para.left))
         {
-            uncle=nodeAddrRelativeToAbs(&(grandParent->para.right));
+            uncle=nodeAddrRelativeToAbs(grandParent->para.right);
 
 			while(true)
 			{
@@ -761,26 +790,26 @@ void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 						grandParent->para.color=RBT_RED;
 						node=grandParent;
 
-						parent=nodeAddrRelativeToAbs(&(node->para.parent));
+						parent=nodeAddrRelativeToAbs(node->para.parent);
 						if(parent!=NULL)
 						{
-							grandParent=nodeAddrRelativeToAbs(&(parent->para.parent));
+							grandParent=nodeAddrRelativeToAbs(parent->para.parent);
 						}
 
 						break;
 					}
 				}
 
-				if(node==nodeAddrRelativeToAbs(&(parent->para.right)))
+				if(node==nodeAddrRelativeToAbs(parent->para.right))
 				{
 					node=parent;
 					urlTreeLeftRotate(tree, node);
 				}
 
-				parent=nodeAddrRelativeToAbs(&(node->para.parent));
+				parent=nodeAddrRelativeToAbs(node->para.parent);
 				parent->para.color=RBT_BLACK;
 
-				grandParent=nodeAddrRelativeToAbs(&(parent->para.parent));
+				grandParent=nodeAddrRelativeToAbs(parent->para.parent);
 				grandParent->para.color=RBT_RED;
 
 				urlTreeRightRotate(tree, grandParent);
@@ -789,7 +818,7 @@ void rbUrlTreeFixup(urlTree *tree, urlNode *node)
         }
         else
         {
-            uncle=nodeAddrRelativeToAbs(&(grandParent->para.left));
+            uncle=nodeAddrRelativeToAbs(grandParent->para.left);
 
 			while(true)
 			{
@@ -802,27 +831,27 @@ void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 						grandParent->para.color=RBT_RED;
 						node=grandParent;
 
-						parent=nodeAddrRelativeToAbs(&(node->para.parent));
+						parent=nodeAddrRelativeToAbs(node->para.parent);
 						if(parent!=NULL)
 						{
-							grandParent=nodeAddrRelativeToAbs(&(parent->para.parent));
+							grandParent=nodeAddrRelativeToAbs(parent->para.parent);
 						}
 
 						break;
 					}
 				}
 
-				if(node==nodeAddrRelativeToAbs(&(parent->para.left)))
+				if(node==nodeAddrRelativeToAbs(parent->para.left))
 				{
 					node=parent;
 					urlTreeRightRotate(tree, node);
 
 				}
 
-				parent=nodeAddrRelativeToAbs(&(node->para.parent));
+				parent=nodeAddrRelativeToAbs(node->para.parent);
 				parent->para.color=RBT_BLACK;
 
-				grandParent=nodeAddrRelativeToAbs(&(parent->para.parent));
+				grandParent=nodeAddrRelativeToAbs(parent->para.parent);
 				grandParent->para.color=RBT_RED;
 
 				urlTreeLeftRotate(tree, grandParent);
@@ -833,23 +862,23 @@ void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 
     }
 
-    nodeAddrRelativeToAbs(&(tree->root))->para.color=RBT_BLACK;
+    nodeAddrRelativeToAbs(tree->root)->para.color=RBT_BLACK;
 }
 
 urlNode *findUrlNodeByMd5(urlTree *tree, u64 md5)
 {
-	urlNodeRelativeAddr *nextNodeAddr=&(tree->root);
+	urlNodeRelativeAddr nextNodeAddr=tree->root;
 	urlNode *node=nodeAddrRelativeToAbs(nextNodeAddr);
 
 	while(node!=NULL)
 	{
 		if(md5>node->para.md5_64)
 		{
-			nextNodeAddr=&(node->para.right);
+			nextNodeAddr=node->para.right;
 		}
 		else if(md5<node->para.md5_64)
 		{
-			nextNodeAddr=&(node->para.left);
+			nextNodeAddr=node->para.left;
 		}
 		else
 		{
@@ -865,14 +894,22 @@ urlNode *findUrlNodeByMd5(urlTree *tree, u64 md5)
 void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 {
 	urlNodeRelativeAddr *nextNodeAddr=&(tree->root);
-	urlNode *node=nodeAddrRelativeToAbs(nextNodeAddr);
+	urlNode *node=nodeAddrRelativeToAbs(*nextNodeAddr);
 	urlNode *parent=NULL;
 
 	u16 urlLen=strlen(newUrl);
 	u32 height=0;
 
+    /*
+    LOGI("urlTreeInsert %08X", (u32)(newMd5_64>>32));
+    
+    if(node!=NULL)
+        LOGI("root %08X", (u32)(node->para.md5_64>>32));
+    */
 	while(node!=NULL)
 	{
+        //LOGI("path node %08X", (u32)(node->para.md5_64>>32));
+        
 		if(newMd5_64>node->para.md5_64)
 		{
 			nextNodeAddr=&(node->para.right);
@@ -886,10 +923,8 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 			return;
 		}
 
-		//LOGI("go %d %d", nextNodeAddr->poolPtr, nextNodeAddr->offset);
-
 		parent=node;
-		node=nodeAddrRelativeToAbs(nextNodeAddr);
+		node=nodeAddrRelativeToAbs(*nextNodeAddr);
 
 		height++;
 	}
@@ -903,26 +938,28 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 	if(node!=NULL)
 	{
 		urlNodeRelativeAddr newNodeAddr=*nextNodeAddr;
+        urlNode *tail;
 
 		strcpy(node->url, newUrl);
 		node->para.md5_64 = newMd5_64;
 		node->para.len=urlLen;
 
-		node->para.left.poolPtr=POOL_PTR_INVALID;
-		node->para.right.poolPtr=POOL_PTR_INVALID;
+		node->para.left=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
+		node->para.right=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
 
-		nodeAddrAbsToRelative(parent, &(node->para.parent));
+		node->para.parent=nodeAddrAbsToRelative(parent);
 
 		node->para.containerPage=spiderPara->pageUrlTree.curNode;
 
-		node->para.nextNodeAddr.poolPtr=POOL_PTR_INVALID;
-		node->para.prevNodeAddr=tree->tail;
-		if(tree->tail.poolPtr!=POOL_PTR_INVALID)
+		node->para.nextToLoad=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
+		node->para.prevToLoad=tree->tail;
+        tail=nodeAddrRelativeToAbs(tree->tail);
+		if(tail!=NULL)
 		{
-			nodeAddrRelativeToAbs(&(tree->tail))->para.nextNodeAddr=newNodeAddr;
+			tail->para.nextToLoad=newNodeAddr;
 		}
 		tree->tail=newNodeAddr;
-		if(tree->head.poolPtr==POOL_PTR_INVALID)
+		if(nodeAddrRelativeToAbs(tree->head)==NULL)
 		{
 			tree->head=newNodeAddr;
 		}
@@ -936,23 +973,17 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 		{
 			node->para.color=RBT_RED;
 
-			if(nodeAddrRelativeToAbs(&(parent->para.parent))!=NULL)
+			if(nodeAddrRelativeToAbs(parent->para.parent)!=NULL)
 			{
+                //LOGI("Before Fixup");
+                //urlTreeTraversal(tree);
 				rbUrlTreeFixup(tree, node);
 			}
 		}
-
-
-
-		/*
-		LOGI("new %d %d", newNodeAddr.poolPtr, newNodeAddr.offset);
-
-		//if(tree->len==10)
-		{
-			urlTreeTraversal(tree);
-		}
-		*/
-
+        
+		//LOGI("new %d %d", GET_POOL_PTR(newNodeAddr), GET_POOL_OFFSET(newNodeAddr));
+        //urlTreeTraversal(tree);
+		
 	}
 }
 
@@ -986,8 +1017,8 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
 		urlTreeInsert(env, curTree, url, md5_64);
 
 		/*
-		urlNode *tail=nodeAddrRelativeToAbs(&(curTree->tail));
-		urlNode *head=nodeAddrRelativeToAbs(&(curTree->head));
+		urlNode *tail=nodeAddrRelativeToAbs(curTree->tail);
+		urlNode *head=nodeAddrRelativeToAbs(curTree->head);
 		LOGI("tail:%08X head:%08X", tail, head);
 		*/
 	}
@@ -1034,24 +1065,24 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
 {
 	curTree->processed++;
 
-	urlNode *prev=nodeAddrRelativeToAbs(&(curNode->para.prevNodeAddr));
+	urlNode *prev=nodeAddrRelativeToAbs(curNode->para.prevToLoad);
 	if(prev==NULL)
 	{
-		curTree->head=curNode->para.nextNodeAddr;
+		curTree->head=curNode->para.nextToLoad;
 	}
 	else
 	{
-		prev->para.nextNodeAddr=curNode->para.nextNodeAddr;
+		prev->para.nextToLoad=curNode->para.nextToLoad;
 	}
 
-	urlNode *next=nodeAddrRelativeToAbs(&(curNode->para.nextNodeAddr));
+	urlNode *next=nodeAddrRelativeToAbs(curNode->para.nextToLoad);
 	if(next==NULL)
 	{
-		curTree->tail=curNode->para.prevNodeAddr;
+		curTree->tail=curNode->para.prevToLoad;
 	}
 	else
 	{
-		next->para.prevNodeAddr=curNode->para.prevNodeAddr;
+		next->para.prevToLoad=curNode->para.prevToLoad;
 	}
 }
 
@@ -1060,24 +1091,24 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
 jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		JNIEnv* env, jobject thiz, jstring jCurUrl, jbyteArray jMd5, jint jType, jintArray jParam)
 {
-	urlTree *curTree =
-			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
+	urlTree *curTree = (jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
 
 	char *nextUrl=NULL;
 
 	int i;
 
 	int *param=(*env)->GetIntArrayElements(env, jParam, NULL);
-	//LOGI("jniFindNextUrlToLoad type:%d", jType);
+	//LOGI("jniFindNextUrlToLoad");
 
 	urlNode *curNode=NULL;
 	urlNode *nextNode=NULL;
 	if(jType == URL_TYPE_PAGE)
 	{
-		curNode=nodeAddrRelativeToAbs(&(curTree->curNode));
+        //LOGI("URL_TYPE_PAGE");
+		curNode=nodeAddrRelativeToAbs(curTree->curNode);
 		if(curNode==NULL || jCurUrl==NULL)
 		{
-			nextNode=nodeAddrRelativeToAbs(&(curTree->head));
+			nextNode=nodeAddrRelativeToAbs(curTree->head);
 		}
 		else
 		{
@@ -1097,7 +1128,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 			for (i = 0; i < SEARCH_STEP_MAX; i++)
 			{
 				//LOGI("next %d:%s", i, node->url);
-				node=nodeAddrRelativeToAbs(&(node->para.nextNodeAddr));
+				node=nodeAddrRelativeToAbs(node->para.nextToLoad);
 				if(node==NULL)
 				{
 					break;
@@ -1118,7 +1149,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 			for (i = 0; i < SEARCH_STEP_MAX; i++)
 			{
 				//LOGI("prev %d:%s", i, node->url);
-				node=nodeAddrRelativeToAbs(&(node->para.prevNodeAddr));
+				node=nodeAddrRelativeToAbs(node->para.prevToLoad);
 				if(node==NULL)
 				{
 					break;
@@ -1140,11 +1171,12 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 		if(nextNode!=NULL)
 		{
 			nextUrl=nextNode->url;
-			nodeAddrAbsToRelative(nextNode, &(curTree->curNode));
+			curTree->curNode=nodeAddrAbsToRelative(nextNode);
 		}
 	}
 	else
 	{
+        //LOGI("URL_TYPE_IMG");
 		if(jMd5!=NULL)
 		{
 			u8 *md5=(*env)->GetByteArrayElements(env, jMd5, NULL);
@@ -1156,7 +1188,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 
 			curNode=findUrlNodeByMd5(curTree, md5_64);
 
-			//LOGI("prev url:%s", curNode->url);
+			//LOGI("cur url:%s", curNode->url);
 			deleteUrlNodeFromList(curTree, curNode);
 
 			downloadingImgNum--;
@@ -1164,7 +1196,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 
 		//LOGI("downloadingImgNum:%d", downloadingImgNum);
 
-		nextNode=nodeAddrRelativeToAbs(&(curTree->head));
+		nextNode=nodeAddrRelativeToAbs(curTree->head);
 		for(i=0; i<10; i++)
 		{
 			if(nextNode==NULL)
@@ -1173,11 +1205,11 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 			}
 			//LOGI("img%d:%s", i, nextNode->url);
 
-			nextNode=nodeAddrRelativeToAbs(&(nextNode->para.nextNodeAddr));
+			nextNode=nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
 		}
 
 
-		nextNode=nodeAddrRelativeToAbs(&(curTree->head));
+		nextNode=nodeAddrRelativeToAbs(curTree->head);
 		for(i=0; i<downloadingImgNum; i++)
 		{
 			if(nextNode==NULL)
@@ -1185,7 +1217,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 				break;
 			}
 
-			nextNode=nodeAddrRelativeToAbs(&(nextNode->para.nextNodeAddr));
+			nextNode=nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
 		}
 
 		if(nextNode!=NULL)
@@ -1194,7 +1226,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 
 			nextUrl=nextImgUrlWithContainerBuf;
 
-			sprintf(nextUrl, "%s %s", nextNode->url, nodeAddrRelativeToAbs(&(nextNode->para.containerPage))->url);
+			sprintf(nextUrl, "%s %s", nextNode->url, nodeAddrRelativeToAbs(nextNode->para.containerPage)->url);
 		}
 		param[PAYLOAD]=downloadingImgNum;
 	}

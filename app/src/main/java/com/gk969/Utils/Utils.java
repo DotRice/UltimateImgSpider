@@ -4,20 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
 
 import android.content.Context;
 import android.os.Environment;
-import android.os.Handler;
 import android.util.Log;
 
 public class Utils
@@ -69,13 +63,12 @@ public class Utils
         }
 
         File[] files = dirFile.listFiles();
-        for (File file:files)
+        for (File file : files)
         {
             if (file.isFile())
             {
                 file.delete();
-            }
-            else
+            } else
             {
                 deleteDir(file.getAbsolutePath());
             }
@@ -86,21 +79,20 @@ public class Utils
 
     public static byte[] getFileMD5(String filePath)
     {
-        int bufferSize = 8 * 1024;
         FileInputStream fileInputStream = null;
-        DigestInputStream digestInputStream = null;
 
         try
         {
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
             fileInputStream = new FileInputStream(filePath);
-            digestInputStream = new DigestInputStream(fileInputStream, messageDigest);
+            MessageDigest digester = MessageDigest.getInstance("MD5");
+            byte[] bytes = new byte[8192];
+            int byteCount;
+            while ((byteCount = fileInputStream.read(bytes)) > 0)
+            {
+                digester.update(bytes, 0, byteCount);
+            }
 
-            byte[] buffer = new byte[bufferSize];
-            while (digestInputStream.read(buffer) > 0) ;
-            messageDigest = digestInputStream.getMessageDigest();
-
-            return messageDigest.digest();
+            return digester.digest();
         } catch (FileNotFoundException e)
         {
             e.printStackTrace();
@@ -115,7 +107,6 @@ public class Utils
             try
             {
                 if (fileInputStream != null) fileInputStream.close();
-                if (digestInputStream != null) digestInputStream.close();
             } catch (IOException e)
             {
                 e.printStackTrace();

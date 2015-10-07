@@ -266,6 +266,7 @@ public class SpiderActivity extends Activity
         firstRunOperat();
         
         srcUrl=ParaConfig.getHomeURL(this);
+        Log.i(TAG, "srcUrl "+srcUrl);
         
         serviceInterfaceInit();
         checkAndStart();
