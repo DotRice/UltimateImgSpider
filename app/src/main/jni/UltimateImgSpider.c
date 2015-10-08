@@ -378,7 +378,7 @@ OFFSET低位，PTR高位。
 #define POOL_PTR_BIT        (sizeof(u32)-POOL_OFFSET_BITS)
 #define POOL_PTR_BITS       ((((u32)1<<POOL_PTR_BIT)-1)<<POOL_OFFSET_BIT)
 
-#define urlNodeRelativeAddr u32
+#define RelativeAddr u32
 #define GET_POOL_OFFSET(addr)           ((addr)&POOL_OFFSET_BITS)
 #define SET_POOL_OFFSET(addr,offset)    addr&=~POOL_OFFSET_BITS;\
                                         addr|=offset&POOL_OFFSET_BITS;
@@ -400,14 +400,14 @@ typedef struct
 	u8 color;
 	u16 len;
 
-	urlNodeRelativeAddr containerPage;
+	RelativeAddr containerPage;
 
-	urlNodeRelativeAddr nextToLoad;
-	urlNodeRelativeAddr prevToLoad;
+	RelativeAddr nextToLoad;
+	RelativeAddr prevToLoad;
 
-	urlNodeRelativeAddr left;
-	urlNodeRelativeAddr right;
-	urlNodeRelativeAddr parent;
+	RelativeAddr left;
+	RelativeAddr right;
+	RelativeAddr parent;
 } nodePara;
 
 typedef struct
@@ -418,12 +418,12 @@ typedef struct
 
 typedef struct
 {
-	urlNodeRelativeAddr head;
-	urlNodeRelativeAddr tail;
+	RelativeAddr head;
+	RelativeAddr tail;
 
-	urlNodeRelativeAddr root;
+	RelativeAddr root;
 
-	urlNodeRelativeAddr curNode;
+	RelativeAddr curNode;
 	u32 processed;
 	u32 len;
 	u32 height;
@@ -444,6 +444,17 @@ typedef struct memPool
 	u32 idleMemPtr;
 } t_urlPool;
 
+typedef struct
+{
+    RelativeAddr imgUrl;
+    RelativeAddr pageUrl;
+    
+    RelativeAddr prev;
+    RelativeAddr next;
+    
+    u32 fileNum;
+} t_storageImg;
+
 #pragma pack()
 
 t_spiderPara *spiderPara=NULL;
@@ -455,9 +466,9 @@ u32 downloadingImgNum=0;
 
 char nextImgUrlWithContainerBuf[MAX_SIZE_PER_URL*2+2];
 
-urlNodeRelativeAddr nodeAddrAbsToRelative(urlNode *node)
+RelativeAddr nodeAddrAbsToRelative(urlNode *node)
 {
-    urlNodeRelativeAddr relativeAddr;
+    RelativeAddr relativeAddr;
 	if(node!=NULL)
 	{
 		u32 i;
@@ -479,7 +490,7 @@ urlNodeRelativeAddr nodeAddrAbsToRelative(urlNode *node)
     return relativeAddr;
 }
 
-urlNode *nodeAddrRelativeToAbs(urlNodeRelativeAddr relativeAddr)
+urlNode *nodeAddrRelativeToAbs(RelativeAddr relativeAddr)
 {
 	u32 poolPtr=GET_POOL_PTR(relativeAddr);
     if(poolPtr < spiderPara->urlPoolNum)
@@ -499,12 +510,12 @@ urlNode *nodeAddrRelativeToAbs(urlNodeRelativeAddr relativeAddr)
 
 void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
 {
-	urlNodeRelativeAddr downNodeAddr=upNode->para.right;
+	RelativeAddr downNodeAddr=upNode->para.right;
 	urlNode *downNode=nodeAddrRelativeToAbs(downNodeAddr);
     urlNode *left;
     urlNode *parent;
 
-	urlNodeRelativeAddr upNodeAddr=nodeAddrAbsToRelative(upNode);
+	RelativeAddr upNodeAddr=nodeAddrAbsToRelative(upNode);
 
 	upNode->para.right=downNode->para.left;
     left=nodeAddrRelativeToAbs(downNode->para.left);
@@ -535,12 +546,12 @@ void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
 
 void urlTreeRightRotate(urlTree *tree, urlNode *upNode)
 {
-	urlNodeRelativeAddr downNodeAddr=upNode->para.left;
+	RelativeAddr downNodeAddr=upNode->para.left;
 	urlNode *downNode=nodeAddrRelativeToAbs(downNodeAddr);
     urlNode *right;
     urlNode *parent;
 
-	urlNodeRelativeAddr upNodeAddr=nodeAddrAbsToRelative(upNode);
+	RelativeAddr upNodeAddr=nodeAddrAbsToRelative(upNode);
 
 	upNode->para.left=downNode->para.right;
     right=nodeAddrRelativeToAbs(downNode->para.right);
@@ -578,7 +589,7 @@ char *urlPoolIndexToName(u32 index)
 	return urlPoolName;
 }
 
-urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, urlNodeRelativeAddr *direction)
+urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, RelativeAddr *direction)
 {
 	urlNode *node=NULL;
 	t_urlPool *urlPool;
@@ -867,7 +878,7 @@ void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 
 urlNode *findUrlNodeByMd5(urlTree *tree, u64 md5)
 {
-	urlNodeRelativeAddr nextNodeAddr=tree->root;
+	RelativeAddr nextNodeAddr=tree->root;
 	urlNode *node=nodeAddrRelativeToAbs(nextNodeAddr);
 
 	while(node!=NULL)
@@ -893,7 +904,7 @@ urlNode *findUrlNodeByMd5(urlTree *tree, u64 md5)
 
 void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 {
-	urlNodeRelativeAddr *nextNodeAddr=&(tree->root);
+	RelativeAddr *nextNodeAddr=&(tree->root);
 	urlNode *node=nodeAddrRelativeToAbs(*nextNodeAddr);
 	urlNode *parent=NULL;
 
@@ -937,7 +948,7 @@ void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 	node=urlNodeAllocFromPool(env, urlLen+1 , nextNodeAddr);
 	if(node!=NULL)
 	{
-		urlNodeRelativeAddr newNodeAddr=*nextNodeAddr;
+		RelativeAddr newNodeAddr=*nextNodeAddr;
         urlNode *tail;
 
 		strcpy(node->url, newUrl);
