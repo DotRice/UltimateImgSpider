@@ -411,6 +411,10 @@ public class SpiderService extends Service
     private final static int    PARA_PROCESSED       = 1;
     private final static int    PARA_HEIGHT          = 2;
     private final static int    PARA_PAYLOAD         = 3;
+    private final static int    PARA_DOWNLOAD        = 4;
+
+    private final static int    PAGE_PARA_NUM        = 3;
+    private final static int    IMG_PARA_NUM         = 5;
     
     private int[]               pageProcParam;
     private int[]               imgProcParam;
@@ -442,8 +446,8 @@ public class SpiderService extends Service
     
     private native void jniAddUrl(String url, byte[] md5, int type, int[] param);
     
-    private native String jniFindNextUrlToLoad(String prevUrl, byte[] md5,
-            int type, int[] param);
+    private native String jniFindNextUrlToLoad(String prevUrl, byte[] md5, int type, int[] param);
+    private native void jniSaveImgStorageInfo(byte[] imgUrlMd5, byte[] pageUrlMd5);
     
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
     
@@ -506,7 +510,6 @@ public class SpiderService extends Service
     {
         private static final int   IMG_DOWNLOADER_NUM = 10;
         private DownloaderThread[] downloaderThreads  = new DownloaderThread[IMG_DOWNLOADER_NUM];
-        private String[] downloadingCacheFilePath     = new String[IMG_DOWNLOADER_NUM];
         private static final String CACHE_MARK        = ".cache";
 
         private final static int IMG_VALID_FILE_MIN   = 512 * 1024;
@@ -521,8 +524,6 @@ public class SpiderService extends Service
         {
             for (int i = 0; i < IMG_DOWNLOADER_NUM; i++)
             {
-                downloadingCacheFilePath[i]="";
-                
                 if (downloaderThreads[i] != null)
                 {
                     if (!downloaderThreads[i].isAlive())
@@ -540,84 +541,28 @@ public class SpiderService extends Service
         }
         
 
-        private synchronized File getImgDownloadCacheFile(String imgUrl, int threadIndex)
+        private synchronized File newImgDownloadCacheFile(String imgUrl)
         {
-            String[] urlSplit = imgUrl.split("/");
-            String imgFileRawName=null;
-            try
-            {
-                imgFileRawName = URLDecoder.decode(urlSplit[urlSplit.length - 1], "utf-8");
-            }
-            catch (UnsupportedEncodingException e)
-            {
-                e.printStackTrace();
-            }
+            String cacheFileName=imgProcParam[PARA_DOWNLOAD]+imgUrl.substring(imgUrl.lastIndexOf(".")) + CACHE_MARK;
             
-            String cacheFileName=imgFileRawName + CACHE_MARK;
-            
-            //Log.i(TAG, "cache file name:" + cacheFileName);
-            
-            
-            File cacheFile = new File(curSiteDirPath + "/" + cacheFileName);
-            
-            int i=0;
-            while(cacheFile.exists())
-            {
-                cacheFile = new File(curSiteDirPath + "/"
-                        + "(" + i + ") " + cacheFileName);
-                i++;
-            }
-            
-            String cacheFilePath=cacheFile.getPath();
-            while(true)
-            {
-                int h;
-                for(h=0; h<IMG_DOWNLOADER_NUM; h++)
-                {
-                    if(downloadingCacheFilePath[h].equals(cacheFilePath))
-                    {
-                        break;
-                    }
-                }
-                
-                if(h<IMG_DOWNLOADER_NUM)
-                {
-                    i++;
-                    cacheFilePath=curSiteDirPath + "/"
-                            + "(" + i + ") " + cacheFileName;
-                    
-                }
-                else
-                {
-                    break;
-                }
-            }
-            downloadingCacheFilePath[threadIndex]=cacheFilePath;
-            
-            Log.i(TAG, "cache file path:"+cacheFilePath);
-            
-            return new File(cacheFilePath);
+            Log.i(TAG, "cache file name:" + cacheFileName);
+
+            imgProcParam[PARA_DOWNLOAD]++;
+
+            return new File(curSiteDirPath + "/" + cacheFileName);
         }
         
-        private synchronized void changeFileNameAfterDownload(File file)
+        private synchronized void changeFileNameAfterDownload(File file, String imgUrl, String PageUrl)
         {
             Log.i(TAG, "chang file name "+file.getName());
             String imgFileRawName=file.getName();
             imgFileRawName=imgFileRawName.substring(0, imgFileRawName.length()-CACHE_MARK.length());
             
             File finalFile = new File(curSiteDirPath + "/" + imgFileRawName);
-            
-            int i = 0;
-            while(finalFile.exists())
-            {
-                finalFile = new File(curSiteDirPath + "/"
-                        + "(" + i + ") " + imgFileRawName);
-                i++;
-            }
-            
+
             file.renameTo(finalFile);
-            
-            Log.i(TAG, "new name "+file.getName());
+
+            jniSaveImgStorageInfo(md5.digest(imgUrl.getBytes()), md5.digest(PageUrl.getBytes()));
         }
         
         
@@ -696,7 +641,7 @@ public class SpiderService extends Service
                             {
                                 if (output == null)
                                 {
-                                    imgFile=getImgDownloadCacheFile(url, threadIndex);
+                                    imgFile=newImgDownloadCacheFile(url);
                                     output = new FileOutputStream(imgFile);
                                 }
                                 Log.i(TAG, totalLen+" "+url);
@@ -724,7 +669,7 @@ public class SpiderService extends Service
                         if (opts.outHeight > IMG_VALID_HEIGHT_MIN
                                 && opts.outWidth > IMG_VALID_WIDTH_MIN)
                         {
-                            imgFile=getImgDownloadCacheFile(url, threadIndex);
+                            imgFile=newImgDownloadCacheFile(url);
                             output = new FileOutputStream(imgFile);
                             output.write(cacheBuf, 0, totalLen);
                         }
@@ -990,8 +935,8 @@ public class SpiderService extends Service
     {
         spiderWebViewInit();
         
-        pageProcParam = new int[3];
-        imgProcParam = new int[4];
+        pageProcParam = new int[PAGE_PARA_NUM];
+        imgProcParam = new int[IMG_PARA_NUM];
         
         new TimerThread().start();
         
