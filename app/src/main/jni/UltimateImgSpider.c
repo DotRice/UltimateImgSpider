@@ -18,138 +18,148 @@
  * Spider进程用这个文件描述符映射此段共享内存到自己的内存空间。
  */
 
-#define ASHM_NAME_SIZE	32
+#define ASHM_NAME_SIZE  32
 
 int ashmem_create_region(const char *name, u32 size)
 {
-	int fd, fdWithOption;
-	char buf[ASHM_NAME_SIZE];
+    int fd, fdWithOption;
+    char buf[ASHM_NAME_SIZE];
 
-	while (name && size)
-	{
-		fd = open(ASHMEM_NAME_DEF, O_RDWR);
-		if (fd < 0)
-		{
-			break;
-		}
+    while(name && size)
+    {
+        fd = open(ASHMEM_NAME_DEF, O_RDWR);
 
-		LOGI("ashmem open success %d", fd);
+        if(fd < 0)
+        {
+            break;
+        }
 
-		strlcpy(buf, name, sizeof(buf));
-		fdWithOption = ioctl(fd, ASHMEM_SET_NAME, buf);
-		if (fdWithOption < 0)
-		{
-			close(fd);
-			break;
-		}
-		fdWithOption = ioctl(fd, ASHMEM_SET_SIZE, size);
-		if (fdWithOption < 0)
-		{
-			close(fd);
-			break;
-		}
+        LOGI("ashmem open success %d", fd);
 
-		break;
-	}
+        strlcpy(buf, name, sizeof(buf));
+        fdWithOption = ioctl(fd, ASHMEM_SET_NAME, buf);
 
-	return fd;
+        if(fdWithOption < 0)
+        {
+            close(fd);
+            break;
+        }
+
+        fdWithOption = ioctl(fd, ASHMEM_SET_SIZE, size);
+
+        if(fdWithOption < 0)
+        {
+            close(fd);
+            break;
+        }
+
+        break;
+    }
+
+    return fd;
 }
 
 
-#define ASHM_EXIST	0x12345678
+#define ASHM_EXIST  0x12345678
 #pragma pack(1)
 typedef struct
 {
-	u32 ashmStat;
-	u8 data[4];
+    u32 ashmStat;
+    u8 data[4];
 } t_ashmBlock;
 
 typedef struct
 {
-	char name[ASHM_NAME_SIZE];
-	int size;
-	u32 ashmStat;
-}t_ashmParaStore;
+    char name[ASHM_NAME_SIZE];
+    int size;
+    u32 ashmStat;
+} t_ashmParaStore;
 
 #pragma pack()
 
 typedef struct t_ashm
 {
-	char name[ASHM_NAME_SIZE];
-	int size;
-	int fd;
-	t_ashmBlock *ashmem;
-	struct t_ashm *next;
+    char name[ASHM_NAME_SIZE];
+    int size;
+    int fd;
+    t_ashmBlock *ashmem;
+    struct t_ashm *next;
 } t_ashmNode;
 
 
-t_ashmNode *ashmemChainHead=NULL;
-t_ashmNode *ashmemChainTail=NULL;
+t_ashmNode *ashmemChainHead = NULL;
+t_ashmNode *ashmemChainTail = NULL;
 
 
 t_ashmNode *findAshmemByName(const char *name)
 {
-	t_ashmNode *ashmNode=ashmemChainHead;
+    t_ashmNode *ashmNode = ashmemChainHead;
 
-	while(ashmNode!=NULL)
-	{
-		if(strcmp(ashmNode->name, name)==0)
-		{
-			return ashmNode;
-		}
+    while(ashmNode != NULL)
+    {
+        if(strcmp(ashmNode->name, name) == 0)
+        {
+            return ashmNode;
+        }
 
-		ashmNode=ashmNode->next;
-	}
+        ashmNode = ashmNode->next;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 int createNewAshmem(const char *name, int size, u8 **addr)
 {
-    int fd = ashmem_create_region(name, size+sizeof(u32));
-    if (fd >= 0)
+    int fd = ashmem_create_region(name, size + sizeof(u32));
+
+    if(fd >= 0)
     {
         LOGI("create ashmem name:%s size:%d fd:%d success!", name, size, fd);
 
         t_ashmBlock *ashm = mmap(NULL, size, PROT_READ | PROT_WRITE,
                                  MAP_SHARED, fd, 0);
-        if (ashm != NULL)
+
+        if(ashm != NULL)
         {
-            t_ashmNode *newAshmNode=malloc(sizeof(t_ashmNode));
-            if(newAshmNode!=NULL)
+            t_ashmNode *newAshmNode = malloc(sizeof(t_ashmNode));
+
+            if(newAshmNode != NULL)
             {
-                ashm->ashmStat=0;
-                if(addr!=NULL)
+                ashm->ashmStat = 0;
+
+                if(addr != NULL)
                 {
-                    *addr=ashm->data;
+                    *addr = ashm->data;
                 }
 
-                newAshmNode->ashmem=ashm;
-                newAshmNode->fd=fd;
+                newAshmNode->ashmem = ashm;
+                newAshmNode->fd = fd;
                 strncpy(newAshmNode->name, name, ASHM_NAME_SIZE);
-                newAshmNode->next=NULL;
-                newAshmNode->size=size;
+                newAshmNode->next = NULL;
+                newAshmNode->size = size;
 
-                if(ashmemChainHead==NULL)
+                if(ashmemChainHead == NULL)
                 {
-                    ashmemChainHead=newAshmNode;
+                    ashmemChainHead = newAshmNode;
                 }
 
-                if(ashmemChainTail!=NULL)
+                if(ashmemChainTail != NULL)
                 {
-                    ashmemChainTail->next=newAshmNode;
+                    ashmemChainTail->next = newAshmNode;
                 }
-                ashmemChainTail=newAshmNode;
+
+                ashmemChainTail = newAshmNode;
 
 
-                LOGI("ashmem mmap %d to watchdog process success!", (u32 )ashm);
+                LOGI("ashmem mmap %d to watchdog process success!", (u32)ashm);
 
-                if(strcmp(name, "ashmTest")==0)
+                if(strcmp(name, "ashmTest") == 0)
                 {
-					int i;
-                    for(i=0; i<8; i++)
+                    int i;
+
+                    for(i = 0; i < 8; i++)
                     {
-                        ashm->data[i]=i;
+                        ashm->data[i] = i;
                     }
                 }
             }
@@ -159,211 +169,223 @@ int createNewAshmem(const char *name, int size, u8 **addr)
     return fd;
 }
 
-void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIEnv* env,
-		jobject thiz, jstring jDataFileFullPath)
+void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIEnv *env,
+        jobject thiz, jstring jDataFileFullPath)
 {
     const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
 
     LOGI("jniRestoreProjectData path:%s", dataFileFullPath);
 
-    FILE *dataFile=fopen(dataFileFullPath, "r");
-    if(dataFile!=NULL)
+    FILE *dataFile = fopen(dataFileFullPath, "r");
+
+    if(dataFile != NULL)
     {
         t_ashmParaStore ashmParaStore;
 
         while(true)
         {
-            if(fread(&ashmParaStore, sizeof(t_ashmParaStore), 1, dataFile)!=1)
+            if(fread(&ashmParaStore, sizeof(t_ashmParaStore), 1, dataFile) != 1)
             {
                 LOGI("fread ashmParaStore error");
                 break;
             }
 
             u8 *data;
-            int fd=createNewAshmem(ashmParaStore.name, ashmParaStore.size, &data);
-            if(fd<0)
+            int fd = createNewAshmem(ashmParaStore.name, ashmParaStore.size, &data);
+
+            if(fd < 0)
             {
                 LOGI("createNewAshmem error");
                 break;
             }
 
-            if(fread(data, ashmParaStore.size, 1, dataFile)!=1)
+            if(fread(data, ashmParaStore.size, 1, dataFile) != 1)
             {
                 LOGI("fread data error");
                 break;
             }
-            
+
             LOGI("Restore AshmNode Name:%s Size:%d Success", ashmParaStore.name, ashmParaStore.size);
         }
     }
+
     (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
 }
 
-void Java_com_gk969_UltimateImgSpider_WatchdogService_jniStoreProjectData(JNIEnv* env,
-		jobject thiz, jstring jDataFileFullPath)
+void Java_com_gk969_UltimateImgSpider_WatchdogService_jniStoreProjectData(JNIEnv *env,
+        jobject thiz, jstring jDataFileFullPath)
 {
-	const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
+    const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
 
-	LOGI("jniStoreProjectData path:%s", dataFileFullPath);
+    LOGI("jniStoreProjectData path:%s", dataFileFullPath);
 
-	FILE *dataFile=fopen(dataFileFullPath, "wb");
-	if(dataFile!=NULL)
-	{
-		t_ashmNode *ashmNode;
-		for(ashmNode=ashmemChainHead; ashmNode!=NULL; ashmNode=ashmNode->next)
-		{
-			t_ashmParaStore ashmParaStore;
-			strncpy(ashmParaStore.name, ashmNode->name, ASHM_NAME_SIZE);
-			ashmParaStore.size=ashmNode->size;
-			ashmParaStore.ashmStat=ashmNode->ashmem->ashmStat;
+    FILE *dataFile = fopen(dataFileFullPath, "wb");
 
-			fwrite(&ashmParaStore, sizeof(t_ashmParaStore), 1, dataFile);
-			fwrite(ashmNode->ashmem->data, ashmNode->size, 1, dataFile);
-		}
+    if(dataFile != NULL)
+    {
+        t_ashmNode *ashmNode;
 
-		fclose(dataFile);
-	}
+        for(ashmNode = ashmemChainHead; ashmNode != NULL; ashmNode = ashmNode->next)
+        {
+            t_ashmParaStore ashmParaStore;
+            strncpy(ashmParaStore.name, ashmNode->name, ASHM_NAME_SIZE);
+            ashmParaStore.size = ashmNode->size;
+            ashmParaStore.ashmStat = ashmNode->ashmem->ashmStat;
 
-	(*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
+            fwrite(&ashmParaStore, sizeof(t_ashmParaStore), 1, dataFile);
+            fwrite(ashmNode->ashmem->data, ashmNode->size, 1, dataFile);
+        }
+
+        fclose(dataFile);
+    }
+
+    (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
 }
 
-int Java_com_gk969_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv* env,
-		jobject thiz, jstring jname, jint size)
+int Java_com_gk969_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv *env,
+        jobject thiz, jstring jname, jint size)
 {
-	int i, fd=-1;
-	s64 fdWithOption;
-	const char *name = (*env)->GetStringUTFChars(env, jname, NULL);
+    int i, fd = -1;
+    s64 fdWithOption;
+    const char *name = (*env)->GetStringUTFChars(env, jname, NULL);
 
     LOGI("WatchdogService_jniGetAshmem %s", name);
-	t_ashmNode *ashmNode=findAshmemByName(name);
-	if(ashmNode!=NULL)
-	{
+    t_ashmNode *ashmNode = findAshmemByName(name);
+
+    if(ashmNode != NULL)
+    {
         LOGI("ashmNode %s Exist", name);
-		ashmNode->ashmem->ashmStat=ASHM_EXIST;
-		fd=ashmNode->fd;
-	}
-	else
-	{
-		fd=createNewAshmem(name, size, NULL);
-	}
+        ashmNode->ashmem->ashmStat = ASHM_EXIST;
+        fd = ashmNode->fd;
+    }
+    else
+    {
+        fd = createNewAshmem(name, size, NULL);
+    }
 
-	(*env)->ReleaseStringUTFChars(env, jname, name);
+    (*env)->ReleaseStringUTFChars(env, jname, name);
 
-	return fd;
+    return fd;
 }
 
-jobject SpiderServiceInstance=NULL;
+jobject SpiderServiceInstance = NULL;
 
-jclass SpiderServiceClass=NULL;
+jclass SpiderServiceClass = NULL;
 
-jmethodID getAshmemFromWatchdogMID=NULL;
+jmethodID getAshmemFromWatchdogMID = NULL;
 
-void* spiderGetAshmemFromWatchdog(JNIEnv* env, const char *name, int size)
+void *spiderGetAshmemFromWatchdog(JNIEnv *env, const char *name, int size)
 {
-	void *ashmem=NULL;
+    void *ashmem = NULL;
 
-	LOGI("spiderGetAshmemFromWatchdog name:%s size:%d", name, size);
+    LOGI("spiderGetAshmemFromWatchdog name:%s size:%d", name, size);
 
-	if(getAshmemFromWatchdogMID==NULL)
-	{
-		SpiderServiceClass = (*env)->FindClass(env,
-			"com/gk969/UltimateImgSpider/SpiderService");
-		if (SpiderServiceClass != NULL)
-		{
-			getAshmemFromWatchdogMID = (*env)->GetMethodID(env, SpiderServiceClass, "getAshmemFromWatchdog",
-					"(Ljava/lang/String;I)I");
-		}
-	}
+    if(getAshmemFromWatchdogMID == NULL)
+    {
+        SpiderServiceClass = (*env)->FindClass(env,
+                                               "com/gk969/UltimateImgSpider/SpiderService");
 
-	if (getAshmemFromWatchdogMID != NULL)
-	{
-		jstring jname=(*env)->NewStringUTF(env, name);
-		int fd=(*env)->CallIntMethod(env, SpiderServiceInstance, getAshmemFromWatchdogMID, jname, size);
-		if(fd>=0)
-		{
-			ashmem=mmap(NULL, size, PROT_READ | PROT_WRITE,
-						MAP_SHARED, fd, 0);
-		}
+        if(SpiderServiceClass != NULL)
+        {
+            getAshmemFromWatchdogMID = (*env)->GetMethodID(env, SpiderServiceClass, "getAshmemFromWatchdog",
+                                       "(Ljava/lang/String;I)I");
+        }
+    }
 
-	}
-	return ashmem;
+    if(getAshmemFromWatchdogMID != NULL)
+    {
+        jstring jname = (*env)->NewStringUTF(env, name);
+        int fd = (*env)->CallIntMethod(env, SpiderServiceInstance, getAshmemFromWatchdogMID, jname, size);
+
+        if(fd >= 0)
+        {
+            ashmem = mmap(NULL, size, PROT_READ | PROT_WRITE,
+                          MAP_SHARED, fd, 0);
+        }
+
+    }
+
+    return ashmem;
 }
 
 
 
 
-void ashmemTest(JNIEnv* env)
+void ashmemTest(JNIEnv *env)
 {
-	t_ashmBlock *ashm=spiderGetAshmemFromWatchdog(env, "ashmTest", 32);
+    t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, "ashmTest", 32);
 
-	if(ashm!=NULL)
-	{
-		u8 i;
-		for(i=0; i<8; i++)
-		{
-			LOGI("%d", ashm->data[i]);
-		}
-		if(ashm->ashmStat==ASHM_EXIST)
-		{
-			LOGI("ashmem already exist");
-		}
-	}
+    if(ashm != NULL)
+    {
+        u8 i;
+
+        for(i = 0; i < 8; i++)
+        {
+            LOGI("%d", ashm->data[i]);
+        }
+
+        if(ashm->ashmStat == ASHM_EXIST)
+        {
+            LOGI("ashmem already exist");
+        }
+    }
 }
 
 
 void fileTest()
 {
-	FILE *testFile;
+    FILE *testFile;
 
-	testFile=fopen("/mnt/sdcard/UltimateImgSpider/download/test.txt", "a");
-	fprintf(testFile, "test ");
-	fclose(testFile);
+    testFile = fopen("/mnt/sdcard/UltimateImgSpider/download/test.txt", "a");
+    fprintf(testFile, "test ");
+    fclose(testFile);
 
-	char buf[100];
-	testFile=fopen("/mnt/sdcard/UltimateImgSpider/download/test.txt", "r");
-	fread(buf, 99, 1, testFile);
-	fclose(testFile);
+    char buf[100];
+    testFile = fopen("/mnt/sdcard/UltimateImgSpider/download/test.txt", "r");
+    fread(buf, 99, 1, testFile);
+    fclose(testFile);
 
-	LOGI("test file:%s", buf);
+    LOGI("test file:%s", buf);
 }
 
 
 
-jstring Java_com_gk969_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv* env,
-		jobject thiz, jstring jSrcStr)
+jstring Java_com_gk969_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv *env,
+        jobject thiz, jstring jSrcStr)
 {
-	int i;
-	const u8 *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
-	LOGI("stringFromJNI %s", srcStr);
+    int i;
+    const u8 *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
+    LOGI("stringFromJNI %s", srcStr);
 
-	SpiderServiceInstance=thiz;
+    SpiderServiceInstance = thiz;
 
-	//ashmemTest(env);
+    //ashmemTest(env);
 
-	//fileTest();
+    //fileTest();
 
-	if((*env)->ExceptionOccurred(env)) {
-	   return NULL;
-	}
+    if((*env)->ExceptionOccurred(env))
+    {
+        return NULL;
+    }
 
-	(*env)->ReleaseStringUTFChars(env, jSrcStr, srcStr);
-	return (*env)->NewStringUTF(env, "test jni !");
+    (*env)->ReleaseStringUTFChars(env, jSrcStr, srcStr);
+    return (*env)->NewStringUTF(env, "test jni !");
 }
 
-#define MAX_SIZE_PER_URL	4095
-#define URL_TYPE_PAGE	0
-#define URL_TYPE_IMG	1
+#define MAX_SIZE_PER_URL    4095
+#define URL_TYPE_PAGE   0
+#define URL_TYPE_IMG    1
 
 #define RBT_RED     0
 #define RBT_BLACK   1
 
 //最大可用内存池总大小
-#define MAX_RAM_TOTAL_POOL	1024*1024*1024
+#define MAX_RAM_TOTAL_POOL  1024*1024*1024
 //每个内存池大小
-#define SIZE_PER_URLPOOL	(1024*1024-12)
+#define SIZE_PER_URLPOOL    (1024*1024-12)
 
 
-/* 
+/*
 相对地址位映射
 PTR:内存池序号
 OFFSET:内存池内偏移量
@@ -395,861 +417,909 @@ OFFSET低位，PTR高位。
 #pragma pack(1)
 typedef struct
 {
-	u64 md5_64;
-	u8 pad;
-	u8 color;
-	u16 len;
+    u64 md5_64;
+    u8 pad;
+    u8 color;
+    u16 len;
 
-	RelativeAddr containerPage;
+    RelativeAddr containerPage;
 
-	RelativeAddr nextToLoad;
-	RelativeAddr prevToLoad;
+    RelativeAddr nextToLoad;
+    RelativeAddr prevToLoad;
 
-	RelativeAddr left;
-	RelativeAddr right;
-	RelativeAddr parent;
+    RelativeAddr left;
+    RelativeAddr right;
+    RelativeAddr parent;
 } nodePara;
 
 typedef struct
 {
-	nodePara para;
-	char url[MAX_SIZE_PER_URL];
+    nodePara para;
+    char url[MAX_SIZE_PER_URL];
 } urlNode;
 
 typedef struct
 {
-	RelativeAddr head;
-	RelativeAddr tail;
+    RelativeAddr head;
+    RelativeAddr tail;
 
-	RelativeAddr root;
+    RelativeAddr root;
 
-	RelativeAddr curNode;
-	u32 processed;
-	u32 len;
-	u32 height;
+    RelativeAddr curNode;
+    u32 processed;
+    u32 len;
+    u32 height;
 } urlTree;
 
 
 typedef struct
 {
-	urlTree pageUrlTree;
-	urlTree imgUrlTree;
-	u32 urlPoolNum;
+    urlTree pageUrlTree;
+    urlTree imgUrlTree;
+    u32 urlPoolNum;
 } t_spiderPara;
 
 
 typedef struct memPool
 {
-	u8 mem[SIZE_PER_URLPOOL];
-	u32 idleMemPtr;
+    u8 mem[SIZE_PER_URLPOOL];
+    u32 idleMemPtr;
 } t_urlPool;
 
 typedef struct
 {
     RelativeAddr imgUrl;
     RelativeAddr pageUrl;
-    
+
     RelativeAddr prev;
     RelativeAddr next;
-    
+
     u32 fileNum;
 } t_storageImg;
 
 #pragma pack()
 
-t_spiderPara *spiderPara=NULL;
+t_spiderPara *spiderPara = NULL;
 
 #define TOTAL_POOL (MAX_RAM_TOTAL_POOL/sizeof(t_urlPool))
 t_urlPool *urlPools[TOTAL_POOL];
 
-u32 downloadingImgNum=0;
+u32 downloadingImgNum = 0;
 
-char nextImgUrlWithContainerBuf[MAX_SIZE_PER_URL*2+2];
+char nextImgUrlWithContainerBuf[MAX_SIZE_PER_URL * 2 + 2 + sizeof(u32)*2 +2];
 
 RelativeAddr nodeAddrAbsToRelative(urlNode *node)
 {
     RelativeAddr relativeAddr;
-	if(node!=NULL)
-	{
-		u32 i;
-		for(i=0; i<spiderPara->urlPoolNum; i++)
-		{
-			s64 ofs=(u32)node-(u32)(urlPools[i]);
-			if(ofs>=0&&ofs<sizeof(t_urlPool))
-			{
-                relativeAddr=NEW_RELATIVE_ADDR(i, ofs);
-				break;
-			}
-		}
-	}
-	else
-	{
-		relativeAddr=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-	}
-    
+
+    if(node != NULL)
+    {
+        u32 i;
+
+        for(i = 0; i < spiderPara->urlPoolNum; i++)
+        {
+            s64 ofs = (u32)node - (u32)(urlPools[i]);
+
+            if(ofs >= 0 && ofs < sizeof(t_urlPool))
+            {
+                relativeAddr = NEW_RELATIVE_ADDR(i, ofs);
+                break;
+            }
+        }
+    }
+    else
+    {
+        relativeAddr = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+    }
+
     return relativeAddr;
 }
 
 urlNode *nodeAddrRelativeToAbs(RelativeAddr relativeAddr)
 {
-	u32 poolPtr=GET_POOL_PTR(relativeAddr);
+    u32 poolPtr = GET_POOL_PTR(relativeAddr);
+
     if(poolPtr < spiderPara->urlPoolNum)
-	{
-		t_urlPool *pool=urlPools[poolPtr];
+    {
+        t_urlPool *pool = urlPools[poolPtr];
 
-        u32 offset=GET_POOL_OFFSET(relativeAddr);
-		if(offset < (pool->idleMemPtr-sizeof(nodePara)))
-		{
-			return (urlNode*)(pool->mem+offset);
-		}
-	}
+        u32 offset = GET_POOL_OFFSET(relativeAddr);
 
-	return NULL;
+        if(offset < (pool->idleMemPtr - sizeof(nodePara)))
+        {
+            return (urlNode *)(pool->mem + offset);
+        }
+    }
+
+    return NULL;
 }
 
 
 void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
 {
-	RelativeAddr downNodeAddr=upNode->para.right;
-	urlNode *downNode=nodeAddrRelativeToAbs(downNodeAddr);
+    RelativeAddr downNodeAddr = upNode->para.right;
+    urlNode *downNode = nodeAddrRelativeToAbs(downNodeAddr);
     urlNode *left;
     urlNode *parent;
 
-	RelativeAddr upNodeAddr=nodeAddrAbsToRelative(upNode);
+    RelativeAddr upNodeAddr = nodeAddrAbsToRelative(upNode);
 
-	upNode->para.right=downNode->para.left;
-    left=nodeAddrRelativeToAbs(downNode->para.left);
-	if(left!=NULL)
-	{
-		left->para.parent=upNodeAddr;
-	}
+    upNode->para.right = downNode->para.left;
+    left = nodeAddrRelativeToAbs(downNode->para.left);
 
-	downNode->para.parent=upNode->para.parent;
-    parent=nodeAddrRelativeToAbs(upNode->para.parent);
-	if(parent==NULL)
-	{
-		tree->root=downNodeAddr;
-	}
-	else if(upNode==nodeAddrRelativeToAbs(parent->para.left))
-	{
-		parent->para.left=downNodeAddr;
-	}
-	else
-	{
-		parent->para.right=downNodeAddr;
-	}
+    if(left != NULL)
+    {
+        left->para.parent = upNodeAddr;
+    }
 
-	downNode->para.left=upNodeAddr;
-	upNode->para.parent=downNodeAddr;
+    downNode->para.parent = upNode->para.parent;
+    parent = nodeAddrRelativeToAbs(upNode->para.parent);
+
+    if(parent == NULL)
+    {
+        tree->root = downNodeAddr;
+    }
+    else if(upNode == nodeAddrRelativeToAbs(parent->para.left))
+    {
+        parent->para.left = downNodeAddr;
+    }
+    else
+    {
+        parent->para.right = downNodeAddr;
+    }
+
+    downNode->para.left = upNodeAddr;
+    upNode->para.parent = downNodeAddr;
 }
 
 
 void urlTreeRightRotate(urlTree *tree, urlNode *upNode)
 {
-	RelativeAddr downNodeAddr=upNode->para.left;
-	urlNode *downNode=nodeAddrRelativeToAbs(downNodeAddr);
+    RelativeAddr downNodeAddr = upNode->para.left;
+    urlNode *downNode = nodeAddrRelativeToAbs(downNodeAddr);
     urlNode *right;
     urlNode *parent;
 
-	RelativeAddr upNodeAddr=nodeAddrAbsToRelative(upNode);
+    RelativeAddr upNodeAddr = nodeAddrAbsToRelative(upNode);
 
-	upNode->para.left=downNode->para.right;
-    right=nodeAddrRelativeToAbs(downNode->para.right);
-	if(right!=NULL)
-	{
-		right->para.parent=upNodeAddr;
-	}
+    upNode->para.left = downNode->para.right;
+    right = nodeAddrRelativeToAbs(downNode->para.right);
 
-	downNode->para.parent=upNode->para.parent;
-    parent=nodeAddrRelativeToAbs(upNode->para.parent);
-	if(parent==NULL)
-	{
-		tree->root=downNodeAddr;
-	}
-	else if(upNode==nodeAddrRelativeToAbs(parent->para.left))
-	{
-		parent->para.left=downNodeAddr;
-	}
-	else
-	{
-		parent->para.right=downNodeAddr;
-	}
+    if(right != NULL)
+    {
+        right->para.parent = upNodeAddr;
+    }
 
-	downNode->para.right=upNodeAddr;
-	upNode->para.parent=downNodeAddr;
+    downNode->para.parent = upNode->para.parent;
+    parent = nodeAddrRelativeToAbs(upNode->para.parent);
+
+    if(parent == NULL)
+    {
+        tree->root = downNodeAddr;
+    }
+    else if(upNode == nodeAddrRelativeToAbs(parent->para.left))
+    {
+        parent->para.left = downNodeAddr;
+    }
+    else
+    {
+        parent->para.right = downNodeAddr;
+    }
+
+    downNode->para.right = upNodeAddr;
+    upNode->para.parent = downNodeAddr;
 }
 
 
-#define URL_POOL_NAME_SIZE	20
+#define URL_POOL_NAME_SIZE  20
 char urlPoolName[URL_POOL_NAME_SIZE];
 char *urlPoolIndexToName(u32 index)
 {
-	snprintf(urlPoolName, URL_POOL_NAME_SIZE, "urlPool_%d", index);
-	LOGI("url pool name:%s", urlPoolName);
-	return urlPoolName;
+    snprintf(urlPoolName, URL_POOL_NAME_SIZE, "urlPool_%d", index);
+    LOGI("url pool name:%s", urlPoolName);
+    return urlPoolName;
 }
 
-urlNode *urlNodeAllocFromPool(JNIEnv* env, u32 urlSize, RelativeAddr *direction)
+urlNode *urlNodeAllocFromPool(JNIEnv *env, u32 urlSize, RelativeAddr *direction)
 {
-	urlNode *node=NULL;
-	t_urlPool *urlPool;
-	u32 poolIndex;
-	u32 offset=0;
-	u32 size=((urlSize+sizeof(nodePara))+3)&0xFFFFFFFC;
+    urlNode *node = NULL;
+    t_urlPool *urlPool;
+    u32 poolIndex;
+    u32 offset = 0;
+    u32 size = ((urlSize + sizeof(nodePara)) + 3) & 0xFFFFFFFC;
 
 
-	if ((size > MAX_SIZE_PER_URL) || (spiderPara->urlPoolNum == 0 ))
-	{
-		return NULL;
-	}
+    if((size > MAX_SIZE_PER_URL) || (spiderPara->urlPoolNum == 0))
+    {
+        return NULL;
+    }
 
-	for(poolIndex=0; poolIndex<spiderPara->urlPoolNum; poolIndex++)
-	{
-		urlPool=urlPools[poolIndex];
-		if ((urlPool->idleMemPtr + size) <= SIZE_PER_URLPOOL)
-		{
-			break;
-		}
-	}
+    for(poolIndex = 0; poolIndex < spiderPara->urlPoolNum; poolIndex++)
+    {
+        urlPool = urlPools[poolIndex];
 
-	if(poolIndex==spiderPara->urlPoolNum)
-	{
-		urlPool=NULL;
-		if(spiderPara->urlPoolNum<TOTAL_POOL)
-		{
-			t_ashmBlock *ashm=spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(spiderPara->urlPoolNum), sizeof(t_urlPool));
-			if(ashm!=NULL)
-			{
-				LOGI("init new urlPool Success");
+        if((urlPool->idleMemPtr + size) <= SIZE_PER_URLPOOL)
+        {
+            break;
+        }
+    }
 
-				urlPool = (t_urlPool*)(ashm->data);
-				urlPool->idleMemPtr = 0;
-				urlPools[spiderPara->urlPoolNum]=urlPool;
+    if(poolIndex == spiderPara->urlPoolNum)
+    {
+        urlPool = NULL;
 
-				spiderPara->urlPoolNum++;
-			}
-		}
-	}
+        if(spiderPara->urlPoolNum < TOTAL_POOL)
+        {
+            t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(spiderPara->urlPoolNum), sizeof(t_urlPool));
+
+            if(ashm != NULL)
+            {
+                LOGI("init new urlPool Success");
+
+                urlPool = (t_urlPool *)(ashm->data);
+                urlPool->idleMemPtr = 0;
+                urlPools[spiderPara->urlPoolNum] = urlPool;
+
+                spiderPara->urlPoolNum++;
+            }
+        }
+    }
 
 
-	if(urlPool!=NULL)
-	{
-		offset = urlPool->idleMemPtr;
+    if(urlPool != NULL)
+    {
+        offset = urlPool->idleMemPtr;
 
-		//LOGI("alloc at %d", offset);
+        //LOGI("alloc at %d", offset);
 
-		urlPool->idleMemPtr += size;
+        urlPool->idleMemPtr += size;
 
-		node=(urlNode*)(urlPool->mem + offset);
+        node = (urlNode *)(urlPool->mem + offset);
 
-		if(direction!=NULL)
-		{
-			*direction=NEW_RELATIVE_ADDR(poolIndex, offset);
-		}
-	}
+        if(direction != NULL)
+        {
+            *direction = NEW_RELATIVE_ADDR(poolIndex, offset);
+        }
+    }
 
-	return node;
+    return node;
 }
 
 
-jboolean spiderParaInit(JNIEnv* env)
+jboolean spiderParaInit(JNIEnv *env)
 {
 
-	t_ashmBlock *ashm=spiderGetAshmemFromWatchdog(env, "spiderPara", sizeof(t_spiderPara));
+    t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, "spiderPara", sizeof(t_spiderPara));
 
-	if(ashm!=NULL)
-	{
-		spiderPara=(t_spiderPara*)(ashm->data);
-		if(ashm->ashmStat!=ASHM_EXIST)
-		{
-			spiderPara->pageUrlTree.head=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-			spiderPara->pageUrlTree.tail=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-			spiderPara->pageUrlTree.root=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-			spiderPara->pageUrlTree.curNode=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-			spiderPara->pageUrlTree.processed=0;
-			spiderPara->pageUrlTree.len=0;
-			spiderPara->pageUrlTree.height=0;
+    if(ashm != NULL)
+    {
+        spiderPara = (t_spiderPara *)(ashm->data);
 
-			spiderPara->imgUrlTree.head=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-			spiderPara->imgUrlTree.tail=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-			spiderPara->imgUrlTree.root=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-			spiderPara->imgUrlTree.curNode=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-			spiderPara->imgUrlTree.processed=0;
-			spiderPara->imgUrlTree.len=0;
-			spiderPara->imgUrlTree.height=0;
+        if(ashm->ashmStat != ASHM_EXIST)
+        {
+            spiderPara->pageUrlTree.head = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->pageUrlTree.tail = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->pageUrlTree.root = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->pageUrlTree.curNode = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->pageUrlTree.processed = 0;
+            spiderPara->pageUrlTree.len = 0;
+            spiderPara->pageUrlTree.height = 0;
 
-			spiderPara->urlPoolNum=0;
-		}
+            spiderPara->imgUrlTree.head = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->imgUrlTree.tail = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->imgUrlTree.root = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->imgUrlTree.curNode = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->imgUrlTree.processed = 0;
+            spiderPara->imgUrlTree.len = 0;
+            spiderPara->imgUrlTree.height = 0;
 
-		return true;
-	}
+            spiderPara->urlPoolNum = 0;
+        }
 
-	return false;
+        return true;
+    }
+
+    return false;
 }
 
-jboolean urlPoolInit(JNIEnv* env)
+jboolean urlPoolInit(JNIEnv *env)
 {
-	if(spiderPara->urlPoolNum==0)
-	{
-		t_ashmBlock *ashm=spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(0), sizeof(t_urlPool));
-		if(ashm!=NULL)
-		{
-			urlPools[0]=(t_urlPool*)(ashm->data);
-			urlPools[0]->idleMemPtr = 0;
-			spiderPara->urlPoolNum=1;
-			return true;
-		}
-	}
-	else
-	{
-		u32 i;
-		t_urlPool *urlPool;
-		for(i=0; i<spiderPara->urlPoolNum; i++)
-		{
-			t_ashmBlock *ashm=spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(i), sizeof(t_urlPool));
-			if(ashm==NULL)
-			{
-				break;
-			}
-			if(ashm->ashmStat!=ASHM_EXIST)
-			{
-				break;
-			}
+    if(spiderPara->urlPoolNum == 0)
+    {
+        t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(0), sizeof(t_urlPool));
 
-			urlPools[i]=(t_urlPool*)(ashm->data);
-		}
+        if(ashm != NULL)
+        {
+            urlPools[0] = (t_urlPool *)(ashm->data);
+            urlPools[0]->idleMemPtr = 0;
+            spiderPara->urlPoolNum = 1;
+            return true;
+        }
+    }
+    else
+    {
+        u32 i;
+        t_urlPool *urlPool;
 
-		if(i==spiderPara->urlPoolNum)
-		{
-			return true;
-		}
-	}
+        for(i = 0; i < spiderPara->urlPoolNum; i++)
+        {
+            t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(i), sizeof(t_urlPool));
 
-	return false;
+            if(ashm == NULL)
+            {
+                break;
+            }
+
+            if(ashm->ashmStat != ASHM_EXIST)
+            {
+                break;
+            }
+
+            urlPools[i] = (t_urlPool *)(ashm->data);
+        }
+
+        if(i == spiderPara->urlPoolNum)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
-jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv* env,
-		jobject thiz)
+jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv *env,
+        jobject thiz)
 {
-	SpiderServiceInstance=thiz;
+    SpiderServiceInstance = thiz;
 
-	if(!spiderParaInit(env))
-	{
-		return false;
-	}
+    if(!spiderParaInit(env))
+    {
+        return false;
+    }
 
-	if(!urlPoolInit(env))
-	{
-		return false;
-	}
+    if(!urlPoolInit(env))
+    {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 
 
 void urlTreeTraversal(urlTree *tree)
 {
-	u32 i;
-	urlNode *node = nodeAddrRelativeToAbs(tree->head);
-	for (i = 0; i < tree->len; i++)
-	{
-		urlNode *parent=nodeAddrRelativeToAbs(node->para.parent);
-		u32 parentMd5=(parent==NULL)?0:(parent->para.md5_64>>32);
-		urlNode *left=nodeAddrRelativeToAbs(node->para.left);
-		u32 leftMd5=(left==NULL)?0:(left->para.md5_64>>32);
-		urlNode *right=nodeAddrRelativeToAbs(node->para.right);
-		u32 rightMd5=(right==NULL)?0:(right->para.md5_64>>32);
-        
-        LOGI("Chain %08X %c p:%08X l:%08X r:%08X", (u32)(node->para.md5_64>>32), (node->para.color==RBT_BLACK)?'B':'R', parentMd5, leftMd5, rightMd5);
-		//LOGI("Chain %08X %c p:%08X l:%08X r:%08X", (u32)(node->para.md5_64>>32), (node->para.color==RBT_BLACK)?'B':'R', node->para.parent, node->para.left, node->para.right);
+    u32 i;
+    urlNode *node = nodeAddrRelativeToAbs(tree->head);
 
-		node=nodeAddrRelativeToAbs(node->para.nextToLoad);
-	}
+    for(i = 0; i < tree->len; i++)
+    {
+        urlNode *parent = nodeAddrRelativeToAbs(node->para.parent);
+        u32 parentMd5 = (parent == NULL) ? 0 : (parent->para.md5_64 >> 32);
+        urlNode *left = nodeAddrRelativeToAbs(node->para.left);
+        u32 leftMd5 = (left == NULL) ? 0 : (left->para.md5_64 >> 32);
+        urlNode *right = nodeAddrRelativeToAbs(node->para.right);
+        u32 rightMd5 = (right == NULL) ? 0 : (right->para.md5_64 >> 32);
+
+        LOGI("Chain %08X %c p:%08X l:%08X r:%08X", (u32)(node->para.md5_64 >> 32), (node->para.color == RBT_BLACK) ? 'B' : 'R', parentMd5, leftMd5, rightMd5);
+        //LOGI("Chain %08X %c p:%08X l:%08X r:%08X", (u32)(node->para.md5_64>>32), (node->para.color==RBT_BLACK)?'B':'R', node->para.parent, node->para.left, node->para.right);
+
+        node = nodeAddrRelativeToAbs(node->para.nextToLoad);
+    }
 }
 
 
 void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 {
-    urlNode *parent=nodeAddrRelativeToAbs(node->para.parent);
-	urlNode *grandParent;
-	urlNode *uncle;
-	if(parent!=NULL)
-	{
-        grandParent=nodeAddrRelativeToAbs(parent->para.parent);
-	}
+    urlNode *parent = nodeAddrRelativeToAbs(node->para.parent);
+    urlNode *grandParent;
+    urlNode *uncle;
 
-	while(parent!=NULL)
+    if(parent != NULL)
     {
-		if(parent->para.color!=RBT_RED)
-		{
-			break;
-		}
+        grandParent = nodeAddrRelativeToAbs(parent->para.parent);
+    }
 
-        if(parent==nodeAddrRelativeToAbs(grandParent->para.left))
+    while(parent != NULL)
+    {
+        if(parent->para.color != RBT_RED)
         {
-            uncle=nodeAddrRelativeToAbs(grandParent->para.right);
+            break;
+        }
 
-			while(true)
-			{
-				if(uncle!=NULL)
-				{
-					if(uncle->para.color==RBT_RED)
-					{
-						parent->para.color=RBT_BLACK;
-						uncle->para.color=RBT_BLACK;
-						grandParent->para.color=RBT_RED;
-						node=grandParent;
+        if(parent == nodeAddrRelativeToAbs(grandParent->para.left))
+        {
+            uncle = nodeAddrRelativeToAbs(grandParent->para.right);
 
-						parent=nodeAddrRelativeToAbs(node->para.parent);
-						if(parent!=NULL)
-						{
-							grandParent=nodeAddrRelativeToAbs(parent->para.parent);
-						}
+            while(true)
+            {
+                if(uncle != NULL)
+                {
+                    if(uncle->para.color == RBT_RED)
+                    {
+                        parent->para.color = RBT_BLACK;
+                        uncle->para.color = RBT_BLACK;
+                        grandParent->para.color = RBT_RED;
+                        node = grandParent;
 
-						break;
-					}
-				}
+                        parent = nodeAddrRelativeToAbs(node->para.parent);
 
-				if(node==nodeAddrRelativeToAbs(parent->para.right))
-				{
-					node=parent;
-					urlTreeLeftRotate(tree, node);
-				}
+                        if(parent != NULL)
+                        {
+                            grandParent = nodeAddrRelativeToAbs(parent->para.parent);
+                        }
 
-				parent=nodeAddrRelativeToAbs(node->para.parent);
-				parent->para.color=RBT_BLACK;
+                        break;
+                    }
+                }
 
-				grandParent=nodeAddrRelativeToAbs(parent->para.parent);
-				grandParent->para.color=RBT_RED;
+                if(node == nodeAddrRelativeToAbs(parent->para.right))
+                {
+                    node = parent;
+                    urlTreeLeftRotate(tree, node);
+                }
 
-				urlTreeRightRotate(tree, grandParent);
-				break;
-			}
+                parent = nodeAddrRelativeToAbs(node->para.parent);
+                parent->para.color = RBT_BLACK;
+
+                grandParent = nodeAddrRelativeToAbs(parent->para.parent);
+                grandParent->para.color = RBT_RED;
+
+                urlTreeRightRotate(tree, grandParent);
+                break;
+            }
         }
         else
         {
-            uncle=nodeAddrRelativeToAbs(grandParent->para.left);
+            uncle = nodeAddrRelativeToAbs(grandParent->para.left);
 
-			while(true)
-			{
-				if(uncle!=NULL)
-				{
-					if(uncle->para.color==RBT_RED)
-					{
-						parent->para.color=RBT_BLACK;
-						uncle->para.color=RBT_BLACK;
-						grandParent->para.color=RBT_RED;
-						node=grandParent;
+            while(true)
+            {
+                if(uncle != NULL)
+                {
+                    if(uncle->para.color == RBT_RED)
+                    {
+                        parent->para.color = RBT_BLACK;
+                        uncle->para.color = RBT_BLACK;
+                        grandParent->para.color = RBT_RED;
+                        node = grandParent;
 
-						parent=nodeAddrRelativeToAbs(node->para.parent);
-						if(parent!=NULL)
-						{
-							grandParent=nodeAddrRelativeToAbs(parent->para.parent);
-						}
+                        parent = nodeAddrRelativeToAbs(node->para.parent);
 
-						break;
-					}
-				}
+                        if(parent != NULL)
+                        {
+                            grandParent = nodeAddrRelativeToAbs(parent->para.parent);
+                        }
 
-				if(node==nodeAddrRelativeToAbs(parent->para.left))
-				{
-					node=parent;
-					urlTreeRightRotate(tree, node);
+                        break;
+                    }
+                }
 
-				}
+                if(node == nodeAddrRelativeToAbs(parent->para.left))
+                {
+                    node = parent;
+                    urlTreeRightRotate(tree, node);
 
-				parent=nodeAddrRelativeToAbs(node->para.parent);
-				parent->para.color=RBT_BLACK;
+                }
 
-				grandParent=nodeAddrRelativeToAbs(parent->para.parent);
-				grandParent->para.color=RBT_RED;
+                parent = nodeAddrRelativeToAbs(node->para.parent);
+                parent->para.color = RBT_BLACK;
 
-				urlTreeLeftRotate(tree, grandParent);
-				break;
-			}
+                grandParent = nodeAddrRelativeToAbs(parent->para.parent);
+                grandParent->para.color = RBT_RED;
+
+                urlTreeLeftRotate(tree, grandParent);
+                break;
+            }
 
         }
 
     }
 
-    nodeAddrRelativeToAbs(tree->root)->para.color=RBT_BLACK;
+    nodeAddrRelativeToAbs(tree->root)->para.color = RBT_BLACK;
 }
 
 urlNode *findUrlNodeByMd5(urlTree *tree, u64 md5)
 {
-	RelativeAddr nextNodeAddr=tree->root;
-	urlNode *node=nodeAddrRelativeToAbs(nextNodeAddr);
+    RelativeAddr nextNodeAddr = tree->root;
+    urlNode *node = nodeAddrRelativeToAbs(nextNodeAddr);
 
-	while(node!=NULL)
-	{
-		if(md5>node->para.md5_64)
-		{
-			nextNodeAddr=node->para.right;
-		}
-		else if(md5<node->para.md5_64)
-		{
-			nextNodeAddr=node->para.left;
-		}
-		else
-		{
-			return node;
-		}
+    while(node != NULL)
+    {
+        if(md5 > node->para.md5_64)
+        {
+            nextNodeAddr = node->para.right;
+        }
+        else if(md5 < node->para.md5_64)
+        {
+            nextNodeAddr = node->para.left;
+        }
+        else
+        {
+            return node;
+        }
 
-		node=nodeAddrRelativeToAbs(nextNodeAddr);
-	}
+        node = nodeAddrRelativeToAbs(nextNodeAddr);
+    }
 
-	return NULL;
+    return NULL;
 }
 
-void urlTreeInsert(JNIEnv* env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
+void urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 {
-	RelativeAddr *nextNodeAddr=&(tree->root);
-	urlNode *node=nodeAddrRelativeToAbs(*nextNodeAddr);
-	urlNode *parent=NULL;
+    RelativeAddr *nextNodeAddr = &(tree->root);
+    urlNode *node = nodeAddrRelativeToAbs(*nextNodeAddr);
+    urlNode *parent = NULL;
 
-	u16 urlLen=strlen(newUrl);
-	u32 height=0;
+    u16 urlLen = strlen(newUrl);
+    u32 height = 0;
 
     /*
     LOGI("urlTreeInsert %08X", (u32)(newMd5_64>>32));
-    
+
     if(node!=NULL)
         LOGI("root %08X", (u32)(node->para.md5_64>>32));
     */
-	while(node!=NULL)
-	{
+    while(node != NULL)
+    {
         //LOGI("path node %08X", (u32)(node->para.md5_64>>32));
-        
-		if(newMd5_64>node->para.md5_64)
-		{
-			nextNodeAddr=&(node->para.right);
-		}
-		else if(newMd5_64<node->para.md5_64)
-		{
-			nextNodeAddr=&(node->para.left);
-		}
-		else
-		{
-			return;
-		}
 
-		parent=node;
-		node=nodeAddrRelativeToAbs(*nextNodeAddr);
+        if(newMd5_64 > node->para.md5_64)
+        {
+            nextNodeAddr = &(node->para.right);
+        }
+        else if(newMd5_64 < node->para.md5_64)
+        {
+            nextNodeAddr = &(node->para.left);
+        }
+        else
+        {
+            return;
+        }
 
-		height++;
-	}
+        parent = node;
+        node = nodeAddrRelativeToAbs(*nextNodeAddr);
 
-	if(height>tree->height)
-	{
-		tree->height=height;
-	}
+        height++;
+    }
 
-	node=urlNodeAllocFromPool(env, urlLen+1 , nextNodeAddr);
-	if(node!=NULL)
-	{
-		RelativeAddr newNodeAddr=*nextNodeAddr;
+    if(height > tree->height)
+    {
+        tree->height = height;
+    }
+
+    node = urlNodeAllocFromPool(env, urlLen + 1 , nextNodeAddr);
+
+    if(node != NULL)
+    {
+        RelativeAddr newNodeAddr = *nextNodeAddr;
         urlNode *tail;
 
-		strcpy(node->url, newUrl);
-		node->para.md5_64 = newMd5_64;
-		node->para.len=urlLen;
+        strcpy(node->url, newUrl);
+        node->para.md5_64 = newMd5_64;
+        node->para.len = urlLen;
 
-		node->para.left=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-		node->para.right=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
+        node->para.left = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        node->para.right = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
 
-		node->para.parent=nodeAddrAbsToRelative(parent);
+        node->para.parent = nodeAddrAbsToRelative(parent);
 
-		node->para.containerPage=spiderPara->pageUrlTree.curNode;
+        node->para.containerPage = spiderPara->pageUrlTree.curNode;
 
-		node->para.nextToLoad=NEW_RELATIVE_ADDR(POOL_PTR_INVALID,0);
-		node->para.prevToLoad=tree->tail;
-        tail=nodeAddrRelativeToAbs(tree->tail);
-		if(tail!=NULL)
-		{
-			tail->para.nextToLoad=newNodeAddr;
-		}
-		tree->tail=newNodeAddr;
-		if(nodeAddrRelativeToAbs(tree->head)==NULL)
-		{
-			tree->head=newNodeAddr;
-		}
-		tree->len++;
+        node->para.nextToLoad = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        node->para.prevToLoad = tree->tail;
+        tail = nodeAddrRelativeToAbs(tree->tail);
 
-		if(parent==NULL)
-		{
-			node->para.color=RBT_BLACK;
-		}
-		else
-		{
-			node->para.color=RBT_RED;
+        if(tail != NULL)
+        {
+            tail->para.nextToLoad = newNodeAddr;
+        }
 
-			if(nodeAddrRelativeToAbs(parent->para.parent)!=NULL)
-			{
+        tree->tail = newNodeAddr;
+
+        if(nodeAddrRelativeToAbs(tree->head) == NULL)
+        {
+            tree->head = newNodeAddr;
+        }
+
+        tree->len++;
+
+        if(parent == NULL)
+        {
+            node->para.color = RBT_BLACK;
+        }
+        else
+        {
+            node->para.color = RBT_RED;
+
+            if(nodeAddrRelativeToAbs(parent->para.parent) != NULL)
+            {
                 //LOGI("Before Fixup");
                 //urlTreeTraversal(tree);
-				rbUrlTreeFixup(tree, node);
-			}
-		}
-        
-		//LOGI("new %d %d", GET_POOL_PTR(newNodeAddr), GET_POOL_OFFSET(newNodeAddr));
+                rbUrlTreeFixup(tree, node);
+            }
+        }
+
+        //LOGI("new %d %d", GET_POOL_PTR(newNodeAddr), GET_POOL_OFFSET(newNodeAddr));
         //urlTreeTraversal(tree);
-		
-	}
+
+    }
 }
 
 enum
 {
-	TOTAL=0,
+    TOTAL = 0,
     PROCESSED,
     HEIGHT,
     PAYLOAD
 };
 
 
-void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv* env,
-		jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jintArray jParam)
+void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv *env,
+        jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jintArray jParam)
 {
-	u8 UrlAlreadyInTree=false;
-	urlTree *curTree =
-			(jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
-	const u8 *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
+    u8 UrlAlreadyInTree = false;
+    urlTree *curTree =
+        (jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
+    const u8 *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
 
-	u8 *md5=(*env)->GetByteArrayElements(env, jMd5, NULL);
-	u64 md5_64;
-	memcpy((u8*)&md5_64, md5+4, 8);
+    u8 *md5 = (*env)->GetByteArrayElements(env, jMd5, NULL);
+    u64 md5_64;
+    memcpy((u8 *)&md5_64, md5 + 4, 8);
 
-	SpiderServiceInstance=thiz;
+    SpiderServiceInstance = thiz;
 
-	//if(curTree->len<20)
-	{
-		//LOGI("len:%d %d md5_64:%08X type:%d url:%s",curTree->len, strlen(url), (u32)(md5_64>>32), jType, url);
+    //if(curTree->len<20)
+    {
+        //LOGI("len:%d %d md5_64:%08X type:%d url:%s",curTree->len, strlen(url), (u32)(md5_64>>32), jType, url);
 
-		urlTreeInsert(env, curTree, url, md5_64);
+        urlTreeInsert(env, curTree, url, md5_64);
 
-		/*
-		urlNode *tail=nodeAddrRelativeToAbs(curTree->tail);
-		urlNode *head=nodeAddrRelativeToAbs(curTree->head);
-		LOGI("tail:%08X head:%08X", tail, head);
-		*/
-	}
+        /*
+        urlNode *tail=nodeAddrRelativeToAbs(curTree->tail);
+        urlNode *head=nodeAddrRelativeToAbs(curTree->head);
+        LOGI("tail:%08X head:%08X", tail, head);
+        */
+    }
 
-	int *param=(*env)->GetIntArrayElements(env, jParam, NULL);
-	param[TOTAL]=curTree->len;
-	param[HEIGHT]=curTree->height;
-	(*env)->ReleaseByteArrayElements(env, jParam, param, 0);
+    int *param = (*env)->GetIntArrayElements(env, jParam, NULL);
+    param[TOTAL] = curTree->len;
+    param[HEIGHT] = curTree->height;
+    (*env)->ReleaseIntArrayElements(env, jParam, param, 0);
 
 
-	(*env)->ReleaseStringUTFChars(env, jUrl, url);
-	(*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
+    (*env)->ReleaseStringUTFChars(env, jUrl, url);
+    (*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
 }
 
 
 u16 urlSimilarity(const char *url1, u16 len1, const char *url2, u16 len2)
 {
-	u16 i;
-	u16 len=(len1>len2)?len2:len1;
-	u16 lenInWord=len/=sizeof(u32);
-	const u32 *urlInWord1=(u32*)url1;
-	const u32 *urlInWord2=(u32*)url2;
+    u16 i;
+    u16 len = (len1 > len2) ? len2 : len1;
+    u16 lenInWord = len /= sizeof(u32);
+    const u32 *urlInWord1 = (u32 *)url1;
+    const u32 *urlInWord2 = (u32 *)url2;
 
-	for (i = 0; i<lenInWord; i++)
-	{
-		if (urlInWord1[i] != urlInWord2[i])
-		{
-			break;
-		}
-	}
+    for(i = 0; i < lenInWord; i++)
+    {
+        if(urlInWord1[i] != urlInWord2[i])
+        {
+            break;
+        }
+    }
 
-	for(i*=sizeof(u32); i<len; i++)
-	{
-		if(url1[i]!=url2[i])
-		{
-			break;
-		}
-	}
+    for(i *= sizeof(u32); i < len; i++)
+    {
+        if(url1[i] != url2[i])
+        {
+            break;
+        }
+    }
 
-	return i;
+    return i;
 }
 
 void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
 {
-	curTree->processed++;
+    curTree->processed++;
 
-	urlNode *prev=nodeAddrRelativeToAbs(curNode->para.prevToLoad);
-	if(prev==NULL)
-	{
-		curTree->head=curNode->para.nextToLoad;
-	}
-	else
-	{
-		prev->para.nextToLoad=curNode->para.nextToLoad;
-	}
+    urlNode *prev = nodeAddrRelativeToAbs(curNode->para.prevToLoad);
 
-	urlNode *next=nodeAddrRelativeToAbs(curNode->para.nextToLoad);
-	if(next==NULL)
-	{
-		curTree->tail=curNode->para.prevToLoad;
-	}
-	else
-	{
-		next->para.prevToLoad=curNode->para.prevToLoad;
-	}
+    if(prev == NULL)
+    {
+        curTree->head = curNode->para.nextToLoad;
+    }
+    else
+    {
+        prev->para.nextToLoad = curNode->para.nextToLoad;
+    }
+
+    urlNode *next = nodeAddrRelativeToAbs(curNode->para.nextToLoad);
+
+    if(next == NULL)
+    {
+        curTree->tail = curNode->para.prevToLoad;
+    }
+    else
+    {
+        next->para.prevToLoad = curNode->para.prevToLoad;
+    }
 }
 
-#define SEARCH_STEP_MAX	5000
+#define SEARCH_STEP_MAX 5000
 
 jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
-		JNIEnv* env, jobject thiz, jstring jCurUrl, jbyteArray jMd5, jint jType, jintArray jParam)
+    JNIEnv *env, jobject thiz, jstring jCurUrl, jbyteArray jMd5, jint jType, jintArray jParam)
 {
-	urlTree *curTree = (jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
+    urlTree *curTree = (jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
 
-	char *nextUrl=NULL;
+    char *nextUrl = NULL;
 
-	int i;
+    int i;
 
-	int *param=(*env)->GetIntArrayElements(env, jParam, NULL);
-	//LOGI("jniFindNextUrlToLoad");
+    int *param = (*env)->GetIntArrayElements(env, jParam, NULL);
+    //LOGI("jniFindNextUrlToLoad");
 
-	urlNode *curNode=NULL;
-	urlNode *nextNode=NULL;
-	if(jType == URL_TYPE_PAGE)
-	{
+    urlNode *curNode = NULL;
+    urlNode *nextNode = NULL;
+
+    if(jType == URL_TYPE_PAGE)
+    {
         //LOGI("URL_TYPE_PAGE");
-		curNode=nodeAddrRelativeToAbs(curTree->curNode);
-		if(curNode==NULL || jCurUrl==NULL)
-		{
-			nextNode=nodeAddrRelativeToAbs(curTree->head);
-		}
-		else
-		{
-			int urlSim = -1;
-			const char *curUrl = (*env)->GetStringUTFChars(env, jCurUrl, NULL);
-			u16 prevUrlLen=strlen(curUrl);
+        curNode = nodeAddrRelativeToAbs(curTree->curNode);
+
+        if(curNode == NULL || jCurUrl == NULL)
+        {
+            nextNode = nodeAddrRelativeToAbs(curTree->head);
+        }
+        else
+        {
+            int urlSim = -1;
+            const char *curUrl = (*env)->GetStringUTFChars(env, jCurUrl, NULL);
+            u16 prevUrlLen = strlen(curUrl);
 
 
-			//LOGI("curUrl:%s curTree->len:%d", curUrl, curTree->len);
-			//当前url已经被下载，从未下载url链表中删除
-			if(strcmp(curUrl, curNode->url)==0)
-			{
-				deleteUrlNodeFromList(curTree, curNode);
-			}
+            //LOGI("curUrl:%s curTree->len:%d", curUrl, curTree->len);
+            //当前url已经被下载，从未下载url链表中删除
+            if(strcmp(curUrl, curNode->url) == 0)
+            {
+                deleteUrlNodeFromList(curTree, curNode);
+            }
 
-			urlNode *node=curNode;
-			for (i = 0; i < SEARCH_STEP_MAX; i++)
-			{
-				//LOGI("next %d:%s", i, node->url);
-				node=nodeAddrRelativeToAbs(node->para.nextToLoad);
-				if(node==NULL)
-				{
-					break;
-				}
-				else
-				{
-					int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
-					if (curSim > urlSim)
-					{
-						urlSim = curSim;
-						nextNode = node;
-					}
-				}
-			}
+            urlNode *node = curNode;
+
+            for(i = 0; i < SEARCH_STEP_MAX; i++)
+            {
+                //LOGI("next %d:%s", i, node->url);
+                node = nodeAddrRelativeToAbs(node->para.nextToLoad);
+
+                if(node == NULL)
+                {
+                    break;
+                }
+                else
+                {
+                    int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
+
+                    if(curSim > urlSim)
+                    {
+                        urlSim = curSim;
+                        nextNode = node;
+                    }
+                }
+            }
 
 
-			node=curNode;
-			for (i = 0; i < SEARCH_STEP_MAX; i++)
-			{
-				//LOGI("prev %d:%s", i, node->url);
-				node=nodeAddrRelativeToAbs(node->para.prevToLoad);
-				if(node==NULL)
-				{
-					break;
-				}
-				else
-				{
-					int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
-					if (curSim > urlSim)
-					{
-						urlSim = curSim;
-						nextNode = node;
-					}
-				}
-			}
+            node = curNode;
 
-			(*env)->ReleaseStringUTFChars(env, jCurUrl, curUrl);
-		}
+            for(i = 0; i < SEARCH_STEP_MAX; i++)
+            {
+                //LOGI("prev %d:%s", i, node->url);
+                node = nodeAddrRelativeToAbs(node->para.prevToLoad);
 
-		if(nextNode!=NULL)
-		{
-			nextUrl=nextNode->url;
-			curTree->curNode=nodeAddrAbsToRelative(nextNode);
-		}
-	}
-	else
-	{
+                if(node == NULL)
+                {
+                    break;
+                }
+                else
+                {
+                    int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
+
+                    if(curSim > urlSim)
+                    {
+                        urlSim = curSim;
+                        nextNode = node;
+                    }
+                }
+            }
+
+            (*env)->ReleaseStringUTFChars(env, jCurUrl, curUrl);
+        }
+
+        if(nextNode != NULL)
+        {
+            nextUrl = nextNode->url;
+            curTree->curNode = nodeAddrAbsToRelative(nextNode);
+        }
+    }
+    else
+    {
         //LOGI("URL_TYPE_IMG");
-		if(jMd5!=NULL)
-		{
-			u8 *md5=(*env)->GetByteArrayElements(env, jMd5, NULL);
-			u64 md5_64;
-			memcpy((u8*)&md5_64, md5+4, 8);
-			(*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
+        if(jMd5 != NULL)
+        {
+            u8 *md5 = (*env)->GetByteArrayElements(env, jMd5, NULL);
+            u64 md5_64;
+            memcpy((u8 *)&md5_64, md5 + 4, 8);
+            (*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
 
-			//LOGI("md5:%08X", (u32)(md5_64>>32));
+            //LOGI("md5:%08X", (u32)(md5_64>>32));
 
-			curNode=findUrlNodeByMd5(curTree, md5_64);
+            curNode = findUrlNodeByMd5(curTree, md5_64);
 
-			//LOGI("cur url:%s", curNode->url);
-			deleteUrlNodeFromList(curTree, curNode);
+            //LOGI("cur url:%s", curNode->url);
+            deleteUrlNodeFromList(curTree, curNode);
 
-			downloadingImgNum--;
-		}
+            downloadingImgNum--;
+        }
 
-		//LOGI("downloadingImgNum:%d", downloadingImgNum);
+        //LOGI("downloadingImgNum:%d", downloadingImgNum);
 
-		nextNode=nodeAddrRelativeToAbs(curTree->head);
-		for(i=0; i<10; i++)
-		{
-			if(nextNode==NULL)
-			{
-				break;
-			}
-			//LOGI("img%d:%s", i, nextNode->url);
+        nextNode = nodeAddrRelativeToAbs(curTree->head);
 
-			nextNode=nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
-		}
+        for(i = 0; i < 10; i++)
+        {
+            if(nextNode == NULL)
+            {
+                break;
+            }
 
+            //LOGI("img%d:%s", i, nextNode->url);
 
-		nextNode=nodeAddrRelativeToAbs(curTree->head);
-		for(i=0; i<downloadingImgNum; i++)
-		{
-			if(nextNode==NULL)
-			{
-				break;
-			}
-
-			nextNode=nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
-		}
-
-		if(nextNode!=NULL)
-		{
-			downloadingImgNum++;
-
-			nextUrl=nextImgUrlWithContainerBuf;
-
-			sprintf(nextUrl, "%s %s", nextNode->url, nodeAddrRelativeToAbs(nextNode->para.containerPage)->url);
-		}
-		param[PAYLOAD]=downloadingImgNum;
-	}
+            nextNode = nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
+        }
 
 
-	param[PROCESSED]=curTree->processed;
+        nextNode = nodeAddrRelativeToAbs(curTree->head);
 
-	(*env)->ReleaseByteArrayElements(env, jParam, param, NULL);
+        for(i = 0; i < downloadingImgNum; i++)
+        {
+            if(nextNode == NULL)
+            {
+                break;
+            }
+
+            nextNode = nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
+        }
+
+        if(nextNode != NULL)
+        {
+            downloadingImgNum++;
+
+            nextUrl = nextImgUrlWithContainerBuf;
+
+            sprintf(nextUrl, "%s %08X %s %08X", nextNode->url, (u32)nodeAddrAbsToRelative(nextNode), nodeAddrRelativeToAbs(nextNode->para.containerPage)->url, (u32)(nextNode->para.containerPage));
+        }
+
+        param[PAYLOAD] = downloadingImgNum;
+    }
 
 
-	//LOGI("nextUrl:%s", nextUrl);
-	return (*env)->NewStringUTF(env, nextUrl);
+    param[PROCESSED] = curTree->processed;
+
+    (*env)->ReleaseIntArrayElements(env, jParam, param, 0);
+
+
+    //LOGI("nextUrl:%s", nextUrl);
+    return (*env)->NewStringUTF(env, nextUrl);
 }
 
+void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
+    JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr)
+{
+    u32 imgUrlAddr=(u32)jImgUrlAddr;
+    u32 pageUrlAddr=(u32)jPageUrlAddr;
+    LOGI("jniSaveImgStorageInfo img:%08X:%s page:%08X:%s", (u32)imgUrlAddr, nodeAddrRelativeToAbs(imgUrlAddr)->url, (u32)pageUrlAddr, nodeAddrRelativeToAbs(pageUrlAddr)->url);
 
+
+}

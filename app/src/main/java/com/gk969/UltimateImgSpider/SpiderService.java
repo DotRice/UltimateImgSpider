@@ -447,7 +447,7 @@ public class SpiderService extends Service
     private native void jniAddUrl(String url, byte[] md5, int type, int[] param);
     
     private native String jniFindNextUrlToLoad(String prevUrl, byte[] md5, int type, int[] param);
-    private native void jniSaveImgStorageInfo(byte[] imgUrlMd5, byte[] pageUrlMd5);
+    private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr);
     
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
     
@@ -552,7 +552,7 @@ public class SpiderService extends Service
             return new File(curSiteDirPath + "/" + cacheFileName);
         }
         
-        private synchronized void changeFileNameAfterDownload(File file, String imgUrl, String PageUrl)
+        private synchronized void changeFileNameAfterDownload(File file, int imgUrlAddr, int PageUrlAddr)
         {
             Log.i(TAG, "chang file name "+file.getName());
             String imgFileRawName=file.getName();
@@ -562,19 +562,22 @@ public class SpiderService extends Service
 
             file.renameTo(finalFile);
 
-            jniSaveImgStorageInfo(md5.digest(imgUrl.getBytes()), md5.digest(PageUrl.getBytes()));
+            jniSaveImgStorageInfo(imgUrlAddr, PageUrlAddr);
         }
         
         
         class DownloaderThread extends Thread
         {
-            private byte[]           cacheBuf             = new byte[IMG_VALID_FILE_MIN];
-            private byte[]           blockBuf             = new byte[IMG_DOWNLOAD_BLOCK];
+            private byte[] cacheBuf      = new byte[IMG_VALID_FILE_MIN];
+            private byte[] blockBuf      = new byte[IMG_DOWNLOAD_BLOCK];
+
+            private String containerUrl  = null;
+            private String imgUrl        = null;
             
-            private String           containerUrl         = null;
-            private String           imgUrl               = null;
-            
-            public int               threadIndex;
+            public int     threadIndex;
+
+            private long    imgUrlJniAddr;
+            private long    pageUrlJniAddr;
             
             public void run()
             {
@@ -588,7 +591,10 @@ public class SpiderService extends Service
                         
                         String[] urls = urlSet.split(" ");
                         imgUrl = urls[0];
-                        containerUrl = urls[1];
+                        containerUrl = urls[2];
+
+                        imgUrlJniAddr=Long.parseLong(urls[1], 16);
+                        pageUrlJniAddr=Long.parseLong(urls[3], 16);
                         
                         downloadImgByUrl(imgUrl);
                         
@@ -644,7 +650,6 @@ public class SpiderService extends Service
                                     imgFile=newImgDownloadCacheFile(url);
                                     output = new FileOutputStream(imgFile);
                                 }
-                                Log.i(TAG, totalLen+" "+url);
                                 output.write(cacheBuf, 0, cacheUsege);
                                 System.arraycopy(blockBuf, 0, cacheBuf, 0, len);
                                 cacheUsege=len;
@@ -657,7 +662,8 @@ public class SpiderService extends Service
                             break;
                         }
                     }
-                    
+
+                    Log.i(TAG, "totalLen "+(totalLen/1024)+"K "+url);
                     if (totalLen < IMG_VALID_FILE_MIN)
                     {
                         BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -689,7 +695,7 @@ public class SpiderService extends Service
                 
                 if(imgFile!=null)
                 {
-                    changeFileNameAfterDownload(imgFile);
+                    changeFileNameAfterDownload(imgFile, (int)imgUrlJniAddr, (int)pageUrlJniAddr);
                 }
             }
             
@@ -711,7 +717,7 @@ public class SpiderService extends Service
                             urlConn.setRequestProperty("User-Agent", userAgent);
                             
                             int res=urlConn.getResponseCode();
-                            Log.i(TAG, res+" "+urlStr);
+                            Log.i(TAG, "response "+res+" "+urlStr);
                             
                             if((res/100) == 3)
                             {
