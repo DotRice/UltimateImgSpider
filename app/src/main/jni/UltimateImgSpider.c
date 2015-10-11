@@ -414,6 +414,18 @@ OFFSET低位，PTR高位。
 
 #define POOL_PTR_INVALID    (((u32)1<<POOL_PTR_BIT)-1)
 
+
+enum
+{
+    PARAM_TOTAL = 0,
+    PARAM_PROCESSED,
+    PARAM_HEIGHT,
+    PARAM_PAYLOAD,
+    PARAM_DOWNLOAD
+};
+
+
+
 #pragma pack(1)
 typedef struct
 {
@@ -451,11 +463,28 @@ typedef struct
     u32 height;
 } urlTree;
 
+typedef struct
+{
+    RelativeAddr imgUrl;
+    RelativeAddr pageUrl;
+
+    RelativeAddr prev;
+    RelativeAddr next;
+} t_storageImgInfo;
+
+typedef struct
+{
+    RelativeAddr head;
+    RelativeAddr tail;
+
+    u32 num;
+} t_storageImgInfoList;
 
 typedef struct
 {
     urlTree pageUrlTree;
     urlTree imgUrlTree;
+    t_storageImgInfoList storageImgList;
     u32 urlPoolNum;
 } t_spiderPara;
 
@@ -466,16 +495,6 @@ typedef struct memPool
     u32 idleMemPtr;
 } t_urlPool;
 
-typedef struct
-{
-    RelativeAddr imgUrl;
-    RelativeAddr pageUrl;
-
-    RelativeAddr prev;
-    RelativeAddr next;
-
-    u32 fileNum;
-} t_storageImg;
 
 #pragma pack()
 
@@ -486,7 +505,7 @@ t_urlPool *urlPools[TOTAL_POOL];
 
 u32 downloadingImgNum = 0;
 
-char nextImgUrlWithContainerBuf[MAX_SIZE_PER_URL * 2 + 2 + sizeof(u32)*2 +2];
+char nextImgUrlWithContainerBuf[MAX_SIZE_PER_URL * 2 + 2 + sizeof(u32) * 2 + 2];
 
 RelativeAddr nodeAddrAbsToRelative(urlNode *node)
 {
@@ -515,7 +534,7 @@ RelativeAddr nodeAddrAbsToRelative(urlNode *node)
     return relativeAddr;
 }
 
-urlNode *nodeAddrRelativeToAbs(RelativeAddr relativeAddr)
+void *addrRelativeToAbs(RelativeAddr relativeAddr)
 {
     u32 poolPtr = GET_POOL_PTR(relativeAddr);
 
@@ -525,14 +544,19 @@ urlNode *nodeAddrRelativeToAbs(RelativeAddr relativeAddr)
 
         u32 offset = GET_POOL_OFFSET(relativeAddr);
 
-        if(offset < (pool->idleMemPtr - sizeof(nodePara)))
+        //LOGI("addrRelativeToAbs %08X offset %08X pool->idleMemPtr %08X", relativeAddr, offset, pool->idleMemPtr);
+
+        if(offset < pool->idleMemPtr)
         {
-            return (urlNode *)(pool->mem + offset);
+            return (void *)(pool->mem + offset);
         }
     }
 
     return NULL;
 }
+
+#define nodeAddrRelativeToAbs(relativeAddr) ((urlNode *)(addrRelativeToAbs(relativeAddr)))
+#define infoAddrRelativeToAbs(relativeAddr) ((t_storageImgInfo *)(addrRelativeToAbs(relativeAddr)))
 
 
 void urlTreeLeftRotate(urlTree *tree, urlNode *upNode)
@@ -620,14 +644,12 @@ char *urlPoolIndexToName(u32 index)
     return urlPoolName;
 }
 
-urlNode *urlNodeAllocFromPool(JNIEnv *env, u32 urlSize, RelativeAddr *direction)
+void *mallocFromPool(JNIEnv *env, u32 size, RelativeAddr *direction)
 {
-    urlNode *node = NULL;
+    void *node = NULL;
     t_urlPool *urlPool;
     u32 poolIndex;
     u32 offset = 0;
-    u32 size = ((urlSize + sizeof(nodePara)) + 3) & 0xFFFFFFFC;
-
 
     if((size > MAX_SIZE_PER_URL) || (spiderPara->urlPoolNum == 0))
     {
@@ -674,7 +696,7 @@ urlNode *urlNodeAllocFromPool(JNIEnv *env, u32 urlSize, RelativeAddr *direction)
 
         urlPool->idleMemPtr += size;
 
-        node = (urlNode *)(urlPool->mem + offset);
+        node = (void *)(urlPool->mem + offset);
 
         if(direction != NULL)
         {
@@ -686,7 +708,7 @@ urlNode *urlNodeAllocFromPool(JNIEnv *env, u32 urlSize, RelativeAddr *direction)
 }
 
 
-jboolean spiderParaInit(JNIEnv *env)
+jboolean spiderParaInit(JNIEnv *env, int *imgParam, int *pageParam)
 {
 
     t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, "spiderPara", sizeof(t_spiderPara));
@@ -714,7 +736,20 @@ jboolean spiderParaInit(JNIEnv *env)
             spiderPara->imgUrlTree.height = 0;
 
             spiderPara->urlPoolNum = 0;
+
+            spiderPara->storageImgList.head = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->storageImgList.tail = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->storageImgList.num = 0;
         }
+
+        imgParam[PARAM_TOTAL] = spiderPara->imgUrlTree.len;
+        imgParam[PARAM_PROCESSED] = spiderPara->imgUrlTree.processed;
+        imgParam[PARAM_HEIGHT] = spiderPara->imgUrlTree.height;
+        imgParam[PARAM_DOWNLOAD] = spiderPara->storageImgList.num;
+
+        imgParam[PARAM_TOTAL] = spiderPara->pageUrlTree.len;
+        imgParam[PARAM_PROCESSED] = spiderPara->pageUrlTree.processed;
+        imgParam[PARAM_HEIGHT] = spiderPara->pageUrlTree.height;
 
         return true;
     }
@@ -768,14 +803,20 @@ jboolean urlPoolInit(JNIEnv *env)
 }
 
 jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv *env,
-        jobject thiz)
+        jobject thiz, jintArray jImgParam, jintArray jPageParam)
 {
     SpiderServiceInstance = thiz;
 
-    if(!spiderParaInit(env))
+    int *imgParam = (*env)->GetIntArrayElements(env, jImgParam, NULL);
+    int *pageParam = (*env)->GetIntArrayElements(env, jPageParam, NULL);
+
+    if(!spiderParaInit(env, imgParam, pageParam))
     {
         return false;
     }
+
+    (*env)->ReleaseIntArrayElements(env, jImgParam, imgParam, 0);
+    (*env)->ReleaseIntArrayElements(env, jPageParam, pageParam, 0);
 
     if(!urlPoolInit(env))
     {
@@ -988,7 +1029,8 @@ void urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
         tree->height = height;
     }
 
-    node = urlNodeAllocFromPool(env, urlLen + 1 , nextNodeAddr);
+    u32 urlNodeSize = ((urlLen + 1 + sizeof(nodePara)) + 3) & 0xFFFFFFFC;
+    node = mallocFromPool(env, urlNodeSize, nextNodeAddr);
 
     if(node != NULL)
     {
@@ -1046,14 +1088,6 @@ void urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
     }
 }
 
-enum
-{
-    TOTAL = 0,
-    PROCESSED,
-    HEIGHT,
-    PAYLOAD
-};
-
 
 void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv *env,
         jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jintArray jParam)
@@ -1083,8 +1117,8 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv *env,
     }
 
     int *param = (*env)->GetIntArrayElements(env, jParam, NULL);
-    param[TOTAL] = curTree->len;
-    param[HEIGHT] = curTree->height;
+    param[PARAM_TOTAL] = curTree->len;
+    param[PARAM_HEIGHT] = curTree->height;
     (*env)->ReleaseIntArrayElements(env, jParam, param, 0);
 
 
@@ -1301,11 +1335,11 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
             sprintf(nextUrl, "%s %08X %s %08X", nextNode->url, (u32)nodeAddrAbsToRelative(nextNode), nodeAddrRelativeToAbs(nextNode->para.containerPage)->url, (u32)(nextNode->para.containerPage));
         }
 
-        param[PAYLOAD] = downloadingImgNum;
+        param[PARAM_PAYLOAD] = downloadingImgNum;
     }
 
 
-    param[PROCESSED] = curTree->processed;
+    param[PARAM_PROCESSED] = curTree->processed;
 
     (*env)->ReleaseIntArrayElements(env, jParam, param, 0);
 
@@ -1317,9 +1351,34 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
 void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
     JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr)
 {
-    u32 imgUrlAddr=(u32)jImgUrlAddr;
-    u32 pageUrlAddr=(u32)jPageUrlAddr;
+    u32 imgUrlAddr = (u32)jImgUrlAddr;
+    u32 pageUrlAddr = (u32)jPageUrlAddr;
     LOGI("jniSaveImgStorageInfo img:%08X:%s page:%08X:%s", (u32)imgUrlAddr, nodeAddrRelativeToAbs(imgUrlAddr)->url, (u32)pageUrlAddr, nodeAddrRelativeToAbs(pageUrlAddr)->url);
 
+    RelativeAddr infoAddr;
+    t_storageImgInfo *imgInfo = mallocFromPool(env, sizeof(t_storageImgInfo), &infoAddr);
 
+    if(imgInfo != NULL)
+    {
+        t_storageImgInfoList *infoList = &(spiderPara->storageImgList);
+
+        imgInfo->imgUrl = imgUrlAddr;
+        imgInfo->pageUrl = pageUrlAddr;
+
+        imgInfo->prev = infoList->tail;
+        imgInfo->next = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+
+        if(infoAddrRelativeToAbs(infoList->head) == NULL)
+        {
+            infoList->head = infoAddr;
+        }
+        else
+        {
+            infoAddrRelativeToAbs(infoList->tail)->next = infoAddr;
+        }
+
+        infoList->tail = infoAddr;
+
+        infoList->num++;
+    }
 }

@@ -158,7 +158,12 @@ public class SpiderService extends Service
     {
         stringFromJNI("ashmem");
 
-        if (!jniSpiderInit())
+
+        pageProcParam = new int[PAGE_PARA_NUM];
+        imgProcParam = new int[IMG_PARA_NUM];
+
+
+        if (!jniSpiderInit(imgProcParam, pageProcParam))
         {
             stopSelfAndWatchdog();
         }
@@ -439,7 +444,7 @@ public class SpiderService extends Service
     
     private native String stringFromJNI(String srcStr);
     
-    private native boolean jniSpiderInit();
+    private native boolean jniSpiderInit(int[] imgPara, int[] pagePara);
     
     private static final int JNI_OPERATE_GET = 0;
     private static final int JNI_OPERATE_ADD = 1;
@@ -543,7 +548,7 @@ public class SpiderService extends Service
 
         private synchronized File newImgDownloadCacheFile(String imgUrl)
         {
-            String cacheFileName=imgProcParam[PARA_DOWNLOAD]+imgUrl.substring(imgUrl.lastIndexOf(".")) + CACHE_MARK;
+            String cacheFileName=String.format("%03d", imgProcParam[PARA_DOWNLOAD])+imgUrl.substring(imgUrl.lastIndexOf(".")) + CACHE_MARK;
             
             Log.i(TAG, "cache file name:" + cacheFileName);
 
@@ -711,13 +716,13 @@ public class SpiderService extends Service
                         try
                         {
                             urlConn.setInstanceFollowRedirects(false);
-                            urlConn.setConnectTimeout(30000);
+                            urlConn.setConnectTimeout(10000);
                             urlConn.setReadTimeout(120000);
                             urlConn.setRequestProperty("Referer", containerUrl);
                             urlConn.setRequestProperty("User-Agent", userAgent);
                             
                             int res=urlConn.getResponseCode();
-                            Log.i(TAG, "response "+res+" "+urlStr);
+                            //Log.i(TAG, "response "+res+" "+urlStr);
                             
                             if((res/100) == 3)
                             {
@@ -782,7 +787,7 @@ public class SpiderService extends Service
         Runtime rt = Runtime.getRuntime();
         log = log + "VM:" + (rt.totalMemory() >> 20) + "M Native:"
                 + (Debug.getNativeHeapSize() >> 20) + "M pic:"
-                + imgProcParam[PARA_PAYLOAD] + "/"
+                + imgProcParam[PARA_PAYLOAD] + "/" + imgProcParam[PARA_DOWNLOAD] + "/"
                 + imgProcParam[PARA_PROCESSED] + "/" + imgProcParam[PARA_TOTAL]
                 + "|" + imgProcParam[PARA_HEIGHT] + " page:"
                 + pageProcParam[PARA_PROCESSED] + "/"
@@ -940,10 +945,7 @@ public class SpiderService extends Service
     private void spiderInit()
     {
         spiderWebViewInit();
-        
-        pageProcParam = new int[PAGE_PARA_NUM];
-        imgProcParam = new int[IMG_PARA_NUM];
-        
+
         new TimerThread().start();
         
         try

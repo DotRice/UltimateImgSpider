@@ -170,7 +170,13 @@ public class WatchdogService extends Service
 
             case SpiderActivity.CMD_CLEAR:
             {
-                Utils.deleteDir(projectPath);
+                if(projectPath!=null)
+                {
+                    if (new File(projectPath).exists())
+                    {
+                        Utils.deleteDir(projectPath);
+                    }
+                }
                 stopSelf();
                 break;
             }

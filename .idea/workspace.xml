@@ -27,6 +27,8 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86_64/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86_64/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/WatchdogService$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/WatchdogService$1.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/WatchdogService.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/WatchdogService.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/outputs/apk/app-debug-unaligned.apk" afterPath="$PROJECT_DIR$/app/build/outputs/apk/app-debug-unaligned.apk" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/outputs/apk/app-debug.apk" afterPath="$PROJECT_DIR$/app/build/outputs/apk/app-debug.apk" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.4/taskArtifacts/cache.properties.lock" afterPath="$PROJECT_DIR$/.gradle/2.4/taskArtifacts/cache.properties.lock" />
@@ -50,7 +52,7 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.4/taskArtifacts/taskArtifacts.bin" afterPath="$PROJECT_DIR$/.gradle/2.4/taskArtifacts/taskArtifacts.bin" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c" afterPath="$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="UltimateImgSpider.iws" />
@@ -79,11 +81,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="UltimateImgSpider.c" pinned="false" current-in-tab="true">
+      <file leaf-file-name="UltimateImgSpider.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6637168">
-              <caret line="1321" column="76" selection-start-line="1321" selection-start-column="76" selection-end-line="1321" selection-end-column="76" />
+            <state vertical-scroll-proportion="-24.321428">
+              <caret line="811" column="0" selection-start-line="811" selection-start-column="0" selection-end-line="811" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -99,11 +101,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SpiderService.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="SpiderService.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="510" column="58" selection-start-line="510" selection-start-column="58" selection-end-line="510" selection-end-column="58" />
+            <state vertical-scroll-proportion="0.36978132">
+              <caret line="716" column="25" selection-start-line="716" selection-start-column="25" selection-end-line="716" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -113,7 +115,7 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="103" column="41" selection-start-line="103" selection-start-column="41" selection-end-line="103" selection-end-column="41" />
+              <caret line="174" column="55" selection-start-line="174" selection-start-column="55" selection-end-line="174" selection-end-column="55" />
               <folding />
             </state>
           </provider>
@@ -1543,8 +1545,9 @@
       <list>
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java" />
         <option value="$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java" />
       </list>
     </option>
   </component>
@@ -1587,10 +1590,9 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane" />
-      <pane id="PackagesPane" />
       <pane id="Scratches" />
+      <pane id="PackagesPane" />
       <pane id="AndroidView">
         <subPane>
           <PATH>
@@ -1625,6 +1627,7 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1638,7 +1641,7 @@
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="recentsLimit" value="5" />
     <property name="FullScreen" value="false" />
-    <property name="ANDROID_EXTENDED_DEVICE_CHOOSER_SERIALS" value="20130530" />
+    <property name="ANDROID_EXTENDED_DEVICE_CHOOSER_SERIALS" value="192.168.56.101:5555" />
   </component>
   <component name="RunManager" selected="Android Application.app">
     <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android Application">
@@ -1845,14 +1848,14 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="false" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Android Monitor" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.5595106" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.37486094" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -1893,6 +1896,86 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1355" column="12" selection-start-line="1355" selection-start-column="12" selection-end-line="1355" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="274" column="32" selection-start-line="274" selection-start-column="32" selection-end-line="274" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="103" column="41" selection-start-line="103" selection-start-column="41" selection-end-line="103" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="93" column="0" selection-start-line="93" selection-start-column="0" selection-end-line="93" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="274" column="32" selection-start-line="274" selection-start-column="32" selection-end-line="274" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="510" column="58" selection-start-line="510" selection-start-column="58" selection-end-line="510" selection-end-column="58" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="103" column="41" selection-start-line="103" selection-start-column="41" selection-end-line="103" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="93" column="0" selection-start-line="93" selection-start-column="0" selection-end-line="93" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2037,14 +2120,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="103" column="41" selection-start-line="103" selection-start-column="41" selection-end-line="103" selection-end-column="41" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2053,18 +2128,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="510" column="58" selection-start-line="510" selection-start-column="58" selection-end-line="510" selection-end-column="58" />
+        <state vertical-scroll-proportion="-24.321428">
+          <caret line="811" column="0" selection-start-line="811" selection-start-column="0" selection-end-line="811" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6637168">
-          <caret line="1321" column="76" selection-start-line="1321" selection-start-column="76" selection-end-line="1321" selection-end-column="76" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="174" column="55" selection-start-line="174" selection-start-column="55" selection-end-line="174" selection-end-column="55" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.36978132">
+          <caret line="716" column="25" selection-start-line="716" selection-start-column="25" selection-end-line="716" selection-end-column="25" />
           <folding />
         </state>
       </provider>
