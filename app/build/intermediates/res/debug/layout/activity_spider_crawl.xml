@@ -4,19 +4,24 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-    
-	<RelativeLayout
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
-	    android:background="#EEE"
-	>
-		
+
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				  android:layout_width="fill_parent"
+				  android:layout_height="fill_parent"
+				  android:background="#FFF"
+				  android:baselineAligned="false"
+				  android:orientation="vertical" >
+        <com.gk969.View.GLRootView
+            android:id="@+id/glRootView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
 		<include
 	        android:layout_width="match_parent"
 	        android:layout_height="wrap_content"
-	        android:layout_alignParentBottom="true"
 	        layout="@layout/proj_bar" />
-	</RelativeLayout>
+	</LinearLayout>
 
 
     <TextView 

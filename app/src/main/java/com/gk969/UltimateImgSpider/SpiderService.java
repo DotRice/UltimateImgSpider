@@ -716,7 +716,7 @@ public class SpiderService extends Service
                         try
                         {
                             urlConn.setInstanceFollowRedirects(false);
-                            urlConn.setConnectTimeout(10000);
+                            urlConn.setConnectTimeout(5000);
                             urlConn.setReadTimeout(120000);
                             urlConn.setRequestProperty("Referer", containerUrl);
                             urlConn.setRequestProperty("User-Agent", userAgent);
