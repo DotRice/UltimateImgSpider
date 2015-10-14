@@ -457,7 +457,7 @@ public class SpiderService extends Service
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
     
     private ImgDownloader      mImgDownloader  = new ImgDownloader();
-    
+
     static
     {
         System.loadLibrary("UltimateImgSpider");
@@ -608,7 +608,7 @@ public class SpiderService extends Service
                             @Override
                             public void run()
                             {
-                                reportSpiderLog(false);
+                                reportSpiderLog();
                             }
                         });
                     }
@@ -772,11 +772,11 @@ public class SpiderService extends Service
         }
     }
     
-    private void reportSpiderLog(boolean isCompleted)
+    private void reportSpiderLog()
     {
         String log = "";
         
-        if (isCompleted)
+        if (state.get()==STAT_COMPLETE)
         {
             log = "siteScanCompleted\r\n";
         }
@@ -932,13 +932,14 @@ public class SpiderService extends Service
         {
             state.set(STAT_COMPLETE);
             // Log.i(TAG, "site scan complete");
-            reportSpiderLog(true);
+
+            reportSpiderLog();
         }
         else
         {
             state.set(STAT_DOWNLOAD_PAGE);
             spiderLoadUrl(curPageUrl);
-            reportSpiderLog(false);
+            reportSpiderLog();
         }
     }
     
@@ -1022,7 +1023,7 @@ public class SpiderService extends Service
                         @Override
                         public void run()
                         {
-                            reportSpiderLog(false);
+                            reportSpiderLog();
                         }
                     });
                 }
