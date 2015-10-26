@@ -82,8 +82,6 @@ public class SpiderActivity extends Activity
     
     private MessageHandler   mHandler              = new MessageHandler(this);
     
-    private boolean          shouldFinish          = false;
-    
     private static final int BUMP_MSG              = 1;
     
     
@@ -345,11 +343,6 @@ public class SpiderActivity extends Activity
     {
         super.onPause();
         Log.i(TAG, "onPause");
-        if(shouldFinish)
-        {
-            Log.i(TAG, "shouldFinish");
-            finish();
-        }
     }
     
     protected void onStop()
@@ -551,11 +544,15 @@ public class SpiderActivity extends Activity
                                 + getString(R.string.app_name),Toast.LENGTH_SHORT).show();
                 
                 exitTim = SystemClock.uptimeMillis();
-                return true;
             }
+            else
+            {
+                finish();
+            }
+            
+            return true;
         }
         
-        shouldFinish=true;
         return super.onKeyDown(keyCode, event);
     }
 }
