@@ -81,7 +81,7 @@ public class SpiderActivity extends Activity
     private File             appDir;
     
     private MessageHandler   mHandler              = new MessageHandler(this);
-    
+
     private static final int BUMP_MSG              = 1;
     
     
@@ -263,7 +263,7 @@ public class SpiderActivity extends Activity
         
         firstRunOperat();
         
-        srcUrl=ParaConfig.getHomeURL(this);
+        srcUrl=ParaConfig.getHomeURL(getApplicationContext());
         Log.i(TAG, "srcUrl "+srcUrl);
         
         serviceInterfaceInit();
@@ -319,10 +319,10 @@ public class SpiderActivity extends Activity
     
     private void firstRunOperat()
     {
-        if (ParaConfig.isFirstRun(this))
+        if (ParaConfig.isFirstRun(getApplicationContext()))
         {
             Toast.makeText(this, "first run", Toast.LENGTH_SHORT).show();
-            ParaConfig.setFirstRun(this);
+            ParaConfig.setFirstRun(getApplicationContext());
         }
     }
     
@@ -549,10 +549,10 @@ public class SpiderActivity extends Activity
             {
                 finish();
             }
-            
+
             return true;
         }
-        
+
         return super.onKeyDown(keyCode, event);
     }
 }

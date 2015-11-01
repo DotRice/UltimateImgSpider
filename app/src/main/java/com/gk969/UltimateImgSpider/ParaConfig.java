@@ -88,27 +88,27 @@ public class ParaConfig
     
     public static void setHomeURL(Context ctx, String URL)
     {
-        Editor editor = ctx.getSharedPreferences(SPMAIN_NAME, 0).edit();
+        Editor editor = ctx.getSharedPreferences(SPMAIN_NAME, Context.MODE_MULTI_PROCESS).edit();
         editor.putString(HOME_URL_KEY, URL);
         editor.commit();
     }
     
     public static String getHomeURL(Context ctx)
     {
-        return ctx.getSharedPreferences(SPMAIN_NAME, 0).getString(HOME_URL_KEY,
+        return ctx.getSharedPreferences(SPMAIN_NAME, Context.MODE_MULTI_PROCESS).getString(HOME_URL_KEY,
                 ctx.getString(R.string.defaultHomeUrl));
     }
     
     public static void setUserAgent(Context ctx, String ua)
     {
-        Editor editor = ctx.getSharedPreferences(SPMAIN_NAME, 0).edit();
+        Editor editor = ctx.getSharedPreferences(SPMAIN_NAME, Context.MODE_MULTI_PROCESS).edit();
         editor.putString(USER_AGENT_KEY, ua);
         editor.commit();
     }
     
     public static String getUserAgent(Context ctx)
     {
-        return ctx.getSharedPreferences(SPMAIN_NAME, 0).getString(
+        return ctx.getSharedPreferences(SPMAIN_NAME, Context.MODE_MULTI_PROCESS).getString(
                 USER_AGENT_KEY, ctx.getString(R.string.defaultUserAgent));
     }
     

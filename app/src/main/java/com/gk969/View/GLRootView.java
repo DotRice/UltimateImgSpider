@@ -89,16 +89,31 @@ class GLES20TriangleRenderer implements GLSurfaceView.Renderer
     private static final int TRIANGLE_VERTICES_DATA_STRIDE_BYTES = 5 * FLOAT_SIZE_BYTES;
     private static final int TRIANGLE_VERTICES_DATA_POS_OFFSET = 0;
     private static final int TRIANGLE_VERTICES_DATA_UV_OFFSET = 3;
+
+    /*
     private final float[] mTriangleVerticesData = {
             // X, Y, Z, U, V
             -1.0f, -0.5f, 0, -0.5f, 0.0f,
             1.0f, -0.5f, 0, 1.5f, -0.0f,
             0.0f, 1.11803399f, 0, 0.5f, 1.61803399f};
+    */
+
+    private final float[] mTriangleVerticesData = {
+            // X, Y, Z, U, V
+            -1.0f, 1f, 0, -1.0f, 1f,
+            -1.0f, -1f, 0, -1.0f, -1f,
+            1.0f, -1f, 0, 1.0f, -1f,
+            1.0f, 1f, 0, 1.0f, 1f,
+            };
+
+    private final short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+
+    float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
 
     private FloatBuffer mTriangleVertices;
 
     private final String mVertexShader =
-            "uniform mat4 uMVPMatrix;\n" +
+                    "uniform mat4 uMVPMatrix;\n" +
                     "attribute vec4 aPosition;\n" +
                     "attribute vec2 aTextureCoord;\n" +
                     "varying vec2 vTextureCoord;\n" +
@@ -108,7 +123,7 @@ class GLES20TriangleRenderer implements GLSurfaceView.Renderer
                     "}\n";
 
     private final String mFragmentShader =
-            "precision mediump float;\n" +
+                    "precision mediump float;\n" +
                     "varying vec2 vTextureCoord;\n" +
                     "uniform sampler2D sTexture;\n" +
                     "void main() {\n" +
@@ -154,6 +169,8 @@ class GLES20TriangleRenderer implements GLSurfaceView.Renderer
         GLES20.glVertexAttribPointer(maPositionHandle, 3, GLES20.GL_FLOAT, false,
                 TRIANGLE_VERTICES_DATA_STRIDE_BYTES, mTriangleVertices);
         checkGlError("glVertexAttribPointer maPosition");
+
+        /**/
         mTriangleVertices.position(TRIANGLE_VERTICES_DATA_UV_OFFSET);
         GLES20.glEnableVertexAttribArray(maPositionHandle);
         checkGlError("glEnableVertexAttribArray maPositionHandle");
@@ -163,13 +180,17 @@ class GLES20TriangleRenderer implements GLSurfaceView.Renderer
         GLES20.glEnableVertexAttribArray(maTextureHandle);
         checkGlError("glEnableVertexAttribArray maTextureHandle");
 
+
+        /**/
         long time = SystemClock.uptimeMillis() % 4000L;
-        float angle = 0.090f * ((int) time);
-        Matrix.setRotateM(mMMatrix, 0, angle, 0, 0, 1.0f);
+        //float angle = 0.090f * ((int) time);
+        float angle = 0;
+        Matrix.setRotateM(mMMatrix, 0, angle, 0, 0, 1);
         Matrix.multiplyMM(mMVPMatrix, 0, mVMatrix, 0, mMMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mMVPMatrix, 0);
 
         GLES20.glUniformMatrix4fv(muMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
         checkGlError("glDrawArrays");
     }
@@ -185,6 +206,8 @@ class GLES20TriangleRenderer implements GLSurfaceView.Renderer
 
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config)
     {
+        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+
         // Ignore the passed-in GL10 interface, and use the GLES20
         // class's static methods instead.
         mProgram = createProgram(mVertexShader, mFragmentShader);
@@ -254,7 +277,6 @@ class GLES20TriangleRenderer implements GLSurfaceView.Renderer
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
 
-        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         Matrix.setLookAtM(mVMatrix, 0, 0, 0, -5, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
     }
 

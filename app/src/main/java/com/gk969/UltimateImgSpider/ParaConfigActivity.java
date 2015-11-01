@@ -30,6 +30,8 @@ public class ParaConfigActivity extends Activity
     private WebSettings wsParaConfig;
     
     private Handler     mHandler     = new Handler();
+
+    private Context appCtx;
     
     final static String assetParaUrl = "file:///android_asset/paraConfig.html";
     
@@ -38,7 +40,9 @@ public class ParaConfigActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_para_config);
-        
+
+        appCtx=getApplicationContext();
+
         Log.i(TAG, "onCreate");
         
         curUrl = getIntent().getExtras().getString(
@@ -49,7 +53,7 @@ public class ParaConfigActivity extends Activity
             Log.i(TAG, "curUrl:" + curUrl);
             webViewInit();
         }
-        
+
     }
     
     @Override
@@ -117,7 +121,7 @@ public class ParaConfigActivity extends Activity
             
             if (URLUtil.isNetworkUrl(URL))
             {
-                ParaConfig.setHomeURL(this, URL);
+                ParaConfig.setHomeURL(appCtx, URL);
                 
                 Toast.makeText(this, "已设置主页:" + URL, Toast.LENGTH_SHORT).show();
             }
@@ -127,7 +131,7 @@ public class ParaConfigActivity extends Activity
     @JavascriptInterface
     public String getHomeUrl()
     {
-        return ParaConfig.getHomeURL(this);
+        return ParaConfig.getHomeURL(appCtx);
     }
     
     @JavascriptInterface
@@ -137,7 +141,7 @@ public class ParaConfigActivity extends Activity
         
         if (!ua.isEmpty())
         {
-            ParaConfig.setUserAgent(this, ua);
+            ParaConfig.setUserAgent(appCtx, ua);
             
             Toast.makeText(this, "已设置UA:" + ua, Toast.LENGTH_SHORT).show();
         }
@@ -146,7 +150,7 @@ public class ParaConfigActivity extends Activity
     @JavascriptInterface
     public String getUserAgent()
     {
-        return ParaConfig.getUserAgent(this);
+        return ParaConfig.getUserAgent(appCtx);
     }
     
     @JavascriptInterface
@@ -154,10 +158,10 @@ public class ParaConfigActivity extends Activity
     {
         Log.i(TAG, "setHomeUrl");
         
-        if (ParaConfig.setSearchEngine(this, seIndex))
+        if (ParaConfig.setSearchEngine(appCtx, seIndex))
         {
             Toast.makeText(this,
-                    "已设置搜索引擎:" + ParaConfig.getSearchEngineName(this),
+                    "已设置搜索引擎:" + ParaConfig.getSearchEngineName(appCtx),
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -165,7 +169,7 @@ public class ParaConfigActivity extends Activity
     @JavascriptInterface
     public String getSearchEngine()
     {
-        return ParaConfig.getSearchEngineName(this);
+        return ParaConfig.getSearchEngineName(appCtx);
     }
     
     @JavascriptInterface

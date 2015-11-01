@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ActionBar.LayoutParams;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -72,6 +73,8 @@ public class SelSrcActivity extends Activity
     private RelativeLayout       urlBar;
     
     private Button               btnURLcmd;
+
+    private Context appCtx;
     
     private final int            URL_CANCEL     = 0;
     private final int            URL_REFRESH    = 1;
@@ -110,8 +113,7 @@ public class SelSrcActivity extends Activity
                                     public void onClick(DialogInterface dialog,
                                             int whichButton, boolean isChecked)
                                     {
-                                        ParaConfig.setSpiderGoConfirm(
-                                                SelSrcActivity.this, isChecked);
+                                        ParaConfig.setSpiderGoConfirm(appCtx, isChecked);
                                     }
                                 })
                         .setPositiveButton(R.string.OK,
@@ -147,9 +149,7 @@ public class SelSrcActivity extends Activity
                                             int whichButton)
                                     {
                                         Log.i(TAG, "whichButton:" + whichButton);
-                                        ParaConfig.setSearchEngine(
-                                                SelSrcActivity.this,
-                                                whichButton);
+                                        ParaConfig.setSearchEngine(appCtx, whichButton);
                                         btnSelSearchEngine.setImageResource(ParaConfig
                                                 .getSearchEngineIcon(SelSrcActivity.this));
                                     }
@@ -266,7 +266,7 @@ public class SelSrcActivity extends Activity
         });
         
         WebSettings setting = browser.getSettings();
-        setting.setUserAgentString(ParaConfig.getUserAgent(SelSrcActivity.this));
+        setting.setUserAgentString(ParaConfig.getUserAgent(appCtx));
         
         // 启用缩放
         setting.setSupportZoom(true);
@@ -283,7 +283,7 @@ public class SelSrcActivity extends Activity
         
         browser.requestFocus();
         
-        browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
+        browserLoadUrl(ParaConfig.getHomeURL(appCtx));
         
         browserIcon = BitmapFactory.decodeResource(getResources(),
                 R.drawable.site);
@@ -373,8 +373,7 @@ public class SelSrcActivity extends Activity
                     e.printStackTrace();
                     break;
                 }
-                browserLoadUrl(ParaConfig
-                        .getSearchEngineURL(SelSrcActivity.this) + target);
+                browserLoadUrl(ParaConfig.getSearchEngineURL(appCtx) + target);
             break;
             
             default:
@@ -427,8 +426,7 @@ public class SelSrcActivity extends Activity
                         break;
                         
                         case R.id.buttonSpiderGo:
-                            if (ParaConfig
-                                    .isSpiderGoNeedConfirm(SelSrcActivity.this))
+                            if (ParaConfig.isSpiderGoNeedConfirm(appCtx))
                             {
                                 spiderGo();
                             }
@@ -439,7 +437,7 @@ public class SelSrcActivity extends Activity
                         break;
                         
                         case R.id.buttonHome:
-                            browserLoadUrl(ParaConfig.getHomeURL(SelSrcActivity.this));
+                            browserLoadUrl(ParaConfig.getHomeURL(appCtx));
                         break;
                         
                         case R.id.buttonMenu:
@@ -671,15 +669,13 @@ public class SelSrcActivity extends Activity
                     else if (url.isEmpty())
                     {
                         setUrlCmd(URL_CANCEL);
-                        btnSelSearchEngine.setImageResource(ParaConfig
-                                .getSearchEngineIcon(SelSrcActivity.this));
+                        btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(appCtx));
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_NONE);
                     }
                     else
                     {
                         setUrlCmd(URL_SEARCH);
-                        btnSelSearchEngine.setImageResource(ParaConfig
-                                .getSearchEngineIcon(SelSrcActivity.this));
+                        btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(appCtx));
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
                     }
                     
@@ -721,6 +717,8 @@ public class SelSrcActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sel_src);
+
+        appCtx=getApplicationContext();
         
         oclBrowserBtnInit();
         browserMenuInit();
@@ -757,8 +755,7 @@ public class SelSrcActivity extends Activity
         
         if (browser != null)
         {
-            browser.getSettings().setUserAgentString(
-                    ParaConfig.getUserAgent(SelSrcActivity.this));
+            browser.getSettings().setUserAgentString(ParaConfig.getUserAgent(appCtx));
         }
     }
     

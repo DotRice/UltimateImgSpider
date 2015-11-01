@@ -18,6 +18,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Debug;
 import android.os.Handler;
@@ -44,7 +45,8 @@ public class WatchdogService extends Service
     private final static String TAG = "WatchdogService";
 
     private final static String PROJECT_FILE_NAME = "project.dat";
-    private final static String MD5_FILE_NAME = "md5.dat";
+
+    private final static String SP_PROJECT_DATA_MD5="spProjectDataMd5";
 
     private String projectPath;
     private String dataFileFullPath;
@@ -82,39 +84,22 @@ public class WatchdogService extends Service
     {
         jniStoreProjectData(dataFileFullPath);
 
-        try
-        {
-            byte[] md5Value = Utils.getFileMD5(dataFileFullPath);
-            OutputStream md5Out = new FileOutputStream(projectPath + "/" + MD5_FILE_NAME);
-            md5Out.write(md5Value);
-            md5Out.close();
-        } catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        String md5OfFile = Utils.getFileMD5String(dataFileFullPath);
+        SharedPreferences.Editor editor = getSharedPreferences(SP_PROJECT_DATA_MD5, 0).edit();
+        editor.putString(projectPath, md5OfFile);
+        editor.commit();
     }
 
     private boolean projectDataIsSafe()
     {
-        try
-        {
-            byte[] md5Value = Utils.getFileMD5(dataFileFullPath);
+        String md5OfFile = Utils.getFileMD5String(dataFileFullPath);
+        String md5InSp=getSharedPreferences(SP_PROJECT_DATA_MD5, 0).getString(projectPath, "");
 
-            byte[] md5InFile=new byte[16];
-            FileInputStream md5In = new FileInputStream(projectPath + "/" + MD5_FILE_NAME);
-            md5In.read(md5InFile);
-            md5In.close();
+        Log.i(TAG, "projectDataIsSafe "+md5OfFile+" "+md5InSp);
 
-            return Utils.isArrayEquals(md5Value, md5InFile);
-        } catch (FileNotFoundException e)
+        if(md5OfFile!=null)
         {
-            e.printStackTrace();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
+            return md5InSp.equals(md5OfFile);
         }
 
         return false;

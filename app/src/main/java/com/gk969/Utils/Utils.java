@@ -77,6 +77,28 @@ public class Utils
         dirFile.delete();
     }
 
+    public static String byteArrayToHexString(byte[] arrayIn)
+    {
+        if(arrayIn==null)
+        {
+            return null;
+        }
+
+        StringBuilder builder=new StringBuilder(arrayIn.length*2);
+
+        for(byte oneByte:arrayIn)
+        {
+            builder.append(String.format("%02X", oneByte));
+        }
+
+        return builder.toString();
+    }
+
+    public static String getFileMD5String(String filePath)
+    {
+        return byteArrayToHexString(getFileMD5(filePath));
+    }
+
     public static byte[] getFileMD5(String filePath)
     {
         FileInputStream fileInputStream = null;

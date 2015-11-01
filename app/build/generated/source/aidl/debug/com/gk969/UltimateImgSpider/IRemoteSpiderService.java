@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: F:\\android\\UltimateImgSpider\\app\\src\\main\\aidl\\com\\gk969\\UltimateImgSpider\\IRemoteSpiderService.aidl
+ * Original file: D:\\android\\UltimateImgSpider\\app\\src\\main\\aidl\\com\\gk969\\UltimateImgSpider\\IRemoteSpiderService.aidl
  */
 package com.gk969.UltimateImgSpider;
 public interface IRemoteSpiderService extends android.os.IInterface
