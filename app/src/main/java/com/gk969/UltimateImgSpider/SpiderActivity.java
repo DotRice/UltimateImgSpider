@@ -50,44 +50,45 @@ public class SpiderActivity extends Activity
 {
     private final String     TAG                   = "SpiderActivity";
     public final static int  REQUST_SRC_URL        = 0;
-    
+
     final static String      BUNDLE_KEY_SOURCE_URL = "SourceUrl";
     final static String      BUNDLE_KEY_CMD        = "cmd";
     final static String      BUNDLE_KEY_PRJ_PATH   = "projectPath";
-    
+
     public final static int  CMD_NOTHING           = 0;
     public final static int  CMD_CLEAR             = 1;
     public final static int  CMD_PAUSE             = 2;
     public final static int  CMD_CONTINUE          = 3;
     public final static int  CMD_RESTART           = 4;
     public final static int  CMD_STOP_STORE        = 5;
-    
+    public final static int  CMD_START             = 6;
+
     private final int        STATE_IDLE            = 0;
     private final int        STATE_CONNECTED       = 1;
     private final int        STATE_WAIT_DISCONNECT = 2;
     private final int        STATE_WAIT_CONNECT    = 3;
     private final int        STATE_DISCONNECTED    = 4;
-    
+
     private int              serviceState          = STATE_IDLE;
-    
+
     private ImageTextButton  btPauseOrContinue;
     private ImageTextButton  btSelSrc;
     private ImageTextButton  btClear;
-    
+
     String                   srcUrl;
-    
+
     private TextView         spiderLog;
-    
+
     private File             appDir;
-    
+
     private MessageHandler   mHandler              = new MessageHandler(this);
 
     private static final int BUMP_MSG              = 1;
-    
-    
+
+
     private ServiceConnection            mConnection;
     private IRemoteSpiderServiceCallback mCallback;
-    
+
     private void serviceInterfaceInit()
     {
         mConnection = new ServiceConnection()
@@ -96,31 +97,31 @@ public class SpiderActivity extends Activity
                     IBinder service)
             {
                 mService = IRemoteSpiderService.Stub.asInterface(service);
-                
+
                 try
                 {
                     mService.registerCallback(mCallback);
                 }
                 catch (RemoteException e)
                 {
-                    
+
                 }
-                
+
                 serviceState = STATE_CONNECTED;
                 Log.i(TAG, "onServiceConnected");
             }
-            
+
             public void onServiceDisconnected(ComponentName className)
             {
                 mService = null;
-                
+
                 Log.i(TAG, "onServiceDisconnected");
-                
+
                 if (serviceState == STATE_WAIT_DISCONNECT)
                 {
                     mHandler.postDelayed(new Runnable()
                     {
-                        
+
                         @Override
                         public void run()
                         {
@@ -135,7 +136,7 @@ public class SpiderActivity extends Activity
                 }
             }
         };
-        
+
         mCallback = new IRemoteSpiderServiceCallback.Stub()
         {
             /**
@@ -150,17 +151,17 @@ public class SpiderActivity extends Activity
             }
         };
     }
-    
-    
+
+
     private static class MessageHandler extends Handler
     {
         WeakReference<SpiderActivity> mActivity;
-        
+
         MessageHandler(SpiderActivity activity)
         {
             mActivity = new WeakReference<SpiderActivity>(activity);
         }
-        
+
         @Override
         public void handleMessage(Message msg)
         {
@@ -175,14 +176,13 @@ public class SpiderActivity extends Activity
                             msgStr.indexOf("M pic:")));
                     // Log.i(theActivity.TAG,
                     // "mem:"+freeMem+" "+memUsedBySpider);
-                    
+
                     theActivity.spiderLog.setText("Total:"
                             + MemoryInfo.getTotalMemInMb() + "M Free:"
                             + freeMem + "M\r\n" + msgStr);
                     if (msgStr.contains("siteScanCompleted"))
                     {
-                        theActivity.btPauseOrContinue.changeView(
-                                R.drawable.start, R.string.start);
+                        theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
                     }
                     else if (freeMem < 50 || memUsedBySpider > 100)
                     {
@@ -194,9 +194,9 @@ public class SpiderActivity extends Activity
                     super.handleMessage(msg);
             }
         }
-        
+
     };
-    
+
     public Dialog sysFaultAlert(String title, String desc, final boolean exit)
     {
         return new AlertDialog.Builder(this)
@@ -225,10 +225,10 @@ public class SpiderActivity extends Activity
                             }
                         }).create();
     }
-    
+
     private final static int DLG_NETWORK_PROMPT = 0;
     private final static int DLG_STORAGE_ERROR  = 1;
-    
+
     protected Dialog onCreateDialog(int dlgId)
     {
         switch (dlgId)
@@ -238,38 +238,38 @@ public class SpiderActivity extends Activity
                 return sysFaultAlert(getString(R.string.prompt),
                         getString(R.string.uneffectiveNetworkPrompt), true);
             }
-            
+
             case DLG_STORAGE_ERROR:
             {
                 return sysFaultAlert(getString(R.string.prompt),
                         getString(R.string.badExternalStoragePrompt), true);
             }
         }
-        
+
         return null;
     }
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        
-        setContentView(R.layout.activity_spider_crawl);
-        
+
+        setContentView(R.layout.activity_spider);
+
         Log.i(TAG, "onCreate");
-        
+
         spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
         projBarInit();
-        
+
         firstRunOperat();
-        
+
         srcUrl=ParaConfig.getHomeURL(getApplicationContext());
         Log.i(TAG, "srcUrl "+srcUrl);
-        
+
         serviceInterfaceInit();
         checkAndStart();
     }
-    
+
     private void checkAndStart()
     {
         appDir = Utils.getDirInExtSto(getString(R.string.appPackageName)
@@ -279,15 +279,15 @@ public class SpiderActivity extends Activity
             showDialog(DLG_STORAGE_ERROR);
             return;
         }
-        
+
         checkNetwork();
     }
-    
+
     private void checkNetwork()
     {
         new Thread(new Runnable()
         {
-            
+
             @Override
             public void run()
             {
@@ -316,7 +316,7 @@ public class SpiderActivity extends Activity
             }
         }).start();
     }
-    
+
     private void firstRunOperat()
     {
         if (ParaConfig.isFirstRun(getApplicationContext()))
@@ -325,38 +325,38 @@ public class SpiderActivity extends Activity
             ParaConfig.setFirstRun(getApplicationContext());
         }
     }
-    
+
     protected void onStart()
     {
         super.onStart();
         Log.i(TAG, "onStart");
     }
-    
+
     protected void onResume()
     {
         super.onResume();
         Log.i(TAG, "onResume");
-        
+
     }
-    
+
     protected void onPause()
     {
         super.onPause();
         Log.i(TAG, "onPause");
     }
-    
+
     protected void onStop()
     {
         super.onStop();
         Log.i(TAG, "onStop");
-        
+
     }
-    
+
     protected void onDestroy()
     {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
-        
+
         if (serviceState != STATE_DISCONNECTED)
         {
             Log.i(TAG, "CMD_CLEAR");
@@ -364,12 +364,12 @@ public class SpiderActivity extends Activity
             unboundSpiderService();
         }
     }
-    
+
     // 返回至SelSrcActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        
+
         if (requestCode == REQUST_SRC_URL)
         {
             if (resultCode == RESULT_CANCELED)
@@ -382,7 +382,7 @@ public class SpiderActivity extends Activity
                 {
                     srcUrl = data.getAction();
                     Log.i(TAG, "REQUST_SRC_URL " + srcUrl);
-                    
+
                     btPauseOrContinue.changeView(R.drawable.pause,
                             R.string.pause);
                     if (serviceState == STATE_CONNECTED
@@ -401,7 +401,7 @@ public class SpiderActivity extends Activity
             }
         }
     }
-    
+
     private void projBarInit()
     {
         btPauseOrContinue = (ImageTextButton) findViewById(R.id.buttonPauseOrContinue);
@@ -411,12 +411,12 @@ public class SpiderActivity extends Activity
             public void onClick(View v)
             {
                 String cmd = btPauseOrContinue.textView.getText().toString();
-                
+
                 if (cmd.equals(getString(R.string.pause)))
                 {
                     btPauseOrContinue.changeView(R.drawable.start,
                             R.string.goOn);
-                    
+
                     sendCmdToSpiderService(CMD_PAUSE);
                 }
                 else
@@ -425,9 +425,9 @@ public class SpiderActivity extends Activity
                     {
                         btPauseOrContinue.changeView(R.drawable.pause,
                                 R.string.pause);
-                        
+
                         startAndBindSpiderService(srcUrl);
-                        
+
                         if (cmd.equals(getString(R.string.goOn)))
                         {
                             sendCmdToSpiderService(CMD_CONTINUE);
@@ -436,11 +436,11 @@ public class SpiderActivity extends Activity
                 }
             }
         });
-        
+
         btSelSrc = (ImageTextButton) findViewById(R.id.buttonSelSrc);
         btSelSrc.setOnClickListener(new View.OnClickListener()
         {
-            
+
             @Override
             public void onClick(View v)
             {
@@ -547,6 +547,7 @@ public class SpiderActivity extends Activity
             }
             else
             {
+                Log.i(TAG, "finish");
                 finish();
             }
 

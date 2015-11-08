@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import android.os.Handler;
 
 import android.content.Context;
 import android.os.Environment;
@@ -94,6 +96,20 @@ public class Utils
         return builder.toString();
     }
 
+    public static void handlerPostUntilSuccess(Handler handler, Runnable runnable)
+    {
+        while(!handler.post(runnable))
+        {
+            try
+            {
+                Thread.currentThread().sleep(100);
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static String getFileMD5String(String filePath)
     {
         return byteArrayToHexString(getFileMD5(filePath));
@@ -140,11 +156,11 @@ public class Utils
 
     public static class ReadWaitLock
     {
-        private boolean isLocked = false;
+        public AtomicBoolean isLocked = new AtomicBoolean(false);
 
         public synchronized void waitIfLocked()
         {
-            while (isLocked)
+            while (isLocked.get())
             {
                 try
                 {
@@ -158,7 +174,7 @@ public class Utils
 
         public synchronized void lock()
         {
-            while (isLocked)
+            while (isLocked.get())
             {
                 try
                 {
@@ -168,12 +184,12 @@ public class Utils
                     e.printStackTrace();
                 }
             }
-            isLocked = true;
+            isLocked.set(true);
         }
 
         public synchronized void unlock()
         {
-            isLocked = false;
+            isLocked.set(false);
             notifyAll();
         }
     }
@@ -203,8 +219,10 @@ public class Utils
             {
                 Log.i(TAG, "Dir:" + dir.toString() + " Already Exist!");
             }
-        } else
+        }
+        else
         {
+            Log.i(TAG, "External Storage Not Mounted!");
             return null;
         }
 

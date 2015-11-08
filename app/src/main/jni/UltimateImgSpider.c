@@ -435,6 +435,7 @@ typedef struct
     u16 len;
 
     RelativeAddr containerPage;
+    RelativeAddr title;
 
     RelativeAddr nextToLoad;
     RelativeAddr prevToLoad;
@@ -747,9 +748,9 @@ jboolean spiderParaInit(JNIEnv *env, int *imgParam, int *pageParam)
         imgParam[PARAM_HEIGHT] = spiderPara->imgUrlTree.height;
         imgParam[PARAM_DOWNLOAD] = spiderPara->storageImgList.num;
 
-        imgParam[PARAM_TOTAL] = spiderPara->pageUrlTree.len;
-        imgParam[PARAM_PROCESSED] = spiderPara->pageUrlTree.processed;
-        imgParam[PARAM_HEIGHT] = spiderPara->pageUrlTree.height;
+        pageParam[PARAM_TOTAL] = spiderPara->pageUrlTree.len;
+        pageParam[PARAM_PROCESSED] = spiderPara->pageUrlTree.processed;
+        pageParam[PARAM_HEIGHT] = spiderPara->pageUrlTree.height;
 
         return true;
     }
@@ -1047,6 +1048,7 @@ void urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
         node->para.parent = nodeAddrAbsToRelative(parent);
 
         node->para.containerPage = spiderPara->pageUrlTree.curNode;
+        node->para.title = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
 
         node->para.nextToLoad = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
         node->para.prevToLoad = tree->tail;
@@ -1181,167 +1183,175 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
     }
 }
 
+
+void Java_com_gk969_UltimateImgSpider_SpiderService_jniRecvPageTitle(
+        JNIEnv *env, jobject thiz, jstring jCurPageTitle)
+{
+    urlNode *curNode = nodeAddrRelativeToAbs(spiderPara->pageUrlTree.curNode);
+
+    //保存页面标题
+    if(jCurPageTitle!=NULL)
+    {
+        const char *title = (*env)->GetStringUTFChars(env, jCurPageTitle, NULL);
+        u32 titleStorageSize=(strlen(title)+1+3) & 0xFFFFFFFC;
+        RelativeAddr titleAddr;
+        char *titleBuf=mallocFromPool(env, titleStorageSize, &titleAddr);
+
+        if(titleBuf!=NULL)
+        {
+            curNode->para.title=titleAddr;
+            stpcpy(titleBuf, title);
+        }
+
+        (*env)->ReleaseStringUTFChars(env, jCurPageTitle, title);
+    }
+}
+
+
 #define SEARCH_STEP_MAX 5000
 
-jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextUrlToLoad(
-    JNIEnv *env, jobject thiz, jstring jCurUrl, jbyteArray jMd5, jint jType, jintArray jParam)
+jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
+        JNIEnv *env, jobject thiz, jintArray jPageParam)
 {
-    urlTree *curTree = (jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
+    urlTree *curTree = &(spiderPara->pageUrlTree);
 
-    char *nextUrl = NULL;
-
-    int i;
-
-    int *param = (*env)->GetIntArrayElements(env, jParam, NULL);
-    //LOGI("jniFindNextUrlToLoad");
-
-    urlNode *curNode = NULL;
+    urlNode *curNode = nodeAddrRelativeToAbs(curTree->curNode);
     urlNode *nextNode = NULL;
 
-    if(jType == URL_TYPE_PAGE)
+    if(curNode == NULL)
     {
-        //LOGI("URL_TYPE_PAGE");
-        curNode = nodeAddrRelativeToAbs(curTree->curNode);
-
-        if(curNode == NULL || jCurUrl == NULL)
-        {
-            nextNode = nodeAddrRelativeToAbs(curTree->head);
-        }
-        else
-        {
-            int urlSim = -1;
-            const char *curUrl = (*env)->GetStringUTFChars(env, jCurUrl, NULL);
-            u16 prevUrlLen = strlen(curUrl);
-
-
-            //LOGI("curUrl:%s curTree->len:%d", curUrl, curTree->len);
-            //当前url已经被下载，从未下载url链表中删除
-            if(strcmp(curUrl, curNode->url) == 0)
-            {
-                deleteUrlNodeFromList(curTree, curNode);
-            }
-
-            urlNode *node = curNode;
-
-            for(i = 0; i < SEARCH_STEP_MAX; i++)
-            {
-                //LOGI("next %d:%s", i, node->url);
-                node = nodeAddrRelativeToAbs(node->para.nextToLoad);
-
-                if(node == NULL)
-                {
-                    break;
-                }
-                else
-                {
-                    int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
-
-                    if(curSim > urlSim)
-                    {
-                        urlSim = curSim;
-                        nextNode = node;
-                    }
-                }
-            }
-
-
-            node = curNode;
-
-            for(i = 0; i < SEARCH_STEP_MAX; i++)
-            {
-                //LOGI("prev %d:%s", i, node->url);
-                node = nodeAddrRelativeToAbs(node->para.prevToLoad);
-
-                if(node == NULL)
-                {
-                    break;
-                }
-                else
-                {
-                    int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
-
-                    if(curSim > urlSim)
-                    {
-                        urlSim = curSim;
-                        nextNode = node;
-                    }
-                }
-            }
-
-            (*env)->ReleaseStringUTFChars(env, jCurUrl, curUrl);
-        }
-
-        if(nextNode != NULL)
-        {
-            nextUrl = nextNode->url;
-            curTree->curNode = nodeAddrAbsToRelative(nextNode);
-        }
+        nextNode = nodeAddrRelativeToAbs(curTree->head);
     }
     else
     {
-        //LOGI("URL_TYPE_IMG");
-        if(jMd5 != NULL)
+        int urlSim = -1;
+        const char *curUrl = curNode->url;
+        u16 prevUrlLen = strlen(curUrl);
+
+        LOGI("urlDownloaded:%s len:%d", curUrl, curTree->len);
+        LOGI("title:%s", (char*)addrRelativeToAbs(curNode->para.title));
+        
+        //当前url已经被下载，从未下载url链表中删除
+        deleteUrlNodeFromList(curTree, curNode);
+
+        urlNode *node = curNode;
+        int i;
+
+        for(i = 0; i < SEARCH_STEP_MAX; i++)
         {
-            u8 *md5 = (*env)->GetByteArrayElements(env, jMd5, NULL);
-            u64 md5_64;
-            memcpy((u8 *)&md5_64, md5 + 4, 8);
-            (*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
+            //LOGI("next %d:%s", i, node->url);
+            node = nodeAddrRelativeToAbs(node->para.nextToLoad);
 
-            //LOGI("md5:%08X", (u32)(md5_64>>32));
-
-            curNode = findUrlNodeByMd5(curTree, md5_64);
-
-            //LOGI("cur url:%s", curNode->url);
-            deleteUrlNodeFromList(curTree, curNode);
-
-            downloadingImgNum--;
-        }
-
-        //LOGI("downloadingImgNum:%d", downloadingImgNum);
-
-        nextNode = nodeAddrRelativeToAbs(curTree->head);
-
-        for(i = 0; i < 10; i++)
-        {
-            if(nextNode == NULL)
+            if(node == NULL)
             {
                 break;
             }
+            else
+            {
+                int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
 
-            //LOGI("img%d:%s", i, nextNode->url);
-
-            nextNode = nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
+                if(curSim > urlSim)
+                {
+                    urlSim = curSim;
+                    nextNode = node;
+                }
+            }
         }
 
 
-        nextNode = nodeAddrRelativeToAbs(curTree->head);
+        node = curNode;
 
-        for(i = 0; i < downloadingImgNum; i++)
+        for(i = 0; i < SEARCH_STEP_MAX; i++)
         {
-            if(nextNode == NULL)
+            //LOGI("prev %d:%s", i, node->url);
+            node = nodeAddrRelativeToAbs(node->para.prevToLoad);
+
+            if(node == NULL)
             {
                 break;
             }
+            else
+            {
+                int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
 
-            nextNode = nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
+                if(curSim > urlSim)
+                {
+                    urlSim = curSim;
+                    nextNode = node;
+                }
+            }
         }
-
-        if(nextNode != NULL)
-        {
-            downloadingImgNum++;
-
-            nextUrl = nextImgUrlWithContainerBuf;
-
-            sprintf(nextUrl, "%s %08X %s %08X", nextNode->url, (u32)nodeAddrAbsToRelative(nextNode), nodeAddrRelativeToAbs(nextNode->para.containerPage)->url, (u32)(nextNode->para.containerPage));
-        }
-
-        param[PARAM_PAYLOAD] = downloadingImgNum;
     }
 
+    char *nextUrl=NULL;
+    if(nextNode != NULL)
+    {
+        nextUrl = nextNode->url;
+        curTree->curNode = nodeAddrAbsToRelative(nextNode);
+    }
 
+    int *param = (*env)->GetIntArrayElements(env, jPageParam, NULL);
     param[PARAM_PROCESSED] = curTree->processed;
+    (*env)->ReleaseIntArrayElements(env, jPageParam, param, 0);
 
-    (*env)->ReleaseIntArrayElements(env, jParam, param, 0);
+
+    LOGI("nextUrl:%s", nextUrl);
+    return (*env)->NewStringUTF(env, nextUrl);
+}
+
+
+jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
+    JNIEnv *env, jobject thiz, jbyteArray jMd5, jintArray jImgParam)
+{
+    urlTree *curTree = &(spiderPara->imgUrlTree);
+    
+    //LOGI("URL_TYPE_IMG");
+    if(jMd5 != NULL)
+    {
+        u8 *md5 = (*env)->GetByteArrayElements(env, jMd5, NULL);
+        u64 md5_64;
+        memcpy((u8 *)&md5_64, md5 + 4, 8);
+        (*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
+
+        //LOGI("md5:%08X", (u32)(md5_64>>32));
+
+        urlNode *curNode = findUrlNodeByMd5(curTree, md5_64);
+
+        //LOGI("cur url:%s", curNode->url);
+        deleteUrlNodeFromList(curTree, curNode);
+
+        downloadingImgNum--;
+    }
+
+    //LOGI("downloadingImgNum:%d", downloadingImgNum);
+
+    urlNode *nextNode = nodeAddrRelativeToAbs(curTree->head);
+
+    int i;
+    for(i = 0; i < downloadingImgNum; i++)
+    {
+        if(nextNode == NULL)
+        {
+            break;
+        }
+
+        nextNode = nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
+    }
+
+    char *nextUrl = NULL;
+    if(nextNode != NULL)
+    {
+        downloadingImgNum++;
+
+        nextUrl = nextImgUrlWithContainerBuf;
+
+        sprintf(nextUrl, "%s %08X %s %08X", nextNode->url, (u32)nodeAddrAbsToRelative(nextNode), nodeAddrRelativeToAbs(nextNode->para.containerPage)->url, (u32)(nextNode->para.containerPage));
+    }
+
+    int *param = (*env)->GetIntArrayElements(env, jImgParam, NULL);
+    param[PARAM_PAYLOAD] = downloadingImgNum;
+    param[PARAM_PROCESSED] = curTree->processed;
+    (*env)->ReleaseIntArrayElements(env, jImgParam, param, 0);
 
 
     //LOGI("nextUrl:%s", nextUrl);
@@ -1353,7 +1363,7 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
 {
     u32 imgUrlAddr = (u32)jImgUrlAddr;
     u32 pageUrlAddr = (u32)jPageUrlAddr;
-    LOGI("jniSaveImgStorageInfo img:%08X:%s page:%08X:%s", (u32)imgUrlAddr, nodeAddrRelativeToAbs(imgUrlAddr)->url, (u32)pageUrlAddr, nodeAddrRelativeToAbs(pageUrlAddr)->url);
+    //LOGI("jniSaveImgStorageInfo img:%08X:%s page:%08X:%s", (u32)imgUrlAddr, nodeAddrRelativeToAbs(imgUrlAddr)->url, (u32)pageUrlAddr, nodeAddrRelativeToAbs(pageUrlAddr)->url);
 
     RelativeAddr infoAddr;
     t_storageImgInfo *imgInfo = mallocFromPool(env, sizeof(t_storageImgInfo), &infoAddr);

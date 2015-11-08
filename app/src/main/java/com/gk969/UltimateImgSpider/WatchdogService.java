@@ -105,13 +105,18 @@ public class WatchdogService extends Service
         return false;
     }
 
-    private void projectPathRecved()
+    private void projectPathRecved(String path)
     {
-        Log.i(TAG, "projectPathRecved");
+        Log.i(TAG, "projectPathRecved "+path);
 
-        if(projectDataIsSafe())
+        if((path!=null)&&(projectPath==null))
         {
-            jniRestoreProjectData(dataFileFullPath);
+            projectPath = path;
+            dataFileFullPath = path + "/" + PROJECT_FILE_NAME;
+            if (projectDataIsSafe())
+            {
+                jniRestoreProjectData(dataFileFullPath);
+            }
         }
 
         int numOfCallback = mCallbacks.beginBroadcast();
@@ -137,15 +142,14 @@ public class WatchdogService extends Service
 
         Log.i(TAG, "onStartCommand:" + cmdVal + " path:" + path);
 
-        if ((path != null)&&(projectPath==null))
-        {
-            projectPath = path;
-            dataFileFullPath = path + "/" + PROJECT_FILE_NAME;
-            projectPathRecved();
-        }
-
         switch (cmdVal)
         {
+            case SpiderActivity.CMD_START:
+            {
+                projectPathRecved(path);
+                break;
+            }
+
             case SpiderActivity.CMD_STOP_STORE:
             {
                 storeProjectData();
