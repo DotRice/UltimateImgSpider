@@ -162,7 +162,7 @@ public class SpiderService extends Service
         imgProcParam = new int[IMG_PARA_NUM];
 
 
-        if (!jniSpiderInit(imgProcParam, pageProcParam, ImgDownloader.IMG_DOWNLOADER_NUM))
+        if (!jniSpiderInit(imgProcParam, pageProcParam))
         {
             stopSelfAndWatchdog();
         }
@@ -470,7 +470,7 @@ public class SpiderService extends Service
     
     private native String stringFromJNI(String srcStr);
     
-    private native boolean jniSpiderInit(int[] imgPara, int[] pagePara, int imgDownloaderNum);
+    private native boolean jniSpiderInit(int[] imgPara, int[] pagePara);
     
     private static final int JNI_OPERATE_GET = 0;
     private static final int JNI_OPERATE_ADD = 1;
@@ -479,7 +479,7 @@ public class SpiderService extends Service
 
     private native String jniFindNextPageUrl(int[] param);
     private native String jniFindNextImgUrl(byte[] md5, int[] param);
-    private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr);
+    private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr, int[] imgParam);
     private native void jniRecvPageTitle(String curPageTitle);
     
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
@@ -534,9 +534,13 @@ public class SpiderService extends Service
         private final static int IMG_DOWNLOAD_BLOCK   = 16 * 1024;
         
         private final static int REDIRECT_MAX         = 5;
+
+        private int imgIndex;
         
         void startAllThread()
         {
+            imgIndex=imgProcParam[PARA_DOWNLOAD];
+
             for (int i = 0; i < IMG_DOWNLOADER_NUM; i++)
             {
                 if(downloaderThreads[i]==null)
@@ -554,8 +558,6 @@ public class SpiderService extends Service
 
         private synchronized File newImgDownloadCacheFile(String imgUrl)
         {
-            int imgIndex=imgProcParam[PARA_DOWNLOAD];
-
             File dir=new File(curSiteDirPath+String.format("/%d", imgIndex/MAX_IMG_FILE_PER_DIR));
             if(!dir.exists())
             {
@@ -568,7 +570,7 @@ public class SpiderService extends Service
             
             Log.i(TAG, "cache file name:" + cacheFilePath);
 
-            imgProcParam[PARA_DOWNLOAD]++;
+            imgIndex++;
 
             return new File(curSiteDirPath + cacheFilePath);
         }
@@ -587,7 +589,7 @@ public class SpiderService extends Service
             file.renameTo(finalFile);
 
             jniDataLock.lock();
-            jniSaveImgStorageInfo(imgUrlAddr, PageUrlAddr);
+            jniSaveImgStorageInfo(imgUrlAddr, PageUrlAddr, imgProcParam);
             jniDataLock.unlock();
         }
         
