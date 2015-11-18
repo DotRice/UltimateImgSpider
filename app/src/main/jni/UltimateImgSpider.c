@@ -268,7 +268,7 @@ int Java_com_gk969_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv *env,
     return fd;
 }
 
-jobject SpiderServiceInstance = NULL;
+jobject AshmAllocObjectInstance = NULL;
 
 jclass SpiderServiceClass = NULL;
 
@@ -282,25 +282,28 @@ void *spiderGetAshmemFromWatchdog(JNIEnv *env, const char *name, int size)
 
     if(getAshmemFromWatchdogMID == NULL)
     {
-        SpiderServiceClass = (*env)->FindClass(env,
-                                               "com/gk969/UltimateImgSpider/SpiderService");
+        SpiderServiceClass = (*env)->FindClass(env, "com/gk969/UltimateImgSpider/SpiderService");
 
         if(SpiderServiceClass != NULL)
         {
-            getAshmemFromWatchdogMID = (*env)->GetMethodID(env, SpiderServiceClass, "getAshmemFromWatchdog",
-                                       "(Ljava/lang/String;I)I");
+            getAshmemFromWatchdogMID = (*env)->GetMethodID(env, SpiderServiceClass,
+                                        "getAshmemFromWatchdog", "(Ljava/lang/String;I)I");
         }
     }
 
     if(getAshmemFromWatchdogMID != NULL)
     {
         jstring jname = (*env)->NewStringUTF(env, name);
-        int fd = (*env)->CallIntMethod(env, SpiderServiceInstance, getAshmemFromWatchdogMID, jname, size);
+
+
+        LOGI("spiderGetAshmemFromWatchdog call method");
+        LOGI("AshmAllocObjectInstance %08X %08X", AshmAllocObjectInstance, getAshmemFromWatchdogMID);
+        int fd = (*env)->CallIntMethod(env, AshmAllocObjectInstance, getAshmemFromWatchdogMID, jname, size);
 
         if(fd >= 0)
         {
-            ashmem = mmap(NULL, size, PROT_READ | PROT_WRITE,
-                          MAP_SHARED, fd, 0);
+            LOGI("spiderGetAshmemFromWatchdog mmap");
+            ashmem = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         }
 
     }
@@ -356,8 +359,6 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv *env
     int i;
     const u8 *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
     LOGI("stringFromJNI %s", srcStr);
-
-    SpiderServiceInstance = thiz;
 
     //ashmemTest(env);
 
@@ -806,7 +807,7 @@ jboolean urlPoolInit(JNIEnv *env)
 jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv *env,
         jobject thiz, jintArray jImgParam, jintArray jPageParam)
 {
-    SpiderServiceInstance = thiz;
+    AshmAllocObjectInstance = thiz;
 
     int *imgParam = (*env)->GetIntArrayElements(env, jImgParam, NULL);
     int *pageParam = (*env)->GetIntArrayElements(env, jPageParam, NULL);
@@ -1094,16 +1095,17 @@ void urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv *env,
         jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jintArray jParam)
 {
-    u8 UrlAlreadyInTree = false;
     urlTree *curTree =
         (jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
     const u8 *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
+
+    AshmAllocObjectInstance=thiz;
 
     u8 *md5 = (*env)->GetByteArrayElements(env, jMd5, NULL);
     u64 md5_64;
     memcpy((u8 *)&md5_64, md5 + 4, 8);
 
-    SpiderServiceInstance = thiz;
+    //LOGI("jniAddUrl %s", url);
 
     //if(curTree->len<20)
     {
@@ -1188,6 +1190,10 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniRecvPageTitle(
         JNIEnv *env, jobject thiz, jstring jCurPageTitle)
 {
     urlNode *curNode = nodeAddrRelativeToAbs(spiderPara->pageUrlTree.curNode);
+
+    //LOGI("jniRecvPageTitle");
+
+    AshmAllocObjectInstance=thiz;
 
     //保存页面标题
     if(jCurPageTitle!=NULL)
@@ -1364,6 +1370,9 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
     u32 imgUrlAddr = (u32)jImgUrlAddr;
     u32 pageUrlAddr = (u32)jPageUrlAddr;
     //LOGI("jniSaveImgStorageInfo img:%08X:%s page:%08X:%s", (u32)imgUrlAddr, nodeAddrRelativeToAbs(imgUrlAddr)->url, (u32)pageUrlAddr, nodeAddrRelativeToAbs(pageUrlAddr)->url);
+
+
+    AshmAllocObjectInstance=thiz;
 
     RelativeAddr infoAddr;
     t_storageImgInfo *imgInfo = mallocFromPool(env, sizeof(t_storageImgInfo), &infoAddr);

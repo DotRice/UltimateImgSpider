@@ -429,6 +429,8 @@ public class GLRootView extends GLSurfaceView
             mInvalidateColor = ~mInvalidateColor;
         }
 
+        //mCanvas.fillRect(100, 100, 500, 500, 0xFF00F040);
+
         if (DEBUG_DRAWING_STAT) {
             mCanvas.dumpStatisticsAndClear();
         }

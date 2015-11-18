@@ -230,8 +230,8 @@ public final class R {
         public static final int buttonText=0x7f0b000c;
         public static final int buttonURLcmd=0x7f0b001a;
         public static final int editTextUrl=0x7f0b001b;
-        public static final int gl_root_cover=0x7f0b0004;
-        public static final int gl_root_view=0x7f0b000a;
+        public static final int gl_root_cover=0x7f0b000a;
+        public static final int gl_root_view=0x7f0b0004;
         public static final int progressBarWebView=0x7f0b001c;
         public static final int tvSpiderLog=0x7f0b0005;
         public static final int urlBar=0x7f0b0015;

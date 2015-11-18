@@ -11,6 +11,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.gk969.Utils.MemoryInfo;
 import com.gk969.Utils.Utils;
 import com.gk969.View.ImageTextButton;
+import com.gk969.gallery.gallery3d.glrenderer.GLCanvas;
+import com.gk969.gallery.gallery3d.ui.GLRootView;
+import com.gk969.gallery.gallery3d.ui.GLView;
+import com.gk969.gallery.gallery3d.util.GalleryUtils;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -268,6 +272,38 @@ public class SpiderActivity extends Activity
 
         serviceInterfaceInit();
         checkAndStart();
+
+        albumViewInit();
+    }
+
+    private void albumViewInit()
+    {
+        GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
+        glRootView.setContentPane(new GLView() {
+            private final float mMatrix[] = new float[16];
+
+            @Override
+            protected void onLayout(
+                    boolean changed, int left, int top, int right, int bottom) {
+
+                // Set the mSlotView as a reference point to the open animation
+
+                GalleryUtils.setViewPointMatrix(mMatrix,
+                        (right - left) / 2, (bottom - top) / 2, 0-GalleryUtils.meterToPixel(0.3f));
+            }
+
+            @Override
+            protected void render(GLCanvas canvas) {
+                canvas.save(GLCanvas.SAVE_FLAG_MATRIX);
+                canvas.multiplyMatrix(mMatrix, 0);
+                super.render(canvas);
+
+                canvas.clearBuffer(new float[]{0f, 0.5f, 0.5f, 0.5f});
+                canvas.restore();
+
+                canvas.fillRect(100, 100, 500, 500, 0xFF00F040);
+            }
+        });
     }
 
     private void checkAndStart()

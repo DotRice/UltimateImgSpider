@@ -11,11 +11,9 @@
                   android:background="#FFF"
                   android:baselineAligned="false"
                   android:orientation="vertical" >
-<!--
+        <!--<SurfaceView android:id="@+id/gl_root_cover"-->
         <com.gk969.gallery.gallery3d.ui.GLRootView
             android:id="@+id/gl_root_view"
-            -->
-        <SurfaceView android:id="@+id/gl_root_cover"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"/>

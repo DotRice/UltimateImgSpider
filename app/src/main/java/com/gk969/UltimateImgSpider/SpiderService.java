@@ -889,7 +889,9 @@ public class SpiderService extends Service
             {
                 title.substring(0, MAX_SIZE_PER_TITLE);
             }
+            jniDataLock.lock();
             jniRecvPageTitle(title);
+            jniDataLock.unlock();
         }
 
         // 扫描页面耗时较少，因此此处不检测暂停或者停止命令
