@@ -10,6 +10,11 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.net.TrafficStats;
 import android.os.Handler;
 
 import android.content.Context;
@@ -154,6 +159,52 @@ public class Utils
         return null;
     }
 
+
+
+    public static class NetTrafficCalc
+    {
+        public AtomicLong netTrafficPerSec = new AtomicLong(0);
+        private long lastTraffic=0;
+        private long refreshTime=0;
+        private Context context;
+
+        public NetTrafficCalc(Context ctx)
+        {
+            context=ctx;
+        }
+
+        public void refreshNetTraffic()
+        {
+            long curTraffic=getNetTraffic();
+            if(curTraffic!=0)
+            {
+                long curTime=System.currentTimeMillis();
+                if (lastTraffic != 0)
+                {
+                    netTrafficPerSec.set((curTraffic - lastTraffic) * 1000
+                            / (curTime-refreshTime));
+                }
+                refreshTime=curTime;
+                lastTraffic = curTraffic;
+            }
+        }
+
+        private long getNetTraffic()
+        {
+            try
+            {
+                ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(
+                        context.getPackageName(), PackageManager.GET_ACTIVITIES);
+                return TrafficStats.getUidRxBytes(appInfo.uid)+TrafficStats.getUidTxBytes(appInfo.uid);
+            } catch (PackageManager.NameNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+
+            return 0;
+        }
+    }
+
     public static class ReadWaitLock
     {
         public AtomicBoolean isLocked = new AtomicBoolean(false);
@@ -286,10 +337,6 @@ public class Utils
     {
         /**
          * 将px值转换为dip或dp值，保证尺寸大小不变
-         *
-         * @param pxValue
-         * @param scale   （DisplayMetrics类中属性density）
-         * @return
          */
         public static int pxToDip(Context context, float pxValue)
         {
@@ -299,10 +346,6 @@ public class Utils
 
         /**
          * 将dip或dp值转换为px值，保证尺寸大小不变
-         *
-         * @param dipValue
-         * @param scale    （DisplayMetrics类中属性density）
-         * @return
          */
         public static int dipToPx(Context context, float dipValue)
         {
@@ -312,10 +355,6 @@ public class Utils
 
         /**
          * 将px值转换为sp值，保证文字大小不变
-         *
-         * @param pxValue
-         * @param fontScale （DisplayMetrics类中属性scaledDensity）
-         * @return
          */
         public static int pxToSp(Context context, float pxValue)
         {
@@ -325,10 +364,6 @@ public class Utils
 
         /**
          * 将sp值转换为px值，保证文字大小不变
-         *
-         * @param spValue
-         * @param fontScale （DisplayMetrics类中属性scaledDensity）
-         * @return
          */
         public static int spToPx(Context context, float spValue)
         {

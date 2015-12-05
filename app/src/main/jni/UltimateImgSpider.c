@@ -1365,7 +1365,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
 }
 
 void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
-    JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr, jint jImgParam)
+    JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr, jintArray jImgParam)
 {
     u32 imgUrlAddr = (u32)jImgUrlAddr;
     u32 pageUrlAddr = (u32)jPageUrlAddr;

@@ -279,6 +279,9 @@ public class SpiderActivity extends Activity
     private void albumViewInit()
     {
         GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
+
+
+
         glRootView.setContentPane(new GLView() {
             private final float mMatrix[] = new float[16];
 
