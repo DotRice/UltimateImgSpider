@@ -1307,28 +1307,11 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
 
 
 jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
-    JNIEnv *env, jobject thiz, jbyteArray jMd5, jintArray jImgParam)
+    JNIEnv *env, jobject thiz, jintArray jImgParam)
 {
     urlTree *curTree = &(spiderPara->imgUrlTree);
     
     //LOGI("URL_TYPE_IMG");
-    if(jMd5 != NULL)
-    {
-        u8 *md5 = (*env)->GetByteArrayElements(env, jMd5, NULL);
-        u64 md5_64;
-        memcpy((u8 *)&md5_64, md5 + 4, 8);
-        (*env)->ReleaseByteArrayElements(env, jMd5, md5, 0);
-
-        //LOGI("md5:%08X", (u32)(md5_64>>32));
-
-        urlNode *curNode = findUrlNodeByMd5(curTree, md5_64);
-
-        //LOGI("cur url:%s", curNode->url);
-        deleteUrlNodeFromList(curTree, curNode);
-
-        downloadingImgNum--;
-    }
-
     //LOGI("downloadingImgNum:%d", downloadingImgNum);
 
     urlNode *nextNode = nodeAddrRelativeToAbs(curTree->head);
@@ -1371,6 +1354,8 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
     u32 pageUrlAddr = (u32)jPageUrlAddr;
     //LOGI("jniSaveImgStorageInfo img:%08X:%s page:%08X:%s", (u32)imgUrlAddr, nodeAddrRelativeToAbs(imgUrlAddr)->url, (u32)pageUrlAddr, nodeAddrRelativeToAbs(pageUrlAddr)->url);
 
+    deleteUrlNodeFromList(&(spiderPara->imgUrlTree), nodeAddrRelativeToAbs((RelativeAddr)imgUrlAddr));
+    downloadingImgNum--;
 
     AshmAllocObjectInstance=thiz;
 

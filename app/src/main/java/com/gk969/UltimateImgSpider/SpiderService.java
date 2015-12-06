@@ -62,6 +62,9 @@ import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class SpiderService extends Service
 {
     private final String                                   TAG                = "SpiderService";
@@ -143,7 +146,7 @@ public class SpiderService extends Service
                 }
                 catch (RemoteException e)
                 {
-
+                    e.printStackTrace();
                 }
 
             }
@@ -494,7 +497,7 @@ public class SpiderService extends Service
     private native void jniAddUrl(String url, byte[] md5, int type, int[] param);
 
     private native String jniFindNextPageUrl(int[] param);
-    private native String jniFindNextImgUrl(byte[] md5, int[] param);
+    private native String jniFindNextImgUrl(int[] param);
     private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr, int[] imgParam);
     private native void jniRecvPageTitle(String curPageTitle);
     
@@ -519,18 +522,13 @@ public class SpiderService extends Service
 
         String ret=null;
 
-        switch (operating)
+        if(operating==JNI_OPERATE_GET)
         {
-            case JNI_OPERATE_GET:
-                ret = urlType == URL_TYPE_PAGE ? jniFindNextPageUrl(param) : jniFindNextImgUrl(md5Value, param);
-                break;
-
-            case JNI_OPERATE_ADD:
-                jniAddUrl(url, md5Value, urlType, param);
-                break;
-
-            default:
-                break;
+            ret = urlType == URL_TYPE_PAGE ? jniFindNextPageUrl(param) : jniFindNextImgUrl(param);
+        }
+        else
+        {
+            jniAddUrl(url, md5Value, urlType, param);
         }
         jniDataLock.unlock();
 
@@ -593,7 +591,7 @@ public class SpiderService extends Service
             return cacheFile;
         }
         
-        private void moveToImgDirAfterDownload(Thread curThread, File file, int imgUrlAddr, int PageUrlAddr)
+        private void moveToImgDirAfterDownload(File file, int imgUrlAddr, int PageUrlAddr)
         {
             String cacheFilePath=file.getPath();
             String cacheFileWithoutMark=cacheFilePath.substring(0, cacheFilePath.length() - CACHE_MARK.length());
@@ -637,9 +635,6 @@ public class SpiderService extends Service
             private String containerUrl  = null;
             private String imgUrl        = null;
 
-
-            private MessageDigest       md5ForImg;
-
             public int     threadIndex;
 
             private long    imgUrlJniAddr;
@@ -649,15 +644,6 @@ public class SpiderService extends Service
             {
                 imgUrl=url;
                 threadIndex=index;
-                try
-                {
-                    md5ForImg = MessageDigest.getInstance("md5");
-                }
-                catch (NoSuchAlgorithmException e)
-                {
-                    e.printStackTrace();
-                }
-
                 start();
             }
 
@@ -676,8 +662,7 @@ public class SpiderService extends Service
                         break;
                     }
 
-                    byte[] curImgUrlMd5=(imgUrl==null)?null:md5ForImg.digest(imgUrl.getBytes());
-                    String urlSet = jniOperateUrl(imgUrl, curImgUrlMd5,
+                    String urlSet = jniOperateUrl(null, null,
                             URL_TYPE_IMG, imgProcParam, JNI_OPERATE_GET);
                     if (urlSet != null)
                     {
@@ -798,7 +783,7 @@ public class SpiderService extends Service
                 
                 if(imgFile!=null)
                 {
-                    moveToImgDirAfterDownload(this, imgFile, (int)imgUrlJniAddr, (int)pageUrlJniAddr);
+                    moveToImgDirAfterDownload(imgFile, (int)imgUrlJniAddr, (int)pageUrlJniAddr);
                 }
             }
             
@@ -872,41 +857,47 @@ public class SpiderService extends Service
     
     private void reportSpiderLog()
     {
-        String log = "";
-        
-        if (state.get()==STAT_COMPLETE)
-        {
-            log = "siteScanCompleted\r\n";
-        }
-
         float fNetTraffic=netTrafficCalc.netTrafficPerSec.get();
         fNetTraffic/=1024;
+
+        String jsonReportStr="{\r\n";
         
-        Runtime rt = Runtime.getRuntime();
-        log = log + "VM:" + (rt.totalMemory() >> 20) + "M Native:"
-                + (Debug.getNativeHeapSize() >> 20) + "M pic:"
-                + imgProcParam[PARA_PAYLOAD] + "/" + imgProcParam[PARA_DOWNLOAD] + "/"
-                + imgProcParam[PARA_PROCESSED] + "/" + imgProcParam[PARA_TOTAL]
-                + "|" + imgProcParam[PARA_HEIGHT] + " page:"
-                + pageProcParam[PARA_PROCESSED] + "/"
-                + pageProcParam[PARA_TOTAL] + "|" + pageProcParam[PARA_HEIGHT]
-                + " loadTime:" + loadTime + " scanTime:" + scanTime
-                + " searchTime:" + searchTime
-                + " curTraffic:" + String.format("%03.1f", fNetTraffic) + "KB/s"
-                + "\r\n" + curPageUrl;
+
+        jsonReportStr+="\"vmMem\":" + (Runtime.getRuntime().totalMemory() >> 20)+",\r\n";
+        jsonReportStr+="\"nativeMem\":" + (Debug.getNativeHeapSize() >> 20)+",\r\n";
         
-        // Log.i(TAG, log);
+        jsonReportStr+="\"imgDownloaderPayload\":" + imgProcParam[PARA_PAYLOAD]+",\r\n";
+        jsonReportStr+="\"imgDownloadNum\":" + imgProcParam[PARA_DOWNLOAD]+",\r\n";
+        jsonReportStr+="\"imgTotalNum\":" + imgProcParam[PARA_TOTAL]+",\r\n";
+        jsonReportStr+="\"imgTreeHeight\":" + imgProcParam[PARA_HEIGHT]+",\r\n";
+        jsonReportStr+="\"pageScanedNum\":" + pageProcParam[PARA_PROCESSED]+",\r\n";
+        jsonReportStr+="\"pageTotalNum\":" + pageProcParam[PARA_TOTAL]+",\r\n";
+        jsonReportStr+="\"pageTreeHeight\":" + pageProcParam[PARA_HEIGHT]+",\r\n";
+
+        jsonReportStr+="\"pageLoadTime\":" + loadTime+",\r\n";
+        jsonReportStr+="\"pageScanTime\":" + scanTime+",\r\n";
+        jsonReportStr+="\"pageSearchTime\":" + searchTime+",\r\n";
+
+
+        jsonReportStr+="\"curPage\":" + "\"" + curPageUrl+"\",\r\n";
+        jsonReportStr+="\"curNetSpeed\":" + "\""+String.format("%03.1f", fNetTraffic) + "KB/s\""+",\r\n";
+        
+        
+        
+        jsonReportStr+="\"siteScanCompleted\":" + ((state.get() == STAT_COMPLETE)?"true":"false");
+        
+        jsonReportStr+="\r\n}";
         
         int numOfCallback = mCallbacks.beginBroadcast();
         for (int i = 0; i < numOfCallback; i++)
         {
             try
             {
-                mCallbacks.getBroadcastItem(i).reportStatus(log);
+                mCallbacks.getBroadcastItem(i).reportStatus(jsonReportStr);
             }
             catch (RemoteException e)
             {
-                
+                e.printStackTrace();
             }
         }
         mCallbacks.finishBroadcast();
@@ -1047,7 +1038,7 @@ public class SpiderService extends Service
     private void findNextUrlToLoad()
     {
         searchTime = System.currentTimeMillis();
-        curPageUrl = jniOperateUrl(spider.getTitle(), null, URL_TYPE_PAGE, pageProcParam,
+        curPageUrl = jniOperateUrl(null, null, URL_TYPE_PAGE, pageProcParam,
                 JNI_OPERATE_GET);
         searchTime = System.currentTimeMillis() - searchTime;
         //Log.i(TAG, "loading:" + curPageUrl);
@@ -1083,7 +1074,8 @@ public class SpiderService extends Service
             e.printStackTrace();
         }
 
-        jniOperateUrl(srcUrl, md5ForPage.digest(srcUrl.getBytes()), URL_TYPE_PAGE, pageProcParam, JNI_OPERATE_ADD);
+        jniOperateUrl(srcUrl, md5ForPage.digest(srcUrl.getBytes()), URL_TYPE_PAGE,
+                pageProcParam, JNI_OPERATE_ADD);
 
         state.set(STAT_WORKING);
         pageProcessLock.lock();
@@ -1182,8 +1174,8 @@ public class SpiderService extends Service
                             .endsWith(".gif"))
                     && imgUrl.length() < MAX_SIZE_PER_URL)
             {
-                jniOperateUrl(imgUrl, md5ForPage.digest(imgUrl.getBytes()), URL_TYPE_IMG, imgProcParam,
-                        JNI_OPERATE_ADD);
+                jniOperateUrl(imgUrl, md5ForPage.digest(imgUrl.getBytes()), URL_TYPE_IMG,
+                        imgProcParam, JNI_OPERATE_ADD);
             }
         }
     }
@@ -1209,8 +1201,8 @@ public class SpiderService extends Service
                         && (url.getRef() == null)
                         && (pageUrl.length() < MAX_SIZE_PER_URL))
                 {
-                    jniOperateUrl(pageUrl, md5ForPage.digest(pageUrl.getBytes()), URL_TYPE_PAGE, pageProcParam,
-                            JNI_OPERATE_ADD);
+                    jniOperateUrl(pageUrl, md5ForPage.digest(pageUrl.getBytes()), URL_TYPE_PAGE,
+                            pageProcParam, JNI_OPERATE_ADD);
                 }
             }
             catch (MalformedURLException e)
