@@ -5,7 +5,9 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.os.Handler;
 
+import com.gk969.gallery.gallery3d.glrenderer.BitmapTexture;
 import com.gk969.gallery.gallery3d.glrenderer.GLCanvas;
+import com.gk969.gallery.gallery3d.glrenderer.StringTexture;
 import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
 import com.gk969.gallery.gallery3d.ui.GLView;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
@@ -15,7 +17,8 @@ public class AlbumView extends GLView
     private static final String TAG = "AlbumView";
 
     private final float mMatrix[] = new float[16];
-    TiledTexture slotImgTexture;
+    StringTexture strTexture;
+    BitmapTexture bmpTexture;
 
     public AlbumView(Handler handler, String projectPath)
     {
@@ -24,7 +27,7 @@ public class AlbumView extends GLView
         if(bitmap!=null)
         {
             Log.i(TAG, "bitmap decode");
-            slotImgTexture = new TiledTexture(bitmap);
+            bmpTexture=new BitmapTexture(bitmap);
             //bitmap.recycle();
         }
 
@@ -33,9 +36,12 @@ public class AlbumView extends GLView
             @Override
             public void run()
             {
-                Log.i(TAG, "slotImgTexture " + slotImgTexture.isReady());
+                //Log.i(TAG, "strTexture " + strTexture.isReady());
             }
         }, 1000);
+
+
+        strTexture = StringTexture.newInstance("string texture", 64, 0xFFFF0000);
     }
 
     @Override
@@ -61,12 +67,8 @@ public class AlbumView extends GLView
 
         canvas.fillRect(100, 100, 500, 500, 0xFF00F040);
 
-        if(slotImgTexture!=null)
-        {
-            if (slotImgTexture.isReady())
-            {
-                slotImgTexture.draw(canvas, 100, 600);
-            }
-        }
+
+        strTexture.draw(canvas, 100, 800);
+        bmpTexture.draw(canvas, 100, 100);
     }
 }
