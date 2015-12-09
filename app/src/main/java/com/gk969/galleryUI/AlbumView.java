@@ -18,18 +18,17 @@ public class AlbumView extends GLView
 
     private final float mMatrix[] = new float[16];
     StringTexture strTexture;
-    BitmapTexture bmpTexture;
+    BitmapTexture bmpTexture0;
+    BitmapTexture bmpTexture1;
+    BitmapTexture bmpTexture2;
 
     public AlbumView(Handler handler, String projectPath)
     {
         Log.i(TAG, "projectPath:" + projectPath);
-        Bitmap bitmap= BitmapFactory.decodeFile(projectPath+"/0/000.jpg");
-        if(bitmap!=null)
-        {
-            Log.i(TAG, "bitmap decode");
-            bmpTexture=new BitmapTexture(bitmap);
-            //bitmap.recycle();
-        }
+        /**/
+        bmpTexture0=new BitmapTexture(BitmapFactory.decodeFile(projectPath+"/0/000.jpg"));
+        bmpTexture1=new BitmapTexture(BitmapFactory.decodeFile(projectPath+"/0/001.jpg"));
+        bmpTexture2=new BitmapTexture(BitmapFactory.decodeFile(projectPath+"/0/002.jpg"));
 
         handler.postDelayed(new Runnable()
         {
@@ -59,16 +58,27 @@ public class AlbumView extends GLView
     protected void render(GLCanvas canvas)
     {
         canvas.save(GLCanvas.SAVE_FLAG_MATRIX);
-        canvas.multiplyMatrix(mMatrix, 0);
-        super.render(canvas);
+        //canvas.multiplyMatrix(mMatrix, 0);
+        //super.render(canvas);
 
         canvas.clearBuffer(new float[]{0f, 0.5f, 0.5f, 0.5f});
+
+
+        canvas.translate(400, 10);
+        canvas.scale(1.5f, 1.5f, 1);
+        canvas.rotate(45, 0, 0, 1);
+        bmpTexture0.draw(canvas, 0, 0);
         canvas.restore();
 
-        canvas.fillRect(100, 100, 500, 500, 0xFF00F040);
+        canvas.fillRect(100, 100, 100, 100, 0xFF00F040);
 
 
-        strTexture.draw(canvas, 100, 800);
-        bmpTexture.draw(canvas, 100, 100);
+        //bmpTexture0.draw(canvas, 100, 50);
+        bmpTexture1.draw(canvas, 400, 500);
+        canvas.drawTexture(bmpTexture2, -50, 600, 300, 400);
+
+        strTexture.draw(canvas, 50, 800);
+
+        Log.i(TAG, "render");
     }
 }
