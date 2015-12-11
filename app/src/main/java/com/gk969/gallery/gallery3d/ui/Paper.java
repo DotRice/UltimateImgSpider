@@ -24,7 +24,7 @@ import android.view.animation.Interpolator;
 import com.gk969.gallery.gallery3d.common.Utils;
 
 // This class does the overscroll effect.
-class Paper {
+public class Paper {
     @SuppressWarnings("unused")
     private static final String TAG = "Paper";
     private static final int ROTATE_FACTOR = 4;

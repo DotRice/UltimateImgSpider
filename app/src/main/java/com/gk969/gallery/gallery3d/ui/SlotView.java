@@ -319,6 +319,7 @@ public class SlotView extends GLView {
         canvas.save(GLCanvas.SAVE_FLAG_ALPHA | GLCanvas.SAVE_FLAG_MATRIX);
         Rect rect = mLayout.getSlotRect(index, mTempRect);
         if (paperActive) {
+
             canvas.multiplyMatrix(mPaper.getTransform(rect, mScrollX), 0);
         } else {
             canvas.translate(rect.left, rect.top, 0);

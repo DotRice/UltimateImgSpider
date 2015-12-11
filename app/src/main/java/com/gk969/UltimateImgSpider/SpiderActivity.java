@@ -16,7 +16,9 @@ import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
 import com.gk969.gallery.gallery3d.ui.GLView;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
-import com.gk969.galleryUI.AlbumView;
+import com.gk969.gallerySimple.AlbumSlotRender;
+import com.gk969.gallerySimple.SlotView;
+import com.gk969.gallerySimple.TextureLoader;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -313,7 +315,7 @@ public class SpiderActivity extends Activity
     {
         GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
 
-        glRootView.setContentPane(new AlbumView(mHandler, projectPath));
+        glRootView.setContentPane(new SlotView(new AlbumSlotRender(new TextureLoader(projectPath))));
     }
 
 
