@@ -418,11 +418,11 @@ OFFSET低位，PTR高位。
 
 enum
 {
-    PARAM_TOTAL = 0,
-    PARAM_PROCESSED,
-    PARAM_HEIGHT,
-    PARAM_PAYLOAD,
-    PARAM_DOWNLOAD
+    PARA_TOTAL = 0,
+    PARA_PROCESSED,
+    PARA_HEIGHT,
+    PARA_PAYLOAD,
+    PARA_DOWNLOAD
 };
 
 
@@ -744,14 +744,14 @@ jboolean spiderParaInit(JNIEnv *env, int *imgParam, int *pageParam)
             spiderPara->storageImgList.num = 0;
         }
 
-        imgParam[PARAM_TOTAL] = spiderPara->imgUrlTree.len;
-        imgParam[PARAM_PROCESSED] = spiderPara->imgUrlTree.processed;
-        imgParam[PARAM_HEIGHT] = spiderPara->imgUrlTree.height;
-        imgParam[PARAM_DOWNLOAD] = spiderPara->storageImgList.num;
+        imgParam[PARA_TOTAL] = spiderPara->imgUrlTree.len;
+        imgParam[PARA_PROCESSED] = spiderPara->imgUrlTree.processed;
+        imgParam[PARA_HEIGHT] = spiderPara->imgUrlTree.height;
+        imgParam[PARA_DOWNLOAD] = spiderPara->storageImgList.num;
 
-        pageParam[PARAM_TOTAL] = spiderPara->pageUrlTree.len;
-        pageParam[PARAM_PROCESSED] = spiderPara->pageUrlTree.processed;
-        pageParam[PARAM_HEIGHT] = spiderPara->pageUrlTree.height;
+        pageParam[PARA_TOTAL] = spiderPara->pageUrlTree.len;
+        pageParam[PARA_PROCESSED] = spiderPara->pageUrlTree.processed;
+        pageParam[PARA_HEIGHT] = spiderPara->pageUrlTree.height;
 
         return true;
     }
@@ -1121,8 +1121,8 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv *env,
     }
 
     int *param = (*env)->GetIntArrayElements(env, jParam, NULL);
-    param[PARAM_TOTAL] = curTree->len;
-    param[PARAM_HEIGHT] = curTree->height;
+    param[PARA_TOTAL] = curTree->len;
+    param[PARA_HEIGHT] = curTree->height;
     (*env)->ReleaseIntArrayElements(env, jParam, param, 0);
 
 
@@ -1297,7 +1297,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
     }
 
     int *param = (*env)->GetIntArrayElements(env, jPageParam, NULL);
-    param[PARAM_PROCESSED] = curTree->processed;
+    param[PARA_PROCESSED] = curTree->processed;
     (*env)->ReleaseIntArrayElements(env, jPageParam, param, 0);
 
 
@@ -1307,12 +1307,19 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
 
 
 jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
-    JNIEnv *env, jobject thiz, jintArray jImgParam)
+    JNIEnv *env, jobject thiz, jint jLastImgUrlAddr, jintArray jImgParam)
 {
     urlTree *curTree = &(spiderPara->imgUrlTree);
-    
-    //LOGI("URL_TYPE_IMG");
+
     //LOGI("downloadingImgNum:%d", downloadingImgNum);
+
+    // see if we find new url successfully at last time
+    urlNode *lastImgNode=nodeAddrRelativeToAbs((RelativeAddr) jLastImgUrlAddr);
+    if(lastImgNode!=NULL)
+    {
+        downloadingImgNum--;
+        deleteUrlNodeFromList(&(spiderPara->imgUrlTree), lastImgNode);
+    }
 
     urlNode *nextNode = nodeAddrRelativeToAbs(curTree->head);
 
@@ -1338,8 +1345,8 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
     }
 
     int *param = (*env)->GetIntArrayElements(env, jImgParam, NULL);
-    param[PARAM_PAYLOAD] = downloadingImgNum;
-    param[PARAM_PROCESSED] = curTree->processed;
+    param[PARA_PAYLOAD] = downloadingImgNum;
+    param[PARA_PROCESSED] = curTree->processed;
     (*env)->ReleaseIntArrayElements(env, jImgParam, param, 0);
 
 
@@ -1350,19 +1357,16 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
 void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
     JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr, jintArray jImgParam)
 {
-    u32 imgUrlAddr = (u32)jImgUrlAddr;
-    u32 pageUrlAddr = (u32)jPageUrlAddr;
+    u32 imgUrlAddr = (u32) jImgUrlAddr;
+    u32 pageUrlAddr = (u32) jPageUrlAddr;
     //LOGI("jniSaveImgStorageInfo img:%08X:%s page:%08X:%s", (u32)imgUrlAddr, nodeAddrRelativeToAbs(imgUrlAddr)->url, (u32)pageUrlAddr, nodeAddrRelativeToAbs(pageUrlAddr)->url);
 
-    deleteUrlNodeFromList(&(spiderPara->imgUrlTree), nodeAddrRelativeToAbs((RelativeAddr)imgUrlAddr));
-    downloadingImgNum--;
-
-    AshmAllocObjectInstance=thiz;
+    AshmAllocObjectInstance = thiz;
 
     RelativeAddr infoAddr;
     t_storageImgInfo *imgInfo = mallocFromPool(env, sizeof(t_storageImgInfo), &infoAddr);
 
-    if(imgInfo != NULL)
+    if (imgInfo != NULL)
     {
         t_storageImgInfoList *infoList = &(spiderPara->storageImgList);
 
@@ -1372,7 +1376,7 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
         imgInfo->prev = infoList->tail;
         imgInfo->next = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
 
-        if(infoAddrRelativeToAbs(infoList->head) == NULL)
+        if (infoAddrRelativeToAbs(infoList->head) == NULL)
         {
             infoList->head = infoAddr;
         }
@@ -1386,7 +1390,7 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
         infoList->num++;
 
         int *param = (*env)->GetIntArrayElements(env, jImgParam, NULL);
-        param[PARAM_DOWNLOAD] = infoList->num;
+        param[PARA_DOWNLOAD] = infoList->num;
         (*env)->ReleaseIntArrayElements(env, jImgParam, param, 0);
     }
 }

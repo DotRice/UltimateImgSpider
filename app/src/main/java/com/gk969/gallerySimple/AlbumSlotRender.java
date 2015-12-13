@@ -1,11 +1,13 @@
 package com.gk969.gallerySimple;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.util.Log;
 import android.os.Handler;
 
+import com.gk969.Utils.Utils;
 import com.gk969.gallery.gallery3d.glrenderer.BitmapTexture;
 import com.gk969.gallery.gallery3d.glrenderer.GLCanvas;
 import com.gk969.gallery.gallery3d.glrenderer.StringTexture;
@@ -14,13 +16,7 @@ import com.gk969.gallery.gallery3d.ui.GLView;
 import com.gk969.gallery.gallery3d.ui.Paper;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
 
-public class AlbumSlotRender implements GLRender
-{
-    private static final String TAG = "AlbumSlotRender";
-
-    TextureLoader mTextureLoader;
-
-    /*
+/*
     StringTexture strTexture;
     BitmapTexture bmpTexture0;
     BitmapTexture bmpTexture1;
@@ -54,21 +50,42 @@ public class AlbumSlotRender implements GLRender
     }
     */
 
-    public AlbumSlotRender(TextureLoader textureLoader)
+public class AlbumSlotRender implements GLRender
+{
+    private static final String TAG = "AlbumSlotRender";
+    private static final int SLOT_GAP_MIN_IN_DP=5;
+
+    private int slotsPerRow=3;
+
+    private int slotWidth;
+    private int slotHeight;
+
+    private int slotGap;
+
+    private Context mContext;
+
+    AlbumSlidingWindow mAlbumSlidingWindow;
+
+
+
+    public AlbumSlotRender(Context context, AlbumSlidingWindow window)
     {
-        mTextureLoader=textureLoader;
+        mContext=context;
+        slotGap= Utils.DisplayUtil.dipToPx(mContext, SLOT_GAP_MIN_IN_DP);
+        mAlbumSlidingWindow=window;
     }
 
     @Override
     public void setViewSize(int width, int height)
     {
-
+        slotWidth=(width-(slotsPerRow-1)*slotGap)/slotsPerRow;
+        slotHeight=slotWidth;
     }
 
     @Override
     public void render(GLCanvas canvas)
     {
-
+        canvas.fillRect(0, 0, 100, 100, 0xFF00F040);
     }
 
 

@@ -16,9 +16,10 @@ import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
 import com.gk969.gallery.gallery3d.ui.GLView;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
+import com.gk969.gallerySimple.AlbumSlidingWindow;
 import com.gk969.gallerySimple.AlbumSlotRender;
 import com.gk969.gallerySimple.SlotView;
-import com.gk969.gallerySimple.TextureLoader;
+import com.gk969.gallerySimple.ThumbnailTextureLoader;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -296,7 +297,7 @@ public class SpiderActivity extends Activity
     void getSrcUrlAndPath()
     {
         projectSrcUrl=ParaConfig.getHomeURL(getApplicationContext());
-        Log.i(TAG, "projectSrcUrl "+projectSrcUrl);
+        Log.i(TAG, "projectSrcUrl " + projectSrcUrl);
 
         try
         {
@@ -307,15 +308,14 @@ public class SpiderActivity extends Activity
         {
             e.printStackTrace();
         }
-
-
     }
     
     private void albumViewInit()
     {
         GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
 
-        glRootView.setContentPane(new SlotView(new AlbumSlotRender(new TextureLoader(projectPath))));
+        glRootView.setContentPane(new SlotView(
+                new AlbumSlotRender(this, new AlbumSlidingWindow(projectPath))));
     }
 
 
@@ -402,17 +402,26 @@ public class SpiderActivity extends Activity
 
     }
 
+    private void tryToStopSpiderService()
+    {
+        if (serviceState != STATE_DISCONNECTED)
+        {
+            sendCmdToSpiderService(CMD_STOP_STORE);
+            unboundSpiderService();
+            serviceState = STATE_DISCONNECTED;
+        }
+    }
+
+    private void handleSpiderServiceOnFinish()
+    {
+        tryToStopSpiderService();
+    }
+
     protected void onDestroy()
     {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
-
-        if (serviceState != STATE_DISCONNECTED)
-        {
-            Log.i(TAG, "CMD_CLEAR");
-            sendCmdToSpiderService(CMD_STOP_STORE);
-            unboundSpiderService();
-        }
+        handleSpiderServiceOnFinish();
     }
 
     // 返回至SelSrcActivity
@@ -594,14 +603,15 @@ public class SpiderActivity extends Activity
                                 + getString(R.string.app_name),Toast.LENGTH_SHORT).show();
 
                 exitTim = SystemClock.uptimeMillis();
+                return true;
             }
             else
             {
                 Log.i(TAG, "finish");
-                finish();
+                //Sometimes onDestory() will not been called.So handle spider service here.
+                handleSpiderServiceOnFinish();
             }
 
-            return true;
         }
 
         return super.onKeyDown(keyCode, event);
