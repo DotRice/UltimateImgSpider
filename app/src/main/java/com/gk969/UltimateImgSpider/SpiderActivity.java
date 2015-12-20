@@ -16,10 +16,9 @@ import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
 import com.gk969.gallery.gallery3d.ui.GLView;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
-import com.gk969.gallerySimple.AlbumSlidingWindow;
+import com.gk969.gallerySimple.ThumbnailLoader;
 import com.gk969.gallerySimple.AlbumSlotRender;
 import com.gk969.gallerySimple.SlotView;
-import com.gk969.gallerySimple.ThumbnailTextureLoader;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -98,6 +97,8 @@ public class SpiderActivity extends Activity
     private MessageHandler   mHandler              = new MessageHandler(this);
 
     private static final int BUMP_MSG              = 1;
+
+    private ThumbnailLoader mThumbnailLoader;
 
 
     private ServiceConnection            mConnection;
@@ -314,8 +315,8 @@ public class SpiderActivity extends Activity
     {
         GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
 
-        glRootView.setContentPane(new SlotView(
-                new AlbumSlotRender(this, new AlbumSlidingWindow(projectPath))));
+        mThumbnailLoader=new ThumbnailLoader(projectPath, glRootView);
+        glRootView.setContentPane(new SlotView(new AlbumSlotRender(this, mThumbnailLoader)));
     }
 
 
@@ -421,6 +422,7 @@ public class SpiderActivity extends Activity
     {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
+        mThumbnailLoader.stopLoader();
         handleSpiderServiceOnFinish();
     }
 

@@ -68,6 +68,8 @@ import org.json.JSONObject;
 public class SpiderService extends Service
 {
     private final String                                   TAG                = "SpiderService";
+    public static final int   MAX_IMG_FILE_PER_DIR=500;
+
     final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks         = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
 
     private final static int                               STAT_IDLE          = 0;
@@ -515,7 +517,6 @@ public class SpiderService extends Service
     
     class ImgDownloader
     {
-        private static final int   MAX_IMG_FILE_PER_DIR=500;
         private static final int   IMG_DOWNLOADER_NUM = 10;
         private DownloaderThread[] downloaderThreads  = new DownloaderThread[IMG_DOWNLOADER_NUM];
         private static final String CACHE_MARK        = ".cache";

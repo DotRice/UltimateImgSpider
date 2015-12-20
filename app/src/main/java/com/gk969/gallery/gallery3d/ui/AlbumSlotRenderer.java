@@ -137,7 +137,7 @@ public class AlbumSlotRenderer extends AbstractSlotRenderer {
     }
 
     private int renderOverlay(GLCanvas canvas, int index,
-            AlbumSlidingWindow.AlbumEntry entry, int width, int height) {
+                              AlbumSlidingWindow.AlbumEntry entry, int width, int height) {
         int renderRequestFlags = 0;
         if (mPressedIndex == index) {
             if (mAnimatePressedUp) {

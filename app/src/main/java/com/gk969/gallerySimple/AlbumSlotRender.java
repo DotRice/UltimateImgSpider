@@ -16,77 +16,86 @@ import com.gk969.gallery.gallery3d.ui.GLView;
 import com.gk969.gallery.gallery3d.ui.Paper;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
 
-/*
-    StringTexture strTexture;
-    BitmapTexture bmpTexture0;
-    BitmapTexture bmpTexture1;
-    BitmapTexture bmpTexture2;
+import java.util.concurrent.atomic.AtomicInteger;
 
-    private void loadTestTexture()
-    {
-        BitmapFactory.Options opts=new BitmapFactory.Options();
-        opts.inPreferredConfig=Bitmap.Config.RGB_565;
-        bmpTexture0=new BitmapTexture(BitmapFactory.decodeFile(projectPath+"/0/000.jpg", opts));
-        bmpTexture1=new BitmapTexture(BitmapFactory.decodeFile(projectPath+"/0/001.jpg"));
-        bmpTexture2=new BitmapTexture(BitmapFactory.decodeFile(projectPath+"/0/002.jpg"));
-        strTexture = StringTexture.newInstance("string texture", 64, 0xFFFF0000);
-    }
 
-    private void drawTestTexture(GLCanvas canvas)
-    {
-        canvas.translate(400, 10);
-        canvas.scale(1.5f, 1.5f, 1);
-        canvas.rotate(45, 0, 0, 1);
-        bmpTexture0.draw(canvas, 0, 0);
-        canvas.restore();
-
-        canvas.fillRect(0, 0, 100, 100, 0xFF00F040);
-
-        bmpTexture1.draw(canvas, 0, 0);
-
-        canvas.drawTexture(bmpTexture2, -50, 600, 300, 400);
-
-        strTexture.draw(canvas, 50, 800);
-    }
-    */
 
 public class AlbumSlotRender implements GLRender
 {
     private static final String TAG = "AlbumSlotRender";
     private static final int SLOT_GAP_MIN_IN_DP=5;
+    private static final int SLOT_BACKGROUND_COLOR=0xFF808080;
 
     private int slotsPerRow=3;
 
+    private int viewWidth;
+    private int viewHeight;
+
     private int slotWidth;
     private int slotHeight;
-
-    private int slotGap;
+    private int slotGapX;
+    private int slotGapY;
 
     private Context mContext;
 
-    AlbumSlidingWindow mAlbumSlidingWindow;
+    private ThumbnailLoader mThumbnailLoader;
+
+    private AtomicInteger scrollDistance=new AtomicInteger(0);
 
 
 
-    public AlbumSlotRender(Context context, AlbumSlidingWindow window)
+
+    public AlbumSlotRender(Context context, ThumbnailLoader loader)
     {
         mContext=context;
-        slotGap= Utils.DisplayUtil.dipToPx(mContext, SLOT_GAP_MIN_IN_DP);
-        mAlbumSlidingWindow=window;
+        slotGapX= Utils.DisplayUtil.dipToPx(mContext, SLOT_GAP_MIN_IN_DP);
+        slotGapY= slotGapX;
+        mThumbnailLoader=loader;
     }
 
+    // Same thread with render thread
     @Override
     public void setViewSize(int width, int height)
     {
-        slotWidth=(width-(slotsPerRow-1)*slotGap)/slotsPerRow;
+        Log.i(TAG, "setViewSize "+width+" "+height);
+
+        slotWidth=(width-(slotsPerRow-1)*slotGapX)/slotsPerRow;
         slotHeight=slotWidth;
+        viewWidth=width;
+        viewHeight=height;
+
+        mThumbnailLoader.setSlotTextureSize(slotWidth, slotHeight);
     }
 
     @Override
     public void render(GLCanvas canvas)
     {
-        canvas.fillRect(0, 0, 100, 100, 0xFF00F040);
+        int scrollTotal=scrollDistance.get();
+        int slotHeightWithGap=slotHeight+slotGapY;
+        int slotWidthWithGap=slotWidth+slotGapX;
+        int slotOffsetTop=0-scrollTotal%slotHeightWithGap;
+        int slotIndex=scrollTotal/slotHeightWithGap*slotsPerRow;
+        int slotRowsInView=viewHeight/slotHeightWithGap+1;
+
+        Log.i(TAG, "slotRowsInView "+slotRowsInView);
+        for(int topIndex=0; topIndex<slotRowsInView; topIndex++)
+        {
+            for(int leftIndex=0; leftIndex<slotsPerRow; leftIndex++)
+            {
+                ThumbnailLoader.SlotTexture slotTexture = mThumbnailLoader.
+                        getTexture(slotIndex + topIndex * slotsPerRow + leftIndex);
+
+                int slotLeft=leftIndex * slotWidthWithGap;
+                int slotTop=slotOffsetTop + topIndex * slotHeightWithGap;
+
+                canvas.fillRect(slotLeft, slotTop, slotWidth, slotHeight, SLOT_BACKGROUND_COLOR);
+                if(slotTexture.isReady.get())
+                {
+                    slotTexture.texture.draw(canvas, slotLeft + slotTexture.xInSlot,
+                            slotTop + slotTexture.yInSlot);
+                }
+                slotIndex++;
+            }
+        }
     }
-
-
 }

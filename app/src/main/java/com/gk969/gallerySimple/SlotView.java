@@ -18,7 +18,7 @@ public class SlotView extends GLView
 {
     private static final String TAG = "AlbumView";
     private final float mMatrix[] = new float[16];
-    private final static float BACKGROUND_COLOR[]=new float[]{0f, 0.5f, 0.5f, 0.5f};
+    private final static float BACKGROUND_COLOR[]=new float[]{0, 0, 0, 0};
 
     GLRender mRender;
 
@@ -45,6 +45,5 @@ public class SlotView extends GLView
         canvas.clearBuffer(BACKGROUND_COLOR);
 
         mRender.render(canvas);
-
     }
 }

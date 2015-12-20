@@ -34,7 +34,7 @@ import com.gk969.gallery.gallery3d.util.JobLimiter;
 
 public class AlbumSlidingWindow implements AlbumDataLoader.DataListener {
     @SuppressWarnings("unused")
-    private static final String TAG = "AlbumSlidingWindow";
+    private static final String TAG = "ThumbnailLoader";
 
     private static final int MSG_UPDATE_ENTRY = 0;
     private static final int JOB_LIMIT = 2;
