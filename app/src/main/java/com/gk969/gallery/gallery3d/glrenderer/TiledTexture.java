@@ -25,6 +25,7 @@ import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.gk969.gallery.gallery3d.ui.GLRoot;
 import com.gk969.gallery.gallery3d.ui.GLRoot.OnGLIdleListener;
@@ -37,6 +38,8 @@ import java.util.ArrayList;
 // upload the whole bitmap but we reduce the time of uploading each tile
 // so it make the animation more smooth and prevents jank.
 public class TiledTexture implements Texture {
+    private static final String TAG = "TiledTexture";
+
     private static final int CONTENT_SIZE = 254;
     private static final int BORDER_SIZE = 1;
     private static final int TILE_SIZE = CONTENT_SIZE + 2 * BORDER_SIZE;
@@ -139,6 +142,7 @@ public class TiledTexture implements Texture {
                 int y = BORDER_SIZE - offsetY;
                 int r = localBitmapRef.getWidth() + x;
                 int b = localBitmapRef.getHeight() + y;
+
                 sCanvas.drawBitmap(localBitmapRef, x, y, sBitmapPaint);
                 localBitmapRef = null;
 

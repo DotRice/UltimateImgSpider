@@ -17,7 +17,6 @@ import com.gk969.gallery.gallery3d.ui.GLRootView;
 import com.gk969.gallery.gallery3d.ui.GLView;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
 import com.gk969.gallerySimple.ThumbnailLoader;
-import com.gk969.gallerySimple.AlbumSlotRender;
 import com.gk969.gallerySimple.SlotView;
 
 import android.app.Activity;
@@ -54,6 +53,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -83,7 +83,7 @@ public class SpiderActivity extends Activity
     private final int        STATE_WAIT_CONNECT    = 3;
     private final int        STATE_DISCONNECTED    = 4;
 
-    private int              serviceState          = STATE_IDLE;
+    private int              serviceState          = STATE_DISCONNECTED;
 
     private ImageTextButton  btPauseOrContinue;
     private ImageTextButton  btSelSrc;
@@ -192,18 +192,20 @@ public class SpiderActivity extends Activity
                         JSONObject jsonReport = new JSONObject(jsonReportStr);
 
                         long freeMem = MemoryInfo.getFreeMemInMb(theActivity);
-                        int memUsedBySpider = jsonReport.getInt("nativeMem");
+                        int serviceNativeMem = jsonReport.getInt("serviceNativeMem");
 
 
                         theActivity.spiderLog.setText("Total:"
-                                + MemoryInfo.getTotalMemInMb() + "M Free:"
-                                + freeMem + "M\r\n" + jsonReportStr);
+                                + MemoryInfo.getTotalMemInMb() + "M Free:" + freeMem
+                                + "M\r\nActivity vm:"+(Runtime.getRuntime().totalMemory() >> 20)
+                                + "M native:"+(Debug.getNativeHeapSize()>>20)+"M\r\n"
+                                + jsonReportStr);
 
                         if (jsonReport.getBoolean("siteScanCompleted"))
                         {
                             theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
                         }
-                        else if (freeMem < 50 || memUsedBySpider > 100)
+                        else if (freeMem < 50 || serviceNativeMem > 100)
                         {
                             theActivity.serviceState = theActivity.STATE_WAIT_DISCONNECT;
                             theActivity.sendCmdToSpiderService(CMD_RESTART);
@@ -290,7 +292,7 @@ public class SpiderActivity extends Activity
 
         getSrcUrlAndPath();
         serviceInterfaceInit();
-        checkAndStart();
+        //checkAndStart();
 
         albumViewInit();
     }
@@ -310,13 +312,49 @@ public class SpiderActivity extends Activity
             e.printStackTrace();
         }
     }
-    
+
+    private ImageView ivTest;
+    private int i;
     private void albumViewInit()
     {
         GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
 
-        mThumbnailLoader=new ThumbnailLoader(projectPath, glRootView);
-        glRootView.setContentPane(new SlotView(new AlbumSlotRender(this, mThumbnailLoader)));
+        mThumbnailLoader=new ThumbnailLoader(projectPath, glRootView,
+                getResources().getDisplayMetrics().density);
+        glRootView.setContentPane(new SlotView(this, mThumbnailLoader, glRootView));
+
+        /*
+        ivTest=(ImageView)findViewById(R.id.ivTest);
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                i=0;
+                while(true)
+                {
+                    try
+                    {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    mHandler.post(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            ivTest.setImageBitmap(mThumbnailLoader.bmpCache[i%96]);
+                        }
+                    });
+
+                    i++;
+                }
+            }
+        }).start();
+        */
     }
 
 
@@ -424,6 +462,7 @@ public class SpiderActivity extends Activity
         Log.i(TAG, "onDestroy");
         mThumbnailLoader.stopLoader();
         handleSpiderServiceOnFinish();
+        System.exit(0);
     }
 
     // 返回至SelSrcActivity

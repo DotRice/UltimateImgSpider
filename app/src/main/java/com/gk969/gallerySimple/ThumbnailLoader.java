@@ -10,6 +10,7 @@ import android.os.Handler;
 import com.gk969.gallery.gallery3d.glrenderer.BitmapTexture;
 import com.gk969.UltimateImgSpider.SpiderService;
 import com.gk969.gallery.gallery3d.glrenderer.Texture;
+import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
 
 import java.io.File;
@@ -67,27 +68,31 @@ public class ThumbnailLoader
 
     private final static String[] IMG_FILE_EXT={"jpg", "png", "gif"};
 
-    private int slotWidth;
-    private int slotHeight;
-    private float slotDivide;
+    private int mSlotSize;
+    private float screenDensity;
+    private int mWindowSize;
+    private int mScrollIndex;
 
     private AtomicBoolean isLoaderValid=new AtomicBoolean(false);
 
-    TextureLoader mTextureLoader;
+    TextureLoaderThread mTextureLoaderThread;
 
     private GLRootView mGLRootView;
+    private TiledTexture.Uploader mTextureUploader;
 
-    public ThumbnailLoader(String Path, GLRootView glRoot)
+    public ThumbnailLoader(String Path, GLRootView glRoot, float density)
     {
         projectPath=Path+"/";
         mGLRootView=glRoot;
+        mTextureUploader=new TiledTexture.Uploader(glRoot);
 
         for(int i=0; i<CACHE_SIZE; i++)
         {
             textureCache[i]=new SlotTexture();
-            textureCache[i].isReady=new AtomicBoolean(false);
+            textureCache[i].isLoaded=new AtomicBoolean(false);
         }
 
+        screenDensity=density;
     }
 
     public void startLoader()
@@ -95,8 +100,8 @@ public class ThumbnailLoader
         if(!isLoaderValid.get())
         {
             isLoaderValid.set(true);
-            mTextureLoader = new TextureLoader();
-            mTextureLoader.start();
+            mTextureLoaderThread = new TextureLoaderThread();
+            mTextureLoaderThread.start();
         }
     }
 
@@ -105,29 +110,38 @@ public class ThumbnailLoader
         isLoaderValid.set(false);
     }
 
-    public void setSlotTextureSize(int width, int height)
+    public void init(int slotSize, int slotNum)
     {
-        slotWidth=width;
-        slotHeight=height;
-        slotDivide=width/height;
+        mSlotSize=slotSize;
+        mWindowSize=slotNum;
+        TiledTexture.prepareResources();
 
         startLoader();
     }
 
     public SlotTexture getTexture(int index)
     {
-        return textureCache[index%CACHE_SIZE];
+        if(index>=0)
+        {
+            //Log.i(TAG, "getTexture "+index);
+            return textureCache[index % CACHE_SIZE];
+        }
+        return null;
     }
 
     public class SlotTexture
     {
-        BitmapTexture texture;
-        AtomicBoolean isReady;
-        int xInSlot;
-        int yInSlot;
+        TiledTexture texture;
+        AtomicBoolean isLoaded;
     }
 
-    Bitmap getBitmapByIndex(int index)
+    public boolean scrollToIndex(int index)
+    {
+        mScrollIndex=index;
+        return true;
+    }
+    
+    private Bitmap getThumbnailByIndex(int index)
     {
         String fileName=String.format("%s%d/%03d.", projectPath,
                 index/SpiderService.MAX_IMG_FILE_PER_DIR,
@@ -146,10 +160,58 @@ public class ThumbnailLoader
             }
         }
 
-        return rawBmp;
+        if(rawBmp==null)
+        {
+            return null;
+        }
+
+        int rawWidth = rawBmp.getWidth();
+        int rawHeight = rawBmp.getHeight();
+        int x,y,w,h;
+        float matrixScale=0;
+
+
+        if(rawHeight > rawWidth)
+        {
+            matrixScale = (float)mSlotSize / (float)rawWidth;
+            x=0;
+            w=rawWidth;
+            y=(rawHeight-rawWidth)/2;
+            h=rawWidth;
+        }
+        else
+        {
+            matrixScale=(float)mSlotSize / (float)rawHeight;
+            y=0;
+            h=rawHeight;
+            x=(rawWidth-rawHeight)/2;
+            w=rawHeight;
+        }
+
+        matrixScale/=screenDensity;
+
+        //Log.i(TAG, "matrixScale "+matrixScale);
+
+
+
+        Matrix matrix = new Matrix();
+        matrix.postScale(matrixScale, matrixScale);
+
+        /*
+        Log.i(TAG, "slot " + mSlotSize);
+        Log.i(TAG, "rawBitmap " + rawWidth + " " + rawHeight);
+        Log.i(TAG, "thumbnail " + x + " " + y + " " + w + " " + h);
+        Log.i(TAG, "matrixScale "+matrixScale);
+        */
+
+        Bitmap thumbnail = Bitmap.createBitmap(rawBmp, x, y, w, h, matrix, true);
+        rawBmp.recycle();
+
+        //Log.i(TAG, "thumbnail bmp " + thumbnail.getWidth() + " " + thumbnail.getHeight());
+        return thumbnail;
     }
 
-    private class TextureLoader extends Thread
+    private class TextureLoaderThread extends Thread
     {
         private final static int CHECK_INTERVAL=500;
 
@@ -162,29 +224,16 @@ public class ThumbnailLoader
                 int i=0;
                 for(int index=0; index<CACHE_SIZE; index++)
                 {
-                    if(!textureCache[i].isReady.get())
+                    if(!textureCache[i].isLoaded.get())
                     {
-                        Bitmap rawBitmap = getBitmapByIndex(index);
-                        if(rawBitmap!=null)
+                        Bitmap bmp = getThumbnailByIndex(index);
+                        if(bmp!=null)
                         {
-                            int width = rawBitmap.getWidth();
-                            int height = rawBitmap.getHeight();
-                            float matrixScale = (slotDivide > (float)width / (float)height) ?
-                                    (float)slotHeight / (float)height : (float)slotWidth / (float)width;
-                            Matrix matrix = new Matrix();
-                            matrix.postScale(matrixScale, matrixScale);
-                            Log.i(TAG, "slot " + slotWidth + " " + slotHeight);
-                            Log.i(TAG, "rawBitmap " + width + " " + height);
-                            Log.i(TAG, "matrix "+matrixScale);
-                            Bitmap bmp = Bitmap.createBitmap(rawBitmap, 0, 0, width, height, matrix, true);
-                            rawBitmap.recycle();
+                            textureCache[i].texture = new TiledTexture(bmp);
+                            textureCache[i].isLoaded.set(true);
 
-                            textureCache[i].texture = new BitmapTexture(bmp);
-                            textureCache[i].xInSlot = (slotWidth - bmp.getWidth()) / 2;
-                            textureCache[i].yInSlot = (slotHeight - bmp.getHeight()) / 2;
-                            textureCache[i].isReady.set(true);
-
-                            mGLRootView.requestRender();
+                            //Log.i(TAG, "mTextureUploader.addTexture "+i);
+                            mTextureUploader.addTexture(textureCache[i].texture);
 
                             i++;
                         }

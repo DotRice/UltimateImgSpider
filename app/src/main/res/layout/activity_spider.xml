@@ -33,5 +33,10 @@
 	    android:textSize="18sp"
 	    android:background="#0000"
         />
+
+    <ImageView
+        android:id="@+id/ivTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 	
 </FrameLayout>

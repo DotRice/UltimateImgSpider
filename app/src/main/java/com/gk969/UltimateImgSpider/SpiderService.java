@@ -851,8 +851,8 @@ public class SpiderService extends Service
         String jsonReportStr="{\r\n";
 
 
-        jsonReportStr+="\"vmMem\":" + (Runtime.getRuntime().totalMemory() >> 20)+",\r\n";
-        jsonReportStr+="\"nativeMem\":" + (Debug.getNativeHeapSize() >> 20)+",\r\n";
+        jsonReportStr+="\"serviceVmMem\":" + (Runtime.getRuntime().totalMemory() >> 20)+",\r\n";
+        jsonReportStr+="\"serviceNativeMem\":" + (Debug.getNativeHeapSize() >> 20)+",\r\n";
 
         jsonReportStr+="\"imgDownloaderPayload\":" + imgProcParam[PARA_PAYLOAD]+",\r\n";
         jsonReportStr+="\"imgDownloadNum\":" + imgProcParam[PARA_DOWNLOAD]+",\r\n";
