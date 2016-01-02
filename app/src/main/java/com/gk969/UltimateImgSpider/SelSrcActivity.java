@@ -508,12 +508,12 @@ public class SelSrcActivity extends Activity
         if ((browserMenu.getVisibility() == View.VISIBLE) != isShow)
         {
             float fromY = isShow ? 1 : 0;
-            TranslateAnimation translateAnimation = new TranslateAnimation(
+            TranslateAnimation browserMenuAnim = new TranslateAnimation(
                     Animation.RELATIVE_TO_SELF, 0f, Animation.RELATIVE_TO_SELF,
                     0f, Animation.RELATIVE_TO_SELF, fromY,
                     Animation.RELATIVE_TO_SELF, 1 - fromY);
-            translateAnimation.setDuration(MENU_ANI_TIME);
-            translateAnimation.setAnimationListener(new AnimationListener()
+            browserMenuAnim.setDuration(MENU_ANI_TIME);
+            browserMenuAnim.setAnimationListener(new AnimationListener()
             {
                 
                 @Override
@@ -536,7 +536,7 @@ public class SelSrcActivity extends Activity
                         browserMenu.setVisibility(View.INVISIBLE);
                 }
             });
-            browserMenu.startAnimation(translateAnimation);
+            browserMenu.startAnimation(browserMenuAnim);
         }
     }
     

@@ -33,7 +33,7 @@ public class SlotView extends GLView
 {
     private static final String TAG = "AlbumView";
     private final float mMatrix[] = new float[16];
-    private final static float BACKGROUND_COLOR[]=new float[]{0, 0.25f, 0.25f, 0.25f};
+    private final static float BACKGROUND_COLOR[]=new float[]{0, 1f, 1f, 1f};
     
     private static final int SLOT_GAP_MIN_IN_DP=5;
     private static final int SLOT_BACKGROUND_COLOR=0xFF808080;
@@ -50,8 +50,6 @@ public class SlotView extends GLView
     private int slotRowsInView;
     private int slotHeightWithGap;
 
-    private int overScrollGap=0;
-
     private int scrollDistance=0;
 
     private ThumbnailLoader mThumbnailLoader;
@@ -61,10 +59,19 @@ public class SlotView extends GLView
     private GestureRecognizer mGestureRecognizer;
 
 
-    private static final int FLY_ACCURACY_ABS=5000;
-    private int flyAccuracy;
-    private int flyVelocity;
-    private long animationTime;
+    private static final int DECELERATE_MULT_MIN=1;
+    private static final int DECELERATE_MULT_MAX=5;
+    private static final int FLY_ACCURACY_ABS=10000;
+    private float flyAccuracy;
+    private float flyVelocity;
+    private float flyVelocityRaw;
+
+    private float overScrollGapY=0;
+    private static final float REBOUND_VELOCITY=300;
+    private boolean rebound;
+    private float overScrollGapYRaw;
+    
+    private long renderTime;
 
     private class MyGestureListener implements GestureRecognizer.Listener {
 
@@ -86,11 +93,7 @@ public class SlotView extends GLView
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
 
             mGLrootView.lockRenderThread();
-            scrollDistance+=dy;
-            if(scrollDistance<0)
-            {
-                scrollDistance=0;
-            }
+            scroll(dy);
             mGLrootView.unlockRenderThread();
             
             invalidate();
@@ -100,13 +103,12 @@ public class SlotView extends GLView
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             mGLrootView.lockRenderThread();
+            startFly(velocityY);
+            renderTime= System.currentTimeMillis();
             mGLrootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-            flyVelocity=(int)velocityY;
-            flyAccuracy=(velocityY>0)?(0-FLY_ACCURACY_ABS):FLY_ACCURACY_ABS;
-            animationTime= System.currentTimeMillis();
             mGLrootView.unlockRenderThread();
 
-            Log.i(TAG, "onFling " + velocityX + " " + velocityY + " "+animationTime);
+            Log.i(TAG, "onFling " + velocityX + " " + velocityY);
             return true;
         }
 
@@ -141,6 +143,14 @@ public class SlotView extends GLView
         @Override
         public void onUp() {
             Log.i(TAG, "onUp");
+            mGLrootView.lockRenderThread();
+            if(overScrollGapY>0)
+            {
+                startRebound();
+                renderTime = System.currentTimeMillis();
+                mGLrootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+            }
+            mGLrootView.unlockRenderThread();
         }
 
     }
@@ -186,6 +196,46 @@ public class SlotView extends GLView
     {
         mGLrootView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         flyVelocity=0;
+        rebound=false;
+    }
+
+    private float calculateDecelerate(float curValue, float rawValue)
+    {
+        return curValue*(DECELERATE_MULT_MIN-DECELERATE_MULT_MAX)/rawValue+DECELERATE_MULT_MAX;
+    }
+
+    private void startRebound()
+    {
+        rebound=true;
+        overScrollGapYRaw=overScrollGapY;
+    }
+
+    private void startFly(float velocity)
+    {
+        flyVelocity=velocity;
+        flyVelocityRaw=flyVelocity;
+        flyAccuracy=(velocity>0)?(0-FLY_ACCURACY_ABS):FLY_ACCURACY_ABS;
+    }
+
+    private void scroll(float dy)
+    {
+        scrollDistance+=dy;
+        if(scrollDistance<0)
+        {
+            scrollDistance=0;
+
+            overScrollGapY-=dy/(overScrollGapY+2)/4;
+        }
+        else if(overScrollGapY>0)
+        {
+            scrollDistance=0;
+            overScrollGapY-=2*dy/(overScrollGapY+1);
+
+            if(overScrollGapY<0)
+            {
+                overScrollGapY=0;
+            }
+        }
     }
 
     @Override
@@ -200,35 +250,58 @@ public class SlotView extends GLView
         canvas.save(GLCanvas.SAVE_FLAG_MATRIX);
         canvas.clearBuffer(BACKGROUND_COLOR);
 
+        //Log.i(TAG, "render");
+
+        long curTime= System.currentTimeMillis();
+        int renderTimeInterval = (int)(curTime-renderTime);
+        renderTime=curTime;
+        
         if(flyVelocity!=0)
         {
-            long curTime= System.currentTimeMillis();
-            int animationTimeInterval = (int)(curTime-animationTime);
-            animationTime=curTime;
+            int flyVelMult=scrollDistance==0?5:1;
+            float curFlyVelocity=flyVelocity+flyVelMult*flyAccuracy/1000*renderTimeInterval/
+                    calculateDecelerate(flyVelocity, flyVelocityRaw);
 
-            int curFlyVelocity=flyVelocity+(flyAccuracy/1000)*animationTimeInterval;
-
-            if(curFlyVelocity*flyVelocity<0)
+            if(curFlyVelocity*flyVelocity<=0)
             {
-                stopAnimation();
+                if(overScrollGapY==0)
+                {
+                    stopAnimation();
+                }
+                else
+                {
+                    flyVelocity=0;
+                    startRebound();
+                }
             }
             else
             {
-                scrollDistance -= (curFlyVelocity + flyVelocity) * animationTimeInterval / 2 / 1000;
+                scroll(0 -(curFlyVelocity + flyVelocity) * renderTimeInterval / 2 / 1000);
                 flyVelocity = curFlyVelocity;
-                if(scrollDistance<0)
+            }
+        }
+        
+        if(rebound)
+        {
+            if(overScrollGapY!=0)
+            {
+                overScrollGapY-=renderTimeInterval*REBOUND_VELOCITY/1000/
+                        calculateDecelerate(overScrollGapY, overScrollGapYRaw);
+                if(overScrollGapY<=0)
                 {
-                    scrollDistance=0;
+                    overScrollGapY=0;
+                    stopAnimation();
                 }
             }
         }
+        
 
-        int overScrollHeight=slotHeightWithGap+overScrollGap;
-        int slotOffsetTop=overScrollGap-scrollDistance%overScrollHeight;
-        int slotIndex=scrollDistance/overScrollHeight*slotsPerRow;
+        int slotOffsetTop=(int)(overScrollGapY-scrollDistance%slotHeightWithGap);
+        int slotIndex=scrollDistance/slotHeightWithGap*slotsPerRow;
 
         for(int topIndex=0; topIndex<slotRowsInView; topIndex++)
         {
+            int overScrollHeight=(int)(slotHeightWithGap+overScrollGapY*1.5f/(topIndex+1));
             for(int leftIndex=0; leftIndex<slotsPerRow; leftIndex++)
             {
                 //Log.i(TAG, topIndex+" "+leftIndex+" "+(slotIndex + (topIndex * slotsPerRow) + leftIndex));
@@ -238,7 +311,7 @@ public class SlotView extends GLView
 
                 if(slotTexture!=null)
                 {
-                    int slotLeft = leftIndex * overScrollHeight;
+                    int slotLeft = leftIndex * slotHeightWithGap;
                     int slotTop = slotOffsetTop + topIndex * overScrollHeight;
 
                     if (slotTexture.isLoaded.get() && slotTexture.texture.isReady())
