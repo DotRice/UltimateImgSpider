@@ -15,6 +15,7 @@ import com.gk969.gallery.gallery3d.ui.GLRootView;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
 Cache Mode:
@@ -73,7 +74,8 @@ public class ThumbnailLoader
     private int mWindowSize;
     private int mScrollIndex;
 
-    private AtomicBoolean isLoaderValid=new AtomicBoolean(false);
+    private AtomicBoolean isLoaderRunning=new AtomicBoolean(false);
+    public AtomicInteger albumTotalImgNum=new AtomicInteger(20);
 
     TextureLoaderThread mTextureLoaderThread;
 
@@ -97,9 +99,9 @@ public class ThumbnailLoader
 
     public void startLoader()
     {
-        if(!isLoaderValid.get())
+        if(!isLoaderRunning.get())
         {
-            isLoaderValid.set(true);
+            isLoaderRunning.set(true);
             mTextureLoaderThread = new TextureLoaderThread();
             mTextureLoaderThread.start();
         }
@@ -107,7 +109,7 @@ public class ThumbnailLoader
 
     public void stopLoader()
     {
-        isLoaderValid.set(false);
+        isLoaderRunning.set(false);
     }
 
     public void init(int slotSize, int slotNum)
@@ -140,7 +142,7 @@ public class ThumbnailLoader
         mScrollIndex=index;
         return true;
     }
-    
+
     private Bitmap getThumbnailByIndex(int index)
     {
         String fileName=String.format("%s%d/%03d.", projectPath,
@@ -219,7 +221,7 @@ public class ThumbnailLoader
 
         public void run()
         {
-            while(isLoaderValid.get())
+            while(isLoaderRunning.get())
             {
                 int i=0;
                 for(int index=0; index<CACHE_SIZE; index++)

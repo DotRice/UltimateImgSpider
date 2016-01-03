@@ -33,7 +33,7 @@ public class SlotView extends GLView
 {
     private static final String TAG = "AlbumView";
     private final float mMatrix[] = new float[16];
-    private final static float BACKGROUND_COLOR[]=new float[]{0, 1f, 1f, 1f};
+    private final static float BACKGROUND_COLOR[]=new float[]{0, 0, 0, 0};
     
     private static final int SLOT_GAP_MIN_IN_DP=5;
     private static final int SLOT_BACKGROUND_COLOR=0xFF808080;
@@ -93,7 +93,7 @@ public class SlotView extends GLView
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
 
             mGLrootView.lockRenderThread();
-            scroll(dy);
+            scroll(dy, getScrollMax());
             mGLrootView.unlockRenderThread();
             
             invalidate();
@@ -144,7 +144,7 @@ public class SlotView extends GLView
         public void onUp() {
             Log.i(TAG, "onUp");
             mGLrootView.lockRenderThread();
-            if(overScrollGapY>0)
+            if(overScrollGapY!=0)
             {
                 startRebound();
                 renderTime = System.currentTimeMillis();
@@ -217,25 +217,38 @@ public class SlotView extends GLView
         flyAccuracy=(velocity>0)?(0-FLY_ACCURACY_ABS):FLY_ACCURACY_ABS;
     }
 
-    private void scroll(float dy)
+    private int getScrollMax()
+    {
+        int scrollMax=mThumbnailLoader.albumTotalImgNum.get()/slotsPerRow*slotHeightWithGap-viewHeight;
+        if(scrollMax<0)
+        {
+            scrollMax=0;
+        }
+
+        return scrollMax;
+    }
+
+    private void scroll(float dy, int scrollMax)
     {
         scrollDistance+=dy;
-        if(scrollDistance<0)
+        if((scrollDistance<0)||(scrollDistance>scrollMax))
         {
-            scrollDistance=0;
-
-            overScrollGapY-=dy/(overScrollGapY+2)/4;
+            scrollDistance=(scrollDistance<0)?0:scrollMax;
+            overScrollGapY-=dy/(Math.abs(overScrollGapY)+2)/4;
+            Log.i(TAG, "overScrollGapY "+overScrollGapY);
         }
-        else if(overScrollGapY>0)
+        else if(overScrollGapY!=0)
         {
-            scrollDistance=0;
-            overScrollGapY-=2*dy/(overScrollGapY+1);
+            scrollDistance=(overScrollGapY>0)?0:scrollMax;
+            float preGap=overScrollGapY;
+            overScrollGapY-=2*dy/(Math.abs(overScrollGapY)+1);
 
-            if(overScrollGapY<0)
+            if(overScrollGapY*preGap<0)
             {
                 overScrollGapY=0;
             }
         }
+
     }
 
     @Override
@@ -255,10 +268,12 @@ public class SlotView extends GLView
         long curTime= System.currentTimeMillis();
         int renderTimeInterval = (int)(curTime-renderTime);
         renderTime=curTime;
+
+        int scrollMax=getScrollMax();
         
         if(flyVelocity!=0)
         {
-            int flyVelMult=scrollDistance==0?5:1;
+            int flyVelMult=(scrollDistance==0||scrollDistance==scrollMax)?5:1;
             float curFlyVelocity=flyVelocity+flyVelMult*flyAccuracy/1000*renderTimeInterval/
                     calculateDecelerate(flyVelocity, flyVelocityRaw);
 
@@ -276,7 +291,7 @@ public class SlotView extends GLView
             }
             else
             {
-                scroll(0 -(curFlyVelocity + flyVelocity) * renderTimeInterval / 2 / 1000);
+                scroll(0 -(curFlyVelocity + flyVelocity) * renderTimeInterval / 2 / 1000, scrollMax);
                 flyVelocity = curFlyVelocity;
             }
         }
@@ -285,9 +300,10 @@ public class SlotView extends GLView
         {
             if(overScrollGapY!=0)
             {
-                overScrollGapY-=renderTimeInterval*REBOUND_VELOCITY/1000/
+                float preGap=overScrollGapY;
+                overScrollGapY-=((overScrollGapY>0)?1:-1)*renderTimeInterval*REBOUND_VELOCITY/1000/
                         calculateDecelerate(overScrollGapY, overScrollGapYRaw);
-                if(overScrollGapY<=0)
+                if(overScrollGapY*preGap<=0)
                 {
                     overScrollGapY=0;
                     stopAnimation();
@@ -296,12 +312,16 @@ public class SlotView extends GLView
         }
         
 
-        int slotOffsetTop=(int)(overScrollGapY-scrollDistance%slotHeightWithGap);
+        int overScrollGapAbs=(int)Math.abs(overScrollGapY);
+        int offsetNormal=scrollDistance%slotHeightWithGap;
+        int slotOffsetTop=((overScrollGapY>0)?overScrollGapAbs:(0-overScrollGapAbs*slotRowsInView))-
+                offsetNormal;
+
         int slotIndex=scrollDistance/slotHeightWithGap*slotsPerRow;
+        int overScrollHeight=slotHeightWithGap+overScrollGapAbs;
 
         for(int topIndex=0; topIndex<slotRowsInView; topIndex++)
         {
-            int overScrollHeight=(int)(slotHeightWithGap+overScrollGapY*1.5f/(topIndex+1));
             for(int leftIndex=0; leftIndex<slotsPerRow; leftIndex++)
             {
                 //Log.i(TAG, topIndex+" "+leftIndex+" "+(slotIndex + (topIndex * slotsPerRow) + leftIndex));
