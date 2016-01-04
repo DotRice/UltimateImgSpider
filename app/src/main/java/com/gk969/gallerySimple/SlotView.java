@@ -144,7 +144,7 @@ public class SlotView extends GLView
         public void onUp() {
             Log.i(TAG, "onUp");
             mGLrootView.lockRenderThread();
-            if(overScrollGapY!=0)
+            if((overScrollGapY!=0)&&(flyVelocity==0))
             {
                 startRebound();
                 renderTime = System.currentTimeMillis();
@@ -257,24 +257,14 @@ public class SlotView extends GLView
         return true;
     }
 
-    @Override
-    protected void render(GLCanvas canvas)
+    private void renderFly(int interval)
     {
-        canvas.save(GLCanvas.SAVE_FLAG_MATRIX);
-        canvas.clearBuffer(BACKGROUND_COLOR);
-
-        //Log.i(TAG, "render");
-
-        long curTime= System.currentTimeMillis();
-        int renderTimeInterval = (int)(curTime-renderTime);
-        renderTime=curTime;
-
         int scrollMax=getScrollMax();
-        
+
         if(flyVelocity!=0)
         {
             int flyVelMult=(scrollDistance==0||scrollDistance==scrollMax)?5:1;
-            float curFlyVelocity=flyVelocity+flyVelMult*flyAccuracy/1000*renderTimeInterval/
+            float curFlyVelocity=flyVelocity+flyVelMult*flyAccuracy/1000*interval/
                     calculateDecelerate(flyVelocity, flyVelocityRaw);
 
             if(curFlyVelocity*flyVelocity<=0)
@@ -291,17 +281,20 @@ public class SlotView extends GLView
             }
             else
             {
-                scroll(0 -(curFlyVelocity + flyVelocity) * renderTimeInterval / 2 / 1000, scrollMax);
+                scroll(0 -(curFlyVelocity + flyVelocity) * interval / 2 / 1000, scrollMax);
                 flyVelocity = curFlyVelocity;
             }
         }
-        
+    }
+
+    private void renderRebound(int interval)
+    {
         if(rebound)
         {
             if(overScrollGapY!=0)
             {
                 float preGap=overScrollGapY;
-                overScrollGapY-=((overScrollGapY>0)?1:-1)*renderTimeInterval*REBOUND_VELOCITY/1000/
+                overScrollGapY-=((overScrollGapY>0)?1:-1)*interval*REBOUND_VELOCITY/1000/
                         calculateDecelerate(overScrollGapY, overScrollGapYRaw);
                 if(overScrollGapY*preGap<=0)
                 {
@@ -310,6 +303,24 @@ public class SlotView extends GLView
                 }
             }
         }
+    }
+
+
+    @Override
+    protected void render(GLCanvas canvas)
+    {
+        canvas.save(GLCanvas.SAVE_FLAG_MATRIX);
+        canvas.clearBuffer(BACKGROUND_COLOR);
+
+        //Log.i(TAG, "render");
+
+        long curTime= System.currentTimeMillis();
+        int renderTimeInterval = (int)(curTime-renderTime);
+        renderTime=curTime;
+
+        renderFly(renderTimeInterval);
+
+        renderRebound(renderTimeInterval);
         
 
         int overScrollGapAbs=(int)Math.abs(overScrollGapY);
