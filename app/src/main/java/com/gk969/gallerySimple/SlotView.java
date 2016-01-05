@@ -51,6 +51,7 @@ public class SlotView extends GLView
     private int slotHeightWithGap;
 
     private int scrollDistance=0;
+    private int scrollDistanceOverRow=0;
 
     private ThumbnailLoader mThumbnailLoader;
     private GLRootView mGLrootView;
@@ -93,7 +94,7 @@ public class SlotView extends GLView
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
 
             mGLrootView.lockRenderThread();
-            scroll(dy, getScrollMax());
+            scroll(dy, getScrollDistanceMax());
             mGLrootView.unlockRenderThread();
             
             invalidate();
@@ -163,6 +164,7 @@ public class SlotView extends GLView
         
         slotGap= Utils.DisplayUtil.dipToPx(context, SLOT_GAP_MIN_IN_DP);
         mThumbnailLoader=loader;
+        mThumbnailLoader.scrollToIndex(0);
         mGLrootView=glRootView;
     }
 
@@ -187,9 +189,8 @@ public class SlotView extends GLView
         viewHeight=height;
 
         slotHeightWithGap=slotSize+slotGap;
-        slotRowsInView=viewHeight/slotHeightWithGap+2;
+        slotRowsInView=viewHeight/slotHeightWithGap + 2;
         mThumbnailLoader.init(slotSize, slotRowsInView * slotsPerRow);
-        mThumbnailLoader.scrollToIndex(0);
     }
 
     private void stopAnimation()
@@ -217,7 +218,7 @@ public class SlotView extends GLView
         flyAccuracy=(velocity>0)?(0-FLY_ACCURACY_ABS):FLY_ACCURACY_ABS;
     }
 
-    private int getScrollMax()
+    private int getScrollDistanceMax()
     {
         int scrollMax=mThumbnailLoader.albumTotalImgNum.get()/slotsPerRow*slotHeightWithGap-viewHeight;
         if(scrollMax<0)
@@ -249,6 +250,11 @@ public class SlotView extends GLView
             }
         }
 
+        if(Math.abs(scrollDistance-scrollDistanceOverRow)>=slotHeightWithGap)
+        {
+            scrollDistanceOverRow=scrollDistance;
+            mThumbnailLoader.scrollToIndex(scrollDistance/slotHeightWithGap*slotsPerRow);
+        }
     }
 
     @Override
@@ -259,13 +265,19 @@ public class SlotView extends GLView
 
     private void renderFly(int interval)
     {
-        int scrollMax=getScrollMax();
-
         if(flyVelocity!=0)
         {
-            int flyVelMult=(scrollDistance==0||scrollDistance==scrollMax)?5:1;
-            float curFlyVelocity=flyVelocity+flyVelMult*flyAccuracy/1000*interval/
-                    calculateDecelerate(flyVelocity, flyVelocityRaw);
+            int scrollMax=getScrollDistanceMax();
+            float curFlyVelocity;
+            if(scrollDistance==0||scrollDistance==scrollMax)
+            {
+                curFlyVelocity = flyVelocity + 5 * flyAccuracy / 1000 * interval;
+            }
+            else
+            {
+                curFlyVelocity = flyVelocity + flyAccuracy / 1000 * interval /
+                        calculateDecelerate(flyVelocity, flyVelocityRaw);
+            }
 
             if(curFlyVelocity*flyVelocity<=0)
             {
@@ -328,17 +340,22 @@ public class SlotView extends GLView
         int slotOffsetTop=((overScrollGapY>0)?overScrollGapAbs:(0-overScrollGapAbs*slotRowsInView))-
                 offsetNormal;
 
-        int slotIndex=scrollDistance/slotHeightWithGap*slotsPerRow;
+        int slotIndexOffset=scrollDistance/slotHeightWithGap*slotsPerRow;
         int overScrollHeight=slotHeightWithGap+overScrollGapAbs;
+
+        int albumTotalImg=mThumbnailLoader.albumTotalImgNum.get();
 
         for(int topIndex=0; topIndex<slotRowsInView; topIndex++)
         {
             for(int leftIndex=0; leftIndex<slotsPerRow; leftIndex++)
             {
-                //Log.i(TAG, topIndex+" "+leftIndex+" "+(slotIndex + (topIndex * slotsPerRow) + leftIndex));
+                int slotIndex=slotIndexOffset + (topIndex * slotsPerRow) + leftIndex;
+                if(slotIndex>=albumTotalImg)
+                {
+                    break;
+                }
 
-                ThumbnailLoader.SlotTexture slotTexture = mThumbnailLoader.
-                        getTexture(slotIndex + (topIndex * slotsPerRow) + leftIndex);
+                ThumbnailLoader.SlotTexture slotTexture = mThumbnailLoader.getTexture(slotIndex);
 
                 if(slotTexture!=null)
                 {

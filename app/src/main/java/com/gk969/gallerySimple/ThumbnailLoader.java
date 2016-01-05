@@ -40,22 +40,6 @@ Cache Mode:
 *************************
  */
 
-/*
-    StringTexture strTexture;
-    BitmapTexture bmpTexture0;
-    BitmapTexture bmpTexture1;
-    BitmapTexture bmpTexture2;
-
-    private void loadTestTexture()
-    {
-        BitmapFactory.Options opts=new BitmapFactory.Options();
-        opts.inPreferredConfig=Bitmap.Config.RGB_565;
-        bmpTexture0=new BitmapTexture(BitmapFactory.decodeFile(projectPath+"/0/000.jpg", opts));
-        bmpTexture1=new BitmapTexture(BitmapFactory.decodeFile(projectPath+"/0/001.jpg"));
-        bmpTexture2=new BitmapTexture(BitmapFactory.decodeFile(projectPath+"/0/002.jpg"));
-        strTexture = StringTexture.newInstance("string texture", 64, 0xFFFF0000);
-    }
-    */
 
 public class ThumbnailLoader
 {
@@ -72,10 +56,11 @@ public class ThumbnailLoader
     private int mSlotSize;
     private float screenDensity;
     private int mWindowSize;
+
     private int mScrollIndex;
 
     private AtomicBoolean isLoaderRunning=new AtomicBoolean(false);
-    public AtomicInteger albumTotalImgNum=new AtomicInteger(20);
+    public AtomicInteger albumTotalImgNum=new AtomicInteger(96);
 
     TextureLoaderThread mTextureLoaderThread;
 
@@ -137,10 +122,10 @@ public class ThumbnailLoader
         AtomicBoolean isLoaded;
     }
 
-    public boolean scrollToIndex(int index)
+    public void scrollToIndex(int index)
     {
         mScrollIndex=index;
-        return true;
+        Log.i(TAG, "scrollToIndex "+index);
     }
 
     private Bitmap getThumbnailByIndex(int index)
