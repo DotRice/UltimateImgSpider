@@ -164,7 +164,7 @@ public class SlotView extends GLView
         
         slotGap= Utils.DisplayUtil.dipToPx(context, SLOT_GAP_MIN_IN_DP);
         mThumbnailLoader=loader;
-        mThumbnailLoader.scrollToIndex(0);
+        mThumbnailLoader.dispAreaScrollToIndex(0);
         mGLrootView=glRootView;
     }
 
@@ -253,7 +253,7 @@ public class SlotView extends GLView
         if(Math.abs(scrollDistance-scrollDistanceOverRow)>=slotHeightWithGap)
         {
             scrollDistanceOverRow=scrollDistance;
-            mThumbnailLoader.scrollToIndex(scrollDistance/slotHeightWithGap*slotsPerRow);
+            mThumbnailLoader.dispAreaScrollToIndex(scrollDistance / slotHeightWithGap * slotsPerRow);
         }
     }
 

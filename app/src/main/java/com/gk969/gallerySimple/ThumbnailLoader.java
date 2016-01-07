@@ -53,26 +53,26 @@ public class ThumbnailLoader
 
     private final static String[] IMG_FILE_EXT={"jpg", "png", "gif"};
 
-    private int mSlotSize;
+    private int thumbnailDispSize;
     private float screenDensity;
-    private int mWindowSize;
 
-    private int mScrollIndex;
+    private int bestOffsetOfDispInCache;
+    private AtomicInteger cacheOffset=new AtomicInteger(0);
 
     private AtomicBoolean isLoaderRunning=new AtomicBoolean(false);
-    public AtomicInteger albumTotalImgNum=new AtomicInteger(96);
+    public AtomicInteger albumTotalImgNum=new AtomicInteger(500);
+
+    private GLRootView mGLrootView;
 
     TextureLoaderThread mTextureLoaderThread;
 
-    private GLRootView mGLRootView;
     private TiledTexture.Uploader mTextureUploader;
 
     public ThumbnailLoader(String Path, GLRootView glRoot, float density)
     {
         projectPath=Path+"/";
-        mGLRootView=glRoot;
         mTextureUploader=new TiledTexture.Uploader(glRoot);
-
+        mGLrootView=glRoot;
         for(int i=0; i<CACHE_SIZE; i++)
         {
             textureCache[i]=new SlotTexture();
@@ -99,8 +99,8 @@ public class ThumbnailLoader
 
     public void init(int slotSize, int slotNum)
     {
-        mSlotSize=slotSize;
-        mWindowSize=slotNum;
+        thumbnailDispSize=slotSize;
+        bestOffsetOfDispInCache=(CACHE_SIZE-slotNum)/2;
         TiledTexture.prepareResources();
 
         startLoader();
@@ -108,7 +108,7 @@ public class ThumbnailLoader
 
     public SlotTexture getTexture(int index)
     {
-        if(index>=0)
+        if((index>=0)&&(index<albumTotalImgNum.get()))
         {
             //Log.i(TAG, "getTexture "+index);
             return textureCache[index % CACHE_SIZE];
@@ -122,10 +122,42 @@ public class ThumbnailLoader
         AtomicBoolean isLoaded;
     }
 
-    public void scrollToIndex(int index)
+    public void dispAreaScrollToIndex(int index)
     {
-        mScrollIndex=index;
-        Log.i(TAG, "scrollToIndex "+index);
+        int newCacheOffset=index-bestOffsetOfDispInCache;
+        int cacheOffsetMax=albumTotalImgNum.get()-CACHE_SIZE;
+        if(newCacheOffset<0)
+        {
+            newCacheOffset=0;
+        }
+        else if(newCacheOffset>cacheOffsetMax)
+        {
+            newCacheOffset=cacheOffsetMax;
+        }
+
+
+        int lastCacheOffset=cacheOffset.get();
+
+        if(newCacheOffset!=lastCacheOffset)
+        {
+            int step = newCacheOffset > lastCacheOffset ? 1 : -1;
+            while (newCacheOffset != lastCacheOffset)
+            {
+                int i = lastCacheOffset % CACHE_SIZE;
+                if (textureCache[i].isLoaded.get())
+                {
+                    textureCache[i].texture.recycle();
+                    textureCache[i].texture = null;
+                    textureCache[i].isLoaded.set(false);
+                }
+
+                lastCacheOffset += step;
+            }
+            cacheOffset.set(newCacheOffset);
+        }
+
+
+        Log.i(TAG, "scrollToIndex "+index+" cacheOffset"+cacheOffset.get());
     }
 
     private Bitmap getThumbnailByIndex(int index)
@@ -160,7 +192,7 @@ public class ThumbnailLoader
 
         if(rawHeight > rawWidth)
         {
-            matrixScale = (float)mSlotSize / (float)rawWidth;
+            matrixScale = (float)thumbnailDispSize / (float)rawWidth;
             x=0;
             w=rawWidth;
             y=(rawHeight-rawWidth)/2;
@@ -168,7 +200,7 @@ public class ThumbnailLoader
         }
         else
         {
-            matrixScale=(float)mSlotSize / (float)rawHeight;
+            matrixScale=(float)thumbnailDispSize / (float)rawHeight;
             y=0;
             h=rawHeight;
             x=(rawWidth-rawHeight)/2;
@@ -185,7 +217,7 @@ public class ThumbnailLoader
         matrix.postScale(matrixScale, matrixScale);
 
         /*
-        Log.i(TAG, "slot " + mSlotSize);
+        Log.i(TAG, "slot " + thumbnailDispSize);
         Log.i(TAG, "rawBitmap " + rawWidth + " " + rawHeight);
         Log.i(TAG, "thumbnail " + x + " " + y + " " + w + " " + h);
         Log.i(TAG, "matrixScale "+matrixScale);
@@ -202,29 +234,33 @@ public class ThumbnailLoader
     {
         private final static int CHECK_INTERVAL=500;
 
+        private int lastCacheOffset=0;
 
 
         public void run()
         {
             while(isLoaderRunning.get())
             {
-                int i=0;
-                for(int index=0; index<CACHE_SIZE; index++)
+                int curCacheOffset=cacheOffset.get();
+
+                int step=curCacheOffset>=lastCacheOffset?1:-1;
+
+                int startIndex=step==1?0:CACHE_SIZE-1;
+                for(int i=0; i<CACHE_SIZE; i++)
                 {
-                    if(!textureCache[i].isLoaded.get())
+                    if(!textureCache[startIndex].isLoaded.get())
                     {
-                        Bitmap bmp = getThumbnailByIndex(index);
+                        Bitmap bmp = getThumbnailByIndex(curCacheOffset+startIndex);
                         if(bmp!=null)
                         {
-                            textureCache[i].texture = new TiledTexture(bmp);
-                            textureCache[i].isLoaded.set(true);
+                            textureCache[startIndex].texture = new TiledTexture(bmp);
+                            textureCache[startIndex].isLoaded.set(true);
 
                             //Log.i(TAG, "mTextureUploader.addTexture "+i);
-                            mTextureUploader.addTexture(textureCache[i].texture);
-
-                            i++;
+                            mTextureUploader.addTexture(textureCache[startIndex].texture);
                         }
                     }
+                    startIndex+=step;
                 }
 
                 try
