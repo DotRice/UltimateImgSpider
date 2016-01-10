@@ -9,6 +9,7 @@ import android.os.Handler;
 
 import com.gk969.gallery.gallery3d.glrenderer.BitmapTexture;
 import com.gk969.UltimateImgSpider.SpiderService;
+import com.gk969.gallery.gallery3d.glrenderer.StringTexture;
 import com.gk969.gallery.gallery3d.glrenderer.Texture;
 import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
@@ -45,9 +46,10 @@ public class ThumbnailLoader
 {
     private static final String TAG = "ThumbnailLoader";
 
-    private final static int CACHE_SIZE=96;
+    private final static int CACHE_SIZE=64;
     //A circle cache
     private SlotTexture[] textureCache=new SlotTexture[CACHE_SIZE];
+    private AtomicInteger scrollStep=new AtomicInteger(1);
 
     private String projectPath;
 
@@ -57,16 +59,22 @@ public class ThumbnailLoader
     private float screenDensity;
 
     private int bestOffsetOfDispInCache;
-    private AtomicInteger cacheOffset=new AtomicInteger(0);
+    private int cacheOffset=0;
+    private AtomicInteger dispAreaOffset=new AtomicInteger(0);
 
     private AtomicBoolean isLoaderRunning=new AtomicBoolean(false);
     public AtomicInteger albumTotalImgNum=new AtomicInteger(500);
+
+    private int imgsInDispArea;
 
     private GLRootView mGLrootView;
 
     TextureLoaderThread mTextureLoaderThread;
 
     private TiledTexture.Uploader mTextureUploader;
+
+    private int infoTextFontSize=48;
+    private final static int INFO_TEXT_COLOR=0xFF00FF00;
 
     public ThumbnailLoader(String Path, GLRootView glRoot, float density)
     {
@@ -76,6 +84,9 @@ public class ThumbnailLoader
         for(int i=0; i<CACHE_SIZE; i++)
         {
             textureCache[i]=new SlotTexture();
+            textureCache[i].imgIndex=i;
+            textureCache[i].info=StringTexture.newInstance(String.valueOf(i), infoTextFontSize,
+                                                            INFO_TEXT_COLOR);
             textureCache[i].isLoaded=new AtomicBoolean(false);
         }
 
@@ -100,9 +111,10 @@ public class ThumbnailLoader
     public void init(int slotSize, int slotNum)
     {
         thumbnailDispSize=slotSize;
+        imgsInDispArea=slotNum;
         bestOffsetOfDispInCache=(CACHE_SIZE-slotNum)/2;
         TiledTexture.prepareResources();
-
+        Log.i(TAG, "slotNum "+slotNum);
         startLoader();
     }
 
@@ -118,7 +130,9 @@ public class ThumbnailLoader
 
     public class SlotTexture
     {
-        TiledTexture texture;
+        TiledTexture thumbnail;
+        StringTexture info;
+        int imgIndex;
         AtomicBoolean isLoaded;
     }
 
@@ -135,29 +149,48 @@ public class ThumbnailLoader
             newCacheOffset=cacheOffsetMax;
         }
 
-
-        int lastCacheOffset=cacheOffset.get();
-
-        if(newCacheOffset!=lastCacheOffset)
+        if(newCacheOffset != cacheOffset)
         {
-            int step = newCacheOffset > lastCacheOffset ? 1 : -1;
-            while (newCacheOffset != lastCacheOffset)
+            int interval=Math.abs(newCacheOffset-cacheOffset);
+            int step;
+            int imgIndex;
+            if (newCacheOffset > cacheOffset)
             {
-                int i = lastCacheOffset % CACHE_SIZE;
-                if (textureCache[i].isLoaded.get())
+                step = 1;
+                imgIndex=cacheOffset+CACHE_SIZE;
+            }
+            else
+            {
+                step=-1;
+                imgIndex=cacheOffset-1;
+            }
+
+            for(int i=0; i<interval; i++)
+            {
+                int cacheIndex = imgIndex % CACHE_SIZE;
+
+                //Log.i(TAG, "recycle cacheIndex:" + cacheIndex + " imgIndex:" + imgIndex);
+                if(textureCache[cacheIndex].thumbnail!=null)
                 {
-                    textureCache[i].texture.recycle();
-                    textureCache[i].texture = null;
-                    textureCache[i].isLoaded.set(false);
+                    textureCache[cacheIndex].thumbnail.recycle();
+                    textureCache[cacheIndex].thumbnail = null;
+                    textureCache[cacheIndex].info.recycle();
+                    textureCache[cacheIndex].info = null;
                 }
 
-                lastCacheOffset += step;
+                textureCache[cacheIndex].imgIndex = imgIndex;
+                textureCache[cacheIndex].isLoaded.set(false);
+
+                imgIndex += step;
             }
-            cacheOffset.set(newCacheOffset);
+
+            scrollStep.set(step);
+            cacheOffset=newCacheOffset;
         }
 
+        dispAreaOffset.set(index);
 
-        Log.i(TAG, "scrollToIndex "+index+" cacheOffset"+cacheOffset.get());
+        //Log.i(TAG, "scrollToIndex "+index+" cacheOffset "+cacheOffset);
     }
 
     private Bitmap getThumbnailByIndex(int index)
@@ -234,41 +267,72 @@ public class ThumbnailLoader
     {
         private final static int CHECK_INTERVAL=500;
 
-        private int lastCacheOffset=0;
+        private boolean isOffsetChangedInLoading()
+        {
+            int step=scrollStep.get();
+            int dispOffset=dispAreaOffset.get();
+            int imgIndexForLoader=(step==1)?dispOffset:(dispOffset+imgsInDispArea-1);
+            for(int i=0; i<CACHE_SIZE; i++)
+            {
+                int cacheIndex=imgIndexForLoader%CACHE_SIZE;
+                if(!textureCache[cacheIndex].isLoaded.get())
+                {
+                    mGLrootView.lockRenderThread();
+                    int imgIndex=textureCache[cacheIndex].imgIndex;
+                    mGLrootView.unlockRenderThread();
 
+                    Bitmap bmp = getThumbnailByIndex(imgIndex);
+                    if(bmp!=null)
+                    {
+                        mGLrootView.lockRenderThread();
+                        if(imgIndex==textureCache[cacheIndex].imgIndex)
+                        {
+                            textureCache[cacheIndex].thumbnail = new TiledTexture(bmp);
+                            textureCache[cacheIndex].info=StringTexture.newInstance(
+                                    String.valueOf(imgIndex), infoTextFontSize, INFO_TEXT_COLOR);
+                            textureCache[cacheIndex].isLoaded.set(true);
+                            //Log.i(TAG, "load  cacheIndex:" + cacheIndex + " imgIndex:" +
+                            //        textureCache[cacheIndex].imgIndex);
+                            mTextureUploader.addTexture(textureCache[cacheIndex].thumbnail);
+                        }
+                        else
+                        {
+                            Log.i(TAG, "offset changed");
+                        }
+
+                        mGLrootView.unlockRenderThread();
+                    }
+                }
+
+                if(dispAreaOffset.get()!=dispOffset)
+                {
+                    return true;
+                }
+
+                imgIndexForLoader+=step;
+                if(imgIndexForLoader<0)
+                {
+                    imgIndexForLoader=CACHE_SIZE-1;
+                }
+
+            }
+
+            return false;
+        }
 
         public void run()
         {
             while(isLoaderRunning.get())
             {
-                int curCacheOffset=cacheOffset.get();
-
-                int step=curCacheOffset>=lastCacheOffset?1:-1;
-
-                int startIndex=step==1?0:CACHE_SIZE-1;
-                for(int i=0; i<CACHE_SIZE; i++)
+                if(!isOffsetChangedInLoading())
                 {
-                    if(!textureCache[startIndex].isLoaded.get())
+                    try
                     {
-                        Bitmap bmp = getThumbnailByIndex(curCacheOffset+startIndex);
-                        if(bmp!=null)
-                        {
-                            textureCache[startIndex].texture = new TiledTexture(bmp);
-                            textureCache[startIndex].isLoaded.set(true);
-
-                            //Log.i(TAG, "mTextureUploader.addTexture "+i);
-                            mTextureUploader.addTexture(textureCache[startIndex].texture);
-                        }
+                        sleep(CHECK_INTERVAL);
+                    } catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
                     }
-                    startIndex+=step;
-                }
-
-                try
-                {
-                    sleep(CHECK_INTERVAL);
-                }catch (InterruptedException e)
-                {
-                    e.printStackTrace();
                 }
             }
         }

@@ -313,8 +313,6 @@ public class SpiderActivity extends Activity
         }
     }
 
-    private ImageView ivTest;
-    private int i;
     private void albumViewInit()
     {
         GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
@@ -323,16 +321,26 @@ public class SpiderActivity extends Activity
                 getResources().getDisplayMetrics().density);
         glRootView.setContentPane(new SlotView(this, mThumbnailLoader, glRootView));
 
-        /*
-        ivTest=(ImageView)findViewById(R.id.ivTest);
         new Thread(new Runnable()
         {
             @Override
             public void run()
             {
-                i=0;
                 while(true)
                 {
+                    mHandler.post(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            spiderLog.setText("Total:"
+                                    + MemoryInfo.getTotalMemInMb() + "M Free:"
+                                    + MemoryInfo.getFreeMemInMb(SpiderActivity.this)
+                                    + "M\r\nActivity VM:"+(Runtime.getRuntime().totalMemory() >> 10)
+                                    + "K Native:"+(Debug.getNativeHeapSize()>>10)+"K\r\n");
+                        }
+                    });
+
                     try
                     {
                         Thread.sleep(500);
@@ -340,21 +348,10 @@ public class SpiderActivity extends Activity
                     {
                         e.printStackTrace();
                     }
-
-                    mHandler.post(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            ivTest.setImageBitmap(mThumbnailLoader.bmpCache[i%96]);
-                        }
-                    });
-
-                    i++;
                 }
             }
         }).start();
-        */
+
     }
 
 

@@ -220,7 +220,8 @@ public class SlotView extends GLView
 
     private int getScrollDistanceMax()
     {
-        int scrollMax=mThumbnailLoader.albumTotalImgNum.get()/slotsPerRow*slotHeightWithGap-viewHeight;
+        int scrollMax=(mThumbnailLoader.albumTotalImgNum.get()+(slotsPerRow-1))/slotsPerRow
+                        *slotHeightWithGap-viewHeight;
         if(scrollMax<0)
         {
             scrollMax=0;
@@ -236,7 +237,7 @@ public class SlotView extends GLView
         {
             scrollDistance=(scrollDistance<0)?0:scrollMax;
             overScrollGapY-=dy/(Math.abs(overScrollGapY)+2)/4;
-            Log.i(TAG, "overScrollGapY "+overScrollGapY);
+            Log.i(TAG, "overScrollGapY " + overScrollGapY);
         }
         else if(overScrollGapY!=0)
         {
@@ -250,7 +251,8 @@ public class SlotView extends GLView
             }
         }
 
-        if(Math.abs(scrollDistance-scrollDistanceOverRow)>=slotHeightWithGap)
+        //Log.i(TAG, scrollDistance+" "+scrollDistanceOverRow+" "+slotHeightWithGap);
+        if(scrollDistance/slotHeightWithGap != scrollDistanceOverRow/slotHeightWithGap)
         {
             scrollDistanceOverRow=scrollDistance;
             mThumbnailLoader.dispAreaScrollToIndex(scrollDistance / slotHeightWithGap * slotsPerRow);
@@ -362,9 +364,10 @@ public class SlotView extends GLView
                     int slotLeft = leftIndex * slotHeightWithGap;
                     int slotTop = slotOffsetTop + topIndex * overScrollHeight;
 
-                    if (slotTexture.isLoaded.get() && slotTexture.texture.isReady())
+                    if (slotTexture.isLoaded.get() && slotTexture.thumbnail.isReady())
                     {
-                        slotTexture.texture.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
+                        slotTexture.thumbnail.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
+                        slotTexture.info.draw(canvas, slotLeft, slotTop);
                     }
                     else
                     {
