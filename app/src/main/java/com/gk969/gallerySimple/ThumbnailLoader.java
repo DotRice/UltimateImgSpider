@@ -63,7 +63,7 @@ public class ThumbnailLoader
     private AtomicInteger dispAreaOffset=new AtomicInteger(0);
 
     private AtomicBoolean isLoaderRunning=new AtomicBoolean(false);
-    public AtomicInteger albumTotalImgNum=new AtomicInteger(500);
+    public AtomicInteger albumTotalImgNum=new AtomicInteger(0);
 
     private int imgsInDispArea;
 
@@ -91,6 +91,11 @@ public class ThumbnailLoader
         }
 
         screenDensity=density;
+    }
+
+    public void setAlbumTotalImgNum(int totalImgNum)
+    {
+        albumTotalImgNum.set(totalImgNum);
     }
 
     public void startLoader()
@@ -140,6 +145,11 @@ public class ThumbnailLoader
     {
         int newCacheOffset=index-bestOffsetOfDispInCache;
         int cacheOffsetMax=albumTotalImgNum.get()-CACHE_SIZE;
+        if(cacheOffsetMax<0)
+        {
+            cacheOffsetMax=0;
+        }
+
         if(newCacheOffset<0)
         {
             newCacheOffset=0;

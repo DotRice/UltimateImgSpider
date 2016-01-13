@@ -194,12 +194,13 @@ public class SpiderActivity extends Activity
                         long freeMem = MemoryInfo.getFreeMemInMb(theActivity);
                         int serviceNativeMem = jsonReport.getInt("serviceNativeMem");
 
-
+                        /*
                         theActivity.spiderLog.setText("Total:"
                                 + MemoryInfo.getTotalMemInMb() + "M Free:" + freeMem
-                                + "M\r\nActivity vm:"+(Runtime.getRuntime().totalMemory() >> 20)
-                                + "M native:"+(Debug.getNativeHeapSize()>>20)+"M\r\n"
+                                + "M\r\nActivity VM:"+(Runtime.getRuntime().totalMemory() >> 10)
+                                + "K Native:"+(Debug.getNativeHeapSize()>>10)+"K\r\n"
                                 + jsonReportStr);
+                                */
 
                         if (jsonReport.getBoolean("siteScanCompleted"))
                         {
@@ -210,6 +211,9 @@ public class SpiderActivity extends Activity
                             theActivity.serviceState = theActivity.STATE_WAIT_DISCONNECT;
                             theActivity.sendCmdToSpiderService(CMD_RESTART);
                         }
+
+                        theActivity.mThumbnailLoader.setAlbumTotalImgNum(
+                                jsonReport.getInt("imgDownloadNum"));
                     }
                     catch (JSONException e)
                     {
@@ -292,7 +296,7 @@ public class SpiderActivity extends Activity
 
         getSrcUrlAndPath();
         serviceInterfaceInit();
-        //checkAndStart();
+        checkAndStart();
 
         albumViewInit();
     }
@@ -321,6 +325,7 @@ public class SpiderActivity extends Activity
                 getResources().getDisplayMetrics().density);
         glRootView.setContentPane(new SlotView(this, mThumbnailLoader, glRootView));
 
+        /*
         new Thread(new Runnable()
         {
             @Override
@@ -351,7 +356,7 @@ public class SpiderActivity extends Activity
                 }
             }
         }).start();
-
+        */
     }
 
 
