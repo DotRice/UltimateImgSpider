@@ -34,6 +34,9 @@
     <string name="stop">结束</string>
     <string name="newProj">新建</string>
     <string name="delete">删除</string>
+    <string name="deleting">删除中</string>
+    <string name="inDeletingToast">正在删除当前项目，请稍后...</string>
+    <string name="deletedToast">当前项目已删除</string>
     <string name="clear">清空</string>
     <string name="option">选项</string>
     <string name="prompt">提示</string>

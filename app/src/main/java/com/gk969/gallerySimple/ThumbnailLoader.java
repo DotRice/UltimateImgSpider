@@ -95,6 +95,23 @@ public class ThumbnailLoader
 
     public void setAlbumTotalImgNum(int totalImgNum)
     {
+        if(totalImgNum==0&&albumTotalImgNum.get()!=0)
+        {
+            mGLrootView.lockRenderThread();
+            for(SlotTexture slot:textureCache)
+            {
+                if(slot.thumbnail!=null)
+                {
+                    slot.thumbnail.recycle();
+                    slot.thumbnail = null;
+                    slot.info.recycle();
+                    slot.info = null;
+                }
+                slot.isLoaded.set(false);
+            }
+            mGLrootView.unlockRenderThread();
+            mGLrootView.requestRender();
+        }
         albumTotalImgNum.set(totalImgNum);
     }
 
@@ -215,10 +232,14 @@ public class ThumbnailLoader
         Bitmap rawBmp=null;
         for(String ext:IMG_FILE_EXT)
         {
-            rawBmp = BitmapFactory.decodeFile(fileName + ext, bmpOpts);
-            if(rawBmp!=null)
+            String fullName=fileName + ext;
+            if(new File(fullName).exists())
             {
-                break;
+                rawBmp = BitmapFactory.decodeFile(fullName, bmpOpts);
+                if (rawBmp != null)
+                {
+                    break;
+                }
             }
         }
 

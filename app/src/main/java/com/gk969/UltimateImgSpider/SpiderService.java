@@ -79,7 +79,7 @@ public class SpiderService extends Service
     private final static int                               STAT_STOP          = 4;
     
     private AtomicInteger                                  state              = new AtomicInteger(STAT_IDLE);
-    private AtomicInteger                                  cmd                = new AtomicInteger(SpiderActivity.CMD_NOTHING);
+    private AtomicInteger                                  cmd                = new AtomicInteger(StaticValue.CMD_NOTHING);
     
     private String                                         projectPath;
     private String projectCachePath;
@@ -144,7 +144,7 @@ public class SpiderService extends Service
                 {
                     watchdogService.registerCallback(watchdogCallback);
 
-                    sendCmdToWatchdog(SpiderActivity.CMD_START);
+                    sendCmdToWatchdog(StaticValue.CMD_START);
                 }
                 catch (RemoteException e)
                 {
@@ -178,6 +178,8 @@ public class SpiderService extends Service
             stopSelfAndWatchdog();
         }
 
+        reportSpiderLog();
+
         spiderInit();
     }
 
@@ -204,8 +206,8 @@ public class SpiderService extends Service
         watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
         
         Bundle bundle = new Bundle();
-        bundle.putInt(SpiderActivity.BUNDLE_KEY_CMD, cmd);
-        bundle.putString(SpiderActivity.BUNDLE_KEY_PRJ_PATH, projectPath);
+        bundle.putInt(StaticValue.BUNDLE_KEY_CMD, cmd);
+        bundle.putString(StaticValue.BUNDLE_KEY_PRJ_PATH, projectPath);
         watchdogIntent.putExtras(bundle);
         startService(watchdogIntent);
     }
@@ -234,11 +236,6 @@ public class SpiderService extends Service
             spider.destroy();
         }
 
-        if(cmd.get()==SpiderActivity.CMD_CLEAR)
-        {
-            sendCmdToWatchdog(SpiderActivity.CMD_CLEAR);
-        }
-
         System.exit(0);
     }
 
@@ -248,7 +245,7 @@ public class SpiderService extends Service
     {
         if (intent != null)
         {
-            String url = intent.getStringExtra(SpiderActivity.BUNDLE_KEY_SOURCE_URL);
+            String url = intent.getStringExtra(StaticValue.BUNDLE_KEY_SOURCE_URL);
             if (url != null)
             {
                 Log.i(TAG, "onStartCommand url:" + url);
@@ -289,24 +286,25 @@ public class SpiderService extends Service
                 }
             }
             
-            int cmdVal = intent.getIntExtra(SpiderActivity.BUNDLE_KEY_CMD,SpiderActivity.CMD_NOTHING);
+            int cmdVal = intent.getIntExtra(StaticValue.BUNDLE_KEY_CMD,StaticValue.CMD_NOTHING);
             Log.i(TAG, "onStartCommand:" + cmdVal+" state:"+state.get());
             
             cmd.set(cmdVal);
             switch (cmdVal)
             {
-                case SpiderActivity.CMD_CLEAR:
+                case StaticValue.CMD_JUST_STOP:
                     state.set(STAT_STOP);
+                    sendCmdToWatchdog(StaticValue.CMD_JUST_STOP);
                     stopSelf();
                 break;
 
-                case SpiderActivity.CMD_STOP_STORE:
+                case StaticValue.CMD_STOP_STORE:
                     state.set(STAT_STOP);
                     jniDataLock.lock();
-                    sendCmdToWatchdog(SpiderActivity.CMD_STOP_STORE);
+                    sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
                 break;
 
-                case SpiderActivity.CMD_CONTINUE:
+                case StaticValue.CMD_CONTINUE:
                     if (state.get() == STAT_PAUSE)
                     {
                         state.set(STAT_WORKING);
@@ -314,7 +312,7 @@ public class SpiderService extends Service
                     }
                 break;
 
-                case SpiderActivity.CMD_RESTART:
+                case StaticValue.CMD_RESTART:
                     if(state.get()==STAT_WORKING)
                     {
                         state.set(STAT_STOP);
@@ -354,7 +352,7 @@ public class SpiderService extends Service
                     }
                 break;
 
-                case SpiderActivity.CMD_PAUSE:
+                case StaticValue.CMD_PAUSE:
                     state.set(STAT_PAUSE);
                 break;
 
@@ -660,14 +658,7 @@ public class SpiderService extends Service
                         
                         downloadImgByUrl(imgUrl);
 
-                        spiderHandler.post(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                reportSpiderLog();
-                            }
-                        });
+                        reportSpiderLogByHandler();
                     }
                     else
                     {
@@ -841,6 +832,18 @@ public class SpiderService extends Service
                 }
             }
         }
+    }
+
+    private void reportSpiderLogByHandler()
+    {
+        spiderHandler.post(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                reportSpiderLog();
+            }
+        });
     }
 
     private void reportSpiderLog()
@@ -1101,14 +1104,7 @@ public class SpiderService extends Service
                 if(reportStatusTimer.getAndIncrement()==REPORT_STATUS_MAX_INTVAL)
                 {
                     reportStatusTimer.set(0);
-                    spiderHandler.post(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            reportSpiderLog();
-                        }
-                    });
+                    reportSpiderLogByHandler();
                 }
 
                 // Log.i(TAG, "Timer");

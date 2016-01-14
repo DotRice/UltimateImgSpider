@@ -193,12 +193,15 @@
     <string name="defaultHomeUrl">http://www.baidu.com/</string>
     <string name="defaultUserAgent">Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36</string>
     <string name="delete">删除</string>
+    <string name="deletedToast">当前项目已删除</string>
+    <string name="deleting">删除中</string>
     <string name="enter">进入</string>
     <string name="exit">退出</string>
     <string name="forward">前进</string>
     <string name="goOn">继续</string>
     <string name="help">帮助</string>
     <string name="home">主页</string>
+    <string name="inDeletingToast">正在删除当前项目，请稍后...</string>
     <string name="keyBackExitConfirm">再按一次返回键，退出</string>
     <string name="menu">菜单</string>
     <string name="more">更多</string>

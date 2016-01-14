@@ -137,35 +137,28 @@ public class WatchdogService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        int cmdVal = intent.getIntExtra(SpiderActivity.BUNDLE_KEY_CMD, SpiderActivity.CMD_NOTHING);
-        String path = intent.getStringExtra(SpiderActivity.BUNDLE_KEY_PRJ_PATH);
+        int cmdVal = intent.getIntExtra(StaticValue.BUNDLE_KEY_CMD, StaticValue.CMD_NOTHING);
+        String path = intent.getStringExtra(StaticValue.BUNDLE_KEY_PRJ_PATH);
 
         Log.i(TAG, "onStartCommand:" + cmdVal + " path:" + path);
 
         switch (cmdVal)
         {
-            case SpiderActivity.CMD_START:
+            case StaticValue.CMD_START:
             {
                 projectPathRecved(path);
                 break;
             }
 
-            case SpiderActivity.CMD_STOP_STORE:
+            case StaticValue.CMD_STOP_STORE:
             {
                 storeProjectData();
                 stopSelf();
                 break;
             }
 
-            case SpiderActivity.CMD_CLEAR:
+            case StaticValue.CMD_JUST_STOP:
             {
-                if(projectPath!=null)
-                {
-                    if (new File(projectPath).exists())
-                    {
-                        Utils.deleteDir(projectPath);
-                    }
-                }
                 stopSelf();
                 break;
             }

@@ -61,12 +61,17 @@ public class Utils
         return false;
     }
 
-    public static void deleteDir(String dirPath)
+    public static boolean deleteDir(String dirPath)
     {
+        if(dirPath==null)
+        {
+            return false;
+        }
+
         File dirFile = new File(dirPath);
         if (!dirFile.exists() || !dirFile.isDirectory())
         {
-            return;
+            return false;
         }
 
         File[] files = dirFile.listFiles();
@@ -74,14 +79,20 @@ public class Utils
         {
             if (file.isFile())
             {
-                file.delete();
+                if(!file.delete())
+                {
+                    return false;
+                }
             } else
             {
-                deleteDir(file.getAbsolutePath());
+                if(!deleteDir(file.getAbsolutePath()))
+                {
+                    return false;
+                }
             }
         }
 
-        dirFile.delete();
+        return dirFile.delete();
     }
 
     public static String byteArrayToHexString(byte[] arrayIn)

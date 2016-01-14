@@ -794,7 +794,7 @@ public class SelSrcActivity extends Activity
         String srcUrl = browser.getUrl();
         
         Bundle bundle = new Bundle();
-        bundle.putString(SpiderActivity.BUNDLE_KEY_SOURCE_URL, srcUrl);
+        bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, srcUrl);
         intent.putExtras(bundle);
         
         startActivity(intent);
