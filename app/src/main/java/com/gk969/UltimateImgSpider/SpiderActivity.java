@@ -206,7 +206,7 @@ public class SpiderActivity extends Activity
                         JSONObject jsonReport = new JSONObject(jsonReportStr);
 
                         long freeMem = MemoryInfo.getFreeMemInMb(theActivity);
-                        int serviceNativeMem = jsonReport.getInt("serviceNativeMem");
+                        int serviceNativeMem = jsonReport.getInt("serviceNativeMem")>>10;
 
                         /**/
                         theActivity.spiderLog.setText("Total:"
@@ -220,7 +220,7 @@ public class SpiderActivity extends Activity
                         {
                             theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
                         }
-                        else if (freeMem < 50 || serviceNativeMem > 100)
+                        else if (freeMem < 50 || serviceNativeMem > 50)
                         {
                             theActivity.serviceState = theActivity.STATE_WAIT_DISCONNECT;
                             theActivity.sendCmdToSpiderService(StaticValue.CMD_RESTART);

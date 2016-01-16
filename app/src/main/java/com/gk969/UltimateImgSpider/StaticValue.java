@@ -14,4 +14,6 @@ public class StaticValue
     public final static int  CMD_STOP_STORE        = 5;
     public final static int  CMD_START             = 6;
 
+    public final static String THUMBNAIL_DIR_NAME="thumbnail";
+
 }

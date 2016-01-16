@@ -7,6 +7,7 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.os.Handler;
 
+import com.gk969.UltimateImgSpider.StaticValue;
 import com.gk969.gallery.gallery3d.glrenderer.BitmapTexture;
 import com.gk969.UltimateImgSpider.SpiderService;
 import com.gk969.gallery.gallery3d.glrenderer.StringTexture;
@@ -95,22 +96,25 @@ public class ThumbnailLoader
 
     public void setAlbumTotalImgNum(int totalImgNum)
     {
-        if(totalImgNum==0&&albumTotalImgNum.get()!=0)
+        if(totalImgNum==0)
         {
-            mGLrootView.lockRenderThread();
-            for(SlotTexture slot:textureCache)
+            if(albumTotalImgNum.get()!=0)
             {
-                if(slot.thumbnail!=null)
+                mGLrootView.lockRenderThread();
+                for (SlotTexture slot : textureCache)
                 {
-                    slot.thumbnail.recycle();
-                    slot.thumbnail = null;
-                    slot.info.recycle();
-                    slot.info = null;
+                    if (slot.thumbnail != null)
+                    {
+                        slot.thumbnail.recycle();
+                        slot.thumbnail = null;
+                        slot.info.recycle();
+                        slot.info = null;
+                    }
+                    slot.isLoaded.set(false);
                 }
-                slot.isLoaded.set(false);
+                mGLrootView.unlockRenderThread();
+                mGLrootView.requestRender();
             }
-            mGLrootView.unlockRenderThread();
-            mGLrootView.requestRender();
         }
         albumTotalImgNum.set(totalImgNum);
     }
@@ -220,12 +224,8 @@ public class ThumbnailLoader
         //Log.i(TAG, "scrollToIndex "+index+" cacheOffset "+cacheOffset);
     }
 
-    private Bitmap getThumbnailByIndex(int index)
+    private Bitmap getThumbnailByFileName(String fileName)
     {
-        String fileName=String.format("%s%d/%03d.", projectPath,
-                index/SpiderService.MAX_IMG_FILE_PER_DIR,
-                index%SpiderService.MAX_IMG_FILE_PER_DIR);
-
         BitmapFactory.Options bmpOpts=new BitmapFactory.Options();
         bmpOpts.inPreferredConfig=Bitmap.Config.RGB_565;
 
@@ -251,12 +251,10 @@ public class ThumbnailLoader
         int rawWidth = rawBmp.getWidth();
         int rawHeight = rawBmp.getHeight();
         int x,y,w,h;
-        float matrixScale=0;
 
 
         if(rawHeight > rawWidth)
         {
-            matrixScale = (float)thumbnailDispSize / (float)rawWidth;
             x=0;
             w=rawWidth;
             y=(rawHeight-rawWidth)/2;
@@ -264,33 +262,43 @@ public class ThumbnailLoader
         }
         else
         {
-            matrixScale=(float)thumbnailDispSize / (float)rawHeight;
             y=0;
             h=rawHeight;
             x=(rawWidth-rawHeight)/2;
             w=rawHeight;
         }
 
-        matrixScale/=screenDensity;
-
         //Log.i(TAG, "matrixScale "+matrixScale);
-
-
-
-        Matrix matrix = new Matrix();
-        matrix.postScale(matrixScale, matrixScale);
 
         /*
         Log.i(TAG, "slot " + thumbnailDispSize);
         Log.i(TAG, "rawBitmap " + rawWidth + " " + rawHeight);
         Log.i(TAG, "thumbnail " + x + " " + y + " " + w + " " + h);
-        Log.i(TAG, "matrixScale "+matrixScale);
         */
 
-        Bitmap thumbnail = Bitmap.createBitmap(rawBmp, x, y, w, h, matrix, true);
+        Bitmap thumbnail = Bitmap.createBitmap(rawBmp, x, y, w, h);
         rawBmp.recycle();
 
         //Log.i(TAG, "thumbnail bmp " + thumbnail.getWidth() + " " + thumbnail.getHeight());
+        return thumbnail;
+    }
+
+    private Bitmap getThumbnailByIndex(int index)
+    {
+        int group=index/SpiderService.MAX_IMG_FILE_PER_DIR;
+        int offset=index%SpiderService.MAX_IMG_FILE_PER_DIR;
+
+        Bitmap thumbnail=getThumbnailByFileName(String.format("%s%s/%d/%03d.", projectPath,
+                                                StaticValue.THUMBNAIL_DIR_NAME, group, offset));
+        if(thumbnail==null)
+        {
+            thumbnail = getThumbnailByFileName(String.format("%s%d/%03d.", projectPath, group, offset));
+        }
+        else
+        {
+            Log.i(TAG, "get thumbnail from thumbnail dir "+index);
+        }
+
         return thumbnail;
     }
 

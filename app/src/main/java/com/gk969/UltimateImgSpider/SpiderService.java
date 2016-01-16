@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +41,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.TrafficStats;
 import android.os.Bundle;
 import android.os.Debug;
@@ -340,6 +342,7 @@ public class SpiderService extends Service
                                     @Override
                                     public void run()
                                     {
+                                        Log.i(TAG, "stopSelf");
                                         stopSelf();
                                     }
                                 });
@@ -522,7 +525,14 @@ public class SpiderService extends Service
         private final static int IMG_VALID_FILE_MIN   = 512 * 1024;
         private final static int IMG_VALID_WIDTH_MIN  = 200;
         private final static int IMG_VALID_HEIGHT_MIN = 200;
-        
+
+        private final static int NEED_THUMBNAIL_WIDTH_MIN  = 500;
+        private final static int NEED_THUMBNAIL_HEIGHT_MIN  = 500;
+
+        private final static int THUMBNAIL_SIZE = 300;
+        private final static String THUMBNAIL_FILE_EXT=".jpg";
+
+
         private final static int IMG_DOWNLOAD_BLOCK   = 16 * 1024;
         
         private final static int REDIRECT_MAX         = 5;
@@ -546,58 +556,6 @@ public class SpiderService extends Service
                 }
             }
         }
-        
-
-        private File newImgDownloadCacheFile(String imgUrl)
-        {
-            String newFileExt=imgUrl.substring(imgUrl.lastIndexOf(".")) + CACHE_MARK;
-
-            long cacheRandIndex=new Random(SystemClock.currentThreadTimeMillis()).nextInt();
-            File cacheFile;
-
-            imgFileLock.lock();
-            do
-            {
-                cacheFile = new File(projectCachePath+cacheRandIndex+newFileExt);
-                cacheRandIndex++;
-            }while(cacheFile.exists());
-            imgFileLock.unlock();
-            
-            Log.i(TAG, "cache file" + cacheFile.getPath());
-
-            return cacheFile;
-        }
-        
-        private void moveToImgDirAfterDownload(File file)
-        {
-            String cacheFilePath=file.getPath();
-            String cacheFileWithoutMark=cacheFilePath.substring(0, cacheFilePath.length() - CACHE_MARK.length());
-            String imgFileExt=cacheFileWithoutMark.substring(cacheFileWithoutMark.lastIndexOf("."));
-
-            imgFileLock.lock();
-
-            String dirPath=projectPath+"/"+imgIndex/MAX_IMG_FILE_PER_DIR;
-            File dir=new File(dirPath);
-            if(!dir.exists())
-            {
-                dir.mkdir();
-            }
-
-            String newPath=dirPath+"/"+String.format("%03d", imgIndex%MAX_IMG_FILE_PER_DIR)+imgFileExt;
-
-            Log.i(TAG, "cache file " + cacheFilePath);
-            Log.i(TAG, "final file " + newPath);
-
-            imgIndex++;
-
-            if(!file.renameTo(new File(newPath)))
-            {
-                Log.i("rename fail", newPath);
-            }
-
-            imgFileLock.unlock();
-        }
-        
         
         class DownloaderThread extends Thread
         {
@@ -629,7 +587,7 @@ public class SpiderService extends Service
 
             public void run()
             {
-                Log.i(TAG, "thread "+threadIndex+" start");
+                Log.i(TAG, "thread " + threadIndex + " start");
                 while (true)
                 {
                     pageProcessLock.waitIfLocked();
@@ -683,7 +641,118 @@ public class SpiderService extends Service
                     }
                 }
 
-                Log.i(TAG, "thread "+threadIndex+" stop");
+                Log.i(TAG, "thread " + threadIndex + " stop");
+            }
+
+            private File newImgDownloadCacheFile(String imgUrl)
+            {
+                String newFileExt=imgUrl.substring(imgUrl.lastIndexOf(".")) + CACHE_MARK;
+
+                long cacheRandIndex=new Random(SystemClock.currentThreadTimeMillis()).nextInt();
+                File cacheFile;
+
+                imgFileLock.lock();
+                do
+                {
+                    cacheFile = new File(projectCachePath+cacheRandIndex+newFileExt);
+                    cacheRandIndex++;
+                }while(cacheFile.exists());
+                imgFileLock.unlock();
+
+                Log.i(TAG, "cache file" + cacheFile.getPath());
+
+                return cacheFile;
+            }
+
+            private void moveToImgDirAfterDownload(File file, boolean needThumbNail)
+            {
+                String cacheFilePath=file.getPath();
+                String cacheFileWithoutMark=cacheFilePath.substring(0, cacheFilePath.length() - CACHE_MARK.length());
+                String imgFileExt=cacheFileWithoutMark.substring(cacheFileWithoutMark.lastIndexOf("."));
+
+                imgFileLock.lock();
+
+                String dirPath=projectPath+"/"+imgIndex/MAX_IMG_FILE_PER_DIR;
+                File dir=new File(dirPath);
+                if(!dir.exists())
+                {
+                    dir.mkdir();
+                }
+
+                String newName=String.format("%03d", imgIndex%MAX_IMG_FILE_PER_DIR);
+                String newPath=dirPath+"/"+newName+imgFileExt;
+
+                Log.i(TAG, "cache file " + cacheFilePath);
+                Log.i(TAG, "final file " + newPath);
+
+                imgIndex++;
+
+                File finalFile=new File(newPath);
+                File thumbnailFile=null;
+                if(file.renameTo(finalFile))
+                {
+                    if(needThumbNail)
+                    {
+                        String thumbnailDirPath=projectPath+"/"+StaticValue.THUMBNAIL_DIR_NAME+"/"+
+                                imgIndex/MAX_IMG_FILE_PER_DIR;
+                        File thumbnailDir=new File(thumbnailDirPath);
+                        if(!thumbnailDir.exists())
+                        {
+                            thumbnailDir.mkdirs();
+                        }
+
+                        thumbnailFile=new File(thumbnailDirPath+"/"+newName+THUMBNAIL_FILE_EXT);
+                    }
+                }
+                else
+                {
+                    Log.i("rename fail", newPath);
+                }
+
+                imgFileLock.unlock();
+
+                if(thumbnailFile!=null)
+                {
+                    creatThumbnail(finalFile, thumbnailFile);
+                }
+            }
+
+            private void creatThumbnail(File rawFile, File thumbnailFile)
+            {
+                Bitmap rawBmp=BitmapFactory.decodeFile(rawFile.getPath());
+
+                if(rawBmp!=null)
+                {
+                    float rawWidth=rawBmp.getWidth();
+                    float rawHeight=rawBmp.getHeight();
+                    float scale=(rawWidth>rawHeight)?THUMBNAIL_SIZE/rawHeight:THUMBNAIL_SIZE/rawWidth;
+
+
+                    Matrix matrix = new Matrix();
+                    matrix.postScale(scale, scale);
+
+                    Bitmap thumbnail = Bitmap.createBitmap(rawBmp, 0, 0, (int)rawWidth, (int)rawHeight,
+                            matrix, true);
+                    rawBmp.recycle();
+
+                    FileOutputStream fileOut= null;
+                    try
+                    {
+                        fileOut = new FileOutputStream(thumbnailFile);
+                        thumbnail.compress(Bitmap.CompressFormat.JPEG, 80, fileOut);
+                        fileOut.flush();
+                        fileOut.close();
+                    } catch (FileNotFoundException e)
+                    {
+                        e.printStackTrace();
+                    } catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    thumbnail.recycle();
+                }
+
             }
 
             private void recvImgDataLoop(InputStream input, String url) throws IOException
@@ -691,7 +760,8 @@ public class SpiderService extends Service
                 int totalLen = 0;
                 int cacheUsege=0;
                 File imgFile=null;
-                OutputStream output = null;
+                boolean needCreatThumbNail=false;
+                FileOutputStream output = null;
 
                 try
                 {
@@ -740,11 +810,18 @@ public class SpiderService extends Service
                             imgFile=newImgDownloadCacheFile(url);
                             output = new FileOutputStream(imgFile);
                             output.write(cacheBuf, 0, totalLen);
+
+                            if(opts.outHeight > NEED_THUMBNAIL_WIDTH_MIN ||
+                                    opts.outHeight > NEED_THUMBNAIL_HEIGHT_MIN)
+                            {
+                                needCreatThumbNail=true;
+                            }
                         }
                     }
                     else
                     {
                         output.write(cacheBuf, 0, cacheUsege);
+                        needCreatThumbNail=true;
                     }
                 }
                 finally
@@ -757,7 +834,7 @@ public class SpiderService extends Service
 
                 if(imgFile!=null)
                 {
-                    moveToImgDirAfterDownload(imgFile);
+                    moveToImgDirAfterDownload(imgFile, needCreatThumbNail);
 
                     jniDataLock.lock();
                     jniSaveImgStorageInfo((int)imgUrlJniAddr, (int)containerUrlJniAddr, imgProcParam);
@@ -854,8 +931,8 @@ public class SpiderService extends Service
         String jsonReportStr="{\r\n";
 
 
-        jsonReportStr+="\"serviceVmMem\":" + (Runtime.getRuntime().totalMemory() >> 20)+",\r\n";
-        jsonReportStr+="\"serviceNativeMem\":" + (Debug.getNativeHeapSize() >> 20)+",\r\n";
+        jsonReportStr+="\"serviceVmMem\":" + (Runtime.getRuntime().totalMemory() >> 10)+",\r\n";
+        jsonReportStr+="\"serviceNativeMem\":" + (Debug.getNativeHeapSize() >> 10)+",\r\n";
 
         jsonReportStr+="\"imgDownloaderPayload\":" + imgProcParam[PARA_PAYLOAD]+",\r\n";
         jsonReportStr+="\"imgDownloadNum\":" + imgProcParam[PARA_DOWNLOAD]+",\r\n";
