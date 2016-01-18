@@ -335,8 +335,7 @@ public class SpiderActivity extends Activity
     {
         GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
 
-        mThumbnailLoader=new ThumbnailLoader(projectPath, glRootView,
-                getResources().getDisplayMetrics().density);
+        mThumbnailLoader=new ThumbnailLoader(projectPath, glRootView);
         glRootView.setContentPane(new SlotView(this, mThumbnailLoader, glRootView));
 
         /*

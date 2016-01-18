@@ -70,7 +70,6 @@ import org.json.JSONObject;
 public class SpiderService extends Service
 {
     private final String                                   TAG                = "SpiderService";
-    public static final int   MAX_IMG_FILE_PER_DIR=500;
 
     final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks         = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
 
@@ -318,6 +317,7 @@ public class SpiderService extends Service
                     if(state.get()==STAT_WORKING)
                     {
                         state.set(STAT_STOP);
+
                         if (urlLoadTimer.get() != 0)
                         {
                             spider.stopLoading();
@@ -325,7 +325,7 @@ public class SpiderService extends Service
                         }
 
 
-                        //Prevent locks block service main thread
+                        //Prevent locks block main thread of service
                         new Thread(new Runnable()
                         {
                             @Override
@@ -494,10 +494,7 @@ public class SpiderService extends Service
     private native String stringFromJNI(String srcStr);
     
     private native boolean jniSpiderInit(int[] imgPara, int[] pagePara);
-    
-    private static final int JNI_OPERATE_GET = 0;
-    private static final int JNI_OPERATE_ADD = 1;
-    
+
     private native void jniAddUrl(String url, byte[] md5, int type, int[] param);
 
     private native String jniFindNextPageUrl(int[] param);
@@ -526,10 +523,7 @@ public class SpiderService extends Service
         private final static int IMG_VALID_WIDTH_MIN  = 200;
         private final static int IMG_VALID_HEIGHT_MIN = 200;
 
-        private final static int NEED_THUMBNAIL_WIDTH_MIN  = 500;
-        private final static int NEED_THUMBNAIL_HEIGHT_MIN  = 500;
 
-        private final static int THUMBNAIL_SIZE = 300;
         private final static String THUMBNAIL_FILE_EXT=".jpg";
 
 
@@ -664,7 +658,7 @@ public class SpiderService extends Service
                 return cacheFile;
             }
 
-            private void moveToImgDirAfterDownload(File file, boolean needThumbNail)
+            private void moveToImgDirAfterDownload(File file)
             {
                 String cacheFilePath=file.getPath();
                 String cacheFileWithoutMark=cacheFilePath.substring(0, cacheFilePath.length() - CACHE_MARK.length());
@@ -672,14 +666,14 @@ public class SpiderService extends Service
 
                 imgFileLock.lock();
 
-                String dirPath=projectPath+"/"+imgIndex/MAX_IMG_FILE_PER_DIR;
+                String dirPath=projectPath+"/"+imgIndex/StaticValue.MAX_IMG_FILE_PER_DIR;
                 File dir=new File(dirPath);
                 if(!dir.exists())
                 {
                     dir.mkdir();
                 }
 
-                String newName=String.format("%03d", imgIndex%MAX_IMG_FILE_PER_DIR);
+                String newName=String.format("%03d", imgIndex%StaticValue.MAX_IMG_FILE_PER_DIR);
                 String newPath=dirPath+"/"+newName+imgFileExt;
 
                 Log.i(TAG, "cache file " + cacheFilePath);
@@ -691,18 +685,15 @@ public class SpiderService extends Service
                 File thumbnailFile=null;
                 if(file.renameTo(finalFile))
                 {
-                    if(needThumbNail)
+                    String thumbnailDirPath=projectPath+"/"+StaticValue.THUMBNAIL_DIR_NAME+"/"+
+                            imgIndex/StaticValue.MAX_IMG_FILE_PER_DIR;
+                    File thumbnailDir=new File(thumbnailDirPath);
+                    if(!thumbnailDir.exists())
                     {
-                        String thumbnailDirPath=projectPath+"/"+StaticValue.THUMBNAIL_DIR_NAME+"/"+
-                                imgIndex/MAX_IMG_FILE_PER_DIR;
-                        File thumbnailDir=new File(thumbnailDirPath);
-                        if(!thumbnailDir.exists())
-                        {
-                            thumbnailDir.mkdirs();
-                        }
-
-                        thumbnailFile=new File(thumbnailDirPath+"/"+newName+THUMBNAIL_FILE_EXT);
+                        thumbnailDir.mkdirs();
                     }
+
+                    thumbnailFile=new File(thumbnailDirPath+"/"+newName+THUMBNAIL_FILE_EXT);
                 }
                 else
                 {
@@ -723,23 +714,41 @@ public class SpiderService extends Service
 
                 if(rawBmp!=null)
                 {
-                    float rawWidth=rawBmp.getWidth();
-                    float rawHeight=rawBmp.getHeight();
-                    float scale=(rawWidth>rawHeight)?THUMBNAIL_SIZE/rawHeight:THUMBNAIL_SIZE/rawWidth;
+                    int rawWidth=rawBmp.getWidth();
+                    int rawHeight=rawBmp.getHeight();
+                    float scale;
 
+                    int x,y,w,h;
+
+
+                    if(rawHeight > rawWidth)
+                    {
+                        x=0;
+                        w=rawWidth;
+                        y=(rawHeight-rawWidth)/2;
+                        h=rawWidth;
+                        scale=StaticValue.THUMBNAIL_SIZE/(float)rawWidth;
+                    }
+                    else
+                    {
+                        y=0;
+                        h=rawHeight;
+                        x=(rawWidth-rawHeight)/2;
+                        w=rawHeight;
+                        scale=StaticValue.THUMBNAIL_SIZE/(float)rawHeight;
+                    }
 
                     Matrix matrix = new Matrix();
                     matrix.postScale(scale, scale);
 
-                    Bitmap thumbnail = Bitmap.createBitmap(rawBmp, 0, 0, (int)rawWidth, (int)rawHeight,
-                            matrix, true);
+                    Bitmap thumbnail = Bitmap.createBitmap(rawBmp, x, y, w, h, matrix, true);
                     rawBmp.recycle();
 
                     FileOutputStream fileOut= null;
                     try
                     {
                         fileOut = new FileOutputStream(thumbnailFile);
-                        thumbnail.compress(Bitmap.CompressFormat.JPEG, 80, fileOut);
+                        thumbnail.compress(Bitmap.CompressFormat.JPEG, 90, fileOut);
                         fileOut.flush();
                         fileOut.close();
                     } catch (FileNotFoundException e)
@@ -760,7 +769,6 @@ public class SpiderService extends Service
                 int totalLen = 0;
                 int cacheUsege=0;
                 File imgFile=null;
-                boolean needCreatThumbNail=false;
                 FileOutputStream output = null;
 
                 try
@@ -810,18 +818,11 @@ public class SpiderService extends Service
                             imgFile=newImgDownloadCacheFile(url);
                             output = new FileOutputStream(imgFile);
                             output.write(cacheBuf, 0, totalLen);
-
-                            if(opts.outHeight > NEED_THUMBNAIL_WIDTH_MIN ||
-                                    opts.outHeight > NEED_THUMBNAIL_HEIGHT_MIN)
-                            {
-                                needCreatThumbNail=true;
-                            }
                         }
                     }
                     else
                     {
                         output.write(cacheBuf, 0, cacheUsege);
-                        needCreatThumbNail=true;
                     }
                 }
                 finally
@@ -834,7 +835,7 @@ public class SpiderService extends Service
 
                 if(imgFile!=null)
                 {
-                    moveToImgDirAfterDownload(imgFile, needCreatThumbNail);
+                    moveToImgDirAfterDownload(imgFile);
 
                     jniDataLock.lock();
                     jniSaveImgStorageInfo((int)imgUrlJniAddr, (int)containerUrlJniAddr, imgProcParam);

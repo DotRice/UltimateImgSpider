@@ -190,7 +190,7 @@ public class SlotView extends GLView
 
         slotHeightWithGap=slotSize+slotGap;
         slotRowsInView=viewHeight/slotHeightWithGap + 2;
-        mThumbnailLoader.init(slotSize, slotRowsInView * slotsPerRow);
+        mThumbnailLoader.init(slotRowsInView * slotsPerRow);
     }
 
     private void stopAnimation()
@@ -364,9 +364,9 @@ public class SlotView extends GLView
                     int slotLeft = leftIndex * slotHeightWithGap;
                     int slotTop = slotOffsetTop + topIndex * overScrollHeight;
 
-                    if (slotTexture.isLoaded.get() && slotTexture.thumbnail.isReady())
+                    if (slotTexture.isReady.get() && slotTexture.texture.isReady())
                     {
-                        slotTexture.thumbnail.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
+                        slotTexture.texture.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
                         slotTexture.info.draw(canvas, slotLeft, slotTop);
                     }
                     else
