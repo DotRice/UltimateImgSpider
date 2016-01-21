@@ -237,7 +237,7 @@ public class SlotView extends GLView
         {
             scrollDistance=(scrollDistance<0)?0:scrollMax;
             overScrollGapY-=dy/(Math.abs(overScrollGapY)+2)/4;
-            Log.i(TAG, "overScrollGapY " + overScrollGapY);
+            //Log.i(TAG, "overScrollGapY " + overScrollGapY);
         }
         else if(overScrollGapY!=0)
         {

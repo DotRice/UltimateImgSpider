@@ -127,7 +127,6 @@ public class SpiderActivity extends Activity
                 {
                     mHandler.postDelayed(new Runnable()
                     {
-
                         @Override
                         public void run()
                         {
@@ -141,27 +140,29 @@ public class SpiderActivity extends Activity
                     serviceState = STATE_DISCONNECTED;
 
                     if(inDeleting)
-                    new Thread(new Runnable()
                     {
-                        @Override
-                        public void run()
+                        new Thread(new Runnable()
                         {
-                            Utils.deleteDir(projectPath);
-                            mHandler.post(new Runnable()
+                            @Override
+                            public void run()
                             {
-                                @Override
-                                public void run()
+                                Utils.deleteDir(projectPath);
+                                mHandler.post(new Runnable()
                                 {
-                                    btPauseOrContinue.changeView(R.drawable.start, R.string.start);
-                                    btClear.changeView(R.drawable.delete, R.string.delete);
-                                    Toast.makeText(SpiderActivity.this, R.string.deletedToast,
-                                            Toast.LENGTH_SHORT).show();
-                                    mThumbnailLoader.setAlbumTotalImgNum(0);
-                                    inDeleting=false;
-                                }
-                            });
-                        }
-                    }).start();
+                                    @Override
+                                    public void run()
+                                    {
+                                        btPauseOrContinue.changeView(R.drawable.start, R.string.start);
+                                        btClear.changeView(R.drawable.delete, R.string.delete);
+                                        Toast.makeText(SpiderActivity.this, R.string.deletedToast,
+                                                Toast.LENGTH_SHORT).show();
+                                        mThumbnailLoader.setAlbumTotalImgNum(0);
+                                        inDeleting = false;
+                                    }
+                                });
+                            }
+                        }).start();
+                    }
                 }
             }
         };
@@ -194,10 +195,15 @@ public class SpiderActivity extends Activity
         @Override
         public void handleMessage(Message msg)
         {
-            SpiderActivity theActivity = mActivity.get();
+            final SpiderActivity theActivity = mActivity.get();
             switch (msg.what)
             {
                 case BUMP_MSG:
+                    if(theActivity==null)
+                    {
+                        break;
+                    }
+
                     String jsonReportStr = (String) msg.obj;
 
                     //Log.i(SpiderActivity.TAG, jsonReportStr);
@@ -220,10 +226,11 @@ public class SpiderActivity extends Activity
                         {
                             theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
                         }
-                        else if (freeMem < 50 || serviceNativeMem > 50)
+                        else if (freeMem < 50 || serviceNativeMem > 5)
                         {
                             theActivity.serviceState = theActivity.STATE_WAIT_DISCONNECT;
                             theActivity.sendCmdToSpiderService(StaticValue.CMD_RESTART);
+
                         }
 
                         theActivity.mThumbnailLoader.setAlbumTotalImgNum(
@@ -460,8 +467,8 @@ public class SpiderActivity extends Activity
     {
         if (serviceState != STATE_DISCONNECTED)
         {
+            unbindSpiderService();
             sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
-            unboundSpiderService();
             serviceState = STATE_DISCONNECTED;
         }
     }
@@ -477,7 +484,7 @@ public class SpiderActivity extends Activity
         Log.i(TAG, "onDestroy");
         mThumbnailLoader.stopLoader();
         handleSpiderServiceOnFinish();
-        System.exit(0);
+        //System.exit(0);
     }
 
     // 返回至SelSrcActivity
@@ -609,7 +616,7 @@ public class SpiderActivity extends Activity
 
 
 
-    private void unboundSpiderService()
+    private void unbindSpiderService()
     {
         // If we have received the service, and hence registered with
         // it, then now is the time to unregister.
@@ -626,12 +633,18 @@ public class SpiderActivity extends Activity
             }
 
             // Detach our existing connection.
-            unbindService(mConnection);
-            Log.i(TAG, "unbound SpiderService");
+
+            if(seviceBindSuccess)
+            {
+                unbindService(mConnection);
+                Log.i(TAG, "unbind SpiderService");
+                seviceBindSuccess=false;
+            }
         }
 
     }
 
+    boolean seviceBindSuccess=false;
     private void startAndBindSpiderService(String src)
     {
         Log.i(TAG, "startAndBindSpiderService src:" + src);
@@ -645,7 +658,7 @@ public class SpiderActivity extends Activity
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
 
-        bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
+        seviceBindSuccess=bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
     }
 
     private void sendCmdToSpiderService(int cmd)
@@ -665,9 +678,8 @@ public class SpiderActivity extends Activity
     {
         super.onConfigurationChanged(newConfig);
 
-        Log.i(TAG,
-                (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) ? "Landscape"
-                        : "Portrait");
+        Log.i(TAG,(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) ?
+                "Landscape" : "Portrait");
     }
 
     private long exitTim = 0;

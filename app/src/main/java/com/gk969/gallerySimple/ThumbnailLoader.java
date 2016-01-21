@@ -143,6 +143,7 @@ public class ThumbnailLoader
         {
             isLoaderRunning.set(true);
             mTextureLoaderThread = new TextureLoaderThread();
+            mTextureLoaderThread.setDaemon(true);
             mTextureLoaderThread.start();
         }
     }
@@ -272,32 +273,35 @@ public class ThumbnailLoader
                 int cacheIndex=imgIndexForLoader%CACHE_SIZE;
 
                 SlotTexture slot=textureCache[cacheIndex];
-                if(!(slot.hasTried.get()||slot.isReady.get()))
+                if(!slot.hasTried.get())
                 {
-                    mGLrootView.lockRenderThread();
-                    int imgIndex=slot.imgIndex;
-                    Bitmap bmpContainer=slot.bitmap;
-                    mGLrootView.unlockRenderThread();
-
-                    Bitmap bmp = getThumbnailByIndex(imgIndex, bmpContainer);
-
-                    if(bmp!=null)
+                    if(!slot.isReady.get())
                     {
                         mGLrootView.lockRenderThread();
-                        if(imgIndex==slot.imgIndex)
-                        {
-                            slot.texture = new TiledTexture(bmp);
-                            slot.info=StringTexture.newInstance(
-                                    String.valueOf(imgIndex), infoTextFontSize, INFO_TEXT_COLOR);
-                            slot.isReady.set(true);
-                            //Log.i(TAG, "load  cacheIndex:" + cacheIndex + " imgIndex:" +
-                            //        textureCache[cacheIndex].imgIndex);
-                            mTextureUploader.addTexture(slot.texture);
-                        }
-
+                        int imgIndex = slot.imgIndex;
+                        Bitmap bmpContainer = slot.bitmap;
                         mGLrootView.unlockRenderThread();
+
+                        Bitmap bmp = getThumbnailByIndex(imgIndex, bmpContainer);
+
+                        if (bmp != null)
+                        {
+                            mGLrootView.lockRenderThread();
+                            if (imgIndex == slot.imgIndex)
+                            {
+                                slot.texture = new TiledTexture(bmp);
+                                slot.info = StringTexture.newInstance(
+                                        String.valueOf(imgIndex), infoTextFontSize, INFO_TEXT_COLOR);
+                                slot.isReady.set(true);
+                                //Log.i(TAG, "load  cacheIndex:" + cacheIndex + " imgIndex:" +
+                                //        textureCache[cacheIndex].imgIndex);
+                                mTextureUploader.addTexture(slot.texture);
+                            }
+
+                            mGLrootView.unlockRenderThread();
+                        }
+                        slot.hasTried.set(imgIndex == slot.imgIndex);
                     }
-                    slot.hasTried.set(imgIndex == slot.imgIndex);
                 }
 
                 if(dispAreaOffset.get()!=dispOffset)

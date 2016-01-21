@@ -159,8 +159,6 @@ public class SpiderService extends Service
                 watchdogService = null;
                 
                 Log.i(TAG, "onServiceDisconnected");
-                
-                stopSelf();
             }
         };
     }
@@ -179,24 +177,50 @@ public class SpiderService extends Service
             stopSelfAndWatchdog();
         }
 
-        reportSpiderLog();
-
         spiderInit();
     }
 
-    private void startWatchdog()
+
+    private boolean seviceBindSuccess=false;
+    private void startAndBindWatchdog()
     {
-        Log.i(TAG, "startWatchdog");
+        Log.i(TAG, "startAndBindWatchdog");
         
         Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
         watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
 
         startService(watchdogIntent);
-        bindService(watchdogIntent, watchdogConnection, BIND_ABOVE_CLIENT);
+        seviceBindSuccess=bindService(watchdogIntent, watchdogConnection, BIND_ABOVE_CLIENT);
+    }
+
+    private void unbindWatchdog()
+    {
+        if (watchdogService != null)
+        {
+            try
+            {
+                watchdogService.unregisterCallback(watchdogCallback);
+            }
+            catch (RemoteException e)
+            {
+                // There is nothing special we need to do if the service
+                // has crashed.
+            }
+
+            // Detach our existing connection.
+
+            if(seviceBindSuccess)
+            {
+                unbindService(watchdogConnection);
+                Log.i(TAG, "unbind unbindWatchdog");
+                seviceBindSuccess=false;
+            }
+        }
     }
     
     private void stopSelfAndWatchdog()
     {
+        unbindWatchdog();
         stopService(new Intent(this, WatchdogService.class));
         stopSelf();
     }
@@ -216,19 +240,20 @@ public class SpiderService extends Service
     @Override
     public void onCreate()
     {
+        super.onCreate();
         Log.i(TAG, "onCreate");
     }
     
     @Override
     public void onDestroy()
     {
+        super.onDestroy();
+
         Log.i(TAG, "onDestroy");
         // Unregister all callbacks.
         mCallbacks.kill();
 
-        Utils.deleteDir(projectCachePath);
-
-        timerRunning = false;
+        timerRunning.set(false);
         if (spider != null)
         {
             Log.i(TAG, "clearCache");
@@ -236,6 +261,8 @@ public class SpiderService extends Service
             spider.clearCache(true);
             spider.destroy();
         }
+
+        Utils.deleteDir(projectCachePath);
 
         System.exit(0);
     }
@@ -282,7 +309,7 @@ public class SpiderService extends Service
                         }
 
                         watchdogInterfaceInit();
-                        startWatchdog();
+                        startAndBindWatchdog();
                     }
                 }
             }
@@ -295,14 +322,15 @@ public class SpiderService extends Service
             {
                 case StaticValue.CMD_JUST_STOP:
                     state.set(STAT_STOP);
-                    sendCmdToWatchdog(StaticValue.CMD_JUST_STOP);
-                    stopSelf();
+                    stopSelfAndWatchdog();
                 break;
 
                 case StaticValue.CMD_STOP_STORE:
                     state.set(STAT_STOP);
                     jniDataLock.lock();
+                    unbindWatchdog();
                     sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
+                    stopSelf();
                 break;
 
                 case StaticValue.CMD_CONTINUE:
@@ -325,6 +353,8 @@ public class SpiderService extends Service
                         }
 
 
+                        unbindWatchdog();
+
                         //Prevent locks block main thread of service
                         new Thread(new Runnable()
                         {
@@ -337,19 +367,11 @@ public class SpiderService extends Service
                                 jniDataLock.lock();
                                 Log.i(TAG, "jniDataLock pass");
 
-                                Utils.handlerPostUntilSuccess(spiderHandler, new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        Log.i(TAG, "stopSelf");
-                                        stopSelf();
-                                    }
-                                });
+                                stopSelf();
                             }
                         }).start();
                     }
-                    else
+                    else if(state.get()!=STAT_IDLE)
                     {
                         stopSelf();
                     }
@@ -364,7 +386,7 @@ public class SpiderService extends Service
             }
         }
         
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
     
     public int getAshmemFromWatchdog(String name, int size)
@@ -415,7 +437,7 @@ public class SpiderService extends Service
     @Override
     public void onLowMemory()
     {
-        Log.i("onLowMemory", "onLowMemory");
+        Log.i(TAG, "onLowMemory");
     }
     
     @Override
@@ -482,7 +504,7 @@ public class SpiderService extends Service
     private WebView             spider;
     
     private Handler             spiderHandler        = new Handler();
-    private boolean             timerRunning         = true;
+    private AtomicBoolean       timerRunning         = new AtomicBoolean(true);
     private final static int    URL_TIME_OUT         = 10;
     private AtomicInteger       urlLoadTimer         = new AtomicInteger(URL_TIME_OUT);
     
@@ -566,17 +588,22 @@ public class SpiderService extends Service
             public long    imgUrlJniAddr=URL_JNIADDR_INVALID;
             private long   containerUrlJniAddr=URL_JNIADDR_INVALID;
 
-            public DownloaderThread(int index)
+            private void initWithNewIndex(int index)
             {
                 threadIndex=index;
+                setDaemon(true);
                 start();
+            }
+
+            public DownloaderThread(int index)
+            {
+                initWithNewIndex(index);
             }
 
             public DownloaderThread(int index, long lastUrlAddr)
             {
-                threadIndex=index;
                 imgUrlJniAddr=lastUrlAddr;
-                start();
+                initWithNewIndex(index);
             }
 
             public void run()
@@ -623,13 +650,13 @@ public class SpiderService extends Service
                             break;
                         }
 
-                        //Log.i(TAG, "post findNextPageToLoad");
+                        //Log.i(TAG, "post findAndLoadNextPage");
                         Utils.handlerPostUntilSuccess(spiderHandler, new Runnable()
                         {
                             @Override
                             public void run()
                             {
-                                findNextPageToLoad();
+                                findAndLoadNextPage();
                             }
                         });
                     }
@@ -1105,7 +1132,7 @@ public class SpiderService extends Service
 
     }
 
-    private void findNextPageToLoad()
+    private boolean findAndLoadNextPage()
     {
         searchTime = System.currentTimeMillis();
 
@@ -1114,6 +1141,8 @@ public class SpiderService extends Service
         jniDataLock.unlock();
 
         searchTime = System.currentTimeMillis() - searchTime;
+        
+        boolean newPageFind=false;
         //Log.i(TAG, "loading:" + curPageUrl);
         if (curPageUrl == null)
         {
@@ -1126,18 +1155,18 @@ public class SpiderService extends Service
         {
             //Log.i(TAG, "new page url valid");
             spiderLoadUrl(curPageUrl);
-
+            newPageFind=true;
         }
 
         reportSpiderLog();
+        
+        return newPageFind;
     }
 
     private void spiderInit()
     {
         spiderWebViewInit();
-
-        new TimerThread().start();
-
+        
         try
         {
             md5ForPage = MessageDigest.getInstance("md5");
@@ -1152,9 +1181,12 @@ public class SpiderService extends Service
 
         state.set(STAT_WORKING);
         pageProcessLock.lock();
-        findNextPageToLoad();
         
-        mImgDownloader.startAllThread();
+        if(findAndLoadNextPage())
+        {
+            new TimerThread().start();
+            mImgDownloader.startAllThread();
+        }
     }
 
 
@@ -1168,9 +1200,14 @@ public class SpiderService extends Service
         private int netTrafficCalcTimer=0;
         private static final int NET_TRAFFIC_CALC_INTVAL=2;
 
+        public TimerThread()
+        {
+            setDaemon(true);
+        }
+
         public void run()
         {
-            while (timerRunning)
+            while (timerRunning.get())
             {
                 netTrafficCalcTimer++;
                 if(netTrafficCalcTimer==NET_TRAFFIC_CALC_INTVAL)

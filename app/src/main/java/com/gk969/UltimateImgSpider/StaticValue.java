@@ -14,7 +14,7 @@ public class StaticValue
     public final static int  CMD_STOP_STORE        = 5;
     public final static int  CMD_START             = 6;
 
-    public static final int   MAX_IMG_FILE_PER_DIR=500;
+    public static final int   MAX_IMG_FILE_PER_DIR=1000;
 
     public final static String THUMBNAIL_DIR_NAME="thumbnail";
     public final static int THUMBNAIL_SIZE = 300;

@@ -68,12 +68,14 @@ public class WatchdogService extends Service
     @Override
     public void onCreate()
     {
+        super.onCreate();
         Log.i(TAG, "onCreate");
     }
 
     @Override
     public void onDestroy()
     {
+        super.onDestroy();
         Log.i(TAG, "onDestroy");
         mCallbacks.kill();
 
@@ -164,7 +166,7 @@ public class WatchdogService extends Service
             }
         }
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override
