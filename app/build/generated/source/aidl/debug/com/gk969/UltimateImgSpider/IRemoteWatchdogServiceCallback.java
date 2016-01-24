@@ -50,6 +50,12 @@ data.enforceInterface(DESCRIPTOR);
 this.projectPathRecved();
 return true;
 }
+case TRANSACTION_projectDataSaved:
+{
+data.enforceInterface(DESCRIPTOR);
+this.projectDataSaved();
+return true;
+}
 }
 return super.onTransact(code, data, reply, flags);
 }
@@ -79,8 +85,21 @@ finally {
 _data.recycle();
 }
 }
+@Override public void projectDataSaved() throws android.os.RemoteException
+{
+android.os.Parcel _data = android.os.Parcel.obtain();
+try {
+_data.writeInterfaceToken(DESCRIPTOR);
+mRemote.transact(Stub.TRANSACTION_projectDataSaved, _data, null, android.os.IBinder.FLAG_ONEWAY);
+}
+finally {
+_data.recycle();
+}
+}
 }
 static final int TRANSACTION_projectPathRecved = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
+static final int TRANSACTION_projectDataSaved = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
 }
 public void projectPathRecved() throws android.os.RemoteException;
+public void projectDataSaved() throws android.os.RemoteException;
 }

@@ -75,19 +75,22 @@ public class Utils
         }
 
         File[] files = dirFile.listFiles();
-        for (File file : files)
+        if(files!=null)
         {
-            if (file.isFile())
+            for (File file : files)
             {
-                if(!file.delete())
+                if (file.isFile())
                 {
-                    return false;
-                }
-            } else
-            {
-                if(!deleteDir(file.getAbsolutePath()))
+                    if (!file.delete())
+                    {
+                        return false;
+                    }
+                } else
                 {
-                    return false;
+                    if (!deleteDir(file.getAbsolutePath()))
+                    {
+                        return false;
+                    }
                 }
             }
         }

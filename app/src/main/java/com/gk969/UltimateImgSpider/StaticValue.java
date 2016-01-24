@@ -13,6 +13,8 @@ public class StaticValue
     public final static int  CMD_RESTART           = 4;
     public final static int  CMD_STOP_STORE        = 5;
     public final static int  CMD_START             = 6;
+    public final static int  CMD_PAUSE_ON_START    = 7;
+    public final static int  CMD_JUST_STORE        = 8;
 
     public static final int   MAX_IMG_FILE_PER_DIR=1000;
 

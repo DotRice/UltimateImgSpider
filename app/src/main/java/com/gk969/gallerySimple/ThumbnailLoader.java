@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 /*
 Cache Mode:
@@ -52,6 +53,7 @@ public class ThumbnailLoader
     private SlotTexture[] textureCache=new SlotTexture[CACHE_SIZE];
     private AtomicInteger scrollStep=new AtomicInteger(1);
 
+    private ReentrantLock projectPathLock=new ReentrantLock();
     private String projectPath;
 
     private final static String[] IMG_FILE_EXT={"jpg", "png", "gif"};
@@ -74,9 +76,9 @@ public class ThumbnailLoader
     private int infoTextFontSize=48;
     private final static int INFO_TEXT_COLOR=0xFF00FF00;
 
-    public ThumbnailLoader(String Path, GLRootView glRoot)
+    public ThumbnailLoader(String path, GLRootView glRoot)
     {
-        projectPath=Path+"/";
+        projectPath=path+"/";
         mTextureUploader=new TiledTexture.Uploader(glRoot);
         mGLrootView=glRoot;
 
@@ -91,6 +93,14 @@ public class ThumbnailLoader
             textureCache[i].isReady=new AtomicBoolean(false);
             textureCache[i].hasTried=new AtomicBoolean(false);
         }
+    }
+
+    public void setProjectPath(String path)
+    {
+        Log.i(TAG, "setProjectPath "+path);
+        projectPathLock.lock();
+        projectPath=path+"/";
+        projectPathLock.unlock();
     }
 
     private void clearCache()
@@ -244,25 +254,28 @@ public class ThumbnailLoader
         //Log.i(TAG, "scrollToIndex "+index+" cacheOffset "+cacheOffset);
     }
 
-    private Bitmap getThumbnailByIndex(int index, Bitmap container)
-    {
-        int group=index/StaticValue.MAX_IMG_FILE_PER_DIR;
-        int offset=index%StaticValue.MAX_IMG_FILE_PER_DIR;
-
-        String fileName=String.format("%s%s/%d/%03d.jpg", projectPath,StaticValue.THUMBNAIL_DIR_NAME,
-                                        group, offset);
-
-        BitmapFactory.Options bmpOpts=new BitmapFactory.Options();
-        bmpOpts.inPreferredConfig=Bitmap.Config.RGB_565;
-        bmpOpts.inBitmap=container;
-
-        return BitmapFactory.decodeFile(fileName, bmpOpts);
-    }
 
     private class TextureLoaderThread extends Thread
     {
         private final static int CHECK_INTERVAL=500;
 
+        private Bitmap getThumbnailByIndex(int index, Bitmap container)
+        {
+            int group=index/StaticValue.MAX_IMG_FILE_PER_DIR;
+            int offset=index%StaticValue.MAX_IMG_FILE_PER_DIR;
+
+            projectPathLock.lock();
+            String fileName=String.format("%s%s/%d/%03d.jpg", projectPath,StaticValue.THUMBNAIL_DIR_NAME,
+                    group, offset);
+            projectPathLock.unlock();
+
+            BitmapFactory.Options bmpOpts=new BitmapFactory.Options();
+            bmpOpts.inPreferredConfig=Bitmap.Config.RGB_565;
+            bmpOpts.inBitmap=container;
+            bmpOpts.inSampleSize=1;
+
+            return BitmapFactory.decodeFile(fileName, bmpOpts);
+        }
         private boolean isOffsetChangedInLoading()
         {
             int step=scrollStep.get();

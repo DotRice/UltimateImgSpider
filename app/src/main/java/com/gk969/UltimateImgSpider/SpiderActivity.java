@@ -125,13 +125,14 @@ public class SpiderActivity extends Activity
 
                 if (serviceState == STATE_WAIT_DISCONNECT)
                 {
+                    Log.i(TAG, "prepare restart service");
                     mHandler.postDelayed(new Runnable()
                     {
                         @Override
                         public void run()
                         {
                             serviceState = STATE_WAIT_CONNECT;
-                            startAndBindSpiderService(projectSrcUrl);
+                            sendCmdToSpiderService(StaticValue.CMD_START);
                         }
                     }, 500);
                 }
@@ -153,7 +154,7 @@ public class SpiderActivity extends Activity
                                     public void run()
                                     {
                                         btPauseOrContinue.changeView(R.drawable.start, R.string.start);
-                                        btClear.changeView(R.drawable.delete, R.string.delete);
+                                        btClear.changeView(R.drawable.delete, R.string.clear);
                                         Toast.makeText(SpiderActivity.this, R.string.deletedToast,
                                                 Toast.LENGTH_SHORT).show();
                                         mThumbnailLoader.setAlbumTotalImgNum(0);
@@ -226,7 +227,7 @@ public class SpiderActivity extends Activity
                         {
                             theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
                         }
-                        else if (freeMem < 50 || serviceNativeMem > 5)
+                        else if (freeMem < 50 || serviceNativeMem > 50)
                         {
                             theActivity.serviceState = theActivity.STATE_WAIT_DISCONNECT;
                             theActivity.sendCmdToSpiderService(StaticValue.CMD_RESTART);
@@ -247,7 +248,7 @@ public class SpiderActivity extends Activity
             }
         }
 
-    };
+    }
 
     public Dialog sysFaultAlert(String title, String desc, final boolean exit)
     {
@@ -288,7 +289,7 @@ public class SpiderActivity extends Activity
             case DLG_NETWORK_PROMPT:
             {
                 return sysFaultAlert(getString(R.string.prompt),
-                        getString(R.string.uneffectiveNetworkPrompt), true);
+                        getString(R.string.uneffectiveNetworkPrompt), false);
             }
 
             case DLG_STORAGE_ERROR:
@@ -315,16 +316,18 @@ public class SpiderActivity extends Activity
 
         firstRunOperat();
 
-        getSrcUrlAndPath();
+        getSrcUrlAndPath(ParaConfig.getHomeURL(getApplicationContext()));
         serviceInterfaceInit();
+        btPauseOrContinue.changeView(R.drawable.start, R.string.start);
+        sendCmdToSpiderService(StaticValue.CMD_PAUSE_ON_START);
         checkAndStart();
 
         albumViewInit();
     }
 
-    void getSrcUrlAndPath()
+    void getSrcUrlAndPath(String SrcUrl)
     {
-        projectSrcUrl=ParaConfig.getHomeURL(getApplicationContext());
+        projectSrcUrl=SrcUrl;
         Log.i(TAG, "projectSrcUrl " + projectSrcUrl);
 
         try
@@ -383,35 +386,34 @@ public class SpiderActivity extends Activity
 
     private void checkAndStart()
     {
-        File appDir = Utils.getDirInExtSto(getString(R.string.appPackageName)
-                + "/download");
+        File appDir = Utils.getDirInExtSto(getString(R.string.appPackageName) + "/download");
         if (appDir == null)
         {
             showDialog(DLG_STORAGE_ERROR);
             return;
         }
 
-        checkNetwork();
+        checkNetwork(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
+                sendCmdToSpiderService(StaticValue.CMD_CONTINUE);
+            }
+        });
     }
 
-    private void checkNetwork()
+    private void checkNetwork(final Runnable runOnNetWorkEffective)
     {
         new Thread(new Runnable()
         {
-
             @Override
             public void run()
             {
                 if (Utils.isNetworkEffective())
                 {
-                    mHandler.post(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            startAndBindSpiderService(projectSrcUrl);
-                        }
-                    });
+                    mHandler.post(runOnNetWorkEffective);
                 }
                 else
                 {
@@ -465,6 +467,7 @@ public class SpiderActivity extends Activity
 
     private void tryToStopSpiderService()
     {
+        Log.i(TAG, "tryToStopSpiderService "+serviceState+" "+STATE_DISCONNECTED);
         if (serviceState != STATE_DISCONNECTED)
         {
             unbindSpiderService();
@@ -484,7 +487,6 @@ public class SpiderActivity extends Activity
         Log.i(TAG, "onDestroy");
         mThumbnailLoader.stopLoader();
         handleSpiderServiceOnFinish();
-        //System.exit(0);
     }
 
     // 返回至SelSrcActivity
@@ -502,21 +504,23 @@ public class SpiderActivity extends Activity
             {
                 if (data != null)
                 {
-                    projectSrcUrl = data.getAction();
+                    getSrcUrlAndPath(data.getAction());
                     Log.i(TAG, "REQUST_SRC_URL " + projectSrcUrl);
 
                     btPauseOrContinue.changeView(R.drawable.pause,
                             R.string.pause);
-                    if (serviceState == STATE_CONNECTED
-                            || serviceState == STATE_WAIT_CONNECT)
+
+                    mThumbnailLoader.setAlbumTotalImgNum(0);
+                    mThumbnailLoader.setProjectPath(projectPath);
+
+                    if (serviceState == STATE_CONNECTED || serviceState == STATE_WAIT_CONNECT)
                     {
                         sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
                         serviceState = STATE_WAIT_DISCONNECT;
                     }
-                    else if (serviceState == STATE_DISCONNECTED
-                            || serviceState == STATE_WAIT_DISCONNECT)
+                    else if (serviceState == STATE_DISCONNECTED || serviceState == STATE_WAIT_DISCONNECT)
                     {
-                        startAndBindSpiderService(projectSrcUrl);
+                        sendCmdToSpiderService(StaticValue.CMD_START);
                         serviceState = STATE_WAIT_CONNECT;
                     }
                 }
@@ -524,61 +528,76 @@ public class SpiderActivity extends Activity
         }
     }
 
+    private class ProjectBarOnClick implements View.OnClickListener
+    {
+        @Override
+        public void onClick(View v)
+        {
+            if(inDeleting)
+            {
+                Toast.makeText(SpiderActivity.this, R.string.inDeletingToast,
+                        Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                onAction();
+            }
+        }
+
+        public void onAction()
+        {
+
+        }
+    }
+
     private void projBarInit()
     {
         btPauseOrContinue = (ImageTextButton) findViewById(R.id.buttonPauseOrContinue);
-        btPauseOrContinue.setOnClickListener(new View.OnClickListener()
+        btPauseOrContinue.setOnClickListener(new ProjectBarOnClick()
         {
             @Override
-            public void onClick(View v)
+            public void onAction()
             {
-                if(inDeleting)
-                {
-                    Toast.makeText(SpiderActivity.this, R.string.inDeletingToast,
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                String cmd = btPauseOrContinue.textView.getText().toString();
+                final String cmd = btPauseOrContinue.textView.getText().toString();
 
                 if (cmd.equals(getString(R.string.pause)))
                 {
-                    btPauseOrContinue.changeView(R.drawable.start,
-                            R.string.goOn);
-
+                    btPauseOrContinue.changeView(R.drawable.start, R.string.goOn);
                     sendCmdToSpiderService(StaticValue.CMD_PAUSE);
                 }
                 else
                 {
-                    if (projectSrcUrl != null)
+                    checkNetwork(new Runnable()
                     {
-                        btPauseOrContinue.changeView(R.drawable.pause,
-                                R.string.pause);
-
-                        startAndBindSpiderService(projectSrcUrl);
-
-                        if (cmd.equals(getString(R.string.goOn)))
+                        @Override
+                        public void run()
                         {
-                            sendCmdToSpiderService(StaticValue.CMD_CONTINUE);
+                            if (projectSrcUrl != null)
+                            {
+                                btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
+
+                                if (cmd.equals(getString(R.string.goOn)))
+                                {
+                                    sendCmdToSpiderService(StaticValue.CMD_CONTINUE);
+                                }
+                                else
+                                {
+                                    sendCmdToSpiderService(StaticValue.CMD_START);
+                                }
+                            }
                         }
-                    }
+                    });
+
                 }
             }
         });
 
         btSelSrc = (ImageTextButton) findViewById(R.id.buttonSelSrc);
-        btSelSrc.setOnClickListener(new View.OnClickListener()
+        btSelSrc.setOnClickListener(new ProjectBarOnClick()
         {
-
             @Override
-            public void onClick(View v)
+            public void onAction()
             {
-                if(inDeleting)
-                {
-                    Toast.makeText(SpiderActivity.this, R.string.inDeletingToast,
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
                 Intent intent = new Intent(SpiderActivity.this,
                         SelSrcActivity.class);
                 startActivityForResult(intent, REQUST_SRC_URL);
@@ -586,25 +605,16 @@ public class SpiderActivity extends Activity
         });
 
         btClear = (ImageTextButton) findViewById(R.id.buttonClear);
-        btClear.setOnClickListener(new View.OnClickListener()
+        btClear.setOnClickListener(new ProjectBarOnClick()
         {
-
             @Override
-            public void onClick(View v)
+            public void onAction()
             {
                 if(serviceState != STATE_DISCONNECTED)
                 {
-                    if (inDeleting)
-                    {
-                        Toast.makeText(SpiderActivity.this, R.string.inDeletingToast,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                    else
-                    {
-                        sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
-                        btClear.changeView(R.drawable.delete, R.string.deleting);
-                        inDeleting = true;
-                    }
+                    sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
+                    btClear.changeView(R.drawable.delete, R.string.deleting);
+                    inDeleting = true;
                 }
             }
         });
@@ -620,6 +630,7 @@ public class SpiderActivity extends Activity
     {
         // If we have received the service, and hence registered with
         // it, then now is the time to unregister.
+        Log.i(TAG, "unbind SpiderService");
         if (mService != null)
         {
             try
@@ -637,7 +648,6 @@ public class SpiderActivity extends Activity
             if(seviceBindSuccess)
             {
                 unbindService(mConnection);
-                Log.i(TAG, "unbind SpiderService");
                 seviceBindSuccess=false;
             }
         }
@@ -645,32 +655,20 @@ public class SpiderActivity extends Activity
     }
 
     boolean seviceBindSuccess=false;
-    private void startAndBindSpiderService(String src)
-    {
-        Log.i(TAG, "startAndBindSpiderService src:" + src);
-
-        Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
-        spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
-                .getName());
-
-        Bundle bundle = new Bundle();
-        bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, src);
-        spiderIntent.putExtras(bundle);
-        startService(spiderIntent);
-
-        seviceBindSuccess=bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
-    }
-
     private void sendCmdToSpiderService(int cmd)
     {
+        Log.i(TAG, "sendCmdToSpiderService "+cmd);
         Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
         spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
                 .getName());
 
         Bundle bundle = new Bundle();
         bundle.putInt(StaticValue.BUNDLE_KEY_CMD, cmd);
+        bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, projectSrcUrl);
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
+
+        seviceBindSuccess=bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
     }
 
     @Override

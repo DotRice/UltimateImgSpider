@@ -73,14 +73,14 @@ public class SpiderService extends Service
 
     final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks         = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
 
-    private final static int                               STAT_IDLE          = 0;
-    private final static int                               STAT_WORKING       = 1;
-    private final static int                               STAT_PAUSE         = 2;
-    private final static int                               STAT_COMPLETE      = 3;
-    private final static int                               STAT_STOP          = 4;
+    private final static int                               STAT_IDLE           = 0;
+    private final static int                               STAT_WORKING        = 1;
+    private final static int                               STAT_PAUSE          = 2;
+    private final static int                               STAT_COMPLETE       = 3;
+    private final static int                               STAT_STOP           = 4;
+    private final static int                               STAT_PAUSE_ON_START = 5;
     
     private AtomicInteger                                  state              = new AtomicInteger(STAT_IDLE);
-    private AtomicInteger                                  cmd                = new AtomicInteger(StaticValue.CMD_NOTHING);
     
     private String                                         projectPath;
     private String projectCachePath;
@@ -129,6 +129,12 @@ public class SpiderService extends Service
                         startSpider();
                     }
                 });
+            }
+
+            public void projectDataSaved()
+            {
+                Log.i(TAG, "projectDataSaved");
+                jniDataLock.unlock();
             }
         };
 
@@ -243,7 +249,20 @@ public class SpiderService extends Service
         super.onCreate();
         Log.i(TAG, "onCreate");
     }
-    
+
+    private void stopSpider()
+    {
+        timerRunning.set(false);
+        if (spider != null)
+        {
+            Log.i(TAG, "clearCache");
+            spider.stopLoading();
+            spider.clearCache(true);
+            spider.destroy();
+            spider=null;
+        }
+    }
+
     @Override
     public void onDestroy()
     {
@@ -253,14 +272,7 @@ public class SpiderService extends Service
         // Unregister all callbacks.
         mCallbacks.kill();
 
-        timerRunning.set(false);
-        if (spider != null)
-        {
-            Log.i(TAG, "clearCache");
-            spider.stopLoading();
-            spider.clearCache(true);
-            spider.destroy();
-        }
+        stopSpider();
 
         Utils.deleteDir(projectCachePath);
 
@@ -273,11 +285,115 @@ public class SpiderService extends Service
     {
         if (intent != null)
         {
+            int cmdVal = intent.getIntExtra(StaticValue.BUNDLE_KEY_CMD,StaticValue.CMD_NOTHING);
+            Log.i(TAG, "onStartCommand:" + cmdVal + " state:" + state.get());
+
+            switch (cmdVal)
+            {
+                case StaticValue.CMD_START:
+                {
+                    state.set(STAT_WORKING);
+                    break;
+                }
+
+                case StaticValue.CMD_PAUSE_ON_START:
+                {
+                    state.set(STAT_PAUSE_ON_START);
+                    break;
+                }
+
+                case StaticValue.CMD_JUST_STOP:
+                {
+                    state.set(STAT_STOP);
+                    stopSelfAndWatchdog();
+                    break;
+                }
+
+                case StaticValue.CMD_STOP_STORE:
+                {
+                    state.set(STAT_STOP);
+                    jniDataLock.lock();
+                    unbindWatchdog();
+                    sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
+                    stopSelf();
+                    break;
+                }
+
+                case StaticValue.CMD_CONTINUE:
+                {
+                    int prevState=state.get();
+                    state.set(STAT_WORKING);
+                    if (prevState == STAT_PAUSE)
+                    {
+                        mImgDownloader.startAllThread();
+                    }
+                    break;
+                }
+
+                case StaticValue.CMD_RESTART:
+                {
+                    if (state.get() == STAT_WORKING)
+                    {
+                        state.set(STAT_STOP);
+
+                        if (urlLoadTimer.get() != 0)
+                        {
+                            spider.stopLoading();
+                            scanPageWithJS();
+                        }
+
+
+                        unbindWatchdog();
+
+                        //Prevent locks block main thread of service
+                        new Thread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                Log.i(TAG, "prepare restart. pageProcessLock " +
+                                        pageProcessLock.isLocked.get());
+                                pageProcessLock.lock();
+                                Log.i(TAG, "pageProcessLock pass");
+                                jniDataLock.lock();
+                                Log.i(TAG, "jniDataLock pass");
+
+                                spiderHandler.post(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        Log.i(TAG, "stopSelf");
+                                        stopSelf();
+                                    }
+                                });
+
+                            }
+                        }).start();
+                    }
+                    else if (state.get() != STAT_IDLE)
+                    {
+                        stopSelf();
+                    }
+                    break;
+                }
+
+                case StaticValue.CMD_PAUSE:
+                {
+                    state.set(STAT_PAUSE);
+                    break;
+                }
+
+                default:
+                    break;
+            }
+
+
             String url = intent.getStringExtra(StaticValue.BUNDLE_KEY_SOURCE_URL);
             if (url != null)
             {
                 Log.i(TAG, "onStartCommand url:" + url);
-                
+
                 if ((url.startsWith("http://") || url.startsWith("https://"))
                         && srcUrl.equals(SRCURL_DEFAULT_VALUE))
                 {
@@ -300,7 +416,7 @@ public class SpiderService extends Service
                     else
                     {
                         projectPath = siteDir.getPath();
-                        
+
                         projectCachePath=projectPath+"/cache/";
                         File cacheDir=new File(projectCachePath);
                         if(!cacheDir.isDirectory())
@@ -312,77 +428,6 @@ public class SpiderService extends Service
                         startAndBindWatchdog();
                     }
                 }
-            }
-            
-            int cmdVal = intent.getIntExtra(StaticValue.BUNDLE_KEY_CMD,StaticValue.CMD_NOTHING);
-            Log.i(TAG, "onStartCommand:" + cmdVal+" state:"+state.get());
-            
-            cmd.set(cmdVal);
-            switch (cmdVal)
-            {
-                case StaticValue.CMD_JUST_STOP:
-                    state.set(STAT_STOP);
-                    stopSelfAndWatchdog();
-                break;
-
-                case StaticValue.CMD_STOP_STORE:
-                    state.set(STAT_STOP);
-                    jniDataLock.lock();
-                    unbindWatchdog();
-                    sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
-                    stopSelf();
-                break;
-
-                case StaticValue.CMD_CONTINUE:
-                    if (state.get() == STAT_PAUSE)
-                    {
-                        state.set(STAT_WORKING);
-                        mImgDownloader.startAllThread();
-                    }
-                break;
-
-                case StaticValue.CMD_RESTART:
-                    if(state.get()==STAT_WORKING)
-                    {
-                        state.set(STAT_STOP);
-
-                        if (urlLoadTimer.get() != 0)
-                        {
-                            spider.stopLoading();
-                            scanPageWithJS();
-                        }
-
-
-                        unbindWatchdog();
-
-                        //Prevent locks block main thread of service
-                        new Thread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                Log.i(TAG, "prepare restart. pageProcessLock "+pageProcessLock.isLocked.get());
-                                pageProcessLock.lock();
-                                Log.i(TAG, "pageProcessLock pass");
-                                jniDataLock.lock();
-                                Log.i(TAG, "jniDataLock pass");
-
-                                stopSelf();
-                            }
-                        }).start();
-                    }
-                    else if(state.get()!=STAT_IDLE)
-                    {
-                        stopSelf();
-                    }
-                break;
-
-                case StaticValue.CMD_PAUSE:
-                    state.set(STAT_PAUSE);
-                break;
-
-                default:
-                break;
             }
         }
         
@@ -525,7 +570,7 @@ public class SpiderService extends Service
     private native void jniRecvPageTitle(String curPageTitle);
     
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
-    private ReentrantLock jniDataLock = new ReentrantLock();
+    private Utils.ReadWaitLock jniDataLock = new Utils.ReadWaitLock();
     private ReentrantLock imgFileLock = new ReentrantLock();
 
     private ImgDownloader      mImgDownloader  = new ImgDownloader();
@@ -545,6 +590,8 @@ public class SpiderService extends Service
         private final static int IMG_VALID_WIDTH_MIN  = 200;
         private final static int IMG_VALID_HEIGHT_MIN = 200;
 
+        private final static int SAVE_PROJECT_DATA    = 50;
+
 
         private final static String THUMBNAIL_FILE_EXT=".jpg";
 
@@ -553,12 +600,9 @@ public class SpiderService extends Service
         
         private final static int REDIRECT_MAX         = 5;
 
-        private int imgIndex;
-        
         void startAllThread()
         {
-            imgIndex=imgProcParam[PARA_DOWNLOAD];
-
+            Log.i(TAG, "startAllThread");
             for (int i = 0; i < IMG_DOWNLOADER_NUM; i++)
             {
                 if(downloaderThreads[i]==null)
@@ -680,7 +724,7 @@ public class SpiderService extends Service
                 }while(cacheFile.exists());
                 imgFileLock.unlock();
 
-                Log.i(TAG, "cache file" + cacheFile.getPath());
+                Log.i(TAG, "new cache file" + cacheFile.getPath());
 
                 return cacheFile;
             }
@@ -691,8 +735,28 @@ public class SpiderService extends Service
                 String cacheFileWithoutMark=cacheFilePath.substring(0, cacheFilePath.length() - CACHE_MARK.length());
                 String imgFileExt=cacheFileWithoutMark.substring(cacheFileWithoutMark.lastIndexOf("."));
 
-                imgFileLock.lock();
+                jniDataLock.lock();
 
+                int imgIndex=imgProcParam[PARA_DOWNLOAD];
+                jniSaveImgStorageInfo((int) imgUrlJniAddr, (int) containerUrlJniAddr, imgProcParam);
+
+                if((imgIndex%SAVE_PROJECT_DATA)==0)
+                {
+                    Utils.handlerPostUntilSuccess(spiderHandler, new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            sendCmdToWatchdog(StaticValue.CMD_JUST_STORE);
+                        }
+                    });
+                }
+                else
+                {
+                    jniDataLock.unlock();
+                }
+
+                imgFileLock.lock();
                 String dirPath=projectPath+"/"+imgIndex/StaticValue.MAX_IMG_FILE_PER_DIR;
                 File dir=new File(dirPath);
                 if(!dir.exists())
@@ -705,8 +769,6 @@ public class SpiderService extends Service
 
                 Log.i(TAG, "cache file " + cacheFilePath);
                 Log.i(TAG, "final file " + newPath);
-
-                imgIndex++;
 
                 File finalFile=new File(newPath);
                 File thumbnailFile=null;
@@ -863,10 +925,6 @@ public class SpiderService extends Service
                 if(imgFile!=null)
                 {
                     moveToImgDirAfterDownload(imgFile);
-
-                    jniDataLock.lock();
-                    jniSaveImgStorageInfo((int)imgUrlJniAddr, (int)containerUrlJniAddr, imgProcParam);
-                    jniDataLock.unlock();
                 }
 
             }
@@ -1005,6 +1063,8 @@ public class SpiderService extends Service
     // javascript回调不在主线程。
     private void scanPageWithJS()
     {
+        pageFinished = true;
+
         String title=spider.getTitle();
         if(title!=null)
         {
@@ -1048,12 +1108,11 @@ public class SpiderService extends Service
             public void onPageFinished(WebView view, String url)
             {
                 loadTime = System.currentTimeMillis() - loadTimer;
-                //Log.i(TAG, "onPageFinished " + url + " loadTime:" +loadTime+" tmr:"+urlLoadTimer.get());
+                Log.i(TAG, "onPageFinished " + url + " loadTime:" +loadTime+" tmr:"+urlLoadTimer.get());
                 //Log.i(TAG, "curPageUrl "+curPageUrl);
                 if (!pageFinished)
                 {
-                    pageFinished = true;
-                    if((curPageUrl!=null)&&(urlLoadTimer.get()!=0))
+                    if(curPageUrl!=null)
                     {
                         if (curPageUrl.equals(url))
                         {
@@ -1086,8 +1145,7 @@ public class SpiderService extends Service
                 {
                     if (!curPageUrl.equals(url))
                     {
-                        response = new WebResourceResponse("image/png", "UTF-8",
-                                null);
+                        response = new WebResourceResponse("image/png", "UTF-8", null);
                     }
                 }
 
@@ -1179,14 +1237,23 @@ public class SpiderService extends Service
         jniAddUrl(srcUrl, md5ForPage.digest(srcUrl.getBytes()), URL_TYPE_PAGE,
                 pageProcParam);
 
-        state.set(STAT_WORKING);
+        new TimerThread().start();
+
+
         pageProcessLock.lock();
-        
-        if(findAndLoadNextPage())
+
+        if (findAndLoadNextPage())
         {
-            new TimerThread().start();
-            mImgDownloader.startAllThread();
+            if(state.get()==STAT_WORKING)
+            {
+                mImgDownloader.startAllThread();
+            }
+            else
+            {
+                state.set(STAT_PAUSE);
+            }
         }
+
     }
 
 

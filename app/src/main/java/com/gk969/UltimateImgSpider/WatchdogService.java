@@ -97,7 +97,7 @@ public class WatchdogService extends Service
         String md5OfFile = Utils.getFileMD5String(dataFileFullPath);
         String md5InSp=getSharedPreferences(SP_PROJECT_DATA_MD5, 0).getString(projectPath, "");
 
-        Log.i(TAG, "projectDataIsSafe "+md5OfFile+" "+md5InSp);
+        Log.i(TAG, "projectDataIsSafe " + md5OfFile + " " + md5InSp);
 
         if(md5OfFile!=null)
         {
@@ -107,9 +107,9 @@ public class WatchdogService extends Service
         return false;
     }
 
-    private void projectPathRecved(String path)
+    private void tryToRestoreProjectData(String path)
     {
-        Log.i(TAG, "projectPathRecved "+path);
+        Log.i(TAG, "tryToRestoreProjectData "+path);
 
         if((path!=null)&&(projectPath==null))
         {
@@ -121,6 +121,12 @@ public class WatchdogService extends Service
             }
         }
 
+    }
+
+    private void projectPathRecved()
+    {
+        Log.i(TAG, "projectPathRecved");
+
         int numOfCallback = mCallbacks.beginBroadcast();
         for (int i = 0; i < numOfCallback; i++)
         {
@@ -130,7 +136,26 @@ public class WatchdogService extends Service
             }
             catch (RemoteException e)
             {
+                e.printStackTrace();
+            }
+        }
+        mCallbacks.finishBroadcast();
+    }
 
+    private void projectDataSaved()
+    {
+        Log.i(TAG, "projectDataSaved");
+
+        int numOfCallback = mCallbacks.beginBroadcast();
+        for (int i = 0; i < numOfCallback; i++)
+        {
+            try
+            {
+                mCallbacks.getBroadcastItem(i).projectDataSaved();
+            }
+            catch (RemoteException e)
+            {
+                e.printStackTrace();
             }
         }
         mCallbacks.finishBroadcast();
@@ -148,7 +173,8 @@ public class WatchdogService extends Service
         {
             case StaticValue.CMD_START:
             {
-                projectPathRecved(path);
+                tryToRestoreProjectData(path);
+                projectPathRecved();
                 break;
             }
 
@@ -164,6 +190,14 @@ public class WatchdogService extends Service
                 stopSelf();
                 break;
             }
+
+            case StaticValue.CMD_JUST_STORE:
+            {
+                storeProjectData();
+                projectDataSaved();
+                break;
+            }
+
         }
 
         return START_NOT_STICKY;

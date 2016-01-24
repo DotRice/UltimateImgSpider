@@ -5,4 +5,5 @@ package com.gk969.UltimateImgSpider;
 
 oneway interface IRemoteWatchdogServiceCallback {
     void projectPathRecved();
+    void projectDataSaved();
 }
