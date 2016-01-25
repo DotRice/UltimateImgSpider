@@ -1,9 +1,14 @@
 package com.gk969.Utils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -292,6 +297,83 @@ public class Utils
         }
 
         return dir;
+    }
+
+    public static class LogRecorder extends Thread
+    {
+        private AtomicBoolean isRunning=new AtomicBoolean(true);
+        private File recordFile;
+
+        public void stopThread()
+        {
+            isRunning.set(false);
+        }
+
+        public LogRecorder(String appName)
+        {
+            setDaemon(true);
+            recordFile=new File(getDirInExtSto(appName + "/log")+"/log.txt");
+            if(recordFile.exists())
+            {
+                recordFile.delete();
+            }
+            start();
+        }
+
+        public void run()
+        {
+            Process logcatProcess;
+
+            try
+            {
+                Runtime.getRuntime().exec("logcat -c").waitFor();
+                logcatProcess=Runtime.getRuntime().exec("logcat");
+
+                BufferedReader logStream=null;
+                FileOutputStream logFileOut=null;
+                try
+                {
+                    logStream = new BufferedReader(
+                            new InputStreamReader(logcatProcess.getInputStream()));
+
+                    logFileOut = new FileOutputStream(recordFile.getPath());
+
+                    String logLine;
+
+                    while ((logLine = logStream.readLine()) != null)
+                    {
+                        logLine+="\r\n";
+                        logFileOut.write(logLine.getBytes());
+
+                        if (!isRunning.get())
+                        {
+                            break;
+                        }
+
+                        yield();
+                    }
+                }
+                finally
+                {
+                    if(logStream!=null)
+                    {
+                        logStream.close();
+                    }
+
+                    if(logFileOut!=null)
+                    {
+                        logFileOut.flush();
+                        logFileOut.close();
+                    }
+                }
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static String getSDKVersion()

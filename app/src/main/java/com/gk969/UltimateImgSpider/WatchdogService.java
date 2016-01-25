@@ -60,6 +60,8 @@ public class WatchdogService extends Service
     final RemoteCallbackList<IRemoteWatchdogServiceCallback> mCallbacks
             = new RemoteCallbackList<IRemoteWatchdogServiceCallback>();
 
+    Utils.LogRecorder logRecorder;
+
     static
     {
         System.loadLibrary("UltimateImgSpider");
@@ -69,6 +71,8 @@ public class WatchdogService extends Service
     public void onCreate()
     {
         super.onCreate();
+
+        logRecorder=new Utils.LogRecorder(getString(R.string.appPackageName));
         Log.i(TAG, "onCreate");
     }
 
@@ -78,6 +82,7 @@ public class WatchdogService extends Service
         super.onDestroy();
         Log.i(TAG, "onDestroy");
         mCallbacks.kill();
+        logRecorder.stopThread();
 
         System.exit(0);
     }
