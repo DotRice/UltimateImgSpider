@@ -178,12 +178,14 @@ public class SpiderService extends Service
         imgProcParam = new int[IMG_PARA_NUM];
 
 
-        if (!jniSpiderInit(imgProcParam, pageProcParam))
+        if (jniSpiderInit(imgProcParam, pageProcParam))
+        {
+            spiderInit();
+        }
+        else
         {
             stopSelfAndWatchdog();
         }
-
-        spiderInit();
     }
 
 
@@ -292,7 +294,12 @@ public class SpiderService extends Service
             {
                 case StaticValue.CMD_START:
                 {
+                    int prevState=state.get();
                     state.set(STAT_WORKING);
+                    if (prevState == STAT_PAUSE)
+                    {
+                        mImgDownloader.startAllThread();
+                    }
                     break;
                 }
 
@@ -316,17 +323,6 @@ public class SpiderService extends Service
                     unbindWatchdog();
                     sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
                     stopSelf();
-                    break;
-                }
-
-                case StaticValue.CMD_CONTINUE:
-                {
-                    int prevState=state.get();
-                    state.set(STAT_WORKING);
-                    if (prevState == STAT_PAUSE)
-                    {
-                        mImgDownloader.startAllThread();
-                    }
                     break;
                 }
 
@@ -551,7 +547,7 @@ public class SpiderService extends Service
     private Handler             spiderHandler        = new Handler();
     private AtomicBoolean       timerRunning         = new AtomicBoolean(true);
     private final static int    URL_TIME_OUT         = 10;
-    private AtomicInteger       urlLoadTimer         = new AtomicInteger(URL_TIME_OUT);
+    private AtomicInteger       urlLoadTimer         = new AtomicInteger(0);
     
     private MessageDigest       md5ForPage;
     
@@ -1239,21 +1235,16 @@ public class SpiderService extends Service
 
         new TimerThread().start();
 
-
-        pageProcessLock.lock();
-
-        if (findAndLoadNextPage())
+        if(state.get()==STAT_WORKING)
         {
-            if(state.get()==STAT_WORKING)
-            {
-                mImgDownloader.startAllThread();
-            }
-            else
-            {
-                state.set(STAT_PAUSE);
-            }
+            mImgDownloader.startAllThread();
+        }
+        else
+        {
+            state.set(STAT_PAUSE);
         }
 
+        reportSpiderLog();
     }
 
 
@@ -1315,7 +1306,7 @@ public class SpiderService extends Service
                 }
                 catch (InterruptedException e)
                 {
-                    // Log.e(TAG,e.toString());
+                    e.printStackTrace();
                 }
             }
         }

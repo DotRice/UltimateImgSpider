@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
 import android.net.TrafficStats;
 import android.os.Handler;
 
@@ -313,10 +314,7 @@ public class Utils
         {
             setDaemon(true);
             recordFile=new File(getDirInExtSto(appName + "/log")+"/log.txt");
-            if(recordFile.exists())
-            {
-                recordFile.delete();
-            }
+
             start();
         }
 
@@ -486,10 +484,9 @@ public class Utils
                 }
             } catch (NumberFormatException e)
             {
-
+                e.printStackTrace();
             }
             return px;
         }
     }
-
 }

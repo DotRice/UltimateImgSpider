@@ -250,11 +250,12 @@ public final class R {
         public static final int activity_sel_src=0x7f030001;
         public static final int activity_spider=0x7f030002;
         public static final int browser_menu=0x7f030003;
-        public static final int gl_root_group=0x7f030004;
-        public static final int image_text_button=0x7f030005;
-        public static final int navi_bar=0x7f030006;
-        public static final int proj_bar=0x7f030007;
-        public static final int url_bar=0x7f030008;
+        public static final int delete_dialog=0x7f030004;
+        public static final int gl_root_group=0x7f030005;
+        public static final int image_text_button=0x7f030006;
+        public static final int navi_bar=0x7f030007;
+        public static final int proj_bar=0x7f030008;
+        public static final int url_bar=0x7f030009;
     }
     public static final class raw {
         public static final int robot=0x7f040000;
@@ -280,29 +281,30 @@ public final class R {
         public static final int goOn=0x7f0a0011;
         public static final int help=0x7f0a0012;
         public static final int home=0x7f0a0013;
-        public static final int inDeletingToast=0x7f0a0014;
-        public static final int keyBackExitConfirm=0x7f0a0015;
-        public static final int menu=0x7f0a0016;
-        public static final int more=0x7f0a0017;
-        public static final int newProj=0x7f0a0018;
-        public static final int notSet=0x7f0a0019;
-        public static final int option=0x7f0a001a;
-        public static final int pause=0x7f0a001b;
-        public static final int prompt=0x7f0a001c;
-        public static final int refresh=0x7f0a001d;
-        public static final int retry=0x7f0a001e;
-        public static final int search=0x7f0a001f;
-        public static final int searchOrInputURL=0x7f0a0020;
-        public static final int selSearchEngine=0x7f0a0021;
-        public static final int selSrc=0x7f0a0022;
-        public static final int settings=0x7f0a0023;
-        public static final int spiderGo=0x7f0a0024;
-        public static final int spiderGoConfirm=0x7f0a0025;
-        public static final int srcUrl=0x7f0a0026;
-        public static final int srcUrlHint=0x7f0a0027;
-        public static final int start=0x7f0a0028;
-        public static final int stop=0x7f0a0029;
-        public static final int uneffectiveNetworkPrompt=0x7f0a002a;
+        public static final int inDeletingTips=0x7f0a0014;
+        public static final int inDeletingToast=0x7f0a0015;
+        public static final int keyBackExitConfirm=0x7f0a0016;
+        public static final int menu=0x7f0a0017;
+        public static final int more=0x7f0a0018;
+        public static final int newProj=0x7f0a0019;
+        public static final int notSet=0x7f0a001a;
+        public static final int option=0x7f0a001b;
+        public static final int pause=0x7f0a001c;
+        public static final int prompt=0x7f0a001d;
+        public static final int refresh=0x7f0a001e;
+        public static final int retry=0x7f0a001f;
+        public static final int search=0x7f0a0020;
+        public static final int searchOrInputURL=0x7f0a0021;
+        public static final int selSearchEngine=0x7f0a0022;
+        public static final int selSrc=0x7f0a0023;
+        public static final int settings=0x7f0a0024;
+        public static final int spiderGo=0x7f0a0025;
+        public static final int spiderGoConfirm=0x7f0a0026;
+        public static final int srcUrl=0x7f0a0027;
+        public static final int srcUrlHint=0x7f0a0028;
+        public static final int start=0x7f0a0029;
+        public static final int stop=0x7f0a002a;
+        public static final int uneffectiveNetworkPrompt=0x7f0a002b;
     }
     public static final class style {
         /**  API 11 theme customizations can go here. 

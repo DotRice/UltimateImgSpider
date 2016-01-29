@@ -35,6 +35,7 @@
     <string name="newProj">新建</string>
     <string name="delete">删除</string>
     <string name="deleting">删除中</string>
+    <string name="inDeletingTips">删除中，请稍候...</string>
     <string name="inDeletingToast">正在删除当前项目，请稍候...</string>
     <string name="deletedToast">当前项目已删除</string>
     <string name="clear">清空</string>

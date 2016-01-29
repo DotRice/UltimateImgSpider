@@ -44,6 +44,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.JavascriptInterface;
@@ -159,6 +160,7 @@ public class SpiderActivity extends Activity
                                                 Toast.LENGTH_SHORT).show();
                                         mThumbnailLoader.setAlbumTotalImgNum(0);
                                         inDeleting = false;
+                                        dialogDelete.dismiss();
                                     }
                                 });
                             }
@@ -281,7 +283,9 @@ public class SpiderActivity extends Activity
 
     private final static int DLG_NETWORK_PROMPT = 0;
     private final static int DLG_STORAGE_ERROR  = 1;
+    private final static int DLG_DELETE         = 2;
 
+    private Dialog dialogDelete;
     protected Dialog onCreateDialog(int dlgId)
     {
         switch (dlgId)
@@ -296,6 +300,11 @@ public class SpiderActivity extends Activity
             {
                 return sysFaultAlert(getString(R.string.prompt),
                         getString(R.string.badExternalStoragePrompt), true);
+            }
+
+            case DLG_DELETE:
+            {
+                return dialogDelete;
             }
         }
 
@@ -399,7 +408,7 @@ public class SpiderActivity extends Activity
             public void run()
             {
                 btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
-                sendCmdToSpiderService(StaticValue.CMD_CONTINUE);
+                sendCmdToSpiderService(StaticValue.CMD_START);
             }
         });
     }
@@ -558,7 +567,7 @@ public class SpiderActivity extends Activity
             @Override
             public void onAction()
             {
-                final String cmd = btPauseOrContinue.textView.getText().toString();
+                String cmd = btPauseOrContinue.textView.getText().toString();
 
                 if (cmd.equals(getString(R.string.pause)))
                 {
@@ -576,14 +585,7 @@ public class SpiderActivity extends Activity
                             {
                                 btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
 
-                                if (cmd.equals(getString(R.string.goOn)))
-                                {
-                                    sendCmdToSpiderService(StaticValue.CMD_CONTINUE);
-                                }
-                                else
-                                {
-                                    sendCmdToSpiderService(StaticValue.CMD_START);
-                                }
+                                sendCmdToSpiderService(StaticValue.CMD_START);
                             }
                         }
                     });
@@ -615,6 +617,15 @@ public class SpiderActivity extends Activity
                     sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
                     btClear.changeView(R.drawable.delete, R.string.deleting);
                     inDeleting = true;
+                    if(dialogDelete==null)
+                    {
+                        dialogDelete = new AlertDialog.Builder(SpiderActivity.this)
+                                .setTitle(getString(R.string.inDeletingTips))
+                                .setView(LayoutInflater.from(SpiderActivity.this).inflate(R.layout.delete_dialog, null))
+                                .setPositiveButton(R.string.OK, null)
+                                .create();
+                    }
+                    showDialog(DLG_DELETE);
                 }
             }
         });

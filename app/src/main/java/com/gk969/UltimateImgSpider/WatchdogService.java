@@ -44,12 +44,11 @@ public class WatchdogService extends Service
 {
     private final static String TAG = "WatchdogService";
 
-    private final static String PROJECT_FILE_NAME = "project.dat";
+    private final static String PROJECT_DATA_DIR = "/data";
+    private final static String PROJECT_DATA_NAME = "project.dat";
+    private final static String PROJECT_DATA_MD5 = "hash.dat";
 
-    private final static String SP_PROJECT_DATA_MD5="spProjectDataMd5";
-
-    private String projectPath;
-    private String dataFileFullPath;
+    private String dataDirPath;
 
     public native int jniGetAshmem(String name, int size);
 
@@ -59,8 +58,6 @@ public class WatchdogService extends Service
 
     final RemoteCallbackList<IRemoteWatchdogServiceCallback> mCallbacks
             = new RemoteCallbackList<IRemoteWatchdogServiceCallback>();
-
-    Utils.LogRecorder logRecorder;
 
     static
     {
@@ -72,7 +69,6 @@ public class WatchdogService extends Service
     {
         super.onCreate();
 
-        logRecorder=new Utils.LogRecorder(getString(R.string.appPackageName));
         Log.i(TAG, "onCreate");
     }
 
@@ -82,31 +78,53 @@ public class WatchdogService extends Service
         super.onDestroy();
         Log.i(TAG, "onDestroy");
         mCallbacks.kill();
-        logRecorder.stopThread();
 
         System.exit(0);
     }
 
     private void storeProjectData()
     {
+        String dataFileFullPath=dataDirPath+PROJECT_DATA_NAME;
         jniStoreProjectData(dataFileFullPath);
 
-        String md5OfFile = Utils.getFileMD5String(dataFileFullPath);
-        SharedPreferences.Editor editor = getSharedPreferences(SP_PROJECT_DATA_MD5, 0).edit();
-        editor.putString(projectPath, md5OfFile);
-        editor.commit();
+        String md5String = Utils.getFileMD5String(dataFileFullPath);
+        try
+        {
+            FileOutputStream md5FileOut=new FileOutputStream(dataDirPath+PROJECT_DATA_MD5);
+            md5FileOut.write(md5String.getBytes());
+            md5FileOut.close();
+        } catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
     private boolean projectDataIsSafe()
     {
+        String dataFileFullPath=dataDirPath+PROJECT_DATA_NAME;
         String md5OfFile = Utils.getFileMD5String(dataFileFullPath);
-        String md5InSp=getSharedPreferences(SP_PROJECT_DATA_MD5, 0).getString(projectPath, "");
 
-        Log.i(TAG, "projectDataIsSafe " + md5OfFile + " " + md5InSp);
-
-        if(md5OfFile!=null)
+        try
         {
-            return md5InSp.equals(md5OfFile);
+            byte[] buf=new byte[32];
+            FileInputStream md5FileIn=new FileInputStream(dataDirPath+PROJECT_DATA_MD5);
+            md5FileIn.read(buf);
+            md5FileIn.close();
+            String md5InRec=new String(buf);
+            Log.i(TAG, "projectDataIsSafe " + md5OfFile + " " + md5InRec);
+
+            if(md5OfFile!=null)
+            {
+                return md5InRec.equals(md5OfFile);
+            }
+
+        } catch (IOException e)
+        {
+            e.printStackTrace();
         }
 
         return false;
@@ -116,13 +134,18 @@ public class WatchdogService extends Service
     {
         Log.i(TAG, "tryToRestoreProjectData "+path);
 
-        if((path!=null)&&(projectPath==null))
+        if((path!=null)&&(dataDirPath==null))
         {
-            projectPath = path;
-            dataFileFullPath = path + "/" + PROJECT_FILE_NAME;
+            File dataDir=new File(path+PROJECT_DATA_DIR);
+            if(!dataDir.exists()||!dataDir.isDirectory())
+            {
+                dataDir.mkdirs();
+            }
+            dataDirPath = path+PROJECT_DATA_DIR+"/";
+
             if (projectDataIsSafe())
             {
-                jniRestoreProjectData(dataFileFullPath);
+                jniRestoreProjectData(dataDirPath+PROJECT_DATA_NAME);
             }
         }
 

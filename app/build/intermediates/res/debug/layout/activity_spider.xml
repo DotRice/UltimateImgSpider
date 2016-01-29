@@ -24,7 +24,6 @@
 	        layout="@layout/proj_bar" />
 	</LinearLayout>
 
-
     <TextView 
         android:id="@+id/tvSpiderLog"
 	    android:layout_width="wrap_content"

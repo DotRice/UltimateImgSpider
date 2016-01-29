@@ -201,6 +201,7 @@
     <string name="goOn">继续</string>
     <string name="help">帮助</string>
     <string name="home">主页</string>
+    <string name="inDeletingTips">删除中，请稍候...</string>
     <string name="inDeletingToast">正在删除当前项目，请稍候...</string>
     <string name="keyBackExitConfirm">再按一次返回键，退出</string>
     <string name="menu">菜单</string>
