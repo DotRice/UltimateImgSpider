@@ -92,7 +92,7 @@ public class SlotView extends GLView
 
         @Override
         public boolean onScroll(float dx, float dy, float totalX, float totalY) {
-            Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
+            //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
 
             mGLrootView.lockRenderThread();
             scroll(dy);
@@ -226,7 +226,8 @@ public class SlotView extends GLView
     {
         rebound=true;
         overScrollGapYRaw=overScrollGapY;
-        reboundVelocity=overScrollGapYRaw*REBOUND_VELOCITY_PARAM/slotSize;
+        reboundVelocity=Math.abs(overScrollGapYRaw*REBOUND_VELOCITY_PARAM/slotSize);
+        Log.i(TAG, "startRebound "+reboundVelocity);
     }
 
     private void startFly(float velocity)
