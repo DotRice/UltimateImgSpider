@@ -76,8 +76,6 @@ public class LoadingAnimationIcon extends View
     {
         super.onDraw(canvas);
 
-
-
         float speed=direction*(SPEED_MAX-(SPEED_MAX-SPEED_MIN)*Math.abs(spread-speedMaxPos)/speedMaxPos);
 
         if((direction>0&&spread>=spreadMax)||(direction<0&&spread<=0))
@@ -102,7 +100,7 @@ public class LoadingAnimationIcon extends View
             canvas.drawRect(curLeft, curTop, curLeft + boxSize, curTop + boxSize, paint);
             canvas.rotate(0 - boxDegrees, boxCenterLeft, boxCenterTop);
         }
+        
         invalidate();
     }
-
 }

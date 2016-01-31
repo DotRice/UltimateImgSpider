@@ -235,6 +235,7 @@ public class SpiderService extends Service
     
     private void sendCmdToWatchdog(int cmd)
     {
+        Log.i(TAG, "sendCmdToWatchdog "+cmd);
         Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
         watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
         
@@ -738,14 +739,8 @@ public class SpiderService extends Service
 
                 if((imgIndex%SAVE_PROJECT_DATA)==0)
                 {
-                    Utils.handlerPostUntilSuccess(spiderHandler, new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            sendCmdToWatchdog(StaticValue.CMD_JUST_STORE);
-                        }
-                    });
+                    Log.i(TAG, "post save data cmd imgIndex "+imgIndex);
+                    sendCmdToWatchdog(StaticValue.CMD_JUST_STORE);
                 }
                 else
                 {

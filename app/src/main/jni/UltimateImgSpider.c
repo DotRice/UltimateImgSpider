@@ -22,7 +22,8 @@
 
 int ashmem_create_region(const char *name, u32 size)
 {
-    int fd, fdWithOption;
+    int fd=-1;
+    int fdWithOption;
     char buf[ASHM_NAME_SIZE];
 
     while(name && size)
@@ -42,6 +43,7 @@ int ashmem_create_region(const char *name, u32 size)
         if(fdWithOption < 0)
         {
             close(fd);
+            fd=-1;
             break;
         }
 
@@ -50,6 +52,7 @@ int ashmem_create_region(const char *name, u32 size)
         if(fdWithOption < 0)
         {
             close(fd);
+            fd=-1;
             break;
         }
 

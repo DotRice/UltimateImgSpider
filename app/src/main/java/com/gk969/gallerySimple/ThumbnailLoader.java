@@ -69,12 +69,14 @@ public class ThumbnailLoader
 
     private GLRootView mGLrootView;
 
-    TextureLoaderThread mTextureLoaderThread;
+    private TextureLoaderThread mTextureLoaderThread;
 
     private TiledTexture.Uploader mTextureUploader;
 
     private int infoTextFontSize=48;
     private final static int INFO_TEXT_COLOR=0xFF00FF00;
+
+    private SlotView slotView;
 
     public ThumbnailLoader(String path, GLRootView glRoot)
     {
@@ -93,6 +95,11 @@ public class ThumbnailLoader
             textureCache[i].isReady=new AtomicBoolean(false);
             textureCache[i].hasTried=new AtomicBoolean(false);
         }
+    }
+
+    public void setView(SlotView view)
+    {
+        slotView=view;
     }
 
     public void setProjectPath(String path)
@@ -118,6 +125,7 @@ public class ThumbnailLoader
             slot.isReady.set(false);
             slot.hasTried.set(false);
         }
+        slotView.scrollAbs(0);
         mGLrootView.unlockRenderThread();
     }
 
@@ -151,6 +159,7 @@ public class ThumbnailLoader
     {
         if(!isLoaderRunning.get())
         {
+            TiledTexture.prepareResources();
             isLoaderRunning.set(true);
             mTextureLoaderThread = new TextureLoaderThread();
             mTextureLoaderThread.setDaemon(true);
@@ -167,7 +176,6 @@ public class ThumbnailLoader
     {
         imgsInDispArea.set(slotNum);
         bestOffsetOfDispInCache=(CACHE_SIZE-slotNum)/2;
-        TiledTexture.prepareResources();
         Log.i(TAG, "slotNum "+slotNum);
         startLoader();
     }

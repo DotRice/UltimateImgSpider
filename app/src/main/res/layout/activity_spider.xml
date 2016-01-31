@@ -24,6 +24,13 @@
 	        layout="@layout/proj_bar" />
 	</LinearLayout>
 
+    <!--
+    <com.gk969.View.LoadingAnimationIcon
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="400dp"/>
+        -->
+
     <TextView 
         android:id="@+id/tvSpiderLog"
 	    android:layout_width="wrap_content"

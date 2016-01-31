@@ -31,7 +31,7 @@ import com.gk969.gallery.gallery3d.util.UsageStatistics;
 
 public class SlotView extends GLView
 {
-    private static final String TAG = "AlbumView";
+    private static final String TAG = "SlotView";
     private final float mMatrix[] = new float[16];
     private final static float BACKGROUND_COLOR[]=new float[]{0, 0, 0, 0};
     
@@ -50,8 +50,8 @@ public class SlotView extends GLView
     private int slotRowsInView;
     private int slotHeightWithGap;
 
-    private int scrollDistance=0;
-    private int scrollDistanceOverRow=0;
+    private int scrollDistance;
+    private int scrollDistanceOverRow;
 
     private ThumbnailLoader mThumbnailLoader;
     private GLRootView mGLrootView;
@@ -67,8 +67,9 @@ public class SlotView extends GLView
     private float flyVelocity;
     private float flyVelocityRaw;
 
+    private static final float REBOUND_VELOCITY_PARAM=2000;
     private float overScrollGapY=0;
-    private static final float REBOUND_VELOCITY=300;
+    private float reboundVelocity=0;
     private boolean rebound;
     private float overScrollGapYRaw;
     
@@ -91,10 +92,10 @@ public class SlotView extends GLView
 
         @Override
         public boolean onScroll(float dx, float dy, float totalX, float totalY) {
-            //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
+            Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
 
             mGLrootView.lockRenderThread();
-            scroll(dy, getScrollDistanceMax());
+            scroll(dy);
             mGLrootView.unlockRenderThread();
             
             invalidate();
@@ -166,6 +167,7 @@ public class SlotView extends GLView
         mThumbnailLoader=loader;
         mThumbnailLoader.dispAreaScrollToIndex(0);
         mGLrootView=glRootView;
+        loader.setView(this);
     }
 
     @Override
@@ -183,6 +185,9 @@ public class SlotView extends GLView
     {
         Log.i(TAG, "setViewSize "+width+" "+height);
 
+        int prevSlotHeightWithGap=slotHeightWithGap;
+        int prevSlotsPerRow=slotsPerRow;
+
         slotsPerRow=(width>height)?SLOT_PER_ROW_LANDSCAPE:SLOT_PER_ROW_PORTRAIT;
 
         slotSize=(width-(slotsPerRow-1)*slotGap)/slotsPerRow;
@@ -191,6 +196,18 @@ public class SlotView extends GLView
         slotHeightWithGap=slotSize+slotGap;
         slotRowsInView=viewHeight/slotHeightWithGap + 2;
         mThumbnailLoader.init(slotRowsInView * slotsPerRow);
+
+        if(scrollDistance!=0)
+        {
+            int scrollMax=getScrollDistanceMax();
+            int newScroll = scrollDistance / prevSlotHeightWithGap * prevSlotsPerRow / slotsPerRow
+                    * slotHeightWithGap + scrollDistance % prevSlotHeightWithGap;
+            if (newScroll > scrollMax)
+            {
+                newScroll=scrollMax;
+            }
+            scrollAbs(newScroll);
+        }
     }
 
     private void stopAnimation()
@@ -209,6 +226,7 @@ public class SlotView extends GLView
     {
         rebound=true;
         overScrollGapYRaw=overScrollGapY;
+        reboundVelocity=overScrollGapYRaw*REBOUND_VELOCITY_PARAM/slotSize;
     }
 
     private void startFly(float velocity)
@@ -230,6 +248,16 @@ public class SlotView extends GLView
         return scrollMax;
     }
 
+    private void scroll(float dy)
+    {
+        scroll(dy, getScrollDistanceMax());
+    }
+
+    public void scrollAbs(int distance)
+    {
+        scroll(distance-scrollDistance);
+    }
+
     private void scroll(float dy, int scrollMax)
     {
         scrollDistance+=dy;
@@ -237,7 +265,7 @@ public class SlotView extends GLView
         {
             scrollDistance=(scrollDistance<0)?0:scrollMax;
             overScrollGapY-=dy/(Math.abs(overScrollGapY)+2)/4;
-            //Log.i(TAG, "overScrollGapY " + overScrollGapY);
+            Log.i(TAG, "overScrollGapY " + overScrollGapY);
         }
         else if(overScrollGapY!=0)
         {
@@ -308,7 +336,7 @@ public class SlotView extends GLView
             if(overScrollGapY!=0)
             {
                 float preGap=overScrollGapY;
-                overScrollGapY-=((overScrollGapY>0)?1:-1)*interval*REBOUND_VELOCITY/1000/
+                overScrollGapY-=((overScrollGapY>0)?1:-1)*interval*reboundVelocity/1000/
                         calculateDecelerate(overScrollGapY, overScrollGapYRaw);
                 if(overScrollGapY*preGap<=0)
                 {
