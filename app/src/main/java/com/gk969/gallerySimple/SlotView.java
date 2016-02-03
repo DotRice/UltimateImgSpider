@@ -67,7 +67,7 @@ public class SlotView extends GLView
     private float flyVelocity;
     private float flyVelocityRaw;
 
-    private static final float REBOUND_VELOCITY_PARAM=2000;
+    private static final float REBOUND_VELOCITY_PARAM=7;
     private float overScrollGapY=0;
     private float reboundVelocity=0;
     private boolean rebound;
@@ -187,6 +187,7 @@ public class SlotView extends GLView
 
         int prevSlotHeightWithGap=slotHeightWithGap;
         int prevSlotsPerRow=slotsPerRow;
+        int prevViewHeight=viewHeight;
 
         slotsPerRow=(width>height)?SLOT_PER_ROW_LANDSCAPE:SLOT_PER_ROW_PORTRAIT;
 
@@ -197,7 +198,7 @@ public class SlotView extends GLView
         slotRowsInView=viewHeight/slotHeightWithGap + 2;
         mThumbnailLoader.init(slotRowsInView * slotsPerRow);
 
-        if(scrollDistance!=0)
+        if((scrollDistance!=0)&&(prevViewHeight!=height))
         {
             int scrollMax=getScrollDistanceMax();
             int newScroll = scrollDistance / prevSlotHeightWithGap * prevSlotsPerRow / slotsPerRow
@@ -226,7 +227,7 @@ public class SlotView extends GLView
     {
         rebound=true;
         overScrollGapYRaw=overScrollGapY;
-        reboundVelocity=Math.abs(overScrollGapYRaw*REBOUND_VELOCITY_PARAM/slotSize);
+        reboundVelocity=Math.abs(overScrollGapYRaw*REBOUND_VELOCITY_PARAM);
         Log.i(TAG, "startRebound "+reboundVelocity);
     }
 
