@@ -48,7 +48,7 @@ public class ThumbnailLoader
 {
     private static final String TAG = "ThumbnailLoader";
 
-    private final static int CACHE_SIZE=64;
+    private final static int CACHE_SIZE=128;
     //A circle cache
     private SlotTexture[] textureCache=new SlotTexture[CACHE_SIZE];
     private AtomicInteger scrollStep=new AtomicInteger(1);
@@ -73,25 +73,38 @@ public class ThumbnailLoader
 
     private TiledTexture.Uploader mTextureUploader;
 
-    private int infoTextFontSize=48;
+    private int infoTextFontSize;
     private final static int INFO_TEXT_COLOR=0xFF00FF00;
 
     private SlotView slotView;
 
-    public ThumbnailLoader(String path, GLRootView glRoot)
+    public boolean needLabel;
+
+    public ThumbnailLoader(String path, GLRootView glRoot, boolean isNeedLable)
     {
-        projectPath=path+"/";
+        needLabel=isNeedLable;
+        init(path, glRoot);
+    }
+
+    private void init(String path, GLRootView glRoot)
+    {
+        projectPath=path;
         mTextureUploader=new TiledTexture.Uploader(glRoot);
         mGLrootView=glRoot;
 
         for(int i=0; i<CACHE_SIZE; i++)
         {
             textureCache[i]=new SlotTexture();
-            textureCache[i].bitmap=Bitmap.createBitmap(StaticValue.THUMBNAIL_SIZE,
+            textureCache[i].mainBmp=Bitmap.createBitmap(StaticValue.THUMBNAIL_SIZE,
                     StaticValue.THUMBNAIL_SIZE, Bitmap.Config.RGB_565);
-            textureCache[i].imgIndex=i;
-            textureCache[i].info=StringTexture.newInstance(String.valueOf(i), infoTextFontSize,
-                                                            INFO_TEXT_COLOR);
+
+            if(needLabel)
+            {
+                textureCache[i].label = StringTexture.newInstance(String.valueOf(i),
+                        infoTextFontSize, INFO_TEXT_COLOR);
+            }
+
+            textureCache[i].imgIndex=new AtomicInteger(i);
             textureCache[i].isReady=new AtomicBoolean(false);
             textureCache[i].hasTried=new AtomicBoolean(false);
         }
@@ -106,65 +119,74 @@ public class ThumbnailLoader
     {
         Log.i(TAG, "setProjectPath "+path);
         projectPathLock.lock();
-        projectPath=path+"/";
+        projectPath=path;
         projectPathLock.unlock();
     }
 
     private void clearCache()
     {
-        mGLrootView.lockRenderThread();
         for (SlotTexture slot : textureCache)
         {
-            if (slot.texture != null)
-            {
-                slot.texture.recycle();
-                slot.texture = null;
-                slot.info.recycle();
-                slot.info = null;
-            }
-            slot.isReady.set(false);
-            slot.hasTried.set(false);
+            slot.recycle();
         }
-        slotView.scrollAbs(0);
-        mGLrootView.unlockRenderThread();
     }
 
     public void setAlbumTotalImgNum(int totalImgNum)
     {
+        //Log.i(TAG, "setAlbumTotalImgNum " + totalImgNum);
+
+        int prevTotalImgNum=albumTotalImgNum.get();
+        if(prevTotalImgNum==totalImgNum)
+        {
+            return;
+        }
+
+        albumTotalImgNum.set(totalImgNum);
+
         if(totalImgNum==0)
         {
-            if(albumTotalImgNum.get()!=0)
+            if(prevTotalImgNum!=0)
             {
+                mGLrootView.lockRenderThread();
                 clearCache();
+                slotView.scrollAbs(0);
+                mGLrootView.unlockRenderThread();
                 mGLrootView.requestRender();
             }
         }
 
-        if(dispAreaOffset.get()+CACHE_SIZE>albumTotalImgNum.get())
+
+
+        if(totalImgNum>prevTotalImgNum)
         {
-            for(SlotTexture slot : textureCache)
+            if(dispAreaOffset.get()+CACHE_SIZE>prevTotalImgNum)
             {
-                slot.hasTried.set(false);
+                mGLrootView.lockRenderThread();
+                refreshCacheOffset(dispAreaOffset.get(), true);
+                mGLrootView.unlockRenderThread();
+
+                for (SlotTexture slot:textureCache)
+                {
+                    slot.hasTried.set(false);
+                }
             }
+
         }
 
-        if(dispAreaOffset.get()+imgsInDispArea.get()>albumTotalImgNum.get())
-        {
-            mGLrootView.requestRender();
-        }
-        albumTotalImgNum.set(totalImgNum);
+        mGLrootView.requestRender();
+
+
+        Log.i(TAG, "setAlbumTotalImgNum end");
     }
 
     public void startLoader()
     {
-        if(!isLoaderRunning.get())
-        {
-            TiledTexture.prepareResources();
-            isLoaderRunning.set(true);
-            mTextureLoaderThread = new TextureLoaderThread();
-            mTextureLoaderThread.setDaemon(true);
-            mTextureLoaderThread.start();
-        }
+        TiledTexture.prepareResources();
+        isLoaderRunning.set(true);
+        mTextureLoaderThread = new TextureLoaderThread();
+        mTextureLoaderThread.setDaemon(true);
+        mTextureLoaderThread.start();
+
     }
 
     public void stopLoader()
@@ -172,12 +194,22 @@ public class ThumbnailLoader
         isLoaderRunning.set(false);
     }
 
-    public void init(int slotNum)
+    public void initAboutView(int slotNum, int lableHeight)
     {
         imgsInDispArea.set(slotNum);
         bestOffsetOfDispInCache=(CACHE_SIZE-slotNum)/2;
         Log.i(TAG, "slotNum "+slotNum);
-        startLoader();
+
+        infoTextFontSize=lableHeight;
+
+        if(!isLoaderRunning.get())
+        {
+            startLoader();
+        }
+        else
+        {
+            clearCache();
+        }
     }
 
     public SlotTexture getTexture(int index)
@@ -192,15 +224,40 @@ public class ThumbnailLoader
 
     public class SlotTexture
     {
+        Bitmap mainBmp;
         TiledTexture texture;
-        Bitmap bitmap;
-        StringTexture info;
-        int imgIndex;
+        StringTexture label;
+        AtomicInteger imgIndex;
         AtomicBoolean isReady;
         AtomicBoolean hasTried;
+
+        public void recycle()
+        {
+            if(texture!=null)
+            {
+                texture.recycle();
+                texture = null;
+
+                if(needLabel)
+                {
+                    label.recycle();
+                    label = null;
+                }
+            }
+
+            isReady.set(false);
+            hasTried.set(false);
+        }
     }
 
+
+
     public void dispAreaScrollToIndex(int index)
+    {
+        refreshCacheOffset(index, false);
+    }
+
+    public void refreshCacheOffset(int index, boolean forceRefresh)
     {
         int newCacheOffset=index-bestOffsetOfDispInCache;
         int cacheOffsetMax=albumTotalImgNum.get()-CACHE_SIZE;
@@ -218,12 +275,12 @@ public class ThumbnailLoader
             newCacheOffset=cacheOffsetMax;
         }
 
-        if(newCacheOffset != cacheOffset)
+        if((newCacheOffset != cacheOffset)||forceRefresh)
         {
             int interval=Math.abs(newCacheOffset-cacheOffset);
             int step;
             int imgIndex;
-            if (newCacheOffset > cacheOffset)
+            if (newCacheOffset >= cacheOffset)
             {
                 step = 1;
                 imgIndex=cacheOffset+CACHE_SIZE;
@@ -238,18 +295,9 @@ public class ThumbnailLoader
             {
                 //Log.i(TAG, "recycle cacheIndex:" + cacheIndex + " imgIndex:" + imgIndex);
                 SlotTexture slot=textureCache[imgIndex % CACHE_SIZE];
-                if(slot.texture!=null)
-                {
-                    slot.texture.recycle();
-                    slot.texture = null;
-                    slot.info.recycle();
-                    slot.info = null;
-                }
+                slot.recycle();
 
-                slot.imgIndex = imgIndex;
-                slot.isReady.set(false);
-                slot.hasTried.set(false);
-
+                slot.imgIndex.set(imgIndex);
                 imgIndex += step;
             }
 
@@ -269,11 +317,12 @@ public class ThumbnailLoader
 
         private Bitmap getThumbnailByIndex(int index, Bitmap container)
         {
+            Log.i(TAG, "try to load index:" + index);
             int group=index/StaticValue.MAX_IMG_FILE_PER_DIR;
             int offset=index%StaticValue.MAX_IMG_FILE_PER_DIR;
 
             projectPathLock.lock();
-            String fileName=String.format("%s%s/%d/%03d.jpg", projectPath,StaticValue.THUMBNAIL_DIR_NAME,
+            String fileName=String.format("%s/%s/%d/%03d.jpg", projectPath,StaticValue.THUMBNAIL_DIR_NAME,
                     group, offset);
             projectPathLock.unlock();
 
@@ -296,11 +345,13 @@ public class ThumbnailLoader
                 SlotTexture slot=textureCache[cacheIndex];
                 if(!slot.hasTried.get())
                 {
+                    Log.i(TAG, "Try "+slot.imgIndex.get());
+                    boolean hasTried=true;
                     if(!slot.isReady.get())
                     {
                         mGLrootView.lockRenderThread();
-                        int imgIndex = slot.imgIndex;
-                        Bitmap bmpContainer = slot.bitmap;
+                        int imgIndex = slot.imgIndex.get();
+                        Bitmap bmpContainer = slot.mainBmp;
                         mGLrootView.unlockRenderThread();
 
                         Bitmap bmp = getThumbnailByIndex(imgIndex, bmpContainer);
@@ -308,21 +359,28 @@ public class ThumbnailLoader
                         if (bmp != null)
                         {
                             mGLrootView.lockRenderThread();
-                            if (imgIndex == slot.imgIndex)
+                            if (imgIndex == slot.imgIndex.get())
                             {
                                 slot.texture = new TiledTexture(bmp);
-                                slot.info = StringTexture.newInstance(
-                                        String.valueOf(imgIndex), infoTextFontSize, INFO_TEXT_COLOR);
+
+                                if(needLabel)
+                                {
+                                    slot.label = StringTexture.newInstance(
+                                            String.valueOf(imgIndex), infoTextFontSize, INFO_TEXT_COLOR);
+                                }
+
                                 slot.isReady.set(true);
-                                //Log.i(TAG, "load  cacheIndex:" + cacheIndex + " imgIndex:" +
-                                //        textureCache[cacheIndex].imgIndex);
+                                Log.i(TAG, "load success  cacheIndex:" + cacheIndex + " imgIndex:" +
+                                        textureCache[cacheIndex].imgIndex);
                                 mTextureUploader.addTexture(slot.texture);
                             }
 
                             mGLrootView.unlockRenderThread();
                         }
-                        slot.hasTried.set(imgIndex == slot.imgIndex);
+                        hasTried=imgIndex == slot.imgIndex.get();
                     }
+
+                    slot.hasTried.set(hasTried);
                 }
 
                 if(dispAreaOffset.get()!=dispOffset)

@@ -1009,6 +1009,10 @@ public class PhotoView extends GLView {
         }
 
         @Override
+        public void onLongPress(float x, float y){
+        }
+
+        @Override
         public boolean onDoubleTap(float x, float y) {
             if (mIgnoreSwipingGesture) return true;
             if (mPictures.get(0).isCamera()) return false;

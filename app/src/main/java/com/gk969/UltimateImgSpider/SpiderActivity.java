@@ -16,6 +16,7 @@ import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
 import com.gk969.gallery.gallery3d.ui.GLView;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
+import com.gk969.gallerySimple.AlbumThumbnailLoader;
 import com.gk969.gallerySimple.ThumbnailLoader;
 import com.gk969.gallerySimple.SlotView;
 
@@ -354,44 +355,22 @@ public class SpiderActivity extends Activity
     {
         GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
 
-        mThumbnailLoader=new ThumbnailLoader(projectPath, glRootView);
-        glRootView.setContentPane(new SlotView(this, mThumbnailLoader, glRootView));
-
-        /*
-        new Thread(new Runnable()
+        mThumbnailLoader=new AlbumThumbnailLoader(projectPath, glRootView);
+        SlotView slotView=new SlotView(this, mThumbnailLoader, glRootView);
+        slotView.setOnDoubleTap(new Runnable()
         {
             @Override
             public void run()
             {
-                while(true)
-                {
-                    mHandler.post(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            spiderLog.setText("Total:"
-                                    + MemoryInfo.getTotalMemInMb() + "M Free:"
-                                    + MemoryInfo.getFreeMemInMb(SpiderActivity.this)
-                                    + "M\r\nActivity VM:"+(Runtime.getRuntime().totalMemory() >> 10)
-                                    + "K Native:"+(Debug.getNativeHeapSize()>>10)+"K\r\n");
-                        }
-                    });
+                Log.i(TAG, "slotView OnDoubleTap");
+                spiderLog.setVisibility((spiderLog.getVisibility()==View.VISIBLE)?
+                        View.INVISIBLE:View.VISIBLE);
 
-                    try
-                    {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
             }
-        }).start();
-        */
+        });
+
+        glRootView.setContentPane(slotView);
     }
-
-
 
     private void checkAndStart()
     {
@@ -402,39 +381,36 @@ public class SpiderActivity extends Activity
             return;
         }
 
-        checkNetwork(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
-                sendCmdToSpiderService(StaticValue.CMD_START);
-            }
-        });
+        checkNetwork();
     }
 
-    private void checkNetwork(final Runnable runOnNetWorkEffective)
+
+    private void checkNetwork()
     {
         new Thread(new Runnable()
         {
             @Override
             public void run()
             {
-                if (Utils.isNetworkEffective())
+                Runnable networkValid=new Runnable()
                 {
-                    mHandler.post(runOnNetWorkEffective);
-                }
-                else
-                {
-                    mHandler.post(new Runnable()
+                    @Override
+                    public void run()
                     {
-                        @Override
-                        public void run()
-                        {
-                            showDialog(DLG_NETWORK_PROMPT);
-                        }
-                    });
-                }
+                        btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
+                        sendCmdToSpiderService(StaticValue.CMD_START);
+                    }
+                };
+
+                Runnable networkInvalid=new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        showDialog(DLG_NETWORK_PROMPT);
+                    }
+                };
+                mHandler.post(Utils.isNetworkEffective()?networkValid:networkInvalid);
             }
         }).start();
     }
@@ -576,20 +552,7 @@ public class SpiderActivity extends Activity
                 }
                 else
                 {
-                    checkNetwork(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            if (projectSrcUrl != null)
-                            {
-                                btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
-
-                                sendCmdToSpiderService(StaticValue.CMD_START);
-                            }
-                        }
-                    });
-
+                    checkNetwork();
                 }
             }
         });
@@ -612,6 +575,7 @@ public class SpiderActivity extends Activity
             @Override
             public void onAction()
             {
+
                 if(serviceState != STATE_DISCONNECTED)
                 {
                     sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
@@ -627,6 +591,8 @@ public class SpiderActivity extends Activity
                     }
                     showDialog(DLG_DELETE);
                 }
+
+
             }
         });
 

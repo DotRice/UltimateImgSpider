@@ -412,6 +412,7 @@ public class SelSrcActivity extends Activity
                     switch (viewId)
                     {
                         case R.id.buttonBack:
+                            Log.i(TAG, "buttonBack");
                             if (browser.canGoBack())
                             {
                                 browser.goBack();
