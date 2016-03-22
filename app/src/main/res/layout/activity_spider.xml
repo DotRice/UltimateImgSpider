@@ -1,40 +1,34 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-	tools:context="com.gk969.UltimateImgSpider.SpiderCrawlActivity"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_drawer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-
-    <com.gk969.gallery.gallery3d.ui.GLRootView
-        android:id="@+id/gl_root_view"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_above="@+id/project_bar"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
 
-    <include
-        android:id="@+id/project_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        layout="@layout/proj_bar" />
+        <com.gk969.gallery.gallery3d.ui.GLRootView
+            android:id="@+id/gl_root_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
 
-    <!--
-    <com.gk969.View.LoadingAnimationIcon
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="400dp"/>
-        -->
+        <include
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            layout="@layout/proj_bar"/>
 
-    <TextView 
-        android:id="@+id/tvSpiderLog"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-	    android:textColor="#F00"
-	    android:textSize="18sp"
-	    android:background="#0000"
-        />
-</RelativeLayout>
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/info_list"
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:divider="#333"
+        android:dividerHeight="1dp"
+        android:background="#CFFF"/>
+</android.support.v4.widget.DrawerLayout>

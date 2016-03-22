@@ -404,8 +404,7 @@ public class SpiderService extends Service
                         e.printStackTrace();
                         stopSelfAndWatchdog();
                     }
-                    File siteDir = Utils.getDirInExtSto(getString(R.string.appPackageName)
-                            + "/download/" + srcHost);
+                    File siteDir = Utils.getDirInExtSto(getString(R.string.appPackageName) + "/" + srcHost);
                     if (siteDir == null)
                     {
                         stopSelfAndWatchdog();
@@ -660,6 +659,11 @@ public class SpiderService extends Service
                     //Log.i(TAG, "state:"+state);
                     if (state.get() != STAT_WORKING)
                     {
+                        jniDataLock.lock();
+                        Log.i(TAG, "save img download");
+                        jniFindNextImgUrl((int) imgUrlJniAddr, imgProcParam);
+                        jniDataLock.unlock();
+
                         break;
                     }
 
@@ -1043,7 +1047,7 @@ public class SpiderService extends Service
 
         jsonReportStr += "\"siteScanCompleted\":" + ((state.get() == STAT_COMPLETE) ? "true" : "false");
 
-        jsonReportStr += "\r\n}";
+        jsonReportStr += ",\r\n";
 
         int numOfCallback = mCallbacks.beginBroadcast();
         for (int i = 0; i < numOfCallback; i++)

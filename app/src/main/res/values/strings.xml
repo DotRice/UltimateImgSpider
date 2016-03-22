@@ -44,5 +44,23 @@
     <string name="retry">重试</string>
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
     <string name="badExternalStoragePrompt">外部存储空间出错！</string>
-    
+
+    <string-array name="infoNameArray">
+        <item>已下载图片数</item>
+        <item>已扫描图片数</item>
+        <item>图片URL总数</item>
+        <item>图片树高度</item>
+        <item>已扫描网页数</item>
+        <item>网页总数</item>
+        <item>网页树高度</item>
+        <item>网页加载用时</item>
+        <item>网页扫描用时</item>
+        <item>网页查找用时</item>
+        <item>当前网速</item>
+        <item>当前网页</item>
+        <item>系统内存</item>
+        <item>应用界面内存</item>
+        <item>应用服务内存</item>
+    </string-array>
+
 </resources>

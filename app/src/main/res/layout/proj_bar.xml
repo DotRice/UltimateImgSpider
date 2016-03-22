@@ -3,33 +3,37 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:baselineAligned="false"
-    android:orientation="horizontal" >
-    
-    <com.gk969.View.ImageTextButton
+    android:orientation="horizontal">
+
+    <ImageButton
+        android:id="@+id/buttonInfo"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/projbar_height"
+        android:layout_weight="1"
+        android:src="@drawable/big_menu"
+        android:contentDescription="@string/menu"
+        android:scaleType="fitCenter"
+        android:background="@drawable/button_bcakground_selector" />
+
+    <ImageButton
         android:id="@+id/buttonPauseOrContinue"
-        android:layout_weight="1"
         android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-        image="@drawable/pause"
-        image_size="35dp"
-        text="@string/pause" />
-    
-    <com.gk969.View.ImageTextButton
-        android:id="@+id/buttonSelSrc"
+        android:layout_height="@dimen/projbar_height"
         android:layout_weight="1"
+        android:src="@drawable/start"
+        android:contentDescription="@string/start"
+        android:scaleType="fitCenter"
+        android:background="@drawable/button_bcakground_selector" />
+
+    <ImageButton
+        android:id="@+id/buttonDelete"
         android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-        image="@drawable/select_src"
-        image_size="35dp"
-        text="@string/selSrc" />
-	
-    <com.gk969.View.ImageTextButton
-        android:id="@+id/buttonClear"
+        android:layout_height="@dimen/projbar_height"
         android:layout_weight="1"
-        android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-        image="@drawable/delete"
-        image_size="35dp"
-        text="@string/clear" />
-    
+        android:src="@drawable/delete"
+        android:contentDescription="@string/delete"
+        android:scaleType="fitCenter"
+        android:background="@drawable/button_bcakground_selector" />
+
+
 </LinearLayout>

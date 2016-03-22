@@ -1,0 +1,2 @@
+1.进入SelSrcActivity后SpiderActivity可能会被回收。返回后，SpiderActivity会被重新加载启动（启动时自动开始一个项目）。从而导致往SpiderService发送重复或者错误指令。
+2.

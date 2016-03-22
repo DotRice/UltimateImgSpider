@@ -16,9 +16,11 @@ import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
 import com.gk969.gallery.gallery3d.ui.GLView;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
-import com.gk969.gallerySimple.AlbumThumbnailLoader;
+import com.gk969.gallerySimple.AlbumLoaderHelper;
+import com.gk969.gallerySimple.AlbumSetLoaderHelper;
 import com.gk969.gallerySimple.ThumbnailLoader;
 import com.gk969.gallerySimple.SlotView;
+import com.gk969.gallerySimple.ThumbnailLoaderHelper;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -43,19 +45,24 @@ import android.os.Message;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -75,21 +82,25 @@ public class SpiderActivity extends Activity
     private static final int        STATE_DISCONNECTED    = 4;
 
     private int              serviceState = STATE_DISCONNECTED;
+    
+    private ImageButton btnPauseOrContinue;
 
-    private ImageTextButton  btPauseOrContinue;
-    private ImageTextButton  btSelSrc;
-    private ImageTextButton  btClear;
+    private DrawerLayout mainDrawer;
+    private ListView infoList;
+    private InfoListAdapter infoListAdapter;
 
-    String projectSrcUrl;
-    String projectPath;
+    private String projectSrcUrl;
+    private String projectPath;
+    private String appPath;
 
-    private TextView         spiderLog;
 
     private MessageHandler   mHandler = new MessageHandler(this);
 
     private static final int BUMP_MSG = 1;
 
     private ThumbnailLoader mThumbnailLoader;
+    private AlbumLoaderHelper albumLoaderHelper;
+    private AlbumSetLoaderHelper albumSetLoaderHelper;
 
 
     private ServiceConnection            mConnection;
@@ -155,8 +166,7 @@ public class SpiderActivity extends Activity
                                     @Override
                                     public void run()
                                     {
-                                        btPauseOrContinue.changeView(R.drawable.start, R.string.start);
-                                        btClear.changeView(R.drawable.delete, R.string.clear);
+                                        btnPauseOrContinue.setImageResource(R.drawable.start);
                                         Toast.makeText(SpiderActivity.this, R.string.deletedToast,
                                                 Toast.LENGTH_SHORT).show();
                                         mThumbnailLoader.setAlbumTotalImgNum(0);
@@ -213,22 +223,20 @@ public class SpiderActivity extends Activity
                     //Log.i(SpiderActivity.TAG, jsonReportStr);
                     try
                     {
+                        long freeMem = MemoryInfo.getFreeMemInMb(theActivity);
+                        jsonReportStr+="\"sysMem\":\""+MemoryInfo.getTotalMemInMb()+"M "+freeMem+"M\",\r\n"
+                                +"\"activityMem\":\""+(Runtime.getRuntime().totalMemory() >> 10)
+                                + "K "+(Debug.getNativeHeapSize()>>10)+"K\"\r\n}";
+
                         JSONObject jsonReport = new JSONObject(jsonReportStr);
 
-                        long freeMem = MemoryInfo.getFreeMemInMb(theActivity);
+                        theActivity.refreshInfoValues(jsonReport);
+
                         int serviceNativeMem = jsonReport.getInt("serviceNativeMem")>>10;
-
-                        /**/
-                        theActivity.spiderLog.setText("Total:"
-                                + MemoryInfo.getTotalMemInMb() + "M Free:" + freeMem
-                                + "M\r\nActivity VM:"+(Runtime.getRuntime().totalMemory() >> 10)
-                                + "K Native:"+(Debug.getNativeHeapSize()>>10)+"K\r\n"
-                                + jsonReportStr);
-
 
                         if (jsonReport.getBoolean("siteScanCompleted"))
                         {
-                            theActivity.btPauseOrContinue.changeView(R.drawable.start, R.string.start);
+                            theActivity.btnPauseOrContinue.setImageResource(R.drawable.start);
                         }
                         else if (freeMem < 50 || serviceNativeMem > 50)
                         {
@@ -321,16 +329,15 @@ public class SpiderActivity extends Activity
 
         Log.i(TAG, "onCreate");
 
-        spiderLog = (TextView) findViewById(R.id.tvSpiderLog);
-        projBarInit();
+        panelViewInit();
 
         firstRunOperat();
 
         getSrcUrlAndPath(ParaConfig.getHomeURL(getApplicationContext()));
         serviceInterfaceInit();
-        btPauseOrContinue.changeView(R.drawable.start, R.string.start);
+
         sendCmdToSpiderService(StaticValue.CMD_PAUSE_ON_START);
-        checkAndStart();
+        checkStorage();
 
         albumViewInit();
     }
@@ -342,8 +349,8 @@ public class SpiderActivity extends Activity
 
         try
         {
-            projectPath=Utils.getDirInExtSto(getString(R.string.appPackageName)
-                    + "/download/" + new URL(projectSrcUrl).getHost()).getPath();
+            appPath=Utils.getDirInExtSto(getString(R.string.appPackageName)).getPath();
+            projectPath=appPath + "/" + new URL(projectSrcUrl).getHost();
 
         } catch (MalformedURLException e)
         {
@@ -355,7 +362,10 @@ public class SpiderActivity extends Activity
     {
         GLRootView glRootView=(GLRootView)findViewById(R.id.gl_root_view);
 
-        mThumbnailLoader=new AlbumThumbnailLoader(projectPath, glRootView);
+        albumLoaderHelper=new AlbumLoaderHelper();
+        albumLoaderHelper.setProjectPath(projectPath);
+        albumSetLoaderHelper=new AlbumSetLoaderHelper(appPath);
+        mThumbnailLoader=new ThumbnailLoader(glRootView, albumLoaderHelper);
         SlotView slotView=new SlotView(this, mThumbnailLoader, glRootView);
         slotView.setOnDoubleTap(new Runnable()
         {
@@ -363,29 +373,30 @@ public class SpiderActivity extends Activity
             public void run()
             {
                 Log.i(TAG, "slotView OnDoubleTap");
-                spiderLog.setVisibility((spiderLog.getVisibility()==View.VISIBLE)?
-                        View.INVISIBLE:View.VISIBLE);
-
             }
         });
 
         glRootView.setContentPane(slotView);
     }
 
-    private void checkAndStart()
+    private void checkStorage()
     {
-        File appDir = Utils.getDirInExtSto(getString(R.string.appPackageName) + "/download");
+        File appDir = Utils.getDirInExtSto(getString(R.string.appPackageName));
         if (appDir == null)
         {
             showDialog(DLG_STORAGE_ERROR);
             return;
         }
+    }
 
-        checkNetwork();
+    private void checkAndStart()
+    {
+        checkStorage();
+        checkNetworkBeforeStart();
     }
 
 
-    private void checkNetwork()
+    private void checkNetworkBeforeStart()
     {
         new Thread(new Runnable()
         {
@@ -397,7 +408,7 @@ public class SpiderActivity extends Activity
                     @Override
                     public void run()
                     {
-                        btPauseOrContinue.changeView(R.drawable.pause, R.string.pause);
+                        btnPauseOrContinue.setImageResource(R.drawable.pause);
                         sendCmdToSpiderService(StaticValue.CMD_START);
                     }
                 };
@@ -448,6 +459,8 @@ public class SpiderActivity extends Activity
         super.onStop();
         Log.i(TAG, "onStop");
 
+        mThumbnailLoader.stopLoader();
+        handleSpiderServiceOnFinish();
     }
 
     private void tryToStopSpiderService()
@@ -470,8 +483,6 @@ public class SpiderActivity extends Activity
     {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
-        mThumbnailLoader.stopLoader();
-        handleSpiderServiceOnFinish();
     }
 
     // 返回至SelSrcActivity
@@ -492,11 +503,9 @@ public class SpiderActivity extends Activity
                     getSrcUrlAndPath(data.getAction());
                     Log.i(TAG, "REQUST_SRC_URL " + projectSrcUrl);
 
-                    btPauseOrContinue.changeView(R.drawable.pause,
-                            R.string.pause);
+                    btnPauseOrContinue.setImageResource(R.drawable.pause);
 
-                    mThumbnailLoader.setAlbumTotalImgNum(0);
-                    mThumbnailLoader.setProjectPath(projectPath);
+                    albumLoaderHelper.setProjectPath(projectPath);
 
                     if (serviceState == STATE_CONNECTED || serviceState == STATE_WAIT_CONNECT)
                     {
@@ -513,86 +522,133 @@ public class SpiderActivity extends Activity
         }
     }
 
-    private class ProjectBarOnClick implements View.OnClickListener
+    private void selectNewSourceUrl()
     {
-        @Override
-        public void onClick(View v)
-        {
-            if(inDeleting)
-            {
-                Toast.makeText(SpiderActivity.this, R.string.inDeletingToast,
-                        Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                onAction();
-            }
-        }
+        Intent intent = new Intent(SpiderActivity.this,
+                SelSrcActivity.class);
+        startActivityForResult(intent, REQUST_SRC_URL);
+    }
 
-        public void onAction()
+    private void deleteProject()
+    {
+        if(serviceState != STATE_DISCONNECTED)
         {
-
+            sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
+            inDeleting = true;
+            if(dialogDelete==null)
+            {
+                dialogDelete = new AlertDialog.Builder(SpiderActivity.this)
+                        .setTitle(getString(R.string.inDeletingTips))
+                        .setView(LayoutInflater.from(SpiderActivity.this).inflate(R.layout.delete_dialog, null))
+                        .setPositiveButton(R.string.OK, null)
+                        .create();
+            }
+            showDialog(DLG_DELETE);
         }
     }
 
-    private void projBarInit()
+    private class InfoListAdapter extends BaseAdapter
     {
-        btPauseOrContinue = (ImageTextButton) findViewById(R.id.buttonPauseOrContinue);
-        btPauseOrContinue.setOnClickListener(new ProjectBarOnClick()
+
+        @Override
+        public int getCount()
+        {
+            return infoNames.length;
+        }
+
+        @Override
+        public Object getItem(int position)
+        {
+            return infoValues[position];
+        }
+
+        @Override
+        public long getItemId(int position)
+        {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            if (convertView == null)
+                convertView = getLayoutInflater().inflate(R.layout.info_list_item, parent, false);
+            ((TextView)convertView.findViewById(R.id.name)).setText(infoNames[position]);
+            ((TextView)convertView.findViewById(R.id.value)).setText(infoValues[position]);
+
+            return convertView;
+        }
+    }
+
+    public void refreshInfoValues(JSONObject json)
+    {
+        try
+        {
+            infoValues[0]=String.valueOf(json.getInt("imgDownloadNum"));
+            infoValues[1]=String.valueOf(json.getInt("imgProcessedNum"));
+            infoValues[2]=String.valueOf(json.getInt("imgTotalNum"));
+            infoValues[3]=String.valueOf(json.getInt("imgTreeHeight"));
+            infoValues[4]=String.valueOf(json.getInt("pageScanedNum"));
+            infoValues[5]=String.valueOf(json.getInt("pageTotalNum"));
+            infoValues[6]=String.valueOf(json.getInt("pageTreeHeight"));
+            infoValues[7]=String.valueOf(json.getInt("pageLoadTime"))+"ms";
+            infoValues[8]=String.valueOf(json.getInt("pageScanTime"))+"ms";
+            infoValues[9]=String.valueOf(json.getInt("pageSearchTime"))+"ms";
+            infoValues[10]=json.getString("curNetSpeed");
+            infoValues[11]=json.getString("curPage");
+            infoValues[12]=json.getString("sysMem");
+            infoValues[13]=json.getString("activityMem");
+            infoValues[14]=json.getInt("serviceVmMem")+"K "+json.getInt("serviceNativeMem")+"K";
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+
+        infoListAdapter.notifyDataSetChanged();
+    }
+
+    private boolean cmdIsStart=true;
+    private String[] infoNames;
+    private String[] infoValues;
+    private void panelViewInit()
+    {
+        infoNames=getResources().getStringArray(R.array.infoNameArray);
+        infoValues=new String[infoNames.length];
+
+        mainDrawer=(DrawerLayout)findViewById(R.id.main_drawer);
+        infoList=(ListView)findViewById(R.id.info_list);
+
+        infoListAdapter=new InfoListAdapter();
+        infoList.setAdapter(infoListAdapter);
+
+        btnPauseOrContinue=(ImageButton)findViewById(R.id.buttonPauseOrContinue);
+
+        btnPauseOrContinue.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onAction()
+            public void onClick(View view)
             {
-                String cmd = btPauseOrContinue.textView.getText().toString();
-
-                if (cmd.equals(getString(R.string.pause)))
+                if (!cmdIsStart)
                 {
-                    btPauseOrContinue.changeView(R.drawable.start, R.string.goOn);
+                    cmdIsStart=true;
+                    btnPauseOrContinue.setImageResource(R.drawable.start);
                     sendCmdToSpiderService(StaticValue.CMD_PAUSE);
                 }
                 else
                 {
-                    checkNetwork();
+                    cmdIsStart=false;
+                    checkNetworkBeforeStart();
                 }
             }
         });
 
-        btSelSrc = (ImageTextButton) findViewById(R.id.buttonSelSrc);
-        btSelSrc.setOnClickListener(new ProjectBarOnClick()
+        ImageButton buttonInfo=(ImageButton)findViewById(R.id.buttonInfo);
+        buttonInfo.setOnClickListener(new OnClickListener()
         {
             @Override
-            public void onAction()
+            public void onClick(View v)
             {
-                Intent intent = new Intent(SpiderActivity.this,
-                        SelSrcActivity.class);
-                startActivityForResult(intent, REQUST_SRC_URL);
-            }
-        });
-
-        btClear = (ImageTextButton) findViewById(R.id.buttonClear);
-        btClear.setOnClickListener(new ProjectBarOnClick()
-        {
-            @Override
-            public void onAction()
-            {
-
-                if(serviceState != STATE_DISCONNECTED)
-                {
-                    sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
-                    btClear.changeView(R.drawable.delete, R.string.deleting);
-                    inDeleting = true;
-                    if(dialogDelete==null)
-                    {
-                        dialogDelete = new AlertDialog.Builder(SpiderActivity.this)
-                                .setTitle(getString(R.string.inDeletingTips))
-                                .setView(LayoutInflater.from(SpiderActivity.this).inflate(R.layout.delete_dialog, null))
-                                .setPositiveButton(R.string.OK, null)
-                                .create();
-                    }
-                    showDialog(DLG_DELETE);
-                }
-
-
+                mainDrawer.openDrawer(infoList);
             }
         });
 
@@ -662,14 +718,22 @@ public class SpiderActivity extends Activity
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
         Log.i(TAG, "onKeyDown " + keyCode);
-        if(inDeleting)
-        {
-            Toast.makeText(this, R.string.inDeletingToast, Toast.LENGTH_SHORT).show();
-            return true;
-        }
+
 
         if (keyCode == KeyEvent.KEYCODE_BACK)
         {
+            if(mainDrawer.isDrawerOpen(infoList))
+            {
+                mainDrawer.closeDrawer(infoList);
+                return true;
+            }
+
+            if(inDeleting)
+            {
+                Toast.makeText(this, R.string.inDeletingToast, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
             if (SystemClock.uptimeMillis() - exitTim > 2000)
             {
                 Toast.makeText(this,getString(R.string.keyBackExitConfirm)

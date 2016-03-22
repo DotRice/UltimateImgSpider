@@ -9,7 +9,8 @@ package com.gk969.UltimateImgSpider;
 
 public final class R {
     public static final class array {
-        public static final int noLongerConfirm=0x7f070000;
+        public static final int infoNameArray=0x7f070000;
+        public static final int noLongerConfirm=0x7f070001;
     }
     public static final class attr {
     }
@@ -108,7 +109,7 @@ public final class R {
         public static final int indicator_bar_width_large=0x7f060031;
         public static final int indicator_bar_width_xlarge=0x7f060032;
         public static final int manage_cache_bottom_height=0x7f060033;
-        public static final int navibar_layout_height=0x7f060034;
+        public static final int navibar_height=0x7f060034;
         public static final int navigation_bar_height=0x7f060035;
         public static final int navigation_bar_width=0x7f060036;
         public static final int onscreen_exposure_indicator_text_size=0x7f060037;
@@ -140,7 +141,7 @@ public final class R {
         public static final int popup_title_frame_min_height_xlarge=0x7f060051;
         public static final int popup_title_text_size=0x7f060052;
         public static final int popup_title_text_size_xlarge=0x7f060053;
-        public static final int projbar_layout_height=0x7f060054;
+        public static final int projbar_height=0x7f060054;
         public static final int setting_item_icon_width=0x7f060055;
         public static final int setting_item_icon_width_large=0x7f060056;
         public static final int setting_item_icon_width_xlarge=0x7f060057;
@@ -181,63 +182,66 @@ public final class R {
     public static final class drawable {
         public static final int add=0x7f020000;
         public static final int back=0x7f020001;
-        public static final int background_normal=0x7f02001b;
-        public static final int background_pressed=0x7f02001c;
+        public static final int background_normal=0x7f02001c;
+        public static final int background_pressed=0x7f02001d;
         public static final int baidu=0x7f020002;
-        public static final int bing=0x7f020003;
-        public static final int button_bcakground_selector=0x7f020004;
-        public static final int cancel=0x7f020005;
-        public static final int delete=0x7f020006;
-        public static final int enter=0x7f020007;
-        public static final int exit=0x7f020008;
-        public static final int forward=0x7f020009;
-        public static final int google=0x7f02000a;
-        public static final int home=0x7f02000b;
-        public static final int ic_launcher=0x7f02000c;
-        public static final int menu=0x7f02000d;
-        public static final int menu_refresh=0x7f02000e;
-        public static final int new_proj=0x7f02000f;
-        public static final int option=0x7f020010;
-        public static final int pause=0x7f020011;
-        public static final int progress_bar=0x7f020012;
-        public static final int refresh=0x7f020013;
-        public static final int search=0x7f020014;
-        public static final int select_src=0x7f020015;
-        public static final int setting=0x7f020016;
-        public static final int site=0x7f020017;
-        public static final int sogou=0x7f020018;
-        public static final int spidergo=0x7f020019;
-        public static final int start=0x7f02001a;
+        public static final int big_menu=0x7f020003;
+        public static final int bing=0x7f020004;
+        public static final int button_bcakground_selector=0x7f020005;
+        public static final int cancel=0x7f020006;
+        public static final int delete=0x7f020007;
+        public static final int enter=0x7f020008;
+        public static final int exit=0x7f020009;
+        public static final int forward=0x7f02000a;
+        public static final int google=0x7f02000b;
+        public static final int home=0x7f02000c;
+        public static final int ic_launcher=0x7f02000d;
+        public static final int menu=0x7f02000e;
+        public static final int menu_refresh=0x7f02000f;
+        public static final int new_proj=0x7f020010;
+        public static final int option=0x7f020011;
+        public static final int pause=0x7f020012;
+        public static final int progress_bar=0x7f020013;
+        public static final int refresh=0x7f020014;
+        public static final int search=0x7f020015;
+        public static final int select_src=0x7f020016;
+        public static final int setting=0x7f020017;
+        public static final int site=0x7f020018;
+        public static final int sogou=0x7f020019;
+        public static final int spidergo=0x7f02001a;
+        public static final int start=0x7f02001b;
     }
     public static final class id {
-        public static final int FrameLayoutSSEngineBackground=0x7f0b0018;
-        public static final int FrameLayoutSelSearchEngine=0x7f0b0017;
-        public static final int FrameLayoutURLcmd=0x7f0b001a;
+        public static final int FrameLayoutSSEngineBackground=0x7f0b001a;
+        public static final int FrameLayoutSelSearchEngine=0x7f0b0019;
+        public static final int FrameLayoutURLcmd=0x7f0b001c;
         public static final int RelativeLayoutWvMask=0x7f0b0003;
         public static final int browserMenu=0x7f0b0007;
-        public static final int buttonBack=0x7f0b000e;
-        public static final int buttonClear=0x7f0b0015;
+        public static final int buttonBack=0x7f0b0010;
+        public static final int buttonDelete=0x7f0b0017;
         public static final int buttonExit=0x7f0b000a;
-        public static final int buttonForward=0x7f0b000f;
-        public static final int buttonHome=0x7f0b0011;
+        public static final int buttonForward=0x7f0b0011;
+        public static final int buttonHome=0x7f0b0013;
         public static final int buttonImg=0x7f0b000c;
-        public static final int buttonMenu=0x7f0b0012;
-        public static final int buttonPauseOrContinue=0x7f0b0013;
+        public static final int buttonInfo=0x7f0b0015;
+        public static final int buttonMenu=0x7f0b0014;
+        public static final int buttonPauseOrContinue=0x7f0b0016;
         public static final int buttonRefresh=0x7f0b0009;
-        public static final int buttonSelSearchEngine=0x7f0b0019;
-        public static final int buttonSelSrc=0x7f0b0014;
+        public static final int buttonSelSearchEngine=0x7f0b001b;
         public static final int buttonSetting=0x7f0b0008;
-        public static final int buttonSpiderGo=0x7f0b0010;
+        public static final int buttonSpiderGo=0x7f0b0012;
         public static final int buttonText=0x7f0b000d;
-        public static final int buttonURLcmd=0x7f0b001b;
-        public static final int editTextUrl=0x7f0b001c;
+        public static final int buttonURLcmd=0x7f0b001d;
+        public static final int editTextUrl=0x7f0b001e;
         public static final int gl_root_cover=0x7f0b000b;
-        public static final int gl_root_view=0x7f0b0004;
-        public static final int progressBarWebView=0x7f0b001d;
-        public static final int project_bar=0x7f0b0005;
-        public static final int tvSpiderLog=0x7f0b0006;
-        public static final int urlBar=0x7f0b0016;
+        public static final int gl_root_view=0x7f0b0005;
+        public static final int info_list=0x7f0b0006;
+        public static final int main_drawer=0x7f0b0004;
+        public static final int name=0x7f0b000e;
+        public static final int progressBarWebView=0x7f0b001f;
+        public static final int urlBar=0x7f0b0018;
         public static final int urlBarBox=0x7f0b0001;
+        public static final int value=0x7f0b000f;
         public static final int webViewParaConfig=0x7f0b0000;
         public static final int webViewSelectSrcUrl=0x7f0b0002;
     }
@@ -255,9 +259,10 @@ public final class R {
         public static final int delete_dialog=0x7f030004;
         public static final int gl_root_group=0x7f030005;
         public static final int image_text_button=0x7f030006;
-        public static final int navi_bar=0x7f030007;
-        public static final int proj_bar=0x7f030008;
-        public static final int url_bar=0x7f030009;
+        public static final int info_list_item=0x7f030007;
+        public static final int navi_bar=0x7f030008;
+        public static final int proj_bar=0x7f030009;
+        public static final int url_bar=0x7f03000a;
     }
     public static final class raw {
         public static final int robot=0x7f040000;

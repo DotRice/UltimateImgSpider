@@ -44,10 +44,6 @@ public class WatchdogService extends Service
 {
     private final static String TAG = "WatchdogService";
 
-    private final static String PROJECT_DATA_DIR = "/data";
-    private final static String PROJECT_DATA_NAME = "project.dat";
-    private final static String PROJECT_DATA_MD5 = "hash.dat";
-
     private String dataDirPath;
 
     public native int jniGetAshmem(String name, int size);
@@ -84,13 +80,13 @@ public class WatchdogService extends Service
 
     private void storeProjectData()
     {
-        String dataFileFullPath=dataDirPath+PROJECT_DATA_NAME;
+        String dataFileFullPath=dataDirPath+StaticValue.PROJECT_DATA_NAME;
         jniStoreProjectData(dataFileFullPath);
 
         String md5String = Utils.getFileMD5String(dataFileFullPath);
         try
         {
-            FileOutputStream md5FileOut=new FileOutputStream(dataDirPath+PROJECT_DATA_MD5);
+            FileOutputStream md5FileOut=new FileOutputStream(dataDirPath+StaticValue.PROJECT_DATA_MD5);
             md5FileOut.write(md5String.getBytes());
             md5FileOut.close();
         } catch (FileNotFoundException e)
@@ -103,15 +99,15 @@ public class WatchdogService extends Service
 
     }
 
-    private boolean projectDataIsSafe()
+    public static boolean projectDataIsSafe(String dataDir)
     {
-        String dataFileFullPath=dataDirPath+PROJECT_DATA_NAME;
+        String dataFileFullPath=dataDir+StaticValue.PROJECT_DATA_NAME;
         String md5OfFile = Utils.getFileMD5String(dataFileFullPath);
 
         try
         {
             byte[] buf=new byte[32];
-            FileInputStream md5FileIn=new FileInputStream(dataDirPath+PROJECT_DATA_MD5);
+            FileInputStream md5FileIn=new FileInputStream(dataDir+StaticValue.PROJECT_DATA_MD5);
             md5FileIn.read(buf);
             md5FileIn.close();
             String md5InRec=new String(buf);
@@ -136,16 +132,16 @@ public class WatchdogService extends Service
 
         if((path!=null)&&(dataDirPath==null))
         {
-            File dataDir=new File(path+PROJECT_DATA_DIR);
+            File dataDir=new File(path+StaticValue.PROJECT_DATA_DIR);
             if(!dataDir.exists()||!dataDir.isDirectory())
             {
                 dataDir.mkdirs();
             }
-            dataDirPath = path+PROJECT_DATA_DIR+"/";
+            dataDirPath = path+StaticValue.PROJECT_DATA_DIR;
 
-            if (projectDataIsSafe())
+            if (projectDataIsSafe(dataDirPath))
             {
-                jniRestoreProjectData(dataDirPath+PROJECT_DATA_NAME);
+                jniRestoreProjectData(dataDirPath+StaticValue.PROJECT_DATA_NAME);
             }
         }
 

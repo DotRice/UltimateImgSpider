@@ -133,7 +133,7 @@ public class SlotView extends GLView
         @Override
         public boolean onScroll(float dx, float dy, float totalX, float totalY)
         {
-            Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
+            //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
 
             mGLrootView.lockRenderThread();
 
@@ -356,7 +356,7 @@ public class SlotView extends GLView
         {
             scrollDistance = (scrollDistance < 0) ? 0 : scrollMax;
             overScrollGapY -= dy / (Math.abs(overScrollGapY) + 2) / 4;
-            Log.i(TAG, "overScrollGapY " + overScrollGapY);
+            //Log.i(TAG, "overScrollGapY " + overScrollGapY);
         } else if (overScrollGapY != 0)
         {
             scrollDistance = (overScrollGapY > 0) ? 0 : scrollMax;
@@ -484,7 +484,7 @@ public class SlotView extends GLView
                     {
                         slotTexture.texture.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
 
-                        if (mThumbnailLoader.needLabel)
+                        if (slotTexture.label!=null)
                         {
                             int labelY = slotTop + slotSize - labelHeight;
                             canvas.fillRect(slotLeft, labelY, slotSize, labelHeight, LABEL_BACKGROUND_COLOR);

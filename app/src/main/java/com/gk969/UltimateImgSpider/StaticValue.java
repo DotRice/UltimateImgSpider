@@ -20,4 +20,8 @@ public class StaticValue
     public final static String THUMBNAIL_DIR_NAME="thumbnail";
     public final static int THUMBNAIL_SIZE = 300;
 
+
+    public final static String PROJECT_DATA_DIR = "/data";
+    public final static String PROJECT_DATA_NAME = "/project.dat";
+    public final static String PROJECT_DATA_MD5 = "/hash.dat";
 }

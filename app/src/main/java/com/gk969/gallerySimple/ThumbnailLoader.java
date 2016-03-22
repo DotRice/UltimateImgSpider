@@ -44,7 +44,7 @@ Cache Mode:
  */
 
 
-public class ThumbnailLoader
+public  class ThumbnailLoader
 {
     private static final String TAG = "ThumbnailLoader";
 
@@ -52,9 +52,6 @@ public class ThumbnailLoader
     //A circle cache
     private SlotTexture[] textureCache=new SlotTexture[CACHE_SIZE];
     private AtomicInteger scrollStep=new AtomicInteger(1);
-
-    private ReentrantLock projectPathLock=new ReentrantLock();
-    private String projectPath;
 
     private final static String[] IMG_FILE_EXT={"jpg", "png", "gif"};
 
@@ -73,24 +70,15 @@ public class ThumbnailLoader
 
     private TiledTexture.Uploader mTextureUploader;
 
-    private int infoTextFontSize;
-    private final static int INFO_TEXT_COLOR=0xFF00FF00;
-
     private SlotView slotView;
 
-    public boolean needLabel;
+    private ThumbnailLoaderHelper loaderHelper;
 
-    public ThumbnailLoader(String path, GLRootView glRoot, boolean isNeedLable)
-    {
-        needLabel=isNeedLable;
-        init(path, glRoot);
-    }
+    protected int labelHeight;
+    private final static int INFO_TEXT_COLOR=0xFF00FF00;
 
-    private void init(String path, GLRootView glRoot)
+    public ThumbnailLoader(GLRootView glRoot, ThumbnailLoaderHelper helper)
     {
-        projectPath=path;
-        mTextureUploader=new TiledTexture.Uploader(glRoot);
-        mGLrootView=glRoot;
 
         for(int i=0; i<CACHE_SIZE; i++)
         {
@@ -98,29 +86,20 @@ public class ThumbnailLoader
             textureCache[i].mainBmp=Bitmap.createBitmap(StaticValue.THUMBNAIL_SIZE,
                     StaticValue.THUMBNAIL_SIZE, Bitmap.Config.RGB_565);
 
-            if(needLabel)
-            {
-                textureCache[i].label = StringTexture.newInstance(String.valueOf(i),
-                        infoTextFontSize, INFO_TEXT_COLOR);
-            }
-
             textureCache[i].imgIndex=new AtomicInteger(i);
             textureCache[i].isReady=new AtomicBoolean(false);
             textureCache[i].hasTried=new AtomicBoolean(false);
         }
+
+        mTextureUploader=new TiledTexture.Uploader(glRoot);
+        mGLrootView=glRoot;
+        loaderHelper=helper;
+        loaderHelper.setLoader(this);
     }
 
     public void setView(SlotView view)
     {
         slotView=view;
-    }
-
-    public void setProjectPath(String path)
-    {
-        Log.i(TAG, "setProjectPath "+path);
-        projectPathLock.lock();
-        projectPath=path;
-        projectPathLock.unlock();
     }
 
     private void clearCache()
@@ -129,6 +108,9 @@ public class ThumbnailLoader
         {
             slot.recycle();
         }
+
+        mTextureUploader.clear();
+        TiledTexture.freeResources();
     }
 
     public void setAlbumTotalImgNum(int totalImgNum)
@@ -151,13 +133,9 @@ public class ThumbnailLoader
                 clearCache();
                 slotView.scrollAbs(0);
                 mGLrootView.unlockRenderThread();
-                mGLrootView.requestRender();
             }
         }
-
-
-
-        if(totalImgNum>prevTotalImgNum)
+        else if(totalImgNum>prevTotalImgNum)
         {
             if(dispAreaOffset.get()+CACHE_SIZE>prevTotalImgNum)
             {
@@ -174,12 +152,9 @@ public class ThumbnailLoader
         }
 
         mGLrootView.requestRender();
-
-
-        Log.i(TAG, "setAlbumTotalImgNum end");
     }
 
-    public void startLoader()
+    private void startLoader()
     {
         TiledTexture.prepareResources();
         isLoaderRunning.set(true);
@@ -194,13 +169,13 @@ public class ThumbnailLoader
         isLoaderRunning.set(false);
     }
 
-    public void initAboutView(int slotNum, int lableHeight)
+    public void initAboutView(int slotNum, int paraLabelHeight)
     {
         imgsInDispArea.set(slotNum);
         bestOffsetOfDispInCache=(CACHE_SIZE-slotNum)/2;
-        Log.i(TAG, "slotNum "+slotNum);
+        Log.i(TAG, "slotNum " + slotNum);
 
-        infoTextFontSize=lableHeight;
+        labelHeight=paraLabelHeight;
 
         if(!isLoaderRunning.get())
         {
@@ -238,7 +213,7 @@ public class ThumbnailLoader
                 texture.recycle();
                 texture = null;
 
-                if(needLabel)
+                if(loaderHelper.needLabel())
                 {
                     label.recycle();
                     label = null;
@@ -257,7 +232,7 @@ public class ThumbnailLoader
         refreshCacheOffset(index, false);
     }
 
-    public void refreshCacheOffset(int index, boolean forceRefresh)
+    private void refreshCacheOffset(int index, boolean forceRefresh)
     {
         int newCacheOffset=index-bestOffsetOfDispInCache;
         int cacheOffsetMax=albumTotalImgNum.get()-CACHE_SIZE;
@@ -315,24 +290,6 @@ public class ThumbnailLoader
     {
         private final static int CHECK_INTERVAL=500;
 
-        private Bitmap getThumbnailByIndex(int index, Bitmap container)
-        {
-            Log.i(TAG, "try to load index:" + index);
-            int group=index/StaticValue.MAX_IMG_FILE_PER_DIR;
-            int offset=index%StaticValue.MAX_IMG_FILE_PER_DIR;
-
-            projectPathLock.lock();
-            String fileName=String.format("%s/%s/%d/%03d.jpg", projectPath,StaticValue.THUMBNAIL_DIR_NAME,
-                    group, offset);
-            projectPathLock.unlock();
-
-            BitmapFactory.Options bmpOpts=new BitmapFactory.Options();
-            bmpOpts.inPreferredConfig=Bitmap.Config.RGB_565;
-            bmpOpts.inBitmap=container;
-            bmpOpts.inSampleSize=1;
-
-            return BitmapFactory.decodeFile(fileName, bmpOpts);
-        }
         private boolean isOffsetChangedInLoading()
         {
             int step=scrollStep.get();
@@ -354,7 +311,7 @@ public class ThumbnailLoader
                         Bitmap bmpContainer = slot.mainBmp;
                         mGLrootView.unlockRenderThread();
 
-                        Bitmap bmp = getThumbnailByIndex(imgIndex, bmpContainer);
+                        Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, bmpContainer);
 
                         if (bmp != null)
                         {
@@ -363,16 +320,18 @@ public class ThumbnailLoader
                             {
                                 slot.texture = new TiledTexture(bmp);
 
-                                if(needLabel)
+                                if(loaderHelper.needLabel())
                                 {
                                     slot.label = StringTexture.newInstance(
-                                            String.valueOf(imgIndex), infoTextFontSize, INFO_TEXT_COLOR);
+                                            loaderHelper.getLabelString(imgIndex),
+                                            labelHeight, INFO_TEXT_COLOR);
                                 }
 
                                 slot.isReady.set(true);
                                 Log.i(TAG, "load success  cacheIndex:" + cacheIndex + " imgIndex:" +
                                         textureCache[cacheIndex].imgIndex);
                                 mTextureUploader.addTexture(slot.texture);
+
                             }
 
                             mGLrootView.unlockRenderThread();
