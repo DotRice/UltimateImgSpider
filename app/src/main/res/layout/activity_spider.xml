@@ -10,11 +10,19 @@
         android:orientation="vertical"
         >
 
-        <com.gk969.gallery.gallery3d.ui.GLRootView
-            android:id="@+id/gl_root_view"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1">
+            <com.gk969.gallery.gallery3d.ui.GLRootView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/gl_root_view"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </FrameLayout>
 
         <include
             android:layout_height="wrap_content"
@@ -23,12 +31,9 @@
 
     </LinearLayout>
 
-    <ListView
-        android:id="@+id/info_list"
-        android:layout_width="320dp"
+    <include
         android:layout_height="match_parent"
+        android:layout_width="@dimen/drawer_info_width"
         android:layout_gravity="start"
-        android:divider="#333"
-        android:dividerHeight="1dp"
-        android:background="#CFFF"/>
+        layout="@layout/drawer_info"/>
 </android.support.v4.widget.DrawerLayout>

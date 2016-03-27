@@ -504,6 +504,7 @@ public class SlotView extends GLView
         {
             scrollBarHeight=scrollBarHeightMin+(scrollBarHeightMax-scrollBarHeightMin)*needScroll/scrollMax;
             scrollBarTop = (viewHeight - scrollBarHeight) * scrollDistance / scrollMax;
+            scrollBarTop-=overScrollGapY;
 
             canvas.fillRect(viewWidth - scrollBarWidth, scrollBarTop, scrollBarWidth, scrollBarHeight, SCROLL_BAR_BACKGROUND_COLOR);
         }

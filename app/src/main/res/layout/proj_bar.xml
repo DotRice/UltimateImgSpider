@@ -26,12 +26,12 @@
         android:background="@drawable/button_bcakground_selector" />
 
     <ImageButton
-        android:id="@+id/buttonDelete"
+        android:id="@+id/buttonSetting"
         android:layout_width="match_parent"
         android:layout_height="@dimen/projbar_height"
         android:layout_weight="1"
-        android:src="@drawable/delete"
-        android:contentDescription="@string/delete"
+        android:src="@drawable/setting"
+        android:contentDescription="@string/settings"
         android:scaleType="fitCenter"
         android:background="@drawable/button_bcakground_selector" />
 

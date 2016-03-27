@@ -1,24 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/strings.xml -->
-    <eat-comment/>
-    <string-array name="infoNameArray">
-        <item>已下载图片数</item>
-        <item>已扫描图片数</item>
-        <item>图片URL总数</item>
-        <item>图片树高度</item>
-        <item>已扫描网页数</item>
-        <item>网页总数</item>
-        <item>网页树高度</item>
-        <item>网页加载用时</item>
-        <item>网页扫描用时</item>
-        <item>网页查找用时</item>
-        <item>当前网速</item>
-        <item>当前网页</item>
-        <item>系统内存</item>
-        <item>应用界面内存</item>
-        <item>应用服务内存</item>
-    </string-array>
     <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/arrays.xml -->
     <eat-comment/>
     <string-array name="noLongerConfirm">
@@ -40,6 +21,11 @@
     <color name="cache_background">#1A1A1A</color>
     <color name="cache_placeholder">#333</color>
     <color name="default_background">#000</color>
+    <color name="drawer_info_background">#FFF</color>
+    <color name="drawer_info_group_title_background">#FFF</color>
+    <color name="drawer_info_item_background">#FFF</color>
+    <color name="drawer_info_item_value_text_color">#D33</color>
+    <color name="drawer_info_title_background">#EEE</color>
     <color name="face_detect_fail">#80d05060</color>
     <color name="face_detect_start">#80ffffff</color>
     <color name="face_detect_success">#8050d060</color>
@@ -95,6 +81,20 @@
     <dimen name="capture_margin_right">16dip</dimen>
     <dimen name="capture_margin_top">16dip</dimen>
     <dimen name="capture_size">48dip</dimen>
+    <dimen name="drawer_info_group_title_height">35dp</dimen>
+    <dimen name="drawer_info_group_title_image_margin">5dp</dimen>
+    <dimen name="drawer_info_group_title_image_width">40dp</dimen>
+    <dimen name="drawer_info_group_title_margin_top">10dp</dimen>
+    <dimen name="drawer_info_group_title_text_size">20sp</dimen>
+    <dimen name="drawer_info_item_height">35dp</dimen>
+    <dimen name="drawer_info_item_margin_top">1dp</dimen>
+    <dimen name="drawer_info_item_name_text_size">18sp</dimen>
+    <dimen name="drawer_info_item_name_width">140dp</dimen>
+    <dimen name="drawer_info_item_padding_left">40dp</dimen>
+    <dimen name="drawer_info_item_value_text_size">16sp</dimen>
+    <dimen name="drawer_info_title_height">50dp</dimen>
+    <dimen name="drawer_info_title_text_size">22sp</dimen>
+    <dimen name="drawer_info_width">320dp</dimen>
     <dimen name="effect_setting_clear_text_min_height">45dp</dimen>
     <dimen name="effect_setting_clear_text_min_height_xlarge">44dp</dimen>
     <dimen name="effect_setting_clear_text_size">20dp</dimen>
@@ -207,19 +207,25 @@
     <string name="badExternalStoragePrompt">外部存储空间出错！</string>
     <string name="cancel">取消</string>
     <string name="clear">清空</string>
-    <string name="colorAction">#00B060</string>
-    <string name="colorCancel">#505050</string>
+    <string name="cur_page">当前网页</string>
     <string name="defaultHomeUrl">http://www.baidu.com/</string>
     <string name="defaultUserAgent">Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36</string>
     <string name="delete">删除</string>
     <string name="deletedToast">当前项目已删除</string>
     <string name="deleting">删除中</string>
+    <string name="download_speed">下载速度</string>
     <string name="enter">进入</string>
     <string name="exit">退出</string>
     <string name="forward">前进</string>
     <string name="goOn">继续</string>
     <string name="help">帮助</string>
     <string name="home">主页</string>
+    <string name="image_download_num">已下载图片数</string>
+    <string name="image_download_payload">正下载图片数</string>
+    <string name="image_info">图片下载信息</string>
+    <string name="image_throw_away">已过滤图片数</string>
+    <string name="image_tree_height">图片树高度</string>
+    <string name="image_waiting">待扫描图片数</string>
     <string name="inDeletingTips">删除中，请稍候...</string>
     <string name="inDeletingToast">正在删除当前项目，请稍候...</string>
     <string name="keyBackExitConfirm">再按一次返回键，退出</string>
@@ -228,8 +234,22 @@
     <string name="newProj">新建</string>
     <string name="notSet">未设置</string>
     <string name="option">选项</string>
+    <string name="page_info">网页扫描信息</string>
+    <string name="page_load_time">网页加载用时</string>
+    <string name="page_scan_time">网页扫描用时</string>
+    <string name="page_scaned_num">已扫描网页数</string>
+    <string name="page_search_time">网页查找用时</string>
+    <string name="page_tree_height">网页树高度</string>
+    <string name="page_waiting">待扫描网页数</string>
     <string name="pause">暂停</string>
     <string name="prompt">提示</string>
+    <string name="ram_activity_native">界面Native内存</string>
+    <string name="ram_activity_vm">界面VM内存</string>
+    <string name="ram_info">内存信息</string>
+    <string name="ram_service_native">服务Native内存</string>
+    <string name="ram_service_vm">服务VM内存</string>
+    <string name="ram_sys_free">系统空闲内存</string>
+    <string name="ram_sys_total">系统总内存</string>
     <string name="refresh">刷新</string>
     <string name="retry">重试</string>
     <string name="search">搜索</string>
