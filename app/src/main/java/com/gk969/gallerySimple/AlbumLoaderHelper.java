@@ -14,6 +14,11 @@ public class AlbumLoaderHelper implements ThumbnailLoaderHelper
 
     private ThumbnailLoader mThumbnailLoader;
 
+    public AlbumLoaderHelper(String prjPath)
+    {
+        projectPath=prjPath;
+    }
+
     public void setProjectPath(String path)
     {
         if(mThumbnailLoader!=null)

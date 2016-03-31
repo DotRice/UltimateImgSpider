@@ -1032,7 +1032,7 @@ public class SpiderService extends Service
         jsonReportStr += "\"imgProcessedNum\":" + imgProcParam[PARA_PROCESSED] + ",\r\n";
         jsonReportStr += "\"imgTotalNum\":" + imgProcParam[PARA_TOTAL] + ",\r\n";
         jsonReportStr += "\"imgTreeHeight\":" + imgProcParam[PARA_HEIGHT] + ",\r\n";
-        jsonReportStr += "\"pageScanedNum\":" + pageProcParam[PARA_PROCESSED] + ",\r\n";
+        jsonReportStr += "\"pageProcessedNum\":" + pageProcParam[PARA_PROCESSED] + ",\r\n";
         jsonReportStr += "\"pageTotalNum\":" + pageProcParam[PARA_TOTAL] + ",\r\n";
         jsonReportStr += "\"pageTreeHeight\":" + pageProcParam[PARA_HEIGHT] + ",\r\n";
 
@@ -1257,7 +1257,6 @@ public class SpiderService extends Service
 
 
     private Utils.NetTrafficCalc netTrafficCalc = new Utils.NetTrafficCalc(this);
-    private static final int REPORT_STATUS_MAX_INTVAL = 2;
     private AtomicInteger reportStatusTimer = new AtomicInteger(0);
 
     private class TimerThread extends Thread
@@ -1265,7 +1264,9 @@ public class SpiderService extends Service
         private final int TIMER_INTERVAL = 1000;
 
         private int netTrafficCalcTimer = 0;
-        private static final int NET_TRAFFIC_CALC_INTVAL = 2;
+        private static final int NET_TRAFFIC_CALC_INTERVAL = 5;
+
+        private static final int REPORT_STATUS_MAX_INTERVAL = 2;
 
         public TimerThread()
         {
@@ -1277,13 +1278,13 @@ public class SpiderService extends Service
             while (timerRunning.get())
             {
                 netTrafficCalcTimer++;
-                if (netTrafficCalcTimer == NET_TRAFFIC_CALC_INTVAL)
+                if (netTrafficCalcTimer == NET_TRAFFIC_CALC_INTERVAL)
                 {
                     netTrafficCalc.refreshNetTraffic();
                     netTrafficCalcTimer = 0;
                 }
 
-                if (reportStatusTimer.getAndIncrement() == REPORT_STATUS_MAX_INTVAL)
+                if (reportStatusTimer.getAndIncrement() == REPORT_STATUS_MAX_INTERVAL)
                 {
                     reportStatusTimer.set(0);
                     reportSpiderLogByHandler();

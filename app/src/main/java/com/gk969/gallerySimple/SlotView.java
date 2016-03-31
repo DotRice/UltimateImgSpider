@@ -329,7 +329,7 @@ public class SlotView extends GLView
 
     private int getScrollDistanceMax()
     {
-        int scrollMax = (mThumbnailLoader.albumTotalImgNum.get() + (slotsPerRow - 1)) / slotsPerRow
+        int scrollMax = (mThumbnailLoader.albumTotalImgNum + (slotsPerRow - 1)) / slotsPerRow
                 * slotHeightWithGap - viewHeight;
         if (scrollMax < 0)
         {
@@ -461,7 +461,7 @@ public class SlotView extends GLView
         int slotIndexOffset = scrollDistance / slotHeightWithGap * slotsPerRow;
         int overScrollHeight = slotHeightWithGap + overScrollGapAbs;
 
-        int albumTotalImg = mThumbnailLoader.albumTotalImgNum.get();
+        int albumTotalImg = mThumbnailLoader.albumTotalImgNum;
 
         for (int topIndex = 0; topIndex < slotRowsInView; topIndex++)
         {

@@ -361,10 +361,9 @@ public class SpiderActivity extends Activity
     {
         GLRootView glRootView = (GLRootView) findViewById(R.id.gl_root_view);
 
-        albumLoaderHelper = new AlbumLoaderHelper();
-        albumLoaderHelper.setProjectPath(projectPath);
+        albumLoaderHelper = new AlbumLoaderHelper(projectPath);
         albumSetLoaderHelper = new AlbumSetLoaderHelper(appPath);
-        mThumbnailLoader = new ThumbnailLoader(glRootView, albumLoaderHelper);
+        mThumbnailLoader = new ThumbnailLoader(glRootView, albumSetLoaderHelper);
         SlotView slotView = new SlotView(this, mThumbnailLoader, glRootView);
         slotView.setOnDoubleTap(new Runnable()
         {
@@ -548,16 +547,16 @@ public class SpiderActivity extends Activity
 
     private class DrawerInfo
     {
-        DrawerLayout drawer;
+        private DrawerLayout drawer;
 
         TextView text_project_site;
         TextView image_download_num;
-        TextView image_throw_away;
-        TextView image_waiting;
+        TextView image_processed;
+        TextView image_total;
         TextView image_download_payload;
         TextView image_tree_height;
         TextView page_scaned_num;
-        TextView page_waiting;
+        TextView page_total;
         TextView page_tree_height;
         TextView page_load_time;
         TextView page_scan_time;
@@ -571,18 +570,24 @@ public class SpiderActivity extends Activity
         TextView ram_service_native;
         TextView cur_page;
 
+        public void allowDrawer(boolean allow)
+        {
+            drawer.setDrawerLockMode(allow?DrawerLayout.LOCK_MODE_UNLOCKED:
+                    DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        }
+
         public DrawerInfo()
         {
             drawer = (DrawerLayout) findViewById(R.id.main_drawer);
 
             text_project_site = (TextView) findViewById(R.id.text_project_site);
             image_download_num = (TextView) findViewById(R.id.image_download_num);
-            image_throw_away = (TextView) findViewById(R.id.image_throw_away);
-            image_waiting = (TextView) findViewById(R.id.image_waiting);
+            image_processed = (TextView) findViewById(R.id.image_processed);
+            image_total = (TextView) findViewById(R.id.image_total);
             image_download_payload = (TextView) findViewById(R.id.image_download_payload);
             image_tree_height = (TextView) findViewById(R.id.image_tree_height);
-            page_scaned_num = (TextView) findViewById(R.id.page_scaned_num);
-            page_waiting = (TextView) findViewById(R.id.page_waiting);
+            page_scaned_num = (TextView) findViewById(R.id.page_processed);
+            page_total = (TextView) findViewById(R.id.page_total);
             page_tree_height = (TextView) findViewById(R.id.page_tree_height);
             page_load_time = (TextView) findViewById(R.id.page_load_time);
             page_scan_time = (TextView) findViewById(R.id.page_scan_time);
@@ -608,39 +613,15 @@ public class SpiderActivity extends Activity
             {
                 text_project_site.setText(new URL(projectSrcUrl).getHost());
 
-                int imgDownloadNum=json.getInt("imgDownloadNum");
-                int imgProcessedNum=json.getInt("imgProcessedNum");
-                int imgTotalNum=json.getInt("imgTotalNum");
-
-                int imageThrowAway=imgProcessedNum-imgDownloadNum;
-                if(imageThrowAway<0)
-                {
-                    imageThrowAway=0;
-                }
-
-                int imageWaiting=imgTotalNum-imgProcessedNum;
-                if(imageWaiting<0)
-                {
-                    imageWaiting=0;
-                }
-
-                image_download_num.setText(String.valueOf(imgDownloadNum));
-                image_throw_away.setText(String.valueOf(imageThrowAway));
-                image_waiting.setText(String.valueOf(imageWaiting));
+                image_download_num.setText(String.valueOf(json.getInt("imgDownloadNum")));
+                image_processed.setText(String.valueOf(json.getInt("imgProcessedNum")));
+                image_total.setText(String.valueOf(json.getInt("imgTotalNum")));
 
                 image_download_payload.setText(String.valueOf(json.getInt("imgDownloaderPayload")));
                 image_tree_height.setText(String.valueOf(json.getInt("imgTreeHeight")));
 
-                int pageTotalNum=json.getInt("pageTotalNum");
-                int pageScanedNum = json.getInt("pageScanedNum");
-                int pageWaiting=pageTotalNum-pageScanedNum;
-                if(pageWaiting<0)
-                {
-                    pageWaiting=0;
-                }
-
-                page_scaned_num.setText(String.valueOf(pageScanedNum));
-                page_waiting.setText(String.valueOf(pageWaiting));
+                page_scaned_num.setText(String.valueOf(json.getInt("pageProcessedNum")));
+                page_total.setText(String.valueOf(json.getInt("pageTotalNum")));
 
                 page_tree_height.setText(String.valueOf(json.getInt("pageTreeHeight")));
                 page_load_time.setText(String.valueOf(json.getInt("pageLoadTime"))+"ms");

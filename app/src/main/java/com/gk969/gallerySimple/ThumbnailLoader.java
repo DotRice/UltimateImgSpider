@@ -53,18 +53,15 @@ public  class ThumbnailLoader
     private SlotTexture[] textureCache=new SlotTexture[CACHE_SIZE];
     private AtomicInteger scrollStep=new AtomicInteger(1);
 
-    private final static String[] IMG_FILE_EXT={"jpg", "png", "gif"};
-
     private int bestOffsetOfDispInCache;
     private int cacheOffset=0;
-    private AtomicInteger dispAreaOffset=new AtomicInteger(0);
 
-    private AtomicBoolean isLoaderRunning=new AtomicBoolean(false);
-    public AtomicInteger albumTotalImgNum=new AtomicInteger(0);
+    private volatile int dispAreaOffset;
+    private volatile boolean isLoaderRunning;
+    public volatile int albumTotalImgNum;
+    private volatile int imgsInDispArea;
 
-    private AtomicInteger imgsInDispArea=new AtomicInteger(0);
-
-    private GLRootView mGLrootView;
+    private GLRootView mGLRootView;
 
     private TextureLoaderThread mTextureLoaderThread;
 
@@ -92,7 +89,7 @@ public  class ThumbnailLoader
         }
 
         mTextureUploader=new TiledTexture.Uploader(glRoot);
-        mGLrootView=glRoot;
+        mGLRootView=glRoot;
         loaderHelper=helper;
         loaderHelper.setLoader(this);
     }
@@ -117,31 +114,31 @@ public  class ThumbnailLoader
     {
         //Log.i(TAG, "setAlbumTotalImgNum " + totalImgNum);
 
-        int prevTotalImgNum=albumTotalImgNum.get();
+        int prevTotalImgNum=albumTotalImgNum;
         if(prevTotalImgNum==totalImgNum)
         {
             return;
         }
 
-        albumTotalImgNum.set(totalImgNum);
+        albumTotalImgNum=totalImgNum;
 
         if(totalImgNum==0)
         {
             if(prevTotalImgNum!=0)
             {
-                mGLrootView.lockRenderThread();
+                mGLRootView.lockRenderThread();
                 clearCache();
                 slotView.scrollAbs(0);
-                mGLrootView.unlockRenderThread();
+                mGLRootView.unlockRenderThread();
             }
         }
         else if(totalImgNum>prevTotalImgNum)
         {
-            if(dispAreaOffset.get()+CACHE_SIZE>prevTotalImgNum)
+            if(dispAreaOffset+CACHE_SIZE>prevTotalImgNum)
             {
-                mGLrootView.lockRenderThread();
-                refreshCacheOffset(dispAreaOffset.get(), true);
-                mGLrootView.unlockRenderThread();
+                mGLRootView.lockRenderThread();
+                refreshCacheOffset(dispAreaOffset, true);
+                mGLRootView.unlockRenderThread();
 
                 for (SlotTexture slot:textureCache)
                 {
@@ -151,13 +148,13 @@ public  class ThumbnailLoader
 
         }
 
-        mGLrootView.requestRender();
+        mGLRootView.requestRender();
     }
 
     private void startLoader()
     {
         TiledTexture.prepareResources();
-        isLoaderRunning.set(true);
+        isLoaderRunning=true;
         mTextureLoaderThread = new TextureLoaderThread();
         mTextureLoaderThread.setDaemon(true);
         mTextureLoaderThread.start();
@@ -166,18 +163,18 @@ public  class ThumbnailLoader
 
     public void stopLoader()
     {
-        isLoaderRunning.set(false);
+        isLoaderRunning=false;
     }
 
     public void initAboutView(int slotNum, int paraLabelHeight)
     {
-        imgsInDispArea.set(slotNum);
+        imgsInDispArea=slotNum;
         bestOffsetOfDispInCache=(CACHE_SIZE-slotNum)/2;
         Log.i(TAG, "slotNum " + slotNum);
 
         labelHeight=paraLabelHeight;
 
-        if(!isLoaderRunning.get())
+        if(!isLoaderRunning)
         {
             startLoader();
         }
@@ -189,7 +186,7 @@ public  class ThumbnailLoader
 
     public SlotTexture getTexture(int index)
     {
-        if((index>=0)&&(index<albumTotalImgNum.get()))
+        if((index>=0)&&(index<albumTotalImgNum))
         {
             //Log.i(TAG, "getTexture "+index);
             return textureCache[index % CACHE_SIZE];
@@ -235,7 +232,7 @@ public  class ThumbnailLoader
     private void refreshCacheOffset(int index, boolean forceRefresh)
     {
         int newCacheOffset=index-bestOffsetOfDispInCache;
-        int cacheOffsetMax=albumTotalImgNum.get()-CACHE_SIZE;
+        int cacheOffsetMax=albumTotalImgNum-CACHE_SIZE;
         if(cacheOffsetMax<0)
         {
             cacheOffsetMax=0;
@@ -280,7 +277,7 @@ public  class ThumbnailLoader
             cacheOffset=newCacheOffset;
         }
 
-        dispAreaOffset.set(index);
+        dispAreaOffset=index;
 
         //Log.i(TAG, "scrollToIndex "+index+" cacheOffset "+cacheOffset);
     }
@@ -293,8 +290,8 @@ public  class ThumbnailLoader
         private boolean isOffsetChangedInLoading()
         {
             int step=scrollStep.get();
-            int dispOffset=dispAreaOffset.get();
-            int imgIndexForLoader=(step==1)?dispOffset:(dispOffset+imgsInDispArea.get()-1);
+            int dispOffset=dispAreaOffset;
+            int imgIndexForLoader=(step==1)?dispOffset:(dispOffset+imgsInDispArea-1);
             for(int i=0; i<CACHE_SIZE; i++)
             {
                 int cacheIndex=imgIndexForLoader%CACHE_SIZE;
@@ -306,16 +303,16 @@ public  class ThumbnailLoader
                     boolean hasTried=true;
                     if(!slot.isReady.get())
                     {
-                        mGLrootView.lockRenderThread();
+                        mGLRootView.lockRenderThread();
                         int imgIndex = slot.imgIndex.get();
                         Bitmap bmpContainer = slot.mainBmp;
-                        mGLrootView.unlockRenderThread();
+                        mGLRootView.unlockRenderThread();
 
                         Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, bmpContainer);
 
                         if (bmp != null)
                         {
-                            mGLrootView.lockRenderThread();
+                            mGLRootView.lockRenderThread();
                             if (imgIndex == slot.imgIndex.get())
                             {
                                 slot.texture = new TiledTexture(bmp);
@@ -334,7 +331,7 @@ public  class ThumbnailLoader
 
                             }
 
-                            mGLrootView.unlockRenderThread();
+                            mGLRootView.unlockRenderThread();
                         }
                         hasTried=imgIndex == slot.imgIndex.get();
                     }
@@ -342,7 +339,7 @@ public  class ThumbnailLoader
                     slot.hasTried.set(hasTried);
                 }
 
-                if(dispAreaOffset.get()!=dispOffset)
+                if(dispAreaOffset!=dispOffset)
                 {
                     return true;
                 }
@@ -360,7 +357,7 @@ public  class ThumbnailLoader
 
         public void run()
         {
-            while(isLoaderRunning.get())
+            while(isLoaderRunning)
             {
                 if(!isOffsetChangedInLoading())
                 {
