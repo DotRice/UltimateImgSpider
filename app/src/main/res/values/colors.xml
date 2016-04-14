@@ -16,7 +16,7 @@
 <resources>
 
     <color name="drawer_info_background">#FFF</color>
-    <color name="drawer_info_title_background">#EEE</color>
+    <color name="drawer_info_title_background">#DDD</color>
     <color name="drawer_info_group_title_background">#FFF</color>
     <color name="drawer_info_item_background">#FFF</color>
     <color name="drawer_info_item_value_text_color">#D33</color>

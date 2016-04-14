@@ -6,13 +6,11 @@ import android.util.Log;
 
 import com.gk969.UltimateImgSpider.StaticValue;
 
-public class AlbumLoaderHelper implements ThumbnailLoaderHelper
+public class AlbumLoaderHelper extends ThumbnailLoaderHelper
 {
     private final static String TAG="AlbumLoaderHelper";
 
     private String projectPath;
-
-    private ThumbnailLoader mThumbnailLoader;
 
     public AlbumLoaderHelper(String prjPath)
     {
@@ -21,10 +19,6 @@ public class AlbumLoaderHelper implements ThumbnailLoaderHelper
 
     public void setProjectPath(String path)
     {
-        if(mThumbnailLoader!=null)
-        {
-            mThumbnailLoader.setAlbumTotalImgNum(0);
-        }
         projectPath=path;
     }
 
@@ -57,11 +51,4 @@ public class AlbumLoaderHelper implements ThumbnailLoaderHelper
 
         return BitmapFactory.decodeFile(fileName, bmpOpts);
     }
-
-    @Override
-    public void setLoader(ThumbnailLoader loader)
-    {
-        mThumbnailLoader=loader;
-    }
-
 }

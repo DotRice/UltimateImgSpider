@@ -20,6 +20,7 @@
 
 #define ASHM_NAME_SIZE  32
 
+
 int ashmem_create_region(const char *name, u32 size)
 {
     int fd=-1;
@@ -210,6 +211,8 @@ void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIE
 
             LOGI("Restore AshmNode Name:%s Size:%d Success", ashmParaStore.name, ashmParaStore.size);
         }
+
+        fclose(dataFile);
     }
 
     (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
@@ -354,8 +357,6 @@ void fileTest()
     LOGI("test file:%s", buf);
 }
 
-
-
 jstring Java_com_gk969_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv *env,
         jobject thiz, jstring jSrcStr)
 {
@@ -418,6 +419,7 @@ OFFSET低位，PTR高位。
 
 #define POOL_PTR_INVALID    (((u32)1<<POOL_PTR_BIT)-1)
 
+#define SPIDER_PARA_NAME    "spiderPara"
 
 enum
 {
@@ -716,7 +718,7 @@ void *mallocFromPool(JNIEnv *env, u32 size, RelativeAddr *direction)
 jboolean spiderParaInit(JNIEnv *env, int *imgParam, int *pageParam)
 {
 
-    t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, "spiderPara", sizeof(t_spiderPara));
+    t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, SPIDER_PARA_NAME, sizeof(t_spiderPara));
 
     if(ashm != NULL)
     {
@@ -811,27 +813,84 @@ jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv *en
         jobject thiz, jintArray jImgParam, jintArray jPageParam)
 {
     AshmAllocObjectInstance = thiz;
+    jboolean ret=true;
 
     int *imgParam = (*env)->GetIntArrayElements(env, jImgParam, NULL);
     int *pageParam = (*env)->GetIntArrayElements(env, jPageParam, NULL);
 
     if(!spiderParaInit(env, imgParam, pageParam))
     {
-        return false;
+        ret=false;
     }
 
     (*env)->ReleaseIntArrayElements(env, jImgParam, imgParam, 0);
     (*env)->ReleaseIntArrayElements(env, jPageParam, pageParam, 0);
 
-    if(!urlPoolInit(env))
+    if(ret)
     {
-        return false;
+        if (!urlPoolInit(env))
+        {
+            ret = false;
+        }
     }
 
-    return true;
+    return ret;
 }
 
 
+void Java_com_gk969_gallerySimple_AlbumSetLoaderHelper_jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
+           jstring jDataFileFullPath, jintArray jImgParam, jintArray jPageParam)
+{
+    const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
+
+    int *imgParam = (*env)->GetIntArrayElements(env, jImgParam, NULL);
+    int *pageParam = (*env)->GetIntArrayElements(env, jPageParam, NULL);
+
+
+    LOGI("jniGetProjectInfoOnStart path:%s", dataFileFullPath);
+
+    FILE *dataFile = fopen(dataFileFullPath, "r");
+
+    if(dataFile != NULL)
+    {
+        t_ashmParaStore ashmParaStore;
+        t_spiderPara para;
+
+        while(true)
+        {
+            if(fread(&ashmParaStore, sizeof(t_ashmParaStore), 1, dataFile) != 1)
+            {
+                break;
+            }
+
+            LOGI("AshmNode Name:%s Size:%d", ashmParaStore.name, ashmParaStore.size);
+
+            if(strcmp(ashmParaStore.name, SPIDER_PARA_NAME)==0)
+            {
+                if(fread(&para, sizeof(t_spiderPara), 1, dataFile)==1)
+                {
+                    imgParam[PARA_TOTAL] = para.imgUrlTree.len;
+                    imgParam[PARA_PROCESSED] = para.imgUrlTree.processed;
+                    imgParam[PARA_HEIGHT] = para.imgUrlTree.height;
+                    imgParam[PARA_DOWNLOAD] = para.storageImgList.num;
+
+                    pageParam[PARA_TOTAL] = para.pageUrlTree.len;
+                    pageParam[PARA_PROCESSED] = para.pageUrlTree.processed;
+                    pageParam[PARA_HEIGHT] = para.pageUrlTree.height;
+                }
+                break;
+            }
+
+            fseek(dataFile, ashmParaStore.size, SEEK_CUR);
+        }
+
+        fclose(dataFile);
+    }
+
+    (*env)->ReleaseIntArrayElements(env, jImgParam, imgParam, 0);
+    (*env)->ReleaseIntArrayElements(env, jPageParam, pageParam, 0);
+    (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
+}
 
 void urlTreeTraversal(urlTree *tree)
 {

@@ -175,8 +175,8 @@ public class SpiderService extends Service
         stringFromJNI("ashmem");
 
 
-        pageProcParam = new int[PAGE_PARA_NUM];
-        imgProcParam = new int[IMG_PARA_NUM];
+        pageProcParam = new int[StaticValue.PAGE_PARA_NUM];
+        imgProcParam = new int[StaticValue.IMG_PARA_NUM];
 
 
         if (jniSpiderInit(imgProcParam, pageProcParam))
@@ -522,15 +522,6 @@ public class SpiderService extends Service
 
     private String curPageUrl;
 
-    private final static int PARA_TOTAL = 0;
-    private final static int PARA_PROCESSED = 1;
-    private final static int PARA_HEIGHT = 2;
-    private final static int PARA_PAYLOAD = 3;
-    private final static int PARA_DOWNLOAD = 4;
-
-    private final static int PAGE_PARA_NUM = 3;
-    private final static int IMG_PARA_NUM = 5;
-
     private int[] pageProcParam;
     private int[] imgProcParam;
 
@@ -740,7 +731,7 @@ public class SpiderService extends Service
 
                 jniDataLock.lock();
 
-                int imgIndex = imgProcParam[PARA_DOWNLOAD];
+                int imgIndex = imgProcParam[StaticValue.PARA_DOWNLOAD];
                 jniSaveImgStorageInfo((int) imgUrlJniAddr, (int) containerUrlJniAddr, imgProcParam);
 
                 if ((imgIndex % SAVE_PROJECT_DATA) == 0)
@@ -1027,14 +1018,14 @@ public class SpiderService extends Service
         jsonReportStr += "\"serviceVmMem\":" + (Runtime.getRuntime().totalMemory() >> 10) + ",\r\n";
         jsonReportStr += "\"serviceNativeMem\":" + (Debug.getNativeHeapSize() >> 10) + ",\r\n";
 
-        jsonReportStr += "\"imgDownloaderPayload\":" + imgProcParam[PARA_PAYLOAD] + ",\r\n";
-        jsonReportStr += "\"imgDownloadNum\":" + imgProcParam[PARA_DOWNLOAD] + ",\r\n";
-        jsonReportStr += "\"imgProcessedNum\":" + imgProcParam[PARA_PROCESSED] + ",\r\n";
-        jsonReportStr += "\"imgTotalNum\":" + imgProcParam[PARA_TOTAL] + ",\r\n";
-        jsonReportStr += "\"imgTreeHeight\":" + imgProcParam[PARA_HEIGHT] + ",\r\n";
-        jsonReportStr += "\"pageProcessedNum\":" + pageProcParam[PARA_PROCESSED] + ",\r\n";
-        jsonReportStr += "\"pageTotalNum\":" + pageProcParam[PARA_TOTAL] + ",\r\n";
-        jsonReportStr += "\"pageTreeHeight\":" + pageProcParam[PARA_HEIGHT] + ",\r\n";
+        jsonReportStr += "\"imgDownloaderPayload\":" + imgProcParam[StaticValue.PARA_PAYLOAD] + ",\r\n";
+        jsonReportStr += "\"imgDownloadNum\":" + imgProcParam[StaticValue.PARA_DOWNLOAD] + ",\r\n";
+        jsonReportStr += "\"imgProcessedNum\":" + imgProcParam[StaticValue.PARA_PROCESSED] + ",\r\n";
+        jsonReportStr += "\"imgTotalNum\":" + imgProcParam[StaticValue.PARA_TOTAL] + ",\r\n";
+        jsonReportStr += "\"imgTreeHeight\":" + imgProcParam[StaticValue.PARA_HEIGHT] + ",\r\n";
+        jsonReportStr += "\"pageProcessedNum\":" + pageProcParam[StaticValue.PARA_PROCESSED] + ",\r\n";
+        jsonReportStr += "\"pageTotalNum\":" + pageProcParam[StaticValue.PARA_TOTAL] + ",\r\n";
+        jsonReportStr += "\"pageTreeHeight\":" + pageProcParam[StaticValue.PARA_HEIGHT] + ",\r\n";
 
         jsonReportStr += "\"pageLoadTime\":" + loadTime + ",\r\n";
         jsonReportStr += "\"pageScanTime\":" + scanTime + ",\r\n";

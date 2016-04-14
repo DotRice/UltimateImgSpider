@@ -24,10 +24,14 @@
                 android:layout_height="match_parent"/>
         </FrameLayout>
 
-        <include
-            android:layout_height="wrap_content"
+        <FrameLayout
             android:layout_width="match_parent"
-            layout="@layout/proj_bar"/>
+            android:layout_height="@dimen/projbar_height">
+
+            <include
+                layout="@layout/proj_bar"/>
+
+        </FrameLayout>
 
     </LinearLayout>
 

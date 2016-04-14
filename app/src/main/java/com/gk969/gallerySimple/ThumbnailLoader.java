@@ -48,7 +48,7 @@ public  class ThumbnailLoader
 {
     private static final String TAG = "ThumbnailLoader";
 
-    private final static int CACHE_SIZE=128;
+    private final static int CACHE_SIZE=64;
     //A circle cache
     private SlotTexture[] textureCache=new SlotTexture[CACHE_SIZE];
     private AtomicInteger scrollStep=new AtomicInteger(1);
@@ -70,9 +70,15 @@ public  class ThumbnailLoader
     private SlotView slotView;
 
     private ThumbnailLoaderHelper loaderHelper;
+    private ReentrantLock loaderHelperLock=new ReentrantLock();
 
-    protected int labelHeight;
-    private final static int INFO_TEXT_COLOR=0xFF00FF00;
+    private int labelTextSize;
+    private final static int LABEL_NAME_COLOR=0xFF00F000;
+    private final static int LABEL_INFO_COLOR=0xFF00F000;
+
+    private volatile boolean needLabel;
+
+    private int labelNameLimit;
 
     public ThumbnailLoader(GLRootView glRoot, ThumbnailLoaderHelper helper)
     {
@@ -91,12 +97,22 @@ public  class ThumbnailLoader
         mTextureUploader=new TiledTexture.Uploader(glRoot);
         mGLRootView=glRoot;
         loaderHelper=helper;
-        loaderHelper.setLoader(this);
+        helper.setLoader(this);
+        needLabel=helper.needLabel();
     }
 
     public void setView(SlotView view)
     {
         slotView=view;
+    }
+
+    public void setHelper(ThumbnailLoaderHelper helper, int totalImgNum)
+    {
+        loaderHelper=helper;
+        needLabel=helper.needLabel();
+        setAlbumTotalImgNum(0);
+        setAlbumTotalImgNum(totalImgNum);
+        mTextureLoaderThread.interrupt();
     }
 
     private void clearCache()
@@ -107,7 +123,7 @@ public  class ThumbnailLoader
         }
 
         mTextureUploader.clear();
-        TiledTexture.freeResources();
+        //TiledTexture.freeResources();
     }
 
     public void setAlbumTotalImgNum(int totalImgNum)
@@ -158,7 +174,6 @@ public  class ThumbnailLoader
         mTextureLoaderThread = new TextureLoaderThread();
         mTextureLoaderThread.setDaemon(true);
         mTextureLoaderThread.start();
-
     }
 
     public void stopLoader()
@@ -166,13 +181,14 @@ public  class ThumbnailLoader
         isLoaderRunning=false;
     }
 
-    public void initAboutView(int slotNum, int paraLabelHeight)
+    public void initAboutView(int slotNum, int paraLabelTextSize, int paraLabelNameLimit)
     {
         imgsInDispArea=slotNum;
         bestOffsetOfDispInCache=(CACHE_SIZE-slotNum)/2;
         Log.i(TAG, "slotNum " + slotNum);
 
-        labelHeight=paraLabelHeight;
+        labelTextSize=paraLabelTextSize;
+        labelNameLimit=paraLabelNameLimit;
 
         if(!isLoaderRunning)
         {
@@ -198,7 +214,8 @@ public  class ThumbnailLoader
     {
         Bitmap mainBmp;
         TiledTexture texture;
-        StringTexture label;
+        StringTexture labelName;
+        StringTexture labelInfo;
         AtomicInteger imgIndex;
         AtomicBoolean isReady;
         AtomicBoolean hasTried;
@@ -210,10 +227,20 @@ public  class ThumbnailLoader
                 texture.recycle();
                 texture = null;
 
-                if(loaderHelper.needLabel())
+            }
+
+            if(needLabel)
+            {
+                if(labelInfo!=null)
                 {
-                    label.recycle();
-                    label = null;
+                    labelInfo.recycle();
+                    labelInfo=null;
+                }
+
+                if(labelName!=null)
+                {
+                    labelName.recycle();
+                    labelName = null;
                 }
             }
 
@@ -287,6 +314,11 @@ public  class ThumbnailLoader
     {
         private final static int CHECK_INTERVAL=500;
 
+        public TextureLoaderThread()
+        {
+            super("TextureLoaderThread");
+        }
+
         private boolean isOffsetChangedInLoading()
         {
             int step=scrollStep.get();
@@ -308,8 +340,8 @@ public  class ThumbnailLoader
                         Bitmap bmpContainer = slot.mainBmp;
                         mGLRootView.unlockRenderThread();
 
+                        //loaderHelperLock.lock();
                         Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, bmpContainer);
-
                         if (bmp != null)
                         {
                             mGLRootView.lockRenderThread();
@@ -317,22 +349,34 @@ public  class ThumbnailLoader
                             {
                                 slot.texture = new TiledTexture(bmp);
 
-                                if(loaderHelper.needLabel())
-                                {
-                                    slot.label = StringTexture.newInstance(
-                                            loaderHelper.getLabelString(imgIndex),
-                                            labelHeight, INFO_TEXT_COLOR);
-                                }
 
                                 slot.isReady.set(true);
                                 Log.i(TAG, "load success  cacheIndex:" + cacheIndex + " imgIndex:" +
                                         textureCache[cacheIndex].imgIndex);
                                 mTextureUploader.addTexture(slot.texture);
-
                             }
 
                             mGLRootView.unlockRenderThread();
                         }
+
+                        mGLRootView.lockRenderThread();
+                        if(needLabel)
+                        {
+                            Log.i(TAG, "Load Label " + imgIndex + " " + loaderHelper.getLabelString(imgIndex));
+
+                            String[] labelStr=loaderHelper.getLabelString(imgIndex).split(" ");
+                            
+                            slot.labelName = StringTexture.newInstance(labelStr[0], labelTextSize,
+                                    LABEL_NAME_COLOR, labelNameLimit, false);
+
+                            if(labelStr.length>1)
+                            {
+                                slot.labelInfo = StringTexture.newInstance(labelStr[1], labelTextSize, LABEL_INFO_COLOR);
+                            }
+                        }
+                        mGLRootView.unlockRenderThread();
+                        //loaderHelperLock.unlock();
+
                         hasTried=imgIndex == slot.imgIndex.get();
                     }
 
@@ -359,15 +403,14 @@ public  class ThumbnailLoader
         {
             while(isLoaderRunning)
             {
-                if(!isOffsetChangedInLoading())
+                while(isOffsetChangedInLoading());
+
+                try
                 {
-                    try
-                    {
-                        sleep(CHECK_INTERVAL);
-                    } catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
+                    sleep(CHECK_INTERVAL);
+                } catch (InterruptedException e)
+                {
+                    Log.i(TAG, "Loader Interrupted");
                 }
             }
         }

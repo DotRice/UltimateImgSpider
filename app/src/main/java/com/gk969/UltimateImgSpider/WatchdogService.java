@@ -52,13 +52,13 @@ public class WatchdogService extends Service
 
     public native void jniStoreProjectData(String path);
 
-    final RemoteCallbackList<IRemoteWatchdogServiceCallback> mCallbacks
-            = new RemoteCallbackList<IRemoteWatchdogServiceCallback>();
-
     static
     {
         System.loadLibrary("UltimateImgSpider");
     }
+
+    final RemoteCallbackList<IRemoteWatchdogServiceCallback> mCallbacks
+            = new RemoteCallbackList<IRemoteWatchdogServiceCallback>();
 
     @Override
     public void onCreate()

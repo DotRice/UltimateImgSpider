@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/drawer_info"
+    android:id="@+id/album_info_drawer"
     android:orientation="vertical"
     android:background="@color/drawer_info_background"
     android:layout_width="@dimen/drawer_info_width"
@@ -142,30 +142,6 @@
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/image_download_payload"/>
-
-                <TextView
-                    android:id="@+id/image_download_payload"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
-
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
                     android:text="@string/image_tree_height"/>
 
                 <TextView
@@ -272,306 +248,353 @@
                     />
             </LinearLayout>
 
+
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
+                android:layout_height="wrap_content"
+                android:id="@+id/downloading_info"
+                android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/page_load_time"/>
 
-                <TextView
-                    android:id="@+id/page_load_time"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
+                    android:layout_height="@dimen/drawer_info_group_title_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_group_title_margin_top">
+
+                    <ImageView
+                        android:layout_width="@dimen/drawer_info_group_title_image_width"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="@dimen/drawer_info_group_title_image_margin"
+                        android:layout_marginBottom="@dimen/drawer_info_group_title_image_margin"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/speed"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_group_title_text_size"
+                        android:text="@string/speed_info"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/download_speed"/>
+
+                    <TextView
+                        android:id="@+id/download_speed"
+                        android:layout_width="140dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/image_download_payload"/>
+
+                    <TextView
+                        android:id="@+id/image_download_payload"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/page_load_time"/>
+
+                    <TextView
+                        android:id="@+id/page_load_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/page_scan_time"/>
+
+                    <TextView
+                        android:id="@+id/page_scan_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/page_search_time"/>
+
+                    <TextView
+                        android:id="@+id/page_search_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_group_title_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_group_title_margin_top">
+
+                    <ImageView
+                        android:layout_width="@dimen/drawer_info_group_title_image_width"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="@dimen/drawer_info_group_title_image_margin"
+                        android:layout_marginBottom="@dimen/drawer_info_group_title_image_margin"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ram"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_group_title_text_size"
+                        android:text="@string/ram_info"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/ram_sys_total"/>
+
+                    <TextView
+                        android:id="@+id/ram_sys_total"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/ram_sys_free"/>
+
+                    <TextView
+                        android:id="@+id/ram_sys_free"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/ram_activity_vm"/>
+
+                    <TextView
+                        android:id="@+id/ram_activity_vm"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/ram_activity_native"/>
+
+                    <TextView
+                        android:id="@+id/ram_activity_native"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/ram_service_vm"/>
+
+                    <TextView
+                        android:id="@+id/ram_service_vm"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/ram_service_native"/>
+
+                    <TextView
+                        android:id="@+id/ram_service_native"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:textColor="@color/drawer_info_item_value_text_color"
+                        />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_group_title_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_group_title_margin_top">
+
+                    <ImageView
+                        android:layout_width="@dimen/drawer_info_group_title_image_width"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="@dimen/drawer_info_group_title_image_margin"
+                        android:layout_marginBottom="@dimen/drawer_info_group_title_image_margin"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/scan_page"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_group_title_text_size"
+                        android:text="@string/cur_page"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cur_page"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left"
                     android:textColor="@color/drawer_info_item_value_text_color"
-                    />
+                    android:textSize="@dimen/drawer_info_item_value_text_size"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
-
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/page_scan_time"/>
-
-                <TextView
-                    android:id="@+id/page_scan_time"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
-
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/page_search_time"/>
-
-                <TextView
-                    android:id="@+id/page_search_time"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_group_title_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_group_title_margin_top">
-
-                <ImageView
-                    android:layout_width="@dimen/drawer_info_group_title_image_width"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="@dimen/drawer_info_group_title_image_margin"
-                    android:layout_marginBottom="@dimen/drawer_info_group_title_image_margin"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/speed"/>
-
-                <TextView
-                    android:layout_width="140dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_group_title_text_size"
-                    android:text="@string/download_speed"/>
-
-                <TextView
-                    android:id="@+id/download_speed"
-                    android:layout_width="140dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_group_title_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_group_title_margin_top">
-
-                <ImageView
-                    android:layout_width="@dimen/drawer_info_group_title_image_width"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="@dimen/drawer_info_group_title_image_margin"
-                    android:layout_marginBottom="@dimen/drawer_info_group_title_image_margin"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ram"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_group_title_text_size"
-                    android:text="@string/ram_info"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
-
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/ram_sys_total"/>
-
-                <TextView
-                    android:id="@+id/ram_sys_total"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
-
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/ram_sys_free"/>
-
-                <TextView
-                    android:id="@+id/ram_sys_free"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
-
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/ram_activity_vm"/>
-
-                <TextView
-                    android:id="@+id/ram_activity_vm"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
-
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/ram_activity_native"/>
-
-                <TextView
-                    android:id="@+id/ram_activity_native"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
-
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/ram_service_vm"/>
-
-                <TextView
-                    android:id="@+id/ram_service_vm"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_item_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left">
-
-                <TextView
-                    android:layout_width="@dimen/drawer_info_item_name_width"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_name_text_size"
-                    android:text="@string/ram_service_native"/>
-
-                <TextView
-                    android:id="@+id/ram_service_native"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_item_value_text_size"
-                    android:textColor="@color/drawer_info_item_value_text_color"
-                    />
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/drawer_info_group_title_height"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/drawer_info_group_title_margin_top">
-
-                <ImageView
-                    android:layout_width="@dimen/drawer_info_group_title_image_width"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="@dimen/drawer_info_group_title_image_margin"
-                    android:layout_marginBottom="@dimen/drawer_info_group_title_image_margin"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/scan_page"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/drawer_info_group_title_text_size"
-                    android:text="@string/cur_page"/>
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/cur_page"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:paddingLeft="@dimen/drawer_info_item_padding_left"
-                android:textColor="@color/drawer_info_item_value_text_color"
-                android:textSize="@dimen/drawer_info_item_value_text_size"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

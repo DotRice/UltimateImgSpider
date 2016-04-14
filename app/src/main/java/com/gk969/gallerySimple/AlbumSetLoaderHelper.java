@@ -10,27 +10,77 @@ import com.gk969.UltimateImgSpider.WatchdogService;
 import java.io.File;
 import java.util.ArrayList;
 
-public class AlbumSetLoaderHelper implements ThumbnailLoaderHelper
+public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
 {
     private final static String TAG = "AlbumSetLoaderHelper";
+    public final static int INVALID_INDEX=0xFFFFFFFF;
 
-    private ThumbnailLoader mThumbnailLoader;
+    static public class ProjectInfo
+    {
+        public String site;
+        public int[] imgInfo;
+        public int[] pageInfo;
 
-    private ArrayList<String> projectList = new ArrayList<String>();
+        public ProjectInfo(String siteHost, int[] paramImgInfo, int[] paramPageInfo)
+        {
+            site=siteHost;
+            imgInfo=paramImgInfo;
+            pageInfo=paramPageInfo;
+        }
+    }
 
-    private boolean needRefreshList=true;
+    public ArrayList<ProjectInfo> projectList = new ArrayList<ProjectInfo>();
+
+    private boolean needRefreshList = true;
 
     private String appPath;
 
+    private ThumbnailLoader mThumbnailLoader;
+    
+    public native void jniGetProjectInfoOnStart(String path, int[] imgInfo, int[] pageInfo);
+    static
+    {
+        System.loadLibrary("UltimateImgSpider");
+    }
+
     public AlbumSetLoaderHelper(String path)
     {
-        appPath=path;
+        appPath = path;
+    }
+
+
+
+    public int findIndexBySite(String site)
+    {
+        int index=INVALID_INDEX;
+
+        for(ProjectInfo project:projectList)
+        {
+            if(project.site.equals(site))
+            {
+                break;
+            }
+        }
+
+        return index;
+    }
+
+    @Override
+    public void setLoader(ThumbnailLoader loader)
+    {
+        mThumbnailLoader=loader;
     }
 
     @Override
     public String getLabelString(int index)
     {
-        return (index<projectList.size())?projectList.get(index):"";
+        if(index < projectList.size())
+        {
+            Log.i(TAG, "getLabelString " + index + " " + projectList.get(index));
+            return projectList.get(index).site + " " + projectList.get(index).imgInfo[StaticValue.PARA_DOWNLOAD];
+        }
+
+        return "";
     }
 
     @Override
@@ -45,32 +95,29 @@ public class AlbumSetLoaderHelper implements ThumbnailLoaderHelper
 
         File appDir = new File(appPath);
 
-        Log.i(TAG, "refreshProjectList path:"+appPath);
+        Log.i(TAG, "refreshProjectList path:" + appPath);
 
         File[] fileList = appDir.listFiles();
-        //ArrayList<File> projectDir = new ArrayList<File>();
-        for (File file : fileList)
-        {
-            if (file.isDirectory())
-            {
-                Log.i(TAG, "firject dir:"+file.getPath());
 
-                if (WatchdogService.projectDataIsSafe(file.getPath() + StaticValue.PROJECT_DATA_DIR))
+        for(File file : fileList)
+        {
+            if(file.isDirectory())
+            {
+                Log.i(TAG, "project dir:" + file.getPath());
+
+                String dataDirPath=file.getPath() + StaticValue.PROJECT_DATA_DIR;
+                if(WatchdogService.projectDataIsSafe(dataDirPath))
                 {
-                    //projectDir.add(file);
-                    projectList.add(file.getName());
+                    int[] imgInfo=new int[StaticValue.IMG_PARA_NUM];
+                    int[] pageInfo=new int[StaticValue.PAGE_PARA_NUM];
+                    jniGetProjectInfoOnStart(dataDirPath+StaticValue.PROJECT_DATA_NAME, imgInfo, pageInfo);
+                    projectList.add(new ProjectInfo(file.getName(), imgInfo, pageInfo));
                 }
             }
         }
 
-        Log.i(TAG, "projectList.size "+projectList.size());
         mThumbnailLoader.setAlbumTotalImgNum(projectList.size());
-    }
-
-    public void addProject(String siteDomain)
-    {
-        projectList.add(siteDomain);
-        mThumbnailLoader.setAlbumTotalImgNum(projectList.size());
+        Log.i(TAG, "projectList.size " + projectList.size());
     }
 
     @Override
@@ -78,15 +125,15 @@ public class AlbumSetLoaderHelper implements ThumbnailLoaderHelper
     {
         Log.i(TAG, "try to load index:" + index);
 
-        if (needRefreshList)
+        if(needRefreshList)
         {
             refreshProjectList(appPath);
-            needRefreshList=false;
+            needRefreshList = false;
         }
 
-        if(index<projectList.size())
+        if(index < projectList.size())
         {
-            String fileName = String.format("%s/%s/%s/%d/%03d.jpg", appPath, projectList.get(index),
+            String fileName = String.format("%s/%s/%s/%d/%03d.jpg", appPath, projectList.get(index).site,
                     StaticValue.THUMBNAIL_DIR_NAME, 0, 0);
 
             BitmapFactory.Options bmpOpts = new BitmapFactory.Options();
@@ -98,12 +145,6 @@ public class AlbumSetLoaderHelper implements ThumbnailLoaderHelper
         }
 
         return null;
-    }
-
-    @Override
-    public void setLoader(ThumbnailLoader loader)
-    {
-        mThumbnailLoader=loader;
     }
 
 }

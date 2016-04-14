@@ -3,10 +3,13 @@ import android.graphics.Bitmap;
 
 import com.gk969.gallery.gallery3d.glrenderer.StringTexture;
 
-public interface ThumbnailLoaderHelper
+public abstract class ThumbnailLoaderHelper
 {
-    public String getLabelString(int index);
-    public boolean needLabel();
-    public Bitmap getThumbnailByIndex(int index, Bitmap container);
-    public void setLoader(ThumbnailLoader loader);
+    public abstract String getLabelString(int index);
+    public abstract boolean needLabel();
+    public abstract Bitmap getThumbnailByIndex(int index, Bitmap container);
+    public void setLoader(ThumbnailLoader loader)
+    {
+
+    }
 }

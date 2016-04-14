@@ -25,7 +25,7 @@
     <color name="drawer_info_group_title_background">#FFF</color>
     <color name="drawer_info_item_background">#FFF</color>
     <color name="drawer_info_item_value_text_color">#D33</color>
-    <color name="drawer_info_title_background">#EEE</color>
+    <color name="drawer_info_title_background">#DDD</color>
     <color name="face_detect_fail">#80d05060</color>
     <color name="face_detect_start">#80ffffff</color>
     <color name="face_detect_success">#8050d060</color>
@@ -222,7 +222,7 @@
     <string name="home">主页</string>
     <string name="image_download_num">已下载图片数</string>
     <string name="image_download_payload">正下载图片数</string>
-    <string name="image_info">图片下载信息</string>
+    <string name="image_info">图片数量</string>
     <string name="image_processed">已扫描图片数</string>
     <string name="image_total">图片总数</string>
     <string name="image_tree_height">图片树高度</string>
@@ -234,7 +234,7 @@
     <string name="newProj">新建</string>
     <string name="notSet">未设置</string>
     <string name="option">选项</string>
-    <string name="page_info">网页扫描信息</string>
+    <string name="page_info">网页数量</string>
     <string name="page_load_time">网页加载用时</string>
     <string name="page_processed">已扫描网页数</string>
     <string name="page_scan_time">网页扫描用时</string>
@@ -257,6 +257,7 @@
     <string name="selSearchEngine">选择搜索引擎</string>
     <string name="selSrc">选择站点</string>
     <string name="settings">设置</string>
+    <string name="speed_info">速度信息</string>
     <string name="spiderGo">开始抓图</string>
     <string name="spiderGoConfirm">确定从当前网页开始抓图？</string>
     <string name="srcUrl">起始地址</string>

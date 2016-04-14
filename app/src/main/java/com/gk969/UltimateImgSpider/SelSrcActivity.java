@@ -165,7 +165,6 @@ public class SelSrcActivity extends Activity
         if (Protocol.startsWith("http://") || Protocol.startsWith("https://"))
         {
             browser.stopLoading();
-            browser.loadUrl("about:blank");
             browser.loadUrl(URL);
             setBrowserTitle(URL);
             btnSelSearchEngine.setImageResource(R.drawable.site);
@@ -827,6 +826,7 @@ public class SelSrcActivity extends Activity
             }
             else if (browser.canGoBack())
             {
+                Log.i(TAG, "browser.goBack();");
                 browser.goBack();
                 return true;
             }
