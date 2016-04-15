@@ -40,4 +40,4 @@
         android:layout_width="@dimen/drawer_info_width"
         android:layout_gravity="start"
         layout="@layout/drawer_info"/>
-</android.support.v4.widget.DrawerLayout><!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/layout/activity_spider.xml -->
+</android.support.v4.widget.DrawerLayout><!-- From: file:/F:/android/UltimateImgSpider/app/src/main/res/layout/activity_spider.xml -->

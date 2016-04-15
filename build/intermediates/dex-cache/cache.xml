@@ -2,11 +2,11 @@
 <items version="2" >
 
     <item
-        jar="D:\android\UltimateImgSpider\app\libs\android-support-v13.jar"
+        jar="F:\android\UltimateImgSpider\app\libs\android-support-v13.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="ca3f431561810d8149c358d50d33d66c136fb326">
-        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\android-support-v13-ce9cf8f887d9f170398db0f8c5be45c4c076b4fa.jar" />
+        <dex dex="F:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\android-support-v13-f57fa7d87ef79a86df42acc496354e72b74e8b48.jar" />
     </item>
 
 </items>

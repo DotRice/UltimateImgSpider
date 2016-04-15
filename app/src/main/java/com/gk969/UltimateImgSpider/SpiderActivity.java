@@ -342,22 +342,19 @@ public class SpiderActivity extends Activity
         appPath = Utils.getDirInExtSto(getString(R.string.appPackageName)).getPath();
 
         serviceInterfaceInit();
-
-        //sendCmdToSpiderService(StaticValue.CMD_PAUSE_ON_START);
-
         checkStorage();
-
         panelViewInit();
-
         albumViewInit();
     }
 
-    private boolean startProject(int index)
+    private boolean startProject(int index, String srcUrl)
     {
         Log.i(TAG, "startProject " + index);
         try
         {
-            URL newUrl = new URL("http://"+albumSetLoaderHelper.projectList.get(index).site+"/");
+            URL newUrl = new URL((srcUrl==null)?
+                    ("http://"+albumSetLoaderHelper.projectList.get(index).site+"/"):srcUrl);
+
             String newPath=appPath + "/" + newUrl.getHost();
 
             downloadingProjectIndex=index;
@@ -586,7 +583,7 @@ public class SpiderActivity extends Activity
                         }
 
                         openAlbum(albumIndex);
-                        startProject(albumIndex);
+                        startProject(albumIndex, newUrl.toString());
                     } catch(MalformedURLException e)
                     {
                         e.printStackTrace();
@@ -685,7 +682,7 @@ public class SpiderActivity extends Activity
                     }
                     else
                     {
-                        startProject(displayProjectIndex);
+                        startProject(displayProjectIndex, null);
                     }
                 }
             });
