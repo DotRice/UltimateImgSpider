@@ -103,6 +103,8 @@ public class SpiderActivity extends Activity
 
     private static final int BUMP_MSG = 1;
 
+    GLRootView glRootView;
+
     private ThumbnailLoader mThumbnailLoader;
     private AlbumLoaderHelper albumLoaderHelper;
     private AlbumSetLoaderHelper albumSetLoaderHelper;
@@ -406,7 +408,7 @@ public class SpiderActivity extends Activity
 
     private void albumViewInit()
     {
-        GLRootView glRootView = (GLRootView) findViewById(R.id.gl_root_view);
+        glRootView = (GLRootView) findViewById(R.id.gl_root_view);
 
         albumLoaderHelper = new AlbumLoaderHelper(downloadingProjectPath);
         albumSetLoaderHelper = new AlbumSetLoaderHelper(appPath);
@@ -515,6 +517,7 @@ public class SpiderActivity extends Activity
     protected void onResume()
     {
         super.onResume();
+        mThumbnailLoader.onResume();
         Log.i(TAG, "onResume");
 
     }
@@ -522,6 +525,7 @@ public class SpiderActivity extends Activity
     protected void onPause()
     {
         super.onPause();
+        mThumbnailLoader.onPause();
         Log.i(TAG, "onPause");
     }
 

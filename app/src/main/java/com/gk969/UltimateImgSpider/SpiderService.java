@@ -1,56 +1,34 @@
 package com.gk969.UltimateImgSpider;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.gk969.Utils.Utils;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.net.TrafficStats;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.MemoryFile;
 import android.os.ParcelFileDescriptor;
-import android.os.Message;
-import android.os.Process;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -61,11 +39,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class SpiderService extends Service
 {
@@ -630,11 +604,13 @@ public class SpiderService extends Service
 
             public DownloaderThread(int index)
             {
+                super("DownloaderThread "+index);
                 initWithNewIndex(index);
             }
 
             public DownloaderThread(int index, long lastUrlAddr)
             {
+                super("DownloaderThread "+index);
                 imgUrlJniAddr = lastUrlAddr;
                 initWithNewIndex(index);
             }
@@ -664,7 +640,7 @@ public class SpiderService extends Service
 
                     if (urlSet != null)
                     {
-                        //Log.i(TAG, urlSet);
+                        Log.i(TAG, "img:"+urlSet);
 
                         String[] urls = urlSet.split(" ");
                         imgUrl = urls[0];
@@ -783,7 +759,7 @@ public class SpiderService extends Service
                         Log.i("rename fail", newPath);
                         try
                         {
-                            sleep(100);
+                            sleep(200);
                         } catch (InterruptedException e)
                         {
                             e.printStackTrace();
@@ -791,17 +767,29 @@ public class SpiderService extends Service
                     }
                 }
 
-                imgFileLock.unlock();
 
                 if (thumbnailFile != null)
                 {
-                    creatThumbnail(finalFile, thumbnailFile);
+                    createThumbnail(finalFile, thumbnailFile);
                 }
+                else
+                {
+                    Log.i("createThumbnail", "thumbnailFile == null");
+                }
+                imgFileLock.unlock();
             }
 
-            private void creatThumbnail(File rawFile, File thumbnailFile)
+            private void createThumbnail(File rawFile, File thumbnailFile)
             {
-                Bitmap rawBmp = BitmapFactory.decodeFile(rawFile.getPath());
+                BitmapFactory.Options opts = new BitmapFactory.Options();
+                opts.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(rawFile.getPath(), opts);
+
+                opts.inSampleSize=Math.min(opts.outHeight, opts.outWidth)/StaticValue.THUMBNAIL_SIZE;
+
+                opts.inJustDecodeBounds = false;
+                Bitmap rawBmp = BitmapFactory.decodeFile(rawFile.getPath(), opts);
+
 
                 if (rawBmp != null)
                 {
@@ -845,83 +833,85 @@ public class SpiderService extends Service
                     } catch (FileNotFoundException e)
                     {
                         e.printStackTrace();
+                        Log.i("createThumbnail", "FileNotFoundException");
                     } catch (IOException e)
                     {
                         e.printStackTrace();
+                        Log.i("createThumbnail", "IOException");
                     }
 
                     thumbnail.recycle();
                 }
-
+                else
+                {
+                    Log.i("createThumbnail", "rawBmp == null");
+                }
             }
 
             private void recvImgDataLoop(InputStream input, String url) throws IOException
             {
                 int totalLen = 0;
-                int cacheUsege = 0;
+                int cacheUsage = 0;
                 File imgFile = null;
                 FileOutputStream output = null;
 
-                try
+                while (true)
                 {
-                    while (true)
+                    int len = input.read(blockBuf);
+                    if (len != -1)
                     {
-                        int len = input.read(blockBuf);
-                        if (len != -1)
+                        if ((cacheUsage + len) < IMG_VALID_FILE_MIN)
                         {
-                            if ((cacheUsege + len) < IMG_VALID_FILE_MIN)
-                            {
-                                System.arraycopy(blockBuf, 0, cacheBuf, cacheUsege, len);
-                                cacheUsege += len;
-                            }
-                            else
-                            {
-                                if (output == null)
-                                {
-                                    imgFile = newImgDownloadCacheFile(url);
-                                    output = new FileOutputStream(imgFile);
-                                }
-                                output.write(cacheBuf, 0, cacheUsege);
-                                System.arraycopy(blockBuf, 0, cacheBuf, 0, len);
-                                cacheUsege = len;
-                            }
-
-                            totalLen += len;
+                            System.arraycopy(blockBuf, 0, cacheBuf, cacheUsage, len);
+                            cacheUsage += len;
                         }
                         else
                         {
-                            break;
+                            if (output == null)
+                            {
+                                imgFile = newImgDownloadCacheFile(url);
+                                output = new FileOutputStream(imgFile);
+                            }
+                            output.write(cacheBuf, 0, cacheUsage);
+                            System.arraycopy(blockBuf, 0, cacheBuf, 0, len);
+                            cacheUsage = len;
                         }
-                    }
 
-                    //Log.i(TAG, "totalLen "+(totalLen/1024)+"K "+url);
-                    if (totalLen < IMG_VALID_FILE_MIN)
-                    {
-                        BitmapFactory.Options opts = new BitmapFactory.Options();
-                        opts.inJustDecodeBounds = true;
-                        BitmapFactory.decodeByteArray(cacheBuf, 0, totalLen, opts);
-
-                        //Log.i(TAG, "size:" + totalLen + " " + opts.outWidth + "*" + opts.outHeight);
-
-                        if (opts.outHeight > IMG_VALID_HEIGHT_MIN
-                                && opts.outWidth > IMG_VALID_WIDTH_MIN)
-                        {
-                            imgFile = newImgDownloadCacheFile(url);
-                            output = new FileOutputStream(imgFile);
-                            output.write(cacheBuf, 0, totalLen);
-                        }
+                        totalLen += len;
                     }
                     else
                     {
-                        output.write(cacheBuf, 0, cacheUsege);
-                    }
-                } finally
-                {
-                    if (output != null)
-                    {
-                        output.close();
+                        break;
                     }
                 }
+
+                //Log.i(TAG, "totalLen "+(totalLen/1024)+"K "+url);
+                if (totalLen < IMG_VALID_FILE_MIN)
+                {
+                    BitmapFactory.Options opts = new BitmapFactory.Options();
+                    opts.inJustDecodeBounds = true;
+                    BitmapFactory.decodeByteArray(cacheBuf, 0, totalLen, opts);
+
+                    //Log.i(TAG, "size:" + totalLen + " " + opts.outWidth + "*" + opts.outHeight);
+
+                    if (opts.outHeight > IMG_VALID_HEIGHT_MIN
+                            && opts.outWidth > IMG_VALID_WIDTH_MIN)
+                    {
+                        imgFile = newImgDownloadCacheFile(url);
+                        output = new FileOutputStream(imgFile);
+                        output.write(cacheBuf, 0, totalLen);
+                    }
+                }
+                else
+                {
+                    output.write(cacheBuf, 0, cacheUsage);
+                }
+
+                if (output != null)
+                {
+                    output.close();
+                }
+
 
                 if (imgFile != null)
                 {
@@ -962,16 +952,12 @@ public class SpiderService extends Service
                                 {
                                     break;
                                 }
-                                //int fileNamePos=urlStr.lastIndexOf("/")+1;
-                                //urlStr=urlStr.substring(0, fileNamePos)+
-                                //        URLEncoder.encode(urlStr.substring(fileNamePos), "utf_8");
                             }
                             else
                             {
                                 if (res == 200)
                                 {
-                                    InputStream input = urlConn.getInputStream();
-                                    recvImgDataLoop(input, urlStr);
+                                    recvImgDataLoop(urlConn.getInputStream(), urlStr);
                                 }
                                 break;
                             }
@@ -1261,6 +1247,7 @@ public class SpiderService extends Service
 
         public TimerThread()
         {
+            super("TimerThread");
             setDaemon(true);
         }
 

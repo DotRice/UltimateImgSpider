@@ -49,13 +49,13 @@ public class SlotView extends GLView
 
     private static final int SCROLL_BAR_TAP_WIDTH_IN_DP=30;
     private static final int SCROLL_BAR_WIDTH_IN_DP=20;
-    private static final int SCROLL_BAR_HEIGHT_MAX_IN_DP=100;
+    private static final int SCROLL_BAR_HEIGHT_MAX_IN_DP=150;
     private static final int SCROLL_BAR_HEIGHT_MIN_IN_DP=50;
     
     private int scrollBarHeightMax;
     private int scrollBarHeightMin;
     
-    private static final int NEED_SCROLL_BAR=10;
+    private static final int NEED_SCROLL_BAR=5;
     private static final int SCROLL_BAR_BACKGROUND_COLOR=0xA020C020;
 
     private int scrollBarTapWidth;
@@ -536,7 +536,7 @@ public class SlotView extends GLView
         if(scrollMax>needScroll)
         {
             scrollBarHeight=scrollBarHeightMin+(scrollBarHeightMax-scrollBarHeightMin)*needScroll/scrollMax;
-            scrollBarTop = (viewHeight - scrollBarHeight) * scrollDistance / scrollMax;
+            scrollBarTop = (int)((viewHeight - scrollBarHeight) * (long)scrollDistance / scrollMax);
             scrollBarTop-=overScrollGapY;
 
             canvas.fillRect(viewWidth - scrollBarWidth, scrollBarTop, scrollBarWidth, scrollBarHeight, SCROLL_BAR_BACKGROUND_COLOR);

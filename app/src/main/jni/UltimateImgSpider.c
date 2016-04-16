@@ -1088,6 +1088,8 @@ void urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
         height++;
     }
 
+    LOGI("urlTreeInsert %s", newUrl);
+
     if(height > tree->height)
     {
         tree->height = height;
@@ -1228,10 +1230,12 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
 
     if(prev == NULL)
     {
+        LOGI("deleteUrlNodeFromList prev == NULL");
         curTree->head = curNode->para.nextToLoad;
     }
     else
     {
+        LOGI("deleteUrlNodeFromList prev %s", prev->url);
         prev->para.nextToLoad = curNode->para.nextToLoad;
     }
 
@@ -1239,6 +1243,7 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
 
     if(next == NULL)
     {
+        LOGI("deleteUrlNodeFromList next == NULL");
         curTree->tail = curNode->para.prevToLoad;
     }
     else
@@ -1296,7 +1301,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
         const char *curUrl = curNode->url;
         u16 prevUrlLen = strlen(curUrl);
 
-        LOGI("urlDownloaded:%s len:%d", curUrl, curTree->len);
+        LOGI("urlProcessed:%s pageUrlTreeLen:%d", curUrl, curTree->len);
         LOGI("title:%s", (char*)addrRelativeToAbs(curNode->para.title));
         
         //当前url已经被下载，从未下载url链表中删除
@@ -1363,7 +1368,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
     (*env)->ReleaseIntArrayElements(env, jPageParam, param, 0);
 
 
-    LOGI("nextUrl:%s", nextUrl);
+    LOGI("jniFindNextPageUrl:%s", nextUrl);
     return (*env)->NewStringUTF(env, nextUrl);
 }
 
@@ -1373,7 +1378,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
 {
     urlTree *curTree = &(spiderPara->imgUrlTree);
 
-    //LOGI("downloadingImgNum:%d", downloadingImgNum);
+    LOGI("jniFindNextImgUrl lastImgAddr:%08X", jLastImgUrlAddr);
 
     // see if we find new url successfully at last time
     urlNode *lastImgNode=nodeAddrRelativeToAbs((RelativeAddr) jLastImgUrlAddr);
@@ -1403,7 +1408,8 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
 
         nextUrl = nextImgUrlWithContainerBuf;
 
-        sprintf(nextUrl, "%s %08X %s %08X", nextNode->url, (u32)nodeAddrAbsToRelative(nextNode), nodeAddrRelativeToAbs(nextNode->para.containerPage)->url, (u32)(nextNode->para.containerPage));
+        sprintf(nextUrl, "%s %08X %s %08X", nextNode->url, (u32)nodeAddrAbsToRelative(nextNode),
+                nodeAddrRelativeToAbs(nextNode->para.containerPage)->url, (u32)(nextNode->para.containerPage));
     }
 
     int *param = (*env)->GetIntArrayElements(env, jImgParam, NULL);
@@ -1412,7 +1418,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
     (*env)->ReleaseIntArrayElements(env, jImgParam, param, 0);
 
 
-    //LOGI("nextUrl:%s", nextUrl);
+    LOGI("jniFindNextImgUrl:%s", nextUrl);
     return (*env)->NewStringUTF(env, nextUrl);
 }
 

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/F:/android/UltimateImgSpider/app/src/main/res/values/arrays.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/arrays.xml -->
     <eat-comment/>
     <string-array name="noLongerConfirm">
         <item>不再提醒</item>
     </string-array>
-    <!-- From: file:/F:/android/UltimateImgSpider/app/src/main/res/values/colors.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/colors.xml -->
     <eat-comment/>
     <color name="album_background">#1A1A1A</color>
     <color name="album_placeholder">#333</color>
@@ -52,7 +52,7 @@
     <color name="review_control_pressed_fan_color">#3F33B5E5</color>
     <color name="slideshow_background">#1A1A1A</color>
     <color name="time_lapse_arc">#FFC5C5C5</color>
-    <!-- From: file:/F:/android/UltimateImgSpider/app/src/main/res/values/dimens.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/dimens.xml -->
     <eat-comment/>
     <dimen name="action_item_height">175dip</dimen>
     <dimen name="album_set_item_image_height">120dp</dimen>
@@ -188,17 +188,17 @@
     <dimen name="touch_circle_size">8dp</dimen>
     <dimen name="zoom_font_size">14pt</dimen>
     <dimen name="zoom_ring_min">48dp</dimen>
-    <!-- From: file:/F:/android/UltimateImgSpider/app/src/main/res/values/styles.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/styles.xml -->
     <eat-comment/>
     <drawable name="background_normal">#FFF</drawable>
     <drawable name="background_pressed">#CFC</drawable>
-    <!-- From: file:/F:/android/UltimateImgSpider/app/src/main/res/values/dimens.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/dimens.xml -->
     <eat-comment/>
     <integer name="album_rows_land">2</integer>
     <integer name="album_rows_port">4</integer>
     <integer name="albumset_rows_land">2</integer>
     <integer name="albumset_rows_port">3</integer>
-    <!-- From: file:/F:/android/UltimateImgSpider/app/src/main/res/values/strings.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="OK">确定</string>
     <string name="appPackageName">UltimateImgSpider</string>
@@ -265,7 +265,7 @@
     <string name="start">开始</string>
     <string name="stop">结束</string>
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
-    <!-- From: file:/F:/android/UltimateImgSpider/app/src/main/res/values/styles.xml -->
+    <!-- From: file:/D:/android/UltimateImgSpider/app/src/main/res/values/styles.xml -->
     <eat-comment/>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!--

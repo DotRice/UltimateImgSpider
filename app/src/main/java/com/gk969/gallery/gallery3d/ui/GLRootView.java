@@ -524,6 +524,11 @@ public class GLRootView extends GLSurfaceView
         mRenderLock.unlock();
     }
 
+    public boolean isRenderThreadHeldByCurThread()
+    {
+        return mRenderLock.isHeldByCurrentThread();
+    }
+
     @Override
     public void onPause() {
         unfreeze();
