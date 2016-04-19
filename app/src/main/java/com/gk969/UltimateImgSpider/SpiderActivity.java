@@ -463,7 +463,6 @@ public class SpiderActivity extends Activity
                         if(projectState==ProjectState.CHECK)
                         {
                             projectState=ProjectState.DOWNLOADING;
-                            sendCmdToSpiderService(StaticValue.CMD_START);
                             
                             if (serviceConnState == CONN_STATE_CONNECTED || serviceConnState == CONN_STATE_WAIT_CONNECT)
                             {

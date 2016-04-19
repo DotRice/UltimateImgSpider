@@ -572,10 +572,24 @@ public class SpiderService extends Service
                 {
                     downloaderThreads[i] = new DownloaderThread(i);
                 }
-                else if (!downloaderThreads[i].isAlive())
+                else
                 {
-                    long lastUrlAddr = downloaderThreads[i].imgUrlJniAddr;
-                    downloaderThreads[i] = new DownloaderThread(i, lastUrlAddr);
+                    if (!downloaderThreads[i].isAlive())
+                    {
+                        downloaderThreads[i] = new DownloaderThread(i);
+                    }
+                    else
+                    {
+                        downloaderThreads[i].exitLock.lock();
+                        if(downloaderThreads[i].readyToExit)
+                        {
+                            downloaderThreads[i] = new DownloaderThread(i);
+                        }
+                        else
+                        {
+                            downloaderThreads[i].exitLock.unlock();
+                        }
+                    }
                 }
             }
         }
@@ -595,24 +609,15 @@ public class SpiderService extends Service
             public long imgUrlJniAddr = URL_JNIADDR_INVALID;
             private long containerUrlJniAddr = URL_JNIADDR_INVALID;
 
-            private void initWithNewIndex(int index)
-            {
-                threadIndex = index;
-                setDaemon(true);
-                start();
-            }
+            public ReentrantLock exitLock=new ReentrantLock();
+            public volatile boolean readyToExit=false;
 
             public DownloaderThread(int index)
             {
-                super("DownloaderThread "+index);
-                initWithNewIndex(index);
-            }
-
-            public DownloaderThread(int index, long lastUrlAddr)
-            {
-                super("DownloaderThread "+index);
-                imgUrlJniAddr = lastUrlAddr;
-                initWithNewIndex(index);
+                super("DownloaderThread " + index);
+                threadIndex = index;
+                setDaemon(true);
+                start();
             }
 
             public void run()
@@ -624,6 +629,8 @@ public class SpiderService extends Service
 
                     Log.i(TAG, "thread " + threadIndex + " work");
                     //Log.i(TAG, "state:"+state);
+
+                    exitLock.lock();
                     if (state.get() != STAT_WORKING)
                     {
                         jniDataLock.lock();
@@ -633,6 +640,7 @@ public class SpiderService extends Service
 
                         break;
                     }
+                    exitLock.unlock();
 
                     jniDataLock.lock();
                     String urlSet = jniFindNextImgUrl((int) imgUrlJniAddr, imgProcParam);
@@ -658,11 +666,13 @@ public class SpiderService extends Service
                         imgUrlJniAddr = URL_JNIADDR_INVALID;
 
                         pageProcessLock.lock();
+                        exitLock.lock();
                         if (state.get() != STAT_WORKING)
                         {
                             pageProcessLock.unlock();
                             break;
                         }
+                        exitLock.unlock();
 
                         //Log.i(TAG, "post findAndLoadNextPage");
                         Utils.handlerPostUntilSuccess(spiderHandler, new Runnable()
@@ -675,6 +685,9 @@ public class SpiderService extends Service
                         });
                     }
                 }
+
+                readyToExit=true;
+                exitLock.unlock();
 
                 Log.i(TAG, "thread " + threadIndex + " stop");
             }
@@ -1240,7 +1253,6 @@ public class SpiderService extends Service
     {
         private final int TIMER_INTERVAL = 1000;
 
-        private int netTrafficCalcTimer = 0;
         private static final int NET_TRAFFIC_CALC_INTERVAL = 5;
 
         private static final int REPORT_STATUS_MAX_INTERVAL = 2;
@@ -1255,12 +1267,7 @@ public class SpiderService extends Service
         {
             while (timerRunning.get())
             {
-                netTrafficCalcTimer++;
-                if (netTrafficCalcTimer == NET_TRAFFIC_CALC_INTERVAL)
-                {
-                    netTrafficCalc.refreshNetTraffic();
-                    netTrafficCalcTimer = 0;
-                }
+                netTrafficCalc.refreshNetTraffic();
 
                 if (reportStatusTimer.getAndIncrement() == REPORT_STATUS_MAX_INTERVAL)
                 {

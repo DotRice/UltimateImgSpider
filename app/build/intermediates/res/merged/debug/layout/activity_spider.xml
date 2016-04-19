@@ -1,0 +1,43 @@
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_drawer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <com.gk969.gallery.gallery3d.ui.GLRootView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/gl_root_view"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/projbar_height">
+
+            <include
+                layout="@layout/proj_bar"/>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <include
+        android:layout_height="match_parent"
+        android:layout_width="@dimen/drawer_info_width"
+        android:layout_gravity="start"
+        layout="@layout/drawer_info"/>
+</android.support.v4.widget.DrawerLayout>

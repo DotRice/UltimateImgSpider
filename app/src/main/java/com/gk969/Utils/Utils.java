@@ -188,6 +188,11 @@ public class Utils
         private long refreshTime=0;
         private Context context;
 
+        private final static int AVERAGE_BUF_SIZE=3;
+        private int avrgBufIndex;
+        private long[] averageBuf=new long[AVERAGE_BUF_SIZE];
+        private long[] intervalBuf=new long[AVERAGE_BUF_SIZE];
+
         public NetTrafficCalc(Context ctx)
         {
             context=ctx;
@@ -201,8 +206,21 @@ public class Utils
                 long curTime=System.currentTimeMillis();
                 if (lastTraffic != 0)
                 {
-                    netTrafficPerSec.set((curTraffic - lastTraffic) * 1000
-                            / (curTime-refreshTime));
+                    averageBuf[avrgBufIndex]=(curTraffic - lastTraffic);
+                    intervalBuf[avrgBufIndex]=(curTime-refreshTime);
+
+                    avrgBufIndex++;
+                    avrgBufIndex%=AVERAGE_BUF_SIZE;
+
+                    long traffic=0;
+                    long time=0;
+                    for(int i=0; i<AVERAGE_BUF_SIZE; i++)
+                    {
+                        traffic+=averageBuf[i];
+                        time+=intervalBuf[i];
+                    }
+
+                    netTrafficPerSec.set(traffic * 1000 / time);
                 }
                 refreshTime=curTime;
                 lastTraffic = curTraffic;

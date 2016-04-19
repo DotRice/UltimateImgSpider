@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/browserMenu"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFF"
+	android:visibility="invisible"
+    android:baselineAligned="false"
+    android:orientation="horizontal" >
+    
+    <com.gk969.View.ImageTextButton
+        android:id="@+id/buttonSetting"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        image="@drawable/setting"
+        text="@string/settings" />
+	
+    <com.gk969.View.ImageTextButton
+        android:id="@+id/buttonRefresh"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        image="@drawable/menu_refresh"
+        text="@string/refresh" />
+	
+    <com.gk969.View.ImageTextButton
+        android:id="@+id/buttonExit"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+        image="@drawable/exit"
+        text="@string/exit" />
+    
+</LinearLayout>

@@ -355,6 +355,7 @@ public  class ThumbnailLoader
                     {
                         int imgIndex = slot.imgIndex.get();
 
+
                         Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, slot.mainBmp);
                         if (bmp != null)
                         {
@@ -365,30 +366,29 @@ public  class ThumbnailLoader
                                 loaderPauseLock.waitIfLocked();
 
                                 mGLRootView.lockRenderThread();
+
                                 slot.texture=texture;
                                 slot.isReady.set(true);
                                 mTextureUploader.addTexture(slot.texture);
+
+                                if(needLabel)
+                                {
+                                    //Log.i(TAG, "Load Label " + imgIndex + " " + loaderHelper.getLabelString(imgIndex));
+
+                                    String[] labelStr=loaderHelper.getLabelString(imgIndex).split(" ");
+
+                                    slot.labelName = StringTexture.newInstance(labelStr[0], labelTextSize,
+                                            LABEL_NAME_COLOR, labelNameLimit, false);
+                                    if(labelStr.length>1)
+                                    {
+                                        slot.labelInfo = StringTexture.newInstance(labelStr[1], labelTextSize, LABEL_INFO_COLOR);
+                                    }
+                                }
+
                                 mGLRootView.unlockRenderThread();
                             }
-
                         }
 
-                        if(needLabel)
-                        {
-                            //Log.i(TAG, "Load Label " + imgIndex + " " + loaderHelper.getLabelString(imgIndex));
-
-                            String[] labelStr=loaderHelper.getLabelString(imgIndex).split(" ");
-
-                            mGLRootView.lockRenderThread();
-                            slot.labelName = StringTexture.newInstance(labelStr[0], labelTextSize,
-                                    LABEL_NAME_COLOR, labelNameLimit, false);
-
-                            if(labelStr.length>1)
-                            {
-                                slot.labelInfo = StringTexture.newInstance(labelStr[1], labelTextSize, LABEL_INFO_COLOR);
-                            }
-                            mGLRootView.unlockRenderThread();
-                        }
 
                         hasTried=imgIndex == slot.imgIndex.get();
                     }
