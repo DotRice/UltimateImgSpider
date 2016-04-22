@@ -34,4 +34,6 @@ public class StaticValue
 
     public final static int PAGE_PARA_NUM = 3;
     public final static int IMG_PARA_NUM = 5;
+
+    public final static int INDEX_INVALID=-1;
 }

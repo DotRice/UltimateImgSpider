@@ -2,6 +2,7 @@ package com.gk969.gallerySimple;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.util.Log;
 
 import com.gk969.UltimateImgSpider.StaticValue;
@@ -141,7 +142,14 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
             bmpOpts.inBitmap = container;
             bmpOpts.inSampleSize = 1;
 
-            return BitmapFactory.decodeFile(fileName, bmpOpts);
+            Bitmap bmp = BitmapFactory.decodeFile(fileName, bmpOpts);
+            if(bmp==null)
+            {
+                container.eraseColor(Color.GRAY);
+                bmp = container;
+            }
+
+            return bmp;
         }
 
         return null;

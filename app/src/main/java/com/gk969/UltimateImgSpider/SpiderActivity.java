@@ -116,6 +116,23 @@ public class SpiderActivity extends Activity
 
     private boolean inDeleting = false;
 
+
+    enum ProjectState
+    {
+        PAUSE, CHECK, DOWNLOADING, COMPLETE
+    }
+    private ProjectState projectState=ProjectState.PAUSE;
+
+    public static final int ALBUM_SET_VIEW=0;
+    public static final int ALBUM_VIEW=1;
+
+    private int curView;
+
+    private InfoDrawer infoDrawer;
+    private ProjectBar projectBar;
+
+
+
     private void serviceInterfaceInit()
     {
         mConnection = new ServiceConnection()
@@ -238,11 +255,14 @@ public class SpiderActivity extends Activity
 
                         JSONObject jsonReport = new JSONObject(jsonReportStr);
 
+                        int imgDownloadNum=jsonReport.getInt("imgDownloadNum");
                         if(theActivity.displayProjectIndex==theActivity.downloadingProjectIndex)
                         {
                             theActivity.infoDrawer.refreshInfoByServiceReport(jsonReport);
-                            theActivity.mThumbnailLoader.setAlbumTotalImgNum(jsonReport.getInt("imgDownloadNum"));
+                            theActivity.mThumbnailLoader.setAlbumTotalImgNum(imgDownloadNum);
                         }
+
+                        theActivity.refreshDownloadingProjectInfo(String.valueOf(imgDownloadNum));
 
                         int serviceNativeMem = jsonReport.getInt("serviceNativeMem") >> 10;
 
@@ -402,8 +422,27 @@ public class SpiderActivity extends Activity
     private void backToAlbumSetView()
     {
         displayProjectIndex=AlbumSetLoaderHelper.INVALID_INDEX;
+        if(projectState==ProjectState.DOWNLOADING)
+        {
+            mThumbnailLoader.refreshSlotInfo(downloadingProjectIndex, "", true);
+        }
+        else
+        {
+            mThumbnailLoader.refreshSlotInfo(StaticValue.INDEX_INVALID, null, false);
+        }
+
         mThumbnailLoader.setHelper(albumSetLoaderHelper, albumSetLoaderHelper.projectList.size());
         setView(ALBUM_SET_VIEW);
+    }
+
+    public void refreshDownloadingProjectInfo(String infoStr)
+    {
+        if(curView==ALBUM_SET_VIEW)
+        {
+            mThumbnailLoader.refreshSlotInfo(downloadingProjectIndex, infoStr,
+                    projectState==ProjectState.DOWNLOADING);
+            glRootView.requestRender();
+        }
     }
 
     private void albumViewInit()
@@ -614,20 +653,6 @@ public class SpiderActivity extends Activity
         }
     }
 
-    enum ProjectState
-    {
-        PAUSE, CHECK, DOWNLOADING, COMPLETE
-    }
-    private ProjectState projectState=ProjectState.PAUSE;
-
-    public static final int ALBUM_SET_VIEW=0;
-    public static final int ALBUM_VIEW=1;
-
-    private int curView;
-
-    private InfoDrawer infoDrawer;
-    private ProjectBar projectBar;
-    
     private void setView(int view)
     {
         infoDrawer.setDrawer(view);

@@ -526,7 +526,7 @@ public class SpiderService extends Service
 
     private native String jniFindNextPageUrl(int[] param);
 
-    private native String jniFindNextImgUrl(int lastImgUrlAddr, int[] param);
+    private native String jniFindNextImgUrl(int lastImgUrlAddr, int[] param, boolean justDeleteCurNode);
 
     private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr, int[] imgParam);
 
@@ -535,6 +535,7 @@ public class SpiderService extends Service
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
     private Utils.ReadWaitLock jniDataLock = new Utils.ReadWaitLock();
     private ReentrantLock imgFileLock = new ReentrantLock();
+    private ReentrantLock pageGetLock=new ReentrantLock();
 
     private ImgDownloader mImgDownloader = new ImgDownloader();
 
@@ -606,7 +607,7 @@ public class SpiderService extends Service
 
             private final static long URL_JNIADDR_INVALID = 0xFFFFFFFF;
 
-            public long imgUrlJniAddr = URL_JNIADDR_INVALID;
+            private long imgUrlJniAddr = URL_JNIADDR_INVALID;
             private long containerUrlJniAddr = URL_JNIADDR_INVALID;
 
             public ReentrantLock exitLock=new ReentrantLock();
@@ -635,7 +636,7 @@ public class SpiderService extends Service
                     {
                         jniDataLock.lock();
                         Log.i(TAG, "save img download");
-                        jniFindNextImgUrl((int) imgUrlJniAddr, imgProcParam);
+                        jniFindNextImgUrl((int) imgUrlJniAddr, imgProcParam, true);
                         jniDataLock.unlock();
 
                         break;
@@ -643,7 +644,7 @@ public class SpiderService extends Service
                     exitLock.unlock();
 
                     jniDataLock.lock();
-                    String urlSet = jniFindNextImgUrl((int) imgUrlJniAddr, imgProcParam);
+                    String urlSet = jniFindNextImgUrl((int) imgUrlJniAddr, imgProcParam, false);
                     jniDataLock.unlock();
 
                     if (urlSet != null)
@@ -665,24 +666,22 @@ public class SpiderService extends Service
                     {
                         imgUrlJniAddr = URL_JNIADDR_INVALID;
 
-                        pageProcessLock.lock();
-                        exitLock.lock();
-                        if (state.get() != STAT_WORKING)
+                        pageGetLock.lock();
+                        if(!pageProcessLock.isLocked.get())
                         {
-                            pageProcessLock.unlock();
-                            break;
-                        }
-                        exitLock.unlock();
-
-                        //Log.i(TAG, "post findAndLoadNextPage");
-                        Utils.handlerPostUntilSuccess(spiderHandler, new Runnable()
-                        {
-                            @Override
-                            public void run()
+                            pageProcessLock.lock();
+                            //Log.i(TAG, "post findAndLoadNextPage");
+                            Utils.handlerPostUntilSuccess(spiderHandler, new Runnable()
                             {
-                                findAndLoadNextPage();
-                            }
-                        });
+                                @Override
+                                public void run()
+                                {
+                                    findAndLoadNextPage();
+                                }
+                            });
+                        }
+                        pageGetLock.unlock();
+
                     }
                 }
 

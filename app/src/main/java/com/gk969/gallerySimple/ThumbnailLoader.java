@@ -74,7 +74,10 @@ public  class ThumbnailLoader
 
     private int labelTextSize;
     private final static int LABEL_NAME_COLOR=0xFF00F000;
-    private final static int LABEL_INFO_COLOR=0xFF00F000;
+    private final static int LABEL_INFO_ACTIVE_COLOR=0xFF00F000;
+    private final static int LABEL_INFO_INACTIVE_COLOR=0xFFFFFFFF;
+
+    private int activeSlotIndex=StaticValue.INDEX_INVALID;
 
     private volatile boolean needLabel;
 
@@ -102,6 +105,23 @@ public  class ThumbnailLoader
         loaderHelper=helper;
         helper.setLoader(this);
         needLabel=helper.needLabel();
+    }
+
+    public void refreshSlotInfo(int slotIndex, String infoStr, boolean isActive)
+    {
+        mGLRootView.lockRenderThread();
+        activeSlotIndex=isActive?slotIndex:StaticValue.INDEX_INVALID;
+
+        if(infoStr!=null)
+        {
+            if((slotIndex >= cacheOffset) && (slotIndex < (cacheOffset + CACHE_SIZE)))
+            {
+                textureCache[slotIndex % CACHE_SIZE].labelInfo = StringTexture.newInstance(infoStr,
+                        labelTextSize, isActive?LABEL_INFO_ACTIVE_COLOR:LABEL_INFO_INACTIVE_COLOR);
+            }
+        }
+
+        mGLRootView.unlockRenderThread();
     }
 
     public void setView(SlotView view)
@@ -138,7 +158,6 @@ public  class ThumbnailLoader
         }
 
         mTextureUploader.clear();
-        //TiledTexture.freeResources();
     }
 
     public void setAlbumTotalImgNum(int totalImgNum)
@@ -381,7 +400,9 @@ public  class ThumbnailLoader
                                             LABEL_NAME_COLOR, labelNameLimit, false);
                                     if(labelStr.length>1)
                                     {
-                                        slot.labelInfo = StringTexture.newInstance(labelStr[1], labelTextSize, LABEL_INFO_COLOR);
+                                        slot.labelInfo = StringTexture.newInstance(labelStr[1],
+                                                labelTextSize, (imgIndex==activeSlotIndex)?
+                                                LABEL_INFO_ACTIVE_COLOR:LABEL_INFO_INACTIVE_COLOR);
                                     }
                                 }
 

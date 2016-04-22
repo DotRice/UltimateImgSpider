@@ -1224,30 +1224,42 @@ u16 urlSimilarity(const char *url1, u16 len1, const char *url2, u16 len2)
 
 void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
 {
-    curTree->processed++;
 
     LOGI("deleteUrlNodeFromList cur %s", curNode->url);
 
     urlNode *prev = nodeAddrRelativeToAbs(curNode->para.prevToLoad);
-    if(prev == NULL)
-    {
-        curTree->head = curNode->para.nextToLoad;
-    }
-    else
-    {
-        LOGI("prev %s", prev->url);
-        prev->para.nextToLoad = curNode->para.nextToLoad;
-    }
-
     urlNode *next = nodeAddrRelativeToAbs(curNode->para.nextToLoad);
-    if(next == NULL)
+
+    if(prev!=NULL || next!=NULL)
     {
-        curTree->tail = curNode->para.prevToLoad;
+        curTree->processed++;
+
+        if (prev == NULL)
+        {
+            curTree->head = curNode->para.nextToLoad;
+        }
+        else
+        {
+            LOGI("prev %s", prev->url);
+            prev->para.nextToLoad = curNode->para.nextToLoad;
+        }
+
+        if (next == NULL)
+        {
+            curTree->tail = curNode->para.prevToLoad;
+        }
+        else
+        {
+            LOGI("next %s", next->url);
+            next->para.prevToLoad = curNode->para.prevToLoad;
+        }
+
+        curNode->para.nextToLoad=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        curNode->para.prevToLoad=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
     }
     else
     {
-        LOGI("next %s", next->url);
-        next->para.prevToLoad = curNode->para.prevToLoad;
+        LOGI("deleteUrlNodeFromList ERROR NODE!");
     }
 }
 
@@ -1302,56 +1314,58 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
 
         LOGI("urlProcessed:%s pageUrlTreeLen:%d", curUrl, curTree->len);
         LOGI("title:%s", (char*)addrRelativeToAbs(curNode->para.title));
-        
+
+        urlNode *prev = nodeAddrRelativeToAbs(curNode->para.prevToLoad);
+        urlNode *next = nodeAddrRelativeToAbs(curNode->para.nextToLoad);
+
         //当前url已经被下载，从未下载url链表中删除
         deleteUrlNodeFromList(curTree, curNode);
 
-        urlNode *node = curNode;
         int i;
 
         for(i = 0; i < SEARCH_STEP_MAX; i++)
         {
-            //LOGI("next %d:%s", i, node->url);
-            node = nodeAddrRelativeToAbs(node->para.nextToLoad);
 
-            if(node == NULL)
+            if(next == NULL)
             {
                 break;
             }
             else
             {
-                int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
+                //LOGI("next %d:%s", i, next->url);
+                int curSim = urlSimilarity(curUrl, prevUrlLen, next->url, next->para.len);
 
                 if(curSim > urlSim)
                 {
                     urlSim = curSim;
-                    nextNode = node;
+                    nextNode = next;
                 }
             }
+            next = nodeAddrRelativeToAbs(next->para.nextToLoad);
         }
 
 
-        node = curNode;
 
         for(i = 0; i < SEARCH_STEP_MAX; i++)
         {
-            //LOGI("prev %d:%s", i, node->url);
-            node = nodeAddrRelativeToAbs(node->para.prevToLoad);
 
-            if(node == NULL)
+            if(prev == NULL)
             {
                 break;
             }
             else
             {
-                int curSim = urlSimilarity(curUrl, prevUrlLen, node->url, node->para.len);
+                //LOGI("prev %d:%s", i, prev->url);
+
+                int curSim = urlSimilarity(curUrl, prevUrlLen, prev->url, prev->para.len);
 
                 if(curSim > urlSim)
                 {
                     urlSim = curSim;
-                    nextNode = node;
+                    nextNode = prev;
                 }
             }
+            prev = nodeAddrRelativeToAbs(prev->para.prevToLoad);
         }
     }
 
@@ -1397,7 +1411,7 @@ void logNode(urlNode *node)
 }
 
 jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
-    JNIEnv *env, jobject thiz, jint jLastImgUrlAddr, jintArray jImgParam)
+    JNIEnv *env, jobject thiz, jint jLastImgUrlAddr, jintArray jImgParam, jboolean jJustDeleteCurNode)
 {
     urlTree *curTree = &(spiderPara->imgUrlTree);
 
@@ -1411,30 +1425,36 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
         deleteUrlNodeFromList(&(spiderPara->imgUrlTree), lastImgNode);
     }
 
-    urlNode *nextNode = nodeAddrRelativeToAbs(curTree->head);
+    char *nextUrl = NULL;
 
-    int i;
-    for(i = 0; i < downloadingImgNum; i++)
+    if(!jJustDeleteCurNode)
     {
-        if(nextNode == NULL)
+        urlNode *nextNode = nodeAddrRelativeToAbs(curTree->head);
+
+        int i;
+        for (i = 0; i < downloadingImgNum; i++)
         {
-            break;
+            if (nextNode == NULL)
+            {
+                break;
+            }
+
+            //logNode(nextNode);
+
+            nextNode = nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
         }
 
-        logNode(nextNode);
+        if (nextNode != NULL)
+        {
+            //logNode(nextNode);
+            downloadingImgNum++;
 
-        nextNode = nodeAddrRelativeToAbs(nextNode->para.nextToLoad);
-    }
-
-    char *nextUrl = NULL;
-    if(nextNode != NULL)
-    {
-        logNode(nextNode);
-        downloadingImgNum++;
-
-        nextUrl = nextImgUrlWithContainerBuf;
-        sprintf(nextUrl, "%s %08X %s %08X", nextNode->url, (u32)nodeAddrAbsToRelative(nextNode),
-                nodeAddrRelativeToAbs(nextNode->para.containerPage)->url, (u32)(nextNode->para.containerPage));
+            nextUrl = nextImgUrlWithContainerBuf;
+            sprintf(nextUrl, "%s %08X %s %08X", nextNode->url,
+                    (u32) nodeAddrAbsToRelative(nextNode),
+                    nodeAddrRelativeToAbs(nextNode->para.containerPage)->url,
+                    (u32) (nextNode->para.containerPage));
+        }
     }
 
     int *param = (*env)->GetIntArrayElements(env, jImgParam, NULL);
