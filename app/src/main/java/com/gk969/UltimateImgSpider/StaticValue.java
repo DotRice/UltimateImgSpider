@@ -20,6 +20,8 @@ public class StaticValue
     public final static String THUMBNAIL_DIR_NAME="thumbnail";
     public final static int THUMBNAIL_SIZE = 300;
 
+    public final static String THUMBNAIL_FILE_EXT = ".jpg.thumbnail";
+
 
     public final static String PROJECT_DATA_DIR = "/data";
     public final static String PROJECT_DATA_NAME = "/project.dat";
@@ -31,9 +33,10 @@ public class StaticValue
     public final static int PARA_HEIGHT = 2;
     public final static int PARA_PAYLOAD = 3;
     public final static int PARA_DOWNLOAD = 4;
+    public final static int PARA_TOTAL_SIZE = 5;
 
     public final static int PAGE_PARA_NUM = 3;
-    public final static int IMG_PARA_NUM = 5;
+    public final static int IMG_PARA_NUM = 6;
 
     public final static int INDEX_INVALID=-1;
 }

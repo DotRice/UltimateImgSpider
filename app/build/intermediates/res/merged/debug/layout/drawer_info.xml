@@ -248,6 +248,99 @@
                     />
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/drawer_info_group_title_height"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/drawer_info_group_title_margin_top">
+
+                <ImageView
+                    android:layout_width="@dimen/drawer_info_group_title_image_width"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="@dimen/drawer_info_group_title_image_margin"
+                    android:layout_marginBottom="@dimen/drawer_info_group_title_image_margin"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/rom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/drawer_info_group_title_text_size"
+                    android:text="@string/storage_info"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/drawer_info_item_height"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                <TextView
+                    android:layout_width="@dimen/drawer_info_item_name_width"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/drawer_info_item_name_text_size"
+                    android:text="@string/image_total_size"/>
+
+                <TextView
+                    android:id="@+id/image_total_size"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/drawer_info_item_value_text_size"
+                    android:textColor="@color/drawer_info_item_value_text_color"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/drawer_info_item_height"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                <TextView
+                    android:layout_width="@dimen/drawer_info_item_name_width"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/drawer_info_item_name_text_size"
+                    android:text="@string/storage_total"/>
+
+                <TextView
+                    android:id="@+id/storage_total"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/drawer_info_item_value_text_size"
+                    android:textColor="@color/drawer_info_item_value_text_color"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/drawer_info_item_height"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                <TextView
+                    android:layout_width="@dimen/drawer_info_item_name_width"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/drawer_info_item_name_text_size"
+                    android:text="@string/storage_free"/>
+
+                <TextView
+                    android:id="@+id/storage_free"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/drawer_info_item_value_text_size"
+                    android:textColor="@color/drawer_info_item_value_text_color"
+                    />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

@@ -427,7 +427,8 @@ enum
     PARA_PROCESSED,
     PARA_HEIGHT,
     PARA_PAYLOAD,
-    PARA_DOWNLOAD
+    PARA_DOWNLOAD,
+    PARA_TOTAL_SIZE
 };
 
 
@@ -493,6 +494,7 @@ typedef struct
     urlTree imgUrlTree;
     t_storageImgInfoList storageImgList;
     u32 urlPoolNum;
+    u64 imgTotalSize;
 } t_spiderPara;
 
 
@@ -715,7 +717,7 @@ void *mallocFromPool(JNIEnv *env, u32 size, RelativeAddr *direction)
 }
 
 
-jboolean spiderParaInit(JNIEnv *env, int *imgParam, int *pageParam)
+jboolean spiderParaInit(JNIEnv *env, u64 *imgParam, u64 *pageParam)
 {
 
     t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, SPIDER_PARA_NAME, sizeof(t_spiderPara));
@@ -747,12 +749,15 @@ jboolean spiderParaInit(JNIEnv *env, int *imgParam, int *pageParam)
             spiderPara->storageImgList.head = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
             spiderPara->storageImgList.tail = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
             spiderPara->storageImgList.num = 0;
+
+            spiderPara->imgTotalSize = 0;
         }
 
         imgParam[PARA_TOTAL] = spiderPara->imgUrlTree.len;
         imgParam[PARA_PROCESSED] = spiderPara->imgUrlTree.processed;
         imgParam[PARA_HEIGHT] = spiderPara->imgUrlTree.height;
         imgParam[PARA_DOWNLOAD] = spiderPara->storageImgList.num;
+        imgParam[PARA_TOTAL_SIZE] = spiderPara->imgTotalSize;
 
         pageParam[PARA_TOTAL] = spiderPara->pageUrlTree.len;
         pageParam[PARA_PROCESSED] = spiderPara->pageUrlTree.processed;
@@ -810,21 +815,21 @@ jboolean urlPoolInit(JNIEnv *env)
 }
 
 jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv *env,
-        jobject thiz, jintArray jImgParam, jintArray jPageParam)
+        jobject thiz, jlongArray jImgParam, jlongArray jPageParam)
 {
     AshmAllocObjectInstance = thiz;
     jboolean ret=true;
 
-    int *imgParam = (*env)->GetIntArrayElements(env, jImgParam, NULL);
-    int *pageParam = (*env)->GetIntArrayElements(env, jPageParam, NULL);
+    u64 *imgParam = (*env)->GetLongArrayElements(env, jImgParam, NULL);
+    u64 *pageParam = (*env)->GetLongArrayElements(env, jPageParam, NULL);
 
     if(!spiderParaInit(env, imgParam, pageParam))
     {
         ret=false;
     }
 
-    (*env)->ReleaseIntArrayElements(env, jImgParam, imgParam, 0);
-    (*env)->ReleaseIntArrayElements(env, jPageParam, pageParam, 0);
+    (*env)->ReleaseLongArrayElements(env, jImgParam, imgParam, 0);
+    (*env)->ReleaseLongArrayElements(env, jPageParam, pageParam, 0);
 
     if(ret)
     {
@@ -839,12 +844,12 @@ jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv *en
 
 
 void Java_com_gk969_gallerySimple_AlbumSetLoaderHelper_jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
-           jstring jDataFileFullPath, jintArray jImgParam, jintArray jPageParam)
+           jstring jDataFileFullPath, jlongArray jImgParam, jlongArray jPageParam)
 {
     const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
 
-    int *imgParam = (*env)->GetIntArrayElements(env, jImgParam, NULL);
-    int *pageParam = (*env)->GetIntArrayElements(env, jPageParam, NULL);
+    u64 *imgParam = (*env)->GetLongArrayElements(env, jImgParam, NULL);
+    u64 *pageParam = (*env)->GetLongArrayElements(env, jPageParam, NULL);
 
 
     LOGI("jniGetProjectInfoOnStart path:%s", dataFileFullPath);
@@ -873,6 +878,7 @@ void Java_com_gk969_gallerySimple_AlbumSetLoaderHelper_jniGetProjectInfoOnStart(
                     imgParam[PARA_PROCESSED] = para.imgUrlTree.processed;
                     imgParam[PARA_HEIGHT] = para.imgUrlTree.height;
                     imgParam[PARA_DOWNLOAD] = para.storageImgList.num;
+                    imgParam[PARA_TOTAL_SIZE] = para.imgTotalSize;
 
                     pageParam[PARA_TOTAL] = para.pageUrlTree.len;
                     pageParam[PARA_PROCESSED] = para.pageUrlTree.processed;
@@ -887,8 +893,8 @@ void Java_com_gk969_gallerySimple_AlbumSetLoaderHelper_jniGetProjectInfoOnStart(
         fclose(dataFile);
     }
 
-    (*env)->ReleaseIntArrayElements(env, jImgParam, imgParam, 0);
-    (*env)->ReleaseIntArrayElements(env, jPageParam, pageParam, 0);
+    (*env)->ReleaseLongArrayElements(env, jImgParam, imgParam, 0);
+    (*env)->ReleaseLongArrayElements(env, jPageParam, pageParam, 0);
     (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
 }
 
@@ -1157,7 +1163,7 @@ void urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl, u64 newMd5_64)
 
 
 void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv *env,
-        jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jintArray jParam)
+        jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jlongArray jParam)
 {
     urlTree *curTree =
         (jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
@@ -1184,10 +1190,10 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv *env,
         */
     }
 
-    int *param = (*env)->GetIntArrayElements(env, jParam, NULL);
+    u64 *param = (*env)->GetLongArrayElements(env, jParam, NULL);
     param[PARA_TOTAL] = curTree->len;
     param[PARA_HEIGHT] = curTree->height;
-    (*env)->ReleaseIntArrayElements(env, jParam, param, 0);
+    (*env)->ReleaseLongArrayElements(env, jParam, param, 0);
 
 
     (*env)->ReleaseStringUTFChars(env, jUrl, url);
@@ -1295,7 +1301,7 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniRecvPageTitle(
 #define SEARCH_STEP_MAX 5000
 
 jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
-        JNIEnv *env, jobject thiz, jintArray jPageParam)
+        JNIEnv *env, jobject thiz, jlongArray jPageParam)
 {
     urlTree *curTree = &(spiderPara->pageUrlTree);
 
@@ -1376,9 +1382,9 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
         curTree->curNode = nodeAddrAbsToRelative(nextNode);
     }
 
-    int *param = (*env)->GetIntArrayElements(env, jPageParam, NULL);
+    u64 *param = (*env)->GetLongArrayElements(env, jPageParam, NULL);
     param[PARA_PROCESSED] = curTree->processed;
-    (*env)->ReleaseIntArrayElements(env, jPageParam, param, 0);
+    (*env)->ReleaseLongArrayElements(env, jPageParam, param, 0);
 
 
     LOGI("jniFindNextPageUrl:%s", nextUrl);
@@ -1411,7 +1417,7 @@ void logNode(urlNode *node)
 }
 
 jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
-    JNIEnv *env, jobject thiz, jint jLastImgUrlAddr, jintArray jImgParam, jboolean jJustDeleteCurNode)
+    JNIEnv *env, jobject thiz, jint jLastImgUrlAddr, jlongArray jImgParam, jboolean jJustDeleteCurNode)
 {
     urlTree *curTree = &(spiderPara->imgUrlTree);
 
@@ -1457,10 +1463,10 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
         }
     }
 
-    int *param = (*env)->GetIntArrayElements(env, jImgParam, NULL);
+    u64 *param = (*env)->GetLongArrayElements(env, jImgParam, NULL);
     param[PARA_PAYLOAD] = downloadingImgNum;
     param[PARA_PROCESSED] = curTree->processed;
-    (*env)->ReleaseIntArrayElements(env, jImgParam, param, 0);
+    (*env)->ReleaseLongArrayElements(env, jImgParam, param, 0);
 
 
     LOGI("jniFindNextImgUrl:%s", nextUrl);
@@ -1468,7 +1474,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
 }
 
 void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
-    JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr, jintArray jImgParam)
+    JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr, jlongArray jImgParam, jint jCurImgFileSize)
 {
     u32 imgUrlAddr = (u32) jImgUrlAddr;
     u32 pageUrlAddr = (u32) jPageUrlAddr;
@@ -1501,9 +1507,12 @@ void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
         infoList->tail = infoAddr;
 
         infoList->num++;
+        
+        spiderPara->imgTotalSize+=jCurImgFileSize;
 
-        int *param = (*env)->GetIntArrayElements(env, jImgParam, NULL);
+        u64 *param = (*env)->GetLongArrayElements(env, jImgParam, NULL);
         param[PARA_DOWNLOAD] = infoList->num;
-        (*env)->ReleaseIntArrayElements(env, jImgParam, param, 0);
+        param[PARA_TOTAL_SIZE] = spiderPara->imgTotalSize;
+        (*env)->ReleaseLongArrayElements(env, jImgParam, param, 0);
     }
 }

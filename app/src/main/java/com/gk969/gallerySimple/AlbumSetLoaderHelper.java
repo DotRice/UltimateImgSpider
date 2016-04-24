@@ -19,10 +19,10 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
     static public class ProjectInfo
     {
         public String site;
-        public int[] imgInfo;
-        public int[] pageInfo;
+        public long[] imgInfo;
+        public long[] pageInfo;
 
-        public ProjectInfo(String siteHost, int[] paramImgInfo, int[] paramPageInfo)
+        public ProjectInfo(String siteHost, long[] paramImgInfo, long[] paramPageInfo)
         {
             site=siteHost;
             imgInfo=paramImgInfo;
@@ -38,7 +38,7 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
 
     private ThumbnailLoader mThumbnailLoader;
     
-    public native void jniGetProjectInfoOnStart(String path, int[] imgInfo, int[] pageInfo);
+    public native void jniGetProjectInfoOnStart(String path, long[] imgInfo, long[] pageInfo);
     static
     {
         System.loadLibrary("UltimateImgSpider");
@@ -109,8 +109,8 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
                 String dataDirPath=file.getPath() + StaticValue.PROJECT_DATA_DIR;
                 if(WatchdogService.projectDataIsSafe(dataDirPath))
                 {
-                    int[] imgInfo=new int[StaticValue.IMG_PARA_NUM];
-                    int[] pageInfo=new int[StaticValue.PAGE_PARA_NUM];
+                    long[] imgInfo=new long[StaticValue.IMG_PARA_NUM];
+                    long[] pageInfo=new long[StaticValue.PAGE_PARA_NUM];
                     jniGetProjectInfoOnStart(dataDirPath+StaticValue.PROJECT_DATA_NAME, imgInfo, pageInfo);
                     projectList.add(new ProjectInfo(file.getName(), imgInfo, pageInfo));
                 }
@@ -134,8 +134,8 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
 
         if(index < projectList.size())
         {
-            String fileName = String.format("%s/%s/%s/%d/%03d.jpg", appPath, projectList.get(index).site,
-                    StaticValue.THUMBNAIL_DIR_NAME, 0, 0);
+            String fileName = String.format("%s/%s/%s/%d/%03d%s", appPath, projectList.get(index).site,
+                    StaticValue.THUMBNAIL_DIR_NAME, 0, 0, StaticValue.THUMBNAIL_FILE_EXT);
 
             BitmapFactory.Options bmpOpts = new BitmapFactory.Options();
             bmpOpts.inPreferredConfig = Bitmap.Config.RGB_565;

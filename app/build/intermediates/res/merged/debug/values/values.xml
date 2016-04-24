@@ -80,9 +80,9 @@
     <dimen name="drawer_info_group_title_image_width">40dp</dimen>
     <dimen name="drawer_info_group_title_margin_top">10dp</dimen>
     <dimen name="drawer_info_group_title_text_size">20sp</dimen>
-    <dimen name="drawer_info_item_height">35dp</dimen>
+    <dimen name="drawer_info_item_height">24dp</dimen>
     <dimen name="drawer_info_item_margin_top">1dp</dimen>
-    <dimen name="drawer_info_item_name_text_size">18sp</dimen>
+    <dimen name="drawer_info_item_name_text_size">16sp</dimen>
     <dimen name="drawer_info_item_name_width">140dp</dimen>
     <dimen name="drawer_info_item_padding_left">40dp</dimen>
     <dimen name="drawer_info_item_value_text_size">16sp</dimen>
@@ -213,6 +213,7 @@
     <string name="image_info">图片数量</string>
     <string name="image_processed">已扫描图片数</string>
     <string name="image_total">图片总数</string>
+    <string name="image_total_size">图片总大小</string>
     <string name="image_tree_height">图片树高度</string>
     <string name="inDeletingTips">删除中，请稍候...</string>
     <string name="inDeletingToast">正在删除当前项目，请稍候...</string>
@@ -252,6 +253,9 @@
     <string name="srcUrlHint">http://</string>
     <string name="start">开始</string>
     <string name="stop">结束</string>
+    <string name="storage_free">存储剩余大小</string>
+    <string name="storage_info">存储信息</string>
+    <string name="storage_total">存储总大小</string>
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!--

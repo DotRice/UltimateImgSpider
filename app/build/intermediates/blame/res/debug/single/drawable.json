@@ -12,6 +12,10 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\image.png"
     },
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\rom.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\rom.png"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\baidu.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\baidu.png"
     },
@@ -20,16 +24,16 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\enter.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\start.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\start.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\home.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\home.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\menu.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\menu.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\home.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\home.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\start.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\start.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\menu_refresh.png",
@@ -40,44 +44,44 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\exit.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\bing.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\bing.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\new_proj.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\new_proj.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\search.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\search.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\new_proj.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\new_proj.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\bing.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\bing.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\delete.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\delete.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\speed.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\speed.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\pause.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\pause.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\forward.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\forward.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\pause.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\pause.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\speed.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\speed.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\ram.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\ram.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\page.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\page.png"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\google.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\google.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\page.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\page.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\site.png",
@@ -92,12 +96,12 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\back.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\cancel.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\cancel.png"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\big_menu.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\big_menu.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\cancel.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\cancel.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\button_bcakground_selector.xml",

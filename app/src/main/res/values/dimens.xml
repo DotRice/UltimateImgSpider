@@ -12,11 +12,11 @@
     <dimen name="drawer_info_group_title_image_width">40dp</dimen>
     <dimen name="drawer_info_group_title_image_margin">5dp</dimen>
     <dimen name="drawer_info_group_title_text_size">20sp</dimen>
-    <dimen name="drawer_info_item_height">35dp</dimen>
+    <dimen name="drawer_info_item_height">24dp</dimen>
     <dimen name="drawer_info_item_margin_top">1dp</dimen>
     <dimen name="drawer_info_item_padding_left">40dp</dimen>
     <dimen name="drawer_info_item_name_width">140dp</dimen>
-    <dimen name="drawer_info_item_name_text_size">18sp</dimen>
+    <dimen name="drawer_info_item_name_text_size">16sp</dimen>
     <dimen name="drawer_info_item_value_text_size">16sp</dimen>
 
 

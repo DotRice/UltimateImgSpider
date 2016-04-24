@@ -96,7 +96,7 @@ public class SpiderActivity extends Activity
     private int displayProjectIndex;
     private String displayProjectPath;
     
-    private String appPath;
+    private File appPath;
 
 
     private MessageHandler mHandler = new MessageHandler(this);
@@ -361,7 +361,7 @@ public class SpiderActivity extends Activity
 
         onFirstRun();
 
-        appPath = Utils.getDirInExtSto(getString(R.string.appPackageName)).getPath();
+        appPath = Utils.getDirInExtSto(getString(R.string.appPackageName));
 
         serviceInterfaceInit();
         checkStorage();
@@ -407,9 +407,9 @@ public class SpiderActivity extends Activity
     {
         displayProjectIndex=index;
         displayProjectInfo=albumSetLoaderHelper.projectList.get(displayProjectIndex);
-        displayProjectPath=appPath+"/"+displayProjectInfo.site;
+        displayProjectPath=appPath.getPath()+"/"+displayProjectInfo.site;
         albumLoaderHelper.setProjectPath(displayProjectPath);
-        mThumbnailLoader.setHelper(albumLoaderHelper, displayProjectInfo.imgInfo[StaticValue.PARA_DOWNLOAD]);
+        mThumbnailLoader.setHelper(albumLoaderHelper, (int)displayProjectInfo.imgInfo[StaticValue.PARA_DOWNLOAD]);
         infoDrawer.onDisplayProjectChanged();
 
         btnPauseOrContinue.setImageResource((displayProjectIndex != downloadingProjectIndex ||
@@ -450,7 +450,7 @@ public class SpiderActivity extends Activity
         glRootView = (GLRootView) findViewById(R.id.gl_root_view);
 
         albumLoaderHelper = new AlbumLoaderHelper(downloadingProjectPath);
-        albumSetLoaderHelper = new AlbumSetLoaderHelper(appPath);
+        albumSetLoaderHelper = new AlbumSetLoaderHelper(appPath.getPath());
         mThumbnailLoader = new ThumbnailLoader(glRootView, albumSetLoaderHelper);
         SlotView slotView = new SlotView(this, mThumbnailLoader, glRootView);
         slotView.setOnClick(new SlotView.OnClickListener()
@@ -618,8 +618,8 @@ public class SpiderActivity extends Activity
                         if(albumIndex == AlbumSetLoaderHelper.INVALID_INDEX)
                         {
                             albumIndex=albumSetLoaderHelper.projectList.size();
-                            int[] imgInfo = new int[StaticValue.IMG_PARA_NUM];
-                            int[] pageInfo = new int[StaticValue.PAGE_PARA_NUM];
+                            long[] imgInfo = new long[StaticValue.IMG_PARA_NUM];
+                            long[] pageInfo = new long[StaticValue.PAGE_PARA_NUM];
                             albumSetLoaderHelper.projectList.add(new AlbumSetLoaderHelper.ProjectInfo(
                                     newUrl.getHost(), imgInfo, pageInfo));
                         }
@@ -762,6 +762,9 @@ public class SpiderActivity extends Activity
         private TextView image_download_num;
         private TextView image_processed;
         private TextView image_total;
+        private TextView storage_total;
+        private TextView storage_free;
+        private TextView image_total_size;
         private TextView image_download_payload;
         private TextView image_tree_height;
         private TextView page_scaned_num;
@@ -793,6 +796,9 @@ public class SpiderActivity extends Activity
             image_download_num = (TextView) findViewById(R.id.image_download_num);
             image_processed = (TextView) findViewById(R.id.image_processed);
             image_total = (TextView) findViewById(R.id.image_total);
+            image_total_size = (TextView) findViewById(R.id.image_total_size);
+            storage_total = (TextView) findViewById(R.id.storage_total);
+            storage_free = (TextView) findViewById(R.id.storage_free);
             image_download_payload = (TextView) findViewById(R.id.image_download_payload);
             image_tree_height = (TextView) findViewById(R.id.image_tree_height);
             page_scaned_num = (TextView) findViewById(R.id.page_processed);
@@ -834,7 +840,7 @@ public class SpiderActivity extends Activity
             }
         }
         
-        private void refreshBasicInfo(int[] imgInfo, int[] pageInfo)
+        private void refreshBasicInfo(long[] imgInfo, long[] pageInfo)
         {
             image_download_num.setText(String.valueOf(imgInfo[StaticValue.PARA_DOWNLOAD]));
             image_processed.setText(String.valueOf(imgInfo[StaticValue.PARA_PROCESSED]));
@@ -844,20 +850,25 @@ public class SpiderActivity extends Activity
             page_scaned_num.setText(String.valueOf(pageInfo[StaticValue.PARA_PROCESSED]));
             page_total.setText(String.valueOf(pageInfo[StaticValue.PARA_TOTAL]));
             page_tree_height.setText(String.valueOf(pageInfo[StaticValue.PARA_HEIGHT]));
-            
+
+            image_total_size.setText(Utils.byteSizeToString(imgInfo[StaticValue.PARA_TOTAL_SIZE]));
+            storage_total.setText(Utils.byteSizeToString(appPath.getTotalSpace()));
+            storage_free.setText(Utils.byteSizeToString(appPath.getFreeSpace()));
+
         }
         
         public void refreshInfoByServiceReport(JSONObject json)
         {
             try
             {
-                int[] imgInfo=displayProjectInfo.imgInfo;
+                long[] imgInfo=displayProjectInfo.imgInfo;
                 imgInfo[StaticValue.PARA_DOWNLOAD]=json.getInt("imgDownloadNum");
                 imgInfo[StaticValue.PARA_PROCESSED]=json.getInt("imgProcessedNum");
-                imgInfo[StaticValue.PARA_TOTAL]=json.getInt("imgTotalNum");
+                imgInfo[StaticValue.PARA_TOTAL] = json.getInt("imgTotalNum");
+                imgInfo[StaticValue.PARA_TOTAL_SIZE]=json.getLong("imgTotalSize");
                 imgInfo[StaticValue.PARA_HEIGHT]=json.getInt("imgTreeHeight");
 
-                int[] pageInfo=displayProjectInfo.pageInfo;
+                long[] pageInfo=displayProjectInfo.pageInfo;
                 pageInfo[StaticValue.PARA_PROCESSED]=json.getInt("pageProcessedNum");
                 pageInfo[StaticValue.PARA_TOTAL]=json.getInt("pageTotalNum");
                 pageInfo[StaticValue.PARA_HEIGHT]=json.getInt("pageTreeHeight");

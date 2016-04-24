@@ -283,6 +283,24 @@ public class Utils
         }
     }
 
+    public static String byteSizeToString(long size)
+    {
+        String[] sizeUnitName=new String[]{"GB", "MB", "KB"};
+        int[] sizeUnit=new int[]{1<<30, 1<<20, 1<<10, 1};
+
+        for(int i=0; i<sizeUnitName.length; i++)
+        {
+            if(size>=sizeUnit[i])
+            {
+                size/=sizeUnit[i+1];
+                float sizeInFloat=(float)size/1024;
+                return String.format("%.2f%s", sizeInFloat, sizeUnitName[i]);
+            }
+        }
+
+        return size+"B";
+    }
+
     public static File getDirInExtSto(String path)
     {
         File dir = null;

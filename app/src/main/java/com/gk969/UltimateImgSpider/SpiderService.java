@@ -149,8 +149,8 @@ public class SpiderService extends Service
         stringFromJNI("ashmem");
 
 
-        pageProcParam = new int[StaticValue.PAGE_PARA_NUM];
-        imgProcParam = new int[StaticValue.IMG_PARA_NUM];
+        pageProcParam = new long[StaticValue.PAGE_PARA_NUM];
+        imgProcParam = new long[StaticValue.IMG_PARA_NUM];
 
 
         if (jniSpiderInit(imgProcParam, pageProcParam))
@@ -496,8 +496,8 @@ public class SpiderService extends Service
 
     private String curPageUrl;
 
-    private int[] pageProcParam;
-    private int[] imgProcParam;
+    private long[] pageProcParam;
+    private long[] imgProcParam;
 
     private boolean pageFinished = false;
     private long loadTimer;
@@ -520,15 +520,15 @@ public class SpiderService extends Service
 
     private native String stringFromJNI(String srcStr);
 
-    private native boolean jniSpiderInit(int[] imgPara, int[] pagePara);
+    private native boolean jniSpiderInit(long[] imgPara, long[] pagePara);
 
-    private native void jniAddUrl(String url, byte[] md5, int type, int[] param);
+    private native void jniAddUrl(String url, byte[] md5, int type, long[] param);
 
-    private native String jniFindNextPageUrl(int[] param);
+    private native String jniFindNextPageUrl(long[] param);
 
-    private native String jniFindNextImgUrl(int lastImgUrlAddr, int[] param, boolean justDeleteCurNode);
+    private native String jniFindNextImgUrl(int lastImgUrlAddr, long[] param, boolean justDeleteCurNode);
 
-    private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr, int[] imgParam);
+    private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr, long[] imgParam, int imgFileSize);
 
     private native void jniRecvPageTitle(String curPageTitle);
 
@@ -555,9 +555,6 @@ public class SpiderService extends Service
         private final static int IMG_VALID_HEIGHT_MIN = 200;
 
         private final static int SAVE_PROJECT_DATA = 50;
-
-
-        private final static String THUMBNAIL_FILE_EXT = ".jpg";
 
 
         private final static int IMG_DOWNLOAD_BLOCK = 16 * 1024;
@@ -711,7 +708,7 @@ public class SpiderService extends Service
                 return cacheFile;
             }
 
-            private void moveToImgDirAfterDownload(File file)
+            private void moveToImgDirAfterDownload(File file, int imgFileSize)
             {
                 String cacheFilePath = file.getPath();
                 String cacheFileWithoutMark = cacheFilePath.substring(0, cacheFilePath.length() - CACHE_MARK.length());
@@ -719,8 +716,8 @@ public class SpiderService extends Service
 
                 jniDataLock.lock();
 
-                int imgIndex = imgProcParam[StaticValue.PARA_DOWNLOAD];
-                jniSaveImgStorageInfo((int) imgUrlJniAddr, (int) containerUrlJniAddr, imgProcParam);
+                int imgIndex = (int)imgProcParam[StaticValue.PARA_DOWNLOAD];
+                jniSaveImgStorageInfo((int) imgUrlJniAddr, (int) containerUrlJniAddr, imgProcParam, imgFileSize);
 
                 if ((imgIndex % SAVE_PROJECT_DATA) == 0)
                 {
@@ -762,7 +759,7 @@ public class SpiderService extends Service
                             thumbnailDir.mkdirs();
                         }
 
-                        thumbnailFile = new File(thumbnailDirPath + "/" + newName + THUMBNAIL_FILE_EXT);
+                        thumbnailFile = new File(thumbnailDirPath + "/" + newName + StaticValue.THUMBNAIL_FILE_EXT);
 
                         break;
                     }
@@ -927,7 +924,7 @@ public class SpiderService extends Service
 
                 if (imgFile != null)
                 {
-                    moveToImgDirAfterDownload(imgFile);
+                    moveToImgDirAfterDownload(imgFile, totalLen);
                 }
 
             }
@@ -1007,23 +1004,23 @@ public class SpiderService extends Service
 
     private void reportSpiderLog()
     {
-        float fNetTraffic = netTrafficCalc.netTrafficPerSec.get();
-        fNetTraffic /= 1024;
-
         String jsonReportStr = "{\r\n";
 
 
         jsonReportStr += "\"serviceVmMem\":" + (Runtime.getRuntime().totalMemory() >> 10) + ",\r\n";
         jsonReportStr += "\"serviceNativeMem\":" + (Debug.getNativeHeapSize() >> 10) + ",\r\n";
 
+        jniDataLock.lock();
         jsonReportStr += "\"imgDownloaderPayload\":" + imgProcParam[StaticValue.PARA_PAYLOAD] + ",\r\n";
         jsonReportStr += "\"imgDownloadNum\":" + imgProcParam[StaticValue.PARA_DOWNLOAD] + ",\r\n";
         jsonReportStr += "\"imgProcessedNum\":" + imgProcParam[StaticValue.PARA_PROCESSED] + ",\r\n";
         jsonReportStr += "\"imgTotalNum\":" + imgProcParam[StaticValue.PARA_TOTAL] + ",\r\n";
+        jsonReportStr += "\"imgTotalSize\":" + imgProcParam[StaticValue.PARA_TOTAL_SIZE] + ",\r\n";
         jsonReportStr += "\"imgTreeHeight\":" + imgProcParam[StaticValue.PARA_HEIGHT] + ",\r\n";
         jsonReportStr += "\"pageProcessedNum\":" + pageProcParam[StaticValue.PARA_PROCESSED] + ",\r\n";
         jsonReportStr += "\"pageTotalNum\":" + pageProcParam[StaticValue.PARA_TOTAL] + ",\r\n";
         jsonReportStr += "\"pageTreeHeight\":" + pageProcParam[StaticValue.PARA_HEIGHT] + ",\r\n";
+        jniDataLock.unlock();
 
         jsonReportStr += "\"pageLoadTime\":" + loadTime + ",\r\n";
         jsonReportStr += "\"pageScanTime\":" + scanTime + ",\r\n";
@@ -1031,8 +1028,8 @@ public class SpiderService extends Service
 
 
         jsonReportStr += "\"curPage\":" + "\"" + curPageUrl + "\",\r\n";
-        jsonReportStr += "\"curNetSpeed\":" + "\"" + String.format("%03.1f", fNetTraffic) + "KB/s\"" + ",\r\n";
-
+        jsonReportStr += "\"curNetSpeed\":" + "\"" + Utils.byteSizeToString(
+                netTrafficCalc.netTrafficPerSec.get()) + "/s\"" + ",\r\n";
 
         jsonReportStr += "\"siteScanCompleted\":" + ((state.get() == STAT_COMPLETE) ? "true" : "false");
 

@@ -22,5 +22,9 @@
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\page.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\page.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\rom.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\rom.png"
     }
 ]

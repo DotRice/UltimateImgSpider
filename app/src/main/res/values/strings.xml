@@ -58,6 +58,12 @@
     <string name="page_total">网页总数</string>
     <string name="page_tree_height">网页树高度</string>
 
+
+    <string name="storage_info">存储信息</string>
+    <string name="image_total_size">图片总大小</string>
+    <string name="storage_total">存储总大小</string>
+    <string name="storage_free">存储剩余大小</string>
+
     <string name="speed_info">速度信息</string>
     <string name="image_download_payload">正下载图片数</string>
     <string name="download_speed">下载速度</string>

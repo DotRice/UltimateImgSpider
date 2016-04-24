@@ -98,7 +98,7 @@ public class SlotView extends GLView
     private float flyVelocity;
     private float flyVelocityRaw;
 
-    private static final float REBOUND_VELOCITY_PARAM = 7;
+    private static final float REBOUND_VELOCITY_PARAM = 6;
     private float overScrollGapY = 0;
     private float reboundVelocity = 0;
     private boolean rebound;
@@ -381,13 +381,13 @@ public class SlotView extends GLView
         if ((scrollDistance < 0) || (scrollDistance > scrollMax))
         {
             scrollDistance = (scrollDistance < 0) ? 0 : scrollMax;
-            overScrollGapY -= dy / (Math.abs(overScrollGapY) + 2) / 4;
+            overScrollGapY -= dy / (Math.abs(overScrollGapY) + 2)/1.5f;
             //Log.i(TAG, "overScrollGapY " + overScrollGapY);
         } else if (overScrollGapY != 0)
         {
             scrollDistance = (overScrollGapY > 0) ? 0 : scrollMax;
             float preGap = overScrollGapY;
-            overScrollGapY -= 2 * dy / (Math.abs(overScrollGapY) + 1);
+            overScrollGapY -= dy / (Math.abs(overScrollGapY) + 1);
 
             if (overScrollGapY * preGap < 0)
             {
