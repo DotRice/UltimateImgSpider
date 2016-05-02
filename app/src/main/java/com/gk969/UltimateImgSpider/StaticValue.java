@@ -2,6 +2,7 @@ package com.gk969.UltimateImgSpider;
 
 public class StaticValue
 {
+    public final static String      BUNDLE_KEY_PROJECT_HOST = "projectHost";
     public final static String      BUNDLE_KEY_SOURCE_URL = "sourceUrl";
     public final static String      BUNDLE_KEY_CMD        = "cmd";
     public final static String      BUNDLE_KEY_PRJ_PATH   = "projectPath";

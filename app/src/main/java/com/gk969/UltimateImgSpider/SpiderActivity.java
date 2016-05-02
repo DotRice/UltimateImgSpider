@@ -90,12 +90,11 @@ public class SpiderActivity extends Activity
     private ImageButton btnPauseOrContinue;
 
     private int downloadingProjectIndex;
-    private URL downloadingProjectSrcUrl;
     private String downloadingProjectPath;
 
     private int displayProjectIndex;
     private String displayProjectPath;
-    
+
     private File appPath;
 
 
@@ -169,7 +168,7 @@ public class SpiderActivity extends Activity
                         public void run()
                         {
                             serviceConnState = CONN_STATE_WAIT_CONNECT;
-                            sendCmdToSpiderService(StaticValue.CMD_START);
+                            sendCmdToSpiderService(StaticValue.CMD_START, null);
                         }
                     }, 500);
                 }
@@ -274,7 +273,7 @@ public class SpiderActivity extends Activity
                         else if (freeMem < 50 || serviceNativeMem > 50)
                         {
                             theActivity.serviceConnState = theActivity.CONN_STATE_WAIT_DISCONNECT;
-                            theActivity.sendCmdToSpiderService(StaticValue.CMD_RESTART);
+                            theActivity.sendCmdToSpiderService(StaticValue.CMD_RESTART, null);
 
                         }
 
@@ -384,14 +383,13 @@ public class SpiderActivity extends Activity
             boolean isNewProject=false;
             if(!newPath.equals(downloadingProjectPath))
             {
-                downloadingProjectSrcUrl = newUrl;
                 downloadingProjectPath = newPath;
                 isNewProject=true;
             }
 
             projectState = ProjectState.CHECK;
             btnPauseOrContinue.setImageResource(R.drawable.pause);
-            checkNetworkBeforeStart(isNewProject);
+            checkNetworkBeforeStart(isNewProject, srcUrl);
             infoDrawer.onDisplayProjectChanged();
 
             return true;
@@ -402,7 +400,7 @@ public class SpiderActivity extends Activity
 
         return false;
     }
-    
+
     private void openAlbum(int index)
     {
         displayProjectIndex=index;
@@ -415,7 +413,7 @@ public class SpiderActivity extends Activity
         btnPauseOrContinue.setImageResource((displayProjectIndex != downloadingProjectIndex ||
                 (projectState == ProjectState.PAUSE || projectState == ProjectState.COMPLETE)) ?
                 R.drawable.start : R.drawable.pause);
-        
+
         setView(ALBUM_VIEW);
     }
 
@@ -483,11 +481,11 @@ public class SpiderActivity extends Activity
     private void checkAndStart()
     {
         checkStorage();
-        checkNetworkBeforeStart(false);
+        checkNetworkBeforeStart(false, null);
     }
 
 
-    private void checkNetworkBeforeStart(final boolean isNewProject)
+    private void checkNetworkBeforeStart(final boolean isNewProject, final String srcUrl)
     {
         new Thread(new Runnable()
         {
@@ -502,22 +500,22 @@ public class SpiderActivity extends Activity
                         if(projectState==ProjectState.CHECK)
                         {
                             projectState=ProjectState.DOWNLOADING;
-                            
+
                             if (serviceConnState == CONN_STATE_CONNECTED || serviceConnState == CONN_STATE_WAIT_CONNECT)
                             {
                                 if(isNewProject)
                                 {
-                                    sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
+                                    sendCmdToSpiderService(StaticValue.CMD_STOP_STORE, srcUrl);
                                     serviceConnState = CONN_STATE_WAIT_DISCONNECT;
                                 }
                                 else
                                 {
-                                    sendCmdToSpiderService(StaticValue.CMD_START);
+                                    sendCmdToSpiderService(StaticValue.CMD_START, srcUrl);
                                 }
                             }
                             else if (serviceConnState == CONN_STATE_DISCONNECTED || serviceConnState == CONN_STATE_WAIT_DISCONNECT)
                             {
-                                sendCmdToSpiderService(StaticValue.CMD_START);
+                                sendCmdToSpiderService(StaticValue.CMD_START, srcUrl);
                                 serviceConnState = CONN_STATE_WAIT_CONNECT;
                             }
                         }
@@ -580,7 +578,7 @@ public class SpiderActivity extends Activity
         if (serviceConnState != CONN_STATE_DISCONNECTED)
         {
             unbindSpiderService();
-            sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
+            sendCmdToSpiderService(StaticValue.CMD_STOP_STORE, null);
             serviceConnState = CONN_STATE_DISCONNECTED;
         }
     }
@@ -639,7 +637,7 @@ public class SpiderActivity extends Activity
     {
         if (serviceConnState != CONN_STATE_DISCONNECTED)
         {
-            sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
+            sendCmdToSpiderService(StaticValue.CMD_JUST_STOP, null);
             inDeleting = true;
             if (dialogDelete == null)
             {
@@ -693,13 +691,13 @@ public class SpiderActivity extends Activity
                             case DOWNLOADING:
                                 projectState = ProjectState.PAUSE;
                                 btnPauseOrContinue.setImageResource(R.drawable.start);
-                                sendCmdToSpiderService(StaticValue.CMD_PAUSE);
+                                sendCmdToSpiderService(StaticValue.CMD_PAUSE, null);
                                 break;
 
                             case PAUSE:
                                 projectState = ProjectState.CHECK;
                                 btnPauseOrContinue.setImageResource(R.drawable.pause);
-                                checkNetworkBeforeStart(false);
+                                checkNetworkBeforeStart(false, null);
                                 break;
 
                             case CHECK:
@@ -748,12 +746,12 @@ public class SpiderActivity extends Activity
 
     private class InfoDrawer
     {
-        
+
         private DrawerLayout drawer;
-        
+
         private LinearLayout albumInfoDrawer;
         private LinearLayout albumSetInfoDrawer;
-        
+
         private View[] views=new View[2];
 
         private LinearLayout downloadingInfo;
@@ -825,7 +823,7 @@ public class SpiderActivity extends Activity
             text_project_site.setText(displayProjectInfo.site);
             refreshBasicInfo(displayProjectInfo.imgInfo, displayProjectInfo.pageInfo);
         }
-        
+
         public void setDrawer(int viewIndex)
         {
             drawer.setDrawerLockMode(viewIndex==ALBUM_VIEW?DrawerLayout.LOCK_MODE_UNLOCKED:
@@ -839,7 +837,7 @@ public class SpiderActivity extends Activity
                 drawer.openDrawer(views[viewIndex]);
             }
         }
-        
+
         private void refreshBasicInfo(long[] imgInfo, long[] pageInfo)
         {
             image_download_num.setText(String.valueOf(imgInfo[StaticValue.PARA_DOWNLOAD]));
@@ -856,7 +854,7 @@ public class SpiderActivity extends Activity
             storage_free.setText(Utils.byteSizeToString(appPath.getFreeSpace()));
 
         }
-        
+
         public void refreshInfoByServiceReport(JSONObject json)
         {
             try
@@ -878,7 +876,7 @@ public class SpiderActivity extends Activity
                 page_load_time.setText(String.valueOf(json.getInt("pageLoadTime"))+"ms");
                 page_scan_time.setText(String.valueOf(json.getInt("pageScanTime"))+"ms");
                 page_search_time.setText(String.valueOf(json.getInt("pageSearchTime"))+"ms");
-    
+
                 image_download_payload.setText(String.valueOf(json.getInt("imgDownloaderPayload")));
                 download_speed.setText(json.getString("curNetSpeed"));
 
@@ -943,7 +941,7 @@ public class SpiderActivity extends Activity
 
     boolean seviceBindSuccess = false;
 
-    private void sendCmdToSpiderService(int cmd)
+    private void sendCmdToSpiderService(int cmd, String srcUrl)
     {
         Log.i(TAG, "sendCmdToSpiderService " + cmd);
         Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
@@ -952,7 +950,12 @@ public class SpiderActivity extends Activity
 
         Bundle bundle = new Bundle();
         bundle.putInt(StaticValue.BUNDLE_KEY_CMD, cmd);
-        bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, downloadingProjectSrcUrl.toString());
+        if(srcUrl!=null)
+        {
+            bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, srcUrl);
+        }
+        bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_HOST,
+                albumSetLoaderHelper.projectList.get(downloadingProjectIndex).site);
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
 

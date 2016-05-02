@@ -366,18 +366,19 @@ public class SpiderService extends Service
             {
                 Log.i(TAG, "onStartCommand url:" + url);
 
-                if ((url.startsWith("http://") || url.startsWith("https://"))
-                        && srcUrl.equals(SRCURL_DEFAULT_VALUE))
+                if((url.startsWith("http://") || url.startsWith("https://")) && srcUrl == null)
                 {
                     srcUrl = url;
-                    try
-                    {
-                        srcHost = new URL(srcUrl).getHost();
-                    } catch (MalformedURLException e)
-                    {
-                        e.printStackTrace();
-                        stopSelfAndWatchdog();
-                    }
+                }
+            }
+
+            String host = intent.getStringExtra(StaticValue.BUNDLE_KEY_PROJECT_HOST);
+            if (host != null)
+            {
+                Log.i(TAG, "onStartCommand host:" + host);
+                if(srcHost==null)
+                {
+                    srcHost = host;
                     File siteDir = Utils.getDirInExtSto(getString(R.string.appPackageName) + "/" + srcHost);
                     if (siteDir == null)
                     {
@@ -487,8 +488,7 @@ public class SpiderService extends Service
      * 
      */
 
-    private final static String SRCURL_DEFAULT_VALUE = "about:blank";
-    private String srcUrl = SRCURL_DEFAULT_VALUE;
+    private String srcUrl;
     private String srcHost;
 
     private final int URL_TYPE_PAGE = 0;
@@ -522,7 +522,9 @@ public class SpiderService extends Service
 
     private native boolean jniSpiderInit(long[] imgPara, long[] pagePara);
 
-    private native void jniAddUrl(String url, byte[] md5, int type, long[] param);
+    private native void jniSetSrcPageUrl(String pageUrl, byte[] srcPageUrlMd5, long[] pagePara);
+
+    private native int jniAddUrl(String url, byte[] md5, int type, long[] param);
 
     private native String jniFindNextPageUrl(long[] param);
 
@@ -830,7 +832,11 @@ public class SpiderService extends Service
                     matrix.postScale(scale, scale);
 
                     Bitmap thumbnail = Bitmap.createBitmap(rawBmp, x, y, w, h, matrix, true);
-                    rawBmp.recycle();
+
+                    if(thumbnail!=rawBmp)
+                    {
+                        rawBmp.recycle();
+                    }
 
                     FileOutputStream fileOut = null;
                     try
@@ -1072,15 +1078,24 @@ public class SpiderService extends Service
         scanTimer = System.currentTimeMillis();
         spider.loadUrl("javascript:"
                 + "var i;"
-                + "var img=document.getElementsByTagName(\"img\");"
                 + "var imgSrc=\"\";"
-                + "for(i=0; i<img.length; i++)"
-                + "{imgSrc+=(img[i].src+' ');}"
+                + "var img=document.getElementsByTagName(\"img\");"
+                + "for(i=0; i<img.length; i++){"
+                +     "imgSrc+=(img[i].src+' ');"
+                + "}"
+                + "var imgInput=document.getElementsByTagName(\"input\");"
+                + "for(i=0; i<imgInput.length; i++)"
+                + "{"
+                +     "if(imgInput[i].src){"
+                +         "imgSrc+=(imgInput[i].src+' ');"
+                +     "}"
+                + "}"
                 + "SpiderCrawl.recvImgUrl(imgSrc);"
                 + "var a=document.getElementsByTagName(\"a\");"
                 + "var aHref=\"\";"
-                + "for(i=0; i<a.length; i++)"
-                + "{aHref+=(a[i].href+' ');}"
+                + "for(i=0; i<a.length; i++){"
+                +     "aHref+=(a[i].href+' ');"
+                + "}"
                 + "SpiderCrawl.recvPageUrl(aHref);"
                 + "SpiderCrawl.onCurPageScaned();");
     }
@@ -1224,8 +1239,10 @@ public class SpiderService extends Service
             e.printStackTrace();
         }
 
-        jniAddUrl(srcUrl, md5ForPage.digest(srcUrl.getBytes()), URL_TYPE_PAGE,
-                pageProcParam);
+        if(srcUrl!=null)
+        {
+            jniSetSrcPageUrl(srcUrl, md5ForPage.digest(srcUrl.getBytes()), pageProcParam);
+        }
 
         new TimerThread().start();
 
