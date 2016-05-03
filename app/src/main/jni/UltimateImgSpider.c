@@ -9,7 +9,7 @@
 #include <sys/mman.h>
 
 #include "typeDef.h"
-
+#include "funcName.h"
 
 /*
  * 使用共享内存存储urlList，实现重启下载服务进程后能恢复工作现场。
@@ -173,7 +173,7 @@ int createNewAshmem(const char *name, int size, u8 **addr)
     return fd;
 }
 
-void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIEnv *env,
+void jniRestoreProjectData(JNIEnv *env,
         jobject thiz, jstring jDataFileFullPath)
 {
     const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
@@ -218,7 +218,7 @@ void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIE
     (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
 }
 
-void Java_com_gk969_UltimateImgSpider_WatchdogService_jniStoreProjectData(JNIEnv *env,
+void jniStoreProjectData(JNIEnv *env,
         jobject thiz, jstring jDataFileFullPath)
 {
     const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
@@ -248,7 +248,7 @@ void Java_com_gk969_UltimateImgSpider_WatchdogService_jniStoreProjectData(JNIEnv
     (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
 }
 
-int Java_com_gk969_UltimateImgSpider_WatchdogService_jniGetAshmem(JNIEnv *env,
+int jniGetAshmem(JNIEnv *env,
         jobject thiz, jstring jname, jint size)
 {
     int i, fd = -1;
@@ -357,7 +357,7 @@ void fileTest()
     LOGI("test file:%s", buf);
 }
 
-jstring Java_com_gk969_UltimateImgSpider_SpiderService_stringFromJNI(JNIEnv *env,
+jstring stringFromJNI(JNIEnv *env,
         jobject thiz, jstring jSrcStr)
 {
     int i;
@@ -514,6 +514,9 @@ t_spiderPara *spiderPara = NULL;
 t_urlPool *urlPools[TOTAL_POOL];
 
 u32 downloadingImgNum = 0;
+
+#define SEARCH_STEPS_FOR_NEXT_PAGE 5000
+#define SEARCH_STEPS_ON_SEL_DIFF_PAGE  (SEARCH_STEPS_FOR_NEXT_PAGE*2)
 
 #define SELECT_DIFF_PAGE_CNT    3
 u8 pageWithoutNewImgCnt = 0;
@@ -818,7 +821,7 @@ jboolean urlPoolInit(JNIEnv *env)
     return false;
 }
 
-jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv *env,
+jboolean jniSpiderInit(JNIEnv *env,
         jobject thiz, jlongArray jImgParam, jlongArray jPageParam)
 {
     AshmAllocObjectInstance = thiz;
@@ -847,7 +850,7 @@ jboolean Java_com_gk969_UltimateImgSpider_SpiderService_jniSpiderInit(JNIEnv *en
 }
 
 
-void Java_com_gk969_gallerySimple_AlbumSetLoaderHelper_jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
+void jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
            jstring jDataFileFullPath, jlongArray jImgParam, jlongArray jPageParam)
 {
     const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
@@ -1176,7 +1179,7 @@ bool urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl,
 
 
 
-jlong Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv *env,
+jlong jniAddUrl(JNIEnv *env,
         jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jlongArray jParam)
 {
     urlTree *curTree =
@@ -1222,7 +1225,7 @@ jlong Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(JNIEnv *env,
 }
 
 
-void Java_com_gk969_UltimateImgSpider_SpiderService_jniSetSrcPageUrl(JNIEnv *env, jobject thiz,
+void jniSetSrcPageUrl(JNIEnv *env, jobject thiz,
                                      jstring jPageUrl, jbyteArray jSrcPageUrlMd5, jlongArray jParam)
 {
     spiderPara->srcPageNode=Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(env, thiz,
@@ -1272,7 +1275,7 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
 }
 
 
-void Java_com_gk969_UltimateImgSpider_SpiderService_jniRecvPageTitle(
+void jniRecvPageTitle(
         JNIEnv *env, jobject thiz, jstring jCurPageTitle)
 {
     urlNode *curNode = nodeAddrRelativeToAbs(spiderPara->curPageNode);
@@ -1341,9 +1344,8 @@ int pageUrlRankForNext(urlNode *srcUrl, urlNode *curUrl, urlNode *testedUrl, boo
 }
 
 
-#define SEARCH_STEP_MAX 5000
 
-jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
+jstring jniFindNextPageUrl(
         JNIEnv *env, jobject thiz, jlongArray jPageParam)
 {
     urlTree *curTree = &(spiderPara->pageUrlTree);
@@ -1363,26 +1365,34 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
         LOGI("title:%s", (char*)addrRelativeToAbs(curNode->para.title));
 
         int urlRankMax = 0-0x7FFFFFFF;
-        urlNode *prev = nodeAddrRelativeToAbs(curNode->para.prevToLoad);
-        urlNode *next = nodeAddrRelativeToAbs(curNode->para.nextToLoad);
-
-        //当前url已经被下载，从未下载url链表中删除
-        deleteUrlNodeFromList(curTree, curNode);
 
         bool selectDiffPageWithCur;
+        urlNode *prev;
+        urlNode *next;
+        int searchStepPerDirection;
 
         if(pageWithoutNewImgCnt>=SELECT_DIFF_PAGE_CNT)
         {
             selectDiffPageWithCur=true;
             pageWithoutNewImgCnt=0;
+            prev = nodeAddrRelativeToAbs(curTree->tail);
+            next = nodeAddrRelativeToAbs(curTree->head);
+            searchStepPerDirection=SEARCH_STEPS_ON_SEL_DIFF_PAGE;
         }
         else
         {
             selectDiffPageWithCur=false;
+            prev = nodeAddrRelativeToAbs(curNode->para.prevToLoad);
+            next = nodeAddrRelativeToAbs(curNode->para.nextToLoad);
+            searchStepPerDirection=SEARCH_STEPS_FOR_NEXT_PAGE;
         }
 
+        //当前url已经被下载，从未下载url链表中删除
+        deleteUrlNodeFromList(curTree, curNode);
+
+
         int i;
-        for(i = 0; i < SEARCH_STEP_MAX; i++)
+        for(i = 0; i < searchStepPerDirection; i++)
         {
 
             if(next == NULL)
@@ -1407,7 +1417,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl(
 
 
 
-        for(i = 0; i < SEARCH_STEP_MAX; i++)
+        for(i = 0; i < searchStepPerDirection; i++)
         {
 
             if(prev == NULL)
@@ -1473,7 +1483,7 @@ void logNode(urlNode *node)
     }
 }
 
-jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
+jstring jniFindNextImgUrl(
     JNIEnv *env, jobject thiz, jint jLastImgUrlAddr, jlongArray jImgParam, jboolean jJustDeleteCurNode)
 {
     urlTree *curTree = &(spiderPara->imgUrlTree);
@@ -1530,7 +1540,7 @@ jstring Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl(
     return (*env)->NewStringUTF(env, nextUrl);
 }
 
-void Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo(
+void jniSaveImgStorageInfo(
     JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr, jlongArray jImgParam, jint jCurImgFileSize)
 {
     u32 imgUrlAddr = (u32) jImgUrlAddr;
