@@ -1268,6 +1268,12 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
         curNode->para.nextToLoad=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
         curNode->para.prevToLoad=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
     }
+    else if(curTree->tail==curTree->head)
+    {
+        curTree->head=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        curTree->tail=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        LOGI("list cleared!");
+    }
     else
     {
         LOGI("deleteUrlNodeFromList ERROR NODE!");
@@ -1488,7 +1494,8 @@ jstring jniFindNextImgUrl(
 {
     urlTree *curTree = &(spiderPara->imgUrlTree);
 
-    LOGI("jniFindNextImgUrl lastImgAddr:%08X", jLastImgUrlAddr);
+    LOGI("jniFindNextImgUrl lastImgAddr:%08X curTree head %08X tail %08X", jLastImgUrlAddr,
+         curTree->head, curTree->tail);
 
     // see if we find new url successfully at last time
     urlNode *lastImgNode=nodeAddrRelativeToAbs((RelativeAddr) jLastImgUrlAddr);
