@@ -415,9 +415,10 @@ OFFSET低位，PTR高位。
                                         addr|=(ptr<<POOL_OFFSET_BIT)&POOL_PTR_BITS;
 
 #define NEW_RELATIVE_ADDR(ptr,offset)   ((((u32)ptr)<<POOL_OFFSET_BIT)|offset)
-
-
 #define POOL_PTR_INVALID    (((u32)1<<POOL_PTR_BIT)-1)
+
+#define RELATIVE_ADDR_NULL  NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0)
+
 
 #define SPIDER_PARA_NAME    "spiderPara"
 
@@ -544,7 +545,7 @@ RelativeAddr nodeAddrAbsToRelative(urlNode *node)
     }
     else
     {
-        relativeAddr = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        relativeAddr = RELATIVE_ADDR_NULL;
     }
 
     return relativeAddr;
@@ -735,29 +736,29 @@ jboolean spiderParaInit(JNIEnv *env, u64 *imgParam, u64 *pageParam)
 
         if(ashm->ashmStat != ASHM_EXIST)
         {
-            spiderPara->pageUrlTree.head = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-            spiderPara->pageUrlTree.tail = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-            spiderPara->pageUrlTree.root = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->pageUrlTree.head = RELATIVE_ADDR_NULL;
+            spiderPara->pageUrlTree.tail = RELATIVE_ADDR_NULL;
+            spiderPara->pageUrlTree.root = RELATIVE_ADDR_NULL;
             spiderPara->pageUrlTree.processed = 0;
             spiderPara->pageUrlTree.len = 0;
             spiderPara->pageUrlTree.height = 0;
 
-            spiderPara->imgUrlTree.head = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-            spiderPara->imgUrlTree.tail = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-            spiderPara->imgUrlTree.root = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->imgUrlTree.head = RELATIVE_ADDR_NULL;
+            spiderPara->imgUrlTree.tail = RELATIVE_ADDR_NULL;
+            spiderPara->imgUrlTree.root = RELATIVE_ADDR_NULL;
             spiderPara->imgUrlTree.processed = 0;
             spiderPara->imgUrlTree.len = 0;
             spiderPara->imgUrlTree.height = 0;
 
             spiderPara->urlPoolNum = 0;
 
-            spiderPara->storageImgList.head = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-            spiderPara->storageImgList.tail = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->storageImgList.head = RELATIVE_ADDR_NULL;
+            spiderPara->storageImgList.tail = RELATIVE_ADDR_NULL;
             spiderPara->storageImgList.num = 0;
 
             spiderPara->imgTotalSize = 0;
-            spiderPara->curPageNode=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-            spiderPara->srcPageNode=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+            spiderPara->curPageNode=RELATIVE_ADDR_NULL;
+            spiderPara->srcPageNode=RELATIVE_ADDR_NULL;
         }
 
         imgParam[PARA_TOTAL] = spiderPara->imgUrlTree.len;
@@ -1112,7 +1113,7 @@ bool urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl,
         tree->height = height;
     }
 
-    RelativeAddr newNodeAddr = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+    RelativeAddr newNodeAddr = RELATIVE_ADDR_NULL;
 
     u16 urlLen = strlen(newUrl);
     u32 urlNodeSize = ((urlLen + 1 + sizeof(nodePara)) + 3) & 0xFFFFFFFC;
@@ -1126,15 +1127,15 @@ bool urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl,
         node->para.md5_64 = newMd5_64;
         node->para.len = urlLen;
 
-        node->para.left = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-        node->para.right = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        node->para.left = RELATIVE_ADDR_NULL;
+        node->para.right = RELATIVE_ADDR_NULL;
 
         node->para.parent = nodeAddrAbsToRelative(parent);
 
         node->para.containerPage = spiderPara->curPageNode;
-        node->para.title = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        node->para.title = RELATIVE_ADDR_NULL;
 
-        node->para.nextToLoad = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        node->para.nextToLoad = RELATIVE_ADDR_NULL;
         node->para.prevToLoad = tree->tail;
         tail = nodeAddrRelativeToAbs(tree->tail);
 
@@ -1265,13 +1266,15 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
             next->para.prevToLoad = curNode->para.prevToLoad;
         }
 
-        curNode->para.nextToLoad=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-        curNode->para.prevToLoad=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        curNode->para.nextToLoad=RELATIVE_ADDR_NULL;
+        curNode->para.prevToLoad=RELATIVE_ADDR_NULL;
     }
-    else if(curTree->tail==curTree->head)
+    else if((curTree->tail==curTree->head)&&
+            (curTree->tail!=RELATIVE_ADDR_NULL))
     {
-        curTree->head=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
-        curTree->tail=NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        curTree->processed++;
+        curTree->head=RELATIVE_ADDR_NULL;
+        curTree->tail=RELATIVE_ADDR_NULL;
         LOGI("list cleared!");
     }
     else
@@ -1489,6 +1492,7 @@ void logNode(urlNode *node)
     }
 }
 
+
 jstring jniFindNextImgUrl(
     JNIEnv *env, jobject thiz, jint jLastImgUrlAddr, jlongArray jImgParam, jboolean jJustDeleteCurNode)
 {
@@ -1567,7 +1571,7 @@ void jniSaveImgStorageInfo(
         imgInfo->pageUrl = pageUrlAddr;
 
         imgInfo->prev = infoList->tail;
-        imgInfo->next = NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0);
+        imgInfo->next = RELATIVE_ADDR_NULL;
 
         if (infoAddrRelativeToAbs(infoList->head) == NULL)
         {
