@@ -114,6 +114,11 @@ public class SlotView extends GLView
     OnClickListener runOnClick;
     private boolean validClick;
 
+    public interface OnScrollEndLitener
+    {
+        public void onScrollEnd(int curScrollDistance);
+    }
+    OnScrollEndLitener runOnScrollEnd;
 
     private class MyGestureListener implements GestureRecognizer.Listener
     {
@@ -250,6 +255,8 @@ public class SlotView extends GLView
                 renderTime = System.currentTimeMillis();
                 mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
             }
+
+            runOnScrollEnd.onScrollEnd(scrollDistance);
             mGLRootView.unlockRenderThread();
         }
 
@@ -287,6 +294,11 @@ public class SlotView extends GLView
     public void setOnClick(OnClickListener listener)
     {
         runOnClick=listener;
+    }
+
+    public void setOnScrollEnd(OnScrollEndLitener listener)
+    {
+        runOnScrollEnd=listener;
     }
 
     public void setViewSize(int width, int height)
@@ -331,6 +343,7 @@ public class SlotView extends GLView
         mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         flyVelocity = 0;
         rebound = false;
+        runOnScrollEnd.onScrollEnd(scrollDistance);
     }
 
     private float calculateDecelerate(float curValue, float rawValue)
@@ -372,7 +385,17 @@ public class SlotView extends GLView
 
     public void scrollAbs(int distance)
     {
-        scroll(distance - scrollDistance);
+        int scrollMax=getScrollDistanceMax();
+        if(distance<0)
+        {
+            distance=0;
+        }
+        else if(distance>scrollMax)
+        {
+            distance=scrollMax;
+        }
+
+        scroll(distance - scrollDistance, scrollMax);
     }
 
     private void scroll(float dy, int scrollMax)
@@ -401,6 +424,7 @@ public class SlotView extends GLView
             scrollDistanceOverRow = scrollDistance;
             mThumbnailLoader.dispAreaScrollToIndex(scrollDistance / slotHeightWithGap * slotsPerRow);
         }
+
     }
 
     @Override

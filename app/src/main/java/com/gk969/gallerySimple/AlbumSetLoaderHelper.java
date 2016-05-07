@@ -5,65 +5,34 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.util.Log;
 
+import com.gk969.UltimateImgSpider.SpiderProject;
 import com.gk969.UltimateImgSpider.StaticValue;
 import com.gk969.UltimateImgSpider.WatchdogService;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
 {
     private final static String TAG = "AlbumSetLoaderHelper";
-    public final static int INVALID_INDEX=0xFFFFFFFF;
-
-    static public class ProjectInfo
-    {
-        public String site;
-        public long[] imgInfo;
-        public long[] pageInfo;
-
-        public ProjectInfo(String siteHost, long[] paramImgInfo, long[] paramPageInfo)
-        {
-            site=siteHost;
-            imgInfo=paramImgInfo;
-            pageInfo=paramPageInfo;
-        }
-    }
-
-    public ArrayList<ProjectInfo> projectList = new ArrayList<ProjectInfo>();
 
     private boolean needRefreshList = true;
 
     private String appPath;
 
     private ThumbnailLoader mThumbnailLoader;
-    
-    public native void jniGetProjectInfoOnStart(String path, long[] imgInfo, long[] pageInfo);
-    static
-    {
-        System.loadLibrary("UltimateImgSpider");
-    }
+    private SpiderProject mSpiderProject;
 
-    public AlbumSetLoaderHelper(String path)
+    public AlbumSetLoaderHelper(String path, SpiderProject project)
     {
         appPath = path;
-    }
-
-
-
-    public int findIndexBySite(String site)
-    {
-        int index=INVALID_INDEX;
-
-        for(ProjectInfo project:projectList)
-        {
-            if(project.site.equals(site))
-            {
-                break;
-            }
-        }
-
-        return index;
+        mSpiderProject=project;
     }
 
     @Override
@@ -75,10 +44,11 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
     @Override
     public String getLabelString(int index)
     {
-        if(index < projectList.size())
+        if(index < mSpiderProject.projectList.size())
         {
-            Log.i(TAG, "getLabelString " + index + " " + projectList.get(index));
-            return projectList.get(index).site + " " + projectList.get(index).imgInfo[StaticValue.PARA_DOWNLOAD];
+            Log.i(TAG, "getLabelString " + index + " " + mSpiderProject.projectList.get(index));
+            return mSpiderProject.projectList.get(index).site + " " +
+                    mSpiderProject.projectList.get(index).imgInfo[StaticValue.PARA_DOWNLOAD];
         }
 
         return "";
@@ -90,36 +60,7 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
         return true;
     }
 
-    private void refreshProjectList(String appPath)
-    {
-        projectList.clear();
 
-        File appDir = new File(appPath);
-
-        Log.i(TAG, "refreshProjectList path:" + appPath);
-
-        File[] fileList = appDir.listFiles();
-
-        for(File file : fileList)
-        {
-            if(file.isDirectory())
-            {
-                Log.i(TAG, "project dir:" + file.getPath());
-
-                String dataDirPath=file.getPath() + StaticValue.PROJECT_DATA_DIR;
-                if(WatchdogService.projectDataIsSafe(dataDirPath))
-                {
-                    long[] imgInfo=new long[StaticValue.IMG_PARA_NUM];
-                    long[] pageInfo=new long[StaticValue.PAGE_PARA_NUM];
-                    jniGetProjectInfoOnStart(dataDirPath+StaticValue.PROJECT_DATA_NAME, imgInfo, pageInfo);
-                    projectList.add(new ProjectInfo(file.getName(), imgInfo, pageInfo));
-                }
-            }
-        }
-
-        mThumbnailLoader.setAlbumTotalImgNum(projectList.size());
-        Log.i(TAG, "projectList.size " + projectList.size());
-    }
 
     @Override
     public Bitmap getThumbnailByIndex(int index, Bitmap container)
@@ -128,13 +69,14 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
 
         if(needRefreshList)
         {
-            refreshProjectList(appPath);
+            mSpiderProject.refreshProjectList();
+            mThumbnailLoader.setAlbumTotalImgNum(mSpiderProject.projectList.size());
             needRefreshList = false;
         }
 
-        if(index < projectList.size())
+        if(index < mSpiderProject.projectList.size())
         {
-            String fileName = String.format("%s/%s/%s/%d/%03d%s", appPath, projectList.get(index).site,
+            String fileName = String.format("%s/%s/%s/%d/%03d%s", appPath, mSpiderProject.projectList.get(index).site,
                     StaticValue.THUMBNAIL_DIR_NAME, 0, 0, StaticValue.THUMBNAIL_FILE_EXT);
 
             BitmapFactory.Options bmpOpts = new BitmapFactory.Options();

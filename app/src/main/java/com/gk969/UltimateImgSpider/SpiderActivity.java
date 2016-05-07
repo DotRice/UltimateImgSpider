@@ -95,7 +95,7 @@ public class SpiderActivity extends Activity
     private int displayProjectIndex;
     private String displayProjectPath;
 
-    private File appPath;
+    private File appDir;
 
 
     private MessageHandler mHandler = new MessageHandler(this);
@@ -108,7 +108,8 @@ public class SpiderActivity extends Activity
     private AlbumLoaderHelper albumLoaderHelper;
     private AlbumSetLoaderHelper albumSetLoaderHelper;
 
-    private AlbumSetLoaderHelper.ProjectInfo displayProjectInfo;
+    private SpiderProject.ProjectInfo displayProjectInfo;
+    private SpiderProject spiderProject;
 
     private ServiceConnection mConnection;
     private IRemoteSpiderServiceCallback mCallback;
@@ -360,7 +361,7 @@ public class SpiderActivity extends Activity
 
         onFirstRun();
 
-        appPath = Utils.getDirInExtSto(getString(R.string.appPackageName));
+        appDir = Utils.getDirInExtSto(getString(R.string.appPackageName));
 
         serviceInterfaceInit();
         checkStorage();
@@ -374,9 +375,9 @@ public class SpiderActivity extends Activity
         try
         {
             URL newUrl = new URL((srcUrl==null)?
-                    ("http://"+albumSetLoaderHelper.projectList.get(index).site+"/"):srcUrl);
+                    ("http://"+spiderProject.projectList.get(index).site+"/"):srcUrl);
 
-            String newPath=appPath + "/" + newUrl.getHost();
+            String newPath=appDir + "/" + newUrl.getHost();
 
             downloadingProjectIndex=index;
 
@@ -404,10 +405,11 @@ public class SpiderActivity extends Activity
     private void openAlbum(int index)
     {
         displayProjectIndex=index;
-        displayProjectInfo=albumSetLoaderHelper.projectList.get(displayProjectIndex);
-        displayProjectPath=appPath.getPath()+"/"+displayProjectInfo.site;
+        displayProjectInfo=spiderProject.projectList.get(displayProjectIndex);
+        displayProjectPath=appDir.getPath()+"/"+displayProjectInfo.site;
         albumLoaderHelper.setProjectPath(displayProjectPath);
-        mThumbnailLoader.setHelper(albumLoaderHelper, (int)displayProjectInfo.imgInfo[StaticValue.PARA_DOWNLOAD]);
+        mThumbnailLoader.setHelper(albumLoaderHelper, (int)displayProjectInfo.imgInfo[StaticValue.PARA_DOWNLOAD],
+                                    spiderProject.projectList.get(index).albumScrollDistance);
         infoDrawer.onDisplayProjectChanged();
 
         btnPauseOrContinue.setImageResource((displayProjectIndex != downloadingProjectIndex ||
@@ -419,7 +421,7 @@ public class SpiderActivity extends Activity
 
     private void backToAlbumSetView()
     {
-        displayProjectIndex=AlbumSetLoaderHelper.INVALID_INDEX;
+        displayProjectIndex=SpiderProject.INVALID_INDEX;
         if(projectState==ProjectState.DOWNLOADING)
         {
             mThumbnailLoader.refreshSlotInfo(downloadingProjectIndex, "", true);
@@ -429,7 +431,7 @@ public class SpiderActivity extends Activity
             mThumbnailLoader.refreshSlotInfo(StaticValue.INDEX_INVALID, null, false);
         }
 
-        mThumbnailLoader.setHelper(albumSetLoaderHelper, albumSetLoaderHelper.projectList.size());
+        mThumbnailLoader.setHelper(albumSetLoaderHelper, spiderProject.projectList.size());
         setView(ALBUM_SET_VIEW);
     }
 
@@ -447,8 +449,9 @@ public class SpiderActivity extends Activity
     {
         glRootView = (GLRootView) findViewById(R.id.gl_root_view);
 
+        spiderProject=new SpiderProject(appDir.getPath());
         albumLoaderHelper = new AlbumLoaderHelper(downloadingProjectPath);
-        albumSetLoaderHelper = new AlbumSetLoaderHelper(appPath.getPath());
+        albumSetLoaderHelper = new AlbumSetLoaderHelper(appDir.getPath(), spiderProject);
         mThumbnailLoader = new ThumbnailLoader(glRootView, albumSetLoaderHelper);
         SlotView slotView = new SlotView(this, mThumbnailLoader, glRootView);
         slotView.setOnClick(new SlotView.OnClickListener()
@@ -463,9 +466,20 @@ public class SpiderActivity extends Activity
                 }
             }
         });
+        slotView.setOnScrollEnd(new SlotView.OnScrollEndLitener()
+        {
+            @Override
+            public void onScrollEnd(int curScrollDistance)
+            {
+                if(curView == ALBUM_VIEW)
+                {
+                    spiderProject.projectList.get(displayProjectIndex).albumScrollDistance = curScrollDistance;
+                }
+            }
+        });
 
         glRootView.setContentPane(slotView);
-        downloadingProjectIndex=AlbumSetLoaderHelper.INVALID_INDEX;
+        downloadingProjectIndex=SpiderProject.INVALID_INDEX;
     }
 
     private void checkStorage()
@@ -590,6 +604,7 @@ public class SpiderActivity extends Activity
 
         mThumbnailLoader.stopLoader();
         tryToStopSpiderService();
+        spiderProject.saveProjectParam();
     }
 
     // 返回至SelSrcActivity
@@ -612,13 +627,13 @@ public class SpiderActivity extends Activity
                         URL newUrl=new URL(data.getAction());
 
                         Log.i(TAG, "REQUST_SRC_URL " + newUrl.toString());
-                        int albumIndex = albumSetLoaderHelper.findIndexBySite(newUrl.getHost());
-                        if(albumIndex == AlbumSetLoaderHelper.INVALID_INDEX)
+                        int albumIndex = spiderProject.findIndexBySite(newUrl.getHost());
+                        if(albumIndex == SpiderProject.INVALID_INDEX)
                         {
-                            albumIndex=albumSetLoaderHelper.projectList.size();
+                            albumIndex=spiderProject.projectList.size();
                             long[] imgInfo = new long[StaticValue.IMG_PARA_NUM];
                             long[] pageInfo = new long[StaticValue.PAGE_PARA_NUM];
-                            albumSetLoaderHelper.projectList.add(new AlbumSetLoaderHelper.ProjectInfo(
+                            spiderProject.projectList.add(new SpiderProject.ProjectInfo(
                                     newUrl.getHost(), imgInfo, pageInfo));
                         }
 
@@ -850,8 +865,8 @@ public class SpiderActivity extends Activity
             page_tree_height.setText(String.valueOf(pageInfo[StaticValue.PARA_HEIGHT]));
 
             image_total_size.setText(Utils.byteSizeToString(imgInfo[StaticValue.PARA_TOTAL_SIZE]));
-            storage_total.setText(Utils.byteSizeToString(appPath.getTotalSpace()));
-            storage_free.setText(Utils.byteSizeToString(appPath.getFreeSpace()));
+            storage_total.setText(Utils.byteSizeToString(appDir.getTotalSpace()));
+            storage_free.setText(Utils.byteSizeToString(appDir.getFreeSpace()));
 
         }
 
@@ -955,7 +970,7 @@ public class SpiderActivity extends Activity
             bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, srcUrl);
         }
         bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_HOST,
-                albumSetLoaderHelper.projectList.get(downloadingProjectIndex).site);
+                spiderProject.projectList.get(downloadingProjectIndex).site);
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
 

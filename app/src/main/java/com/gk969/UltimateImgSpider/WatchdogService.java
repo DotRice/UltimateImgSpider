@@ -84,19 +84,7 @@ public class WatchdogService extends Service
         jniStoreProjectData(dataFileFullPath);
 
         String md5String = Utils.getFileMD5String(dataFileFullPath);
-        try
-        {
-            FileOutputStream md5FileOut=new FileOutputStream(dataDirPath+StaticValue.PROJECT_DATA_MD5);
-            md5FileOut.write(md5String.getBytes());
-            md5FileOut.close();
-        } catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
+        Utils.stringToFile(md5String, dataDirPath+StaticValue.PROJECT_DATA_MD5);
     }
 
     public static boolean projectDataIsSafe(String dataDir)
@@ -104,23 +92,12 @@ public class WatchdogService extends Service
         String dataFileFullPath=dataDir+StaticValue.PROJECT_DATA_NAME;
         String md5OfFile = Utils.getFileMD5String(dataFileFullPath);
 
-        try
-        {
-            byte[] buf=new byte[32];
-            FileInputStream md5FileIn=new FileInputStream(dataDir+StaticValue.PROJECT_DATA_MD5);
-            md5FileIn.read(buf);
-            md5FileIn.close();
-            String md5InRec=new String(buf);
-            Log.i(TAG, "projectDataIsSafe " + md5OfFile + " " + md5InRec);
+        String md5InRec=Utils.fileToString(dataDir+StaticValue.PROJECT_DATA_MD5);
+        Log.i(TAG, "projectDataIsSafe " + md5OfFile + " " + md5InRec);
 
-            if(md5OfFile!=null)
-            {
-                return md5InRec.equals(md5OfFile);
-            }
-
-        } catch (IOException e)
+        if(md5OfFile!=null)
         {
-            e.printStackTrace();
+            return md5InRec.equals(md5OfFile);
         }
 
         return false;

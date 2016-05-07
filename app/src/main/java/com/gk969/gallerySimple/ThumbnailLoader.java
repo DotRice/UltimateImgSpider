@@ -150,6 +150,15 @@ public  class ThumbnailLoader
         mTextureLoaderThread.interrupt();
     }
 
+    public void setHelper(ThumbnailLoaderHelper helper, int totalImgNum, int scrollDistance)
+    {
+        setHelper(helper, totalImgNum);
+
+        mGLRootView.lockRenderThread();
+        slotView.scrollAbs(scrollDistance);
+        mGLRootView.unlockRenderThread();
+    }
+
     private void clearCache()
     {
         for (SlotTexture slot : textureCache)

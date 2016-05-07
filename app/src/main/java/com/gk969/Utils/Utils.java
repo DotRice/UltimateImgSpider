@@ -301,6 +301,49 @@ public class Utils
         return size+"B";
     }
 
+    public static void stringToFile(String str, String filePath)
+    {
+        try
+        {
+            FileOutputStream fileOut = new FileOutputStream(filePath);
+            fileOut.write(str.getBytes());
+            fileOut.close();
+        } catch(FileNotFoundException e)
+        {
+            e.printStackTrace();
+        } catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static String fileToString(String filePath)
+    {
+        File file=new File(filePath);
+        String string=null;
+
+        if(file.isFile())
+        {
+            byte[] buf = new byte[(int) file.length()];
+            try
+            {
+                FileInputStream fileIn = new FileInputStream(file);
+                fileIn.read(buf);
+                fileIn.close();
+            } catch(FileNotFoundException e)
+            {
+                e.printStackTrace();
+            } catch(IOException e)
+            {
+                e.printStackTrace();
+            }
+            string = new String(buf);
+        }
+
+        Log.i(TAG, "fileToString "+filePath+" "+string);
+        return string;
+    }
+
     public static File getDirInExtSto(String path)
     {
         File dir = null;
