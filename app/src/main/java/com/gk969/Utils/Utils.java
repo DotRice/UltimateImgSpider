@@ -283,6 +283,109 @@ public class Utils
         }
     }
 
+    public static class CubicBezier
+    {
+        static final String TAG="CubicBezier";
+
+        private class Point
+        {
+            float x;
+            float y;
+
+            public Point(float pointX, float pointY)
+            {
+                x=pointX;
+                y=pointY;
+            }
+        }
+
+        private Point controlPointA;
+        private Point controlPointB;
+
+        private static final int CALC_POINT_NUM=6;
+        private Point[] midPoints=new Point[CALC_POINT_NUM];
+
+        private final Point cubicStartPoint=new Point(0, 0);
+        private final Point cubicEndPoint=new Point(1, 1);
+
+        public CubicBezier(float pointAx, float pointAy, float pointBx, float pointBy)
+        {
+            if(pointAx<0)
+            {
+                pointAx=0;
+            }
+            else if(pointAx>1)
+            {
+                pointAx=1;
+            }
+
+            if(pointBx<0)
+            {
+                pointBx=0;
+            }
+            else if(pointBx>1)
+            {
+                pointBx=1;
+            }
+
+            controlPointA=new Point(pointAx, pointAy);
+            controlPointB=new Point(pointBx, pointBy);
+
+            for(int i=0; i<CALC_POINT_NUM; i++)
+            {
+                midPoints[i]=new Point(0, 0);
+            }
+        }
+
+        private void calculateMidPoint(Point startPoint, Point endPoint, Point midPoint, float progress)
+        {
+            midPoint.x=startPoint.x+(endPoint.x-startPoint.x)*progress;
+            midPoint.y=startPoint.y+(endPoint.y-startPoint.y)*progress;
+        }
+
+        public float calculateYByX(float x)
+        {
+            float y;
+
+            if(x<=0)
+            {
+                y=0;
+            }
+            else if(x>=1)
+            {
+                y=1;
+            }
+            else
+            {
+                calculateMidPoint(cubicStartPoint, controlPointA, midPoints[0], x);
+                calculateMidPoint(controlPointA, controlPointB, midPoints[1], x);
+                calculateMidPoint(controlPointB, cubicEndPoint, midPoints[2], x);
+
+                calculateMidPoint(midPoints[0], midPoints[1], midPoints[3], x);
+                calculateMidPoint(midPoints[1], midPoints[2], midPoints[4], x);
+
+                calculateMidPoint(midPoints[3], midPoints[4], midPoints[5], x);
+
+                y=midPoints[5].y;
+            }
+            return y;
+        }
+
+        static void test()
+        {
+            String str="";
+            Utils.CubicBezier cubicBezier=new Utils.CubicBezier(0.5f, 0f, 0.5f, 1f);
+
+            float x=0;
+            for(int i=0; i<50; i++)
+            {
+                str+=String.format("%.3f ", cubicBezier.calculateYByX(x));
+                x+=0.02f;
+            }
+            Log.i(TAG, str);
+        }
+    }
+
     public static String byteSizeToString(long size)
     {
         String[] sizeUnitName=new String[]{"GB", "MB", "KB"};
