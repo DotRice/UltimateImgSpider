@@ -466,7 +466,7 @@ public class SpiderActivity extends Activity
                 }
             }
         });
-        slotView.setOnScrollEnd(new SlotView.OnScrollEndLitener()
+        slotView.setOnScrollEnd(new SlotView.OnScrollEndListener()
         {
             @Override
             public void onScrollEnd(int curScrollDistance)
