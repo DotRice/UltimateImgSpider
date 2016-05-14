@@ -404,19 +404,22 @@ public class SpiderActivity extends Activity
 
     private void openAlbum(int index)
     {
-        displayProjectIndex=index;
-        displayProjectInfo=spiderProject.projectList.get(displayProjectIndex);
-        displayProjectPath=appDir.getPath()+"/"+displayProjectInfo.site;
-        albumLoaderHelper.setProjectPath(displayProjectPath);
-        mThumbnailLoader.setHelper(albumLoaderHelper, (int)displayProjectInfo.imgInfo[StaticValue.PARA_DOWNLOAD],
-                                    spiderProject.projectList.get(index).albumScrollDistance);
-        infoDrawer.onDisplayProjectChanged();
+        if(index<spiderProject.projectList.size())
+        {
+            displayProjectIndex = index;
+            displayProjectInfo = spiderProject.projectList.get(displayProjectIndex);
+            displayProjectPath = appDir.getPath() + "/" + displayProjectInfo.site;
+            albumLoaderHelper.setProjectPath(displayProjectPath);
+            mThumbnailLoader.setHelper(albumLoaderHelper, (int) displayProjectInfo.imgInfo[StaticValue.PARA_DOWNLOAD],
+                    spiderProject.projectList.get(index).albumScrollDistance);
+            infoDrawer.onDisplayProjectChanged();
 
-        btnPauseOrContinue.setImageResource((displayProjectIndex != downloadingProjectIndex ||
-                (projectState == ProjectState.PAUSE || projectState == ProjectState.COMPLETE)) ?
-                R.drawable.start : R.drawable.pause);
+            btnPauseOrContinue.setImageResource((displayProjectIndex != downloadingProjectIndex ||
+                    (projectState == ProjectState.PAUSE || projectState == ProjectState.COMPLETE)) ?
+                    R.drawable.start : R.drawable.pause);
 
-        setView(ALBUM_VIEW);
+            setView(ALBUM_VIEW);
+        }
     }
 
     private void backToAlbumSetView()

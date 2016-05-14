@@ -52,11 +52,14 @@ public class SlotView extends GLView
     private static final int SCROLL_BAR_HEIGHT_MAX_IN_DP=150;
     private static final int SCROLL_BAR_HEIGHT_MIN_IN_DP=50;
 
-    private int scrollBarHeightMax;
-    private int scrollBarHeightMin;
-    
     private static final int NEED_SCROLL_BAR=5;
     private static final int SCROLL_BAR_BACKGROUND_COLOR=0xA020C020;
+
+    private static final int BAR_SCROLL_VALID_IN_DP=5;
+    private int barScrollValid;
+
+    private int scrollBarHeightMax;
+    private int scrollBarHeightMin;
 
     private int scrollBarTapWidth;
     private int scrollBarWidth;
@@ -108,17 +111,17 @@ public class SlotView extends GLView
     
     private final Utils.CubicBezier barScrollBezier=new Utils.CubicBezier(0.25f, 0.1f, 0.1f ,1);
     private final Utils.CubicBezier newLineScrollBezier=new Utils.CubicBezier(0.5f, 0f, 0.5f, 1f);
-    private final static int BAR_SCROLL_DURATION=250;
+    private final static int BAR_SCROLL_DURATION=300;
     private final static int NEW_LINE_SCROLL_DURATION=500;
 
 
     class BezierScroll
     {
+        private Utils.CubicBezier scrollBezier;
         private int scrollStartPoint;
         private int scrollTotalDistance;
         private long scrollStartTime;
         private int scrollDuration;
-        private Utils.CubicBezier scrollBezier;
         private boolean inScrolling=false;
 
         public void start(Utils.CubicBezier bezier, int startPoint, int endPoint, int duration)
@@ -221,7 +224,10 @@ public class SlotView extends GLView
                 }
 
                 int finalScrollDistance = (int) ((long) scrollBarTop * ScrollDistanceMax / scrollBarTopMax);
-                if(finalScrollDistance != scrollDistance)
+                int validScroll=barScrollValid * ScrollDistanceMax / scrollBarTopMax;
+                if((Math.abs(finalScrollDistance - scrollDistance)>validScroll)||
+                        (finalScrollDistance<validScroll)||
+                        ((ScrollDistanceMax-finalScrollDistance)<validScroll))
                 {
                     bezierScroll.start(barScrollBezier, scrollDistance, finalScrollDistance, BAR_SCROLL_DURATION);
                 }
@@ -322,6 +328,7 @@ public class SlotView extends GLView
         scrollBarWidth=Utils.DisplayUtil.dipToPx(context, SCROLL_BAR_WIDTH_IN_DP);
         scrollBarHeightMax=Utils.DisplayUtil.dipToPx(context, SCROLL_BAR_HEIGHT_MAX_IN_DP);
         scrollBarHeightMin=Utils.DisplayUtil.dipToPx(context, SCROLL_BAR_HEIGHT_MIN_IN_DP);
+        barScrollValid=Utils.DisplayUtil.dipToPx(context, BAR_SCROLL_VALID_IN_DP);
         
         mThumbnailLoader = loader;
         mThumbnailLoader.dispAreaScrollToIndex(0);
