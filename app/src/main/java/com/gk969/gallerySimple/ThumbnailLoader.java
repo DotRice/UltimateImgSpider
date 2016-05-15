@@ -145,6 +145,11 @@ public  class ThumbnailLoader
     {
         loaderHelper=helper;
         needLabel=helper.needLabel();
+
+        mGLRootView.lockRenderThread();
+        slotView.stopAnimation();
+        mGLRootView.unlockRenderThread();
+
         setAlbumTotalImgNum(0);
         setAlbumTotalImgNum(totalImgNum);
         mTextureLoaderThread.interrupt();
@@ -205,6 +210,10 @@ public  class ThumbnailLoader
                 }
             }
 
+            if(prevTotalImgNum!=0)
+            {
+                slotView.onNewImgReceived(prevTotalImgNum);
+            }
         }
 
         mGLRootView.requestRender();

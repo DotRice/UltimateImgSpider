@@ -37,7 +37,7 @@ public class AlbumLoaderHelper extends ThumbnailLoaderHelper
     @Override
     public Bitmap getThumbnailByIndex(int index, Bitmap container)
     {
-        Log.i(TAG, "try to load index:" + index);
+        //Log.i(TAG, "try to load index:" + index);
         int group=index/ StaticValue.MAX_IMG_FILE_PER_DIR;
         int offset=index%StaticValue.MAX_IMG_FILE_PER_DIR;
 

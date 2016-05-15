@@ -1013,6 +1013,7 @@ public class SpiderService extends Service
         String jsonReportStr = "{\r\n";
 
 
+        jsonReportStr += "\"srcHost\":" + srcHost + ",\r\n";
         jsonReportStr += "\"serviceVmMem\":" + (Runtime.getRuntime().totalMemory() >> 10) + ",\r\n";
         jsonReportStr += "\"serviceNativeMem\":" + (Debug.getNativeHeapSize() >> 10) + ",\r\n";
 

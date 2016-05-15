@@ -65,7 +65,7 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
     @Override
     public Bitmap getThumbnailByIndex(int index, Bitmap container)
     {
-        Log.i(TAG, "try to load index:" + index);
+        //Log.i(TAG, "try to load index:" + index);
 
         if(needRefreshList)
         {

@@ -171,7 +171,7 @@ public class SpiderActivity extends Activity
                             serviceConnState = CONN_STATE_WAIT_CONNECT;
                             sendCmdToSpiderService(StaticValue.CMD_START, null);
                         }
-                    }, 500);
+                    }, 2000);
                 }
                 else
                 {
@@ -237,56 +237,59 @@ public class SpiderActivity extends Activity
             switch (msg.what)
             {
                 case BUMP_MSG:
-                    if (theActivity == null)
+                    if (theActivity != null)
                     {
-                        break;
+                        theActivity.parseReport((String)msg.obj);
                     }
-
-                    String jsonReportStr = (String) msg.obj;
-
-                    //Log.i(SpiderActivity.TAG, jsonReportStr);
-                    try
-                    {
-                        long freeMem = MemoryInfo.getFreeMemInMb(theActivity);
-                        jsonReportStr += "\"sysTotalMem\":\"" + MemoryInfo.getTotalMemInMb() + "M\",\r\n"
-                                + "\"sysFreeMem\":\"" + freeMem + "M\",\r\n"
-                                + "\"activityVmMem\":\"" + (Runtime.getRuntime().totalMemory() >> 10) + "K\",\n"
-                                + "\"activityNativeMem\":\"" + (Debug.getNativeHeapSize() >> 10) + "K\"\r\n}";
-
-                        JSONObject jsonReport = new JSONObject(jsonReportStr);
-
-                        int imgDownloadNum=jsonReport.getInt("imgDownloadNum");
-                        if(theActivity.displayProjectIndex==theActivity.downloadingProjectIndex)
-                        {
-                            theActivity.infoDrawer.refreshInfoByServiceReport(jsonReport);
-                            theActivity.mThumbnailLoader.setAlbumTotalImgNum(imgDownloadNum);
-                        }
-
-                        theActivity.refreshDownloadingProjectInfo(String.valueOf(imgDownloadNum));
-
-                        int serviceNativeMem = jsonReport.getInt("serviceNativeMem") >> 10;
-
-                        if (jsonReport.getBoolean("siteScanCompleted"))
-                        {
-                            theActivity.projectState=ProjectState.COMPLETE;
-                            theActivity.btnPauseOrContinue.setImageResource(R.drawable.start);
-                        }
-                        else if (freeMem < 50 || serviceNativeMem > 50)
-                        {
-                            theActivity.serviceConnState = theActivity.CONN_STATE_WAIT_DISCONNECT;
-                            theActivity.sendCmdToSpiderService(StaticValue.CMD_RESTART, null);
-
-                        }
-
-                    } catch (JSONException e)
-                    {
-                        e.printStackTrace();
-                    }
-
                     break;
                 default:
                     super.handleMessage(msg);
             }
+        }
+
+    }
+
+    private void parseReport(String report)
+    {
+        //Log.i(TAG, report);
+        try
+        {
+            long freeMem = MemoryInfo.getFreeMemInMb(this);
+            report += "\"sysTotalMem\":\"" + MemoryInfo.getTotalMemInMb() + "M\",\r\n"
+                    + "\"sysFreeMem\":\"" + freeMem + "M\",\r\n"
+                    + "\"activityVmMem\":\"" + (Runtime.getRuntime().totalMemory() >> 10) + "K\",\n"
+                    + "\"activityNativeMem\":\"" + (Debug.getNativeHeapSize() >> 10) + "K\"\r\n}";
+
+            JSONObject jsonReport = new JSONObject(report);
+
+            if(jsonReport.getString("srcHost").equals(
+                    spiderProject.projectList.get(downloadingProjectIndex).site))
+            {
+                int imgDownloadNum = jsonReport.getInt("imgDownloadNum");
+                if(displayProjectIndex == downloadingProjectIndex)
+                {
+                    infoDrawer.refreshInfoByServiceReport(jsonReport);
+                    mThumbnailLoader.setAlbumTotalImgNum(imgDownloadNum);
+                }
+
+                refreshDownloadingProjectInfo(String.valueOf(imgDownloadNum));
+
+                int serviceNativeMem = jsonReport.getInt("serviceNativeMem") >> 10;
+
+                if(jsonReport.getBoolean("siteScanCompleted"))
+                {
+                    projectState = ProjectState.COMPLETE;
+                    btnPauseOrContinue.setImageResource(R.drawable.start);
+                }
+                else if(freeMem < 50 || serviceNativeMem > 50)
+                {
+                    serviceConnState = CONN_STATE_WAIT_DISCONNECT;
+                    sendCmdToSpiderService(StaticValue.CMD_RESTART, null);
+                }
+            }
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
         }
 
     }
@@ -434,8 +437,8 @@ public class SpiderActivity extends Activity
             mThumbnailLoader.refreshSlotInfo(StaticValue.INDEX_INVALID, null, false);
         }
 
-        mThumbnailLoader.setHelper(albumSetLoaderHelper, spiderProject.projectList.size());
         setView(ALBUM_SET_VIEW);
+        mThumbnailLoader.setHelper(albumSetLoaderHelper, spiderProject.projectList.size());
     }
 
     public void refreshDownloadingProjectInfo(String infoStr)
