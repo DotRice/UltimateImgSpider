@@ -53,6 +53,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.webkit.JavascriptInterface;
@@ -94,6 +95,8 @@ public class SpiderActivity extends Activity
 
     private int displayProjectIndex;
     private String displayProjectPath;
+
+    private String downloadingProjectSrcUrl;
 
     private File appDir;
 
@@ -169,7 +172,7 @@ public class SpiderActivity extends Activity
                         public void run()
                         {
                             serviceConnState = CONN_STATE_WAIT_CONNECT;
-                            sendCmdToSpiderService(StaticValue.CMD_START, null);
+                            sendCmdToSpiderService(StaticValue.CMD_START);
                         }
                     }, 2000);
                 }
@@ -284,7 +287,7 @@ public class SpiderActivity extends Activity
                 else if(freeMem < 50 || serviceNativeMem > 50)
                 {
                     serviceConnState = CONN_STATE_WAIT_DISCONNECT;
-                    sendCmdToSpiderService(StaticValue.CMD_RESTART, null);
+                    sendCmdToSpiderService(StaticValue.CMD_RESTART);
                 }
             }
         } catch (JSONException e)
@@ -358,6 +361,8 @@ public class SpiderActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         setContentView(R.layout.activity_spider);
 
         Log.i(TAG, "onCreate");
@@ -372,13 +377,13 @@ public class SpiderActivity extends Activity
         albumViewInit();
     }
 
-    private boolean startProject(int index, String srcUrl)
+    private boolean startProject(int index)
     {
         Log.i(TAG, "startProject " + index);
         try
         {
-            URL newUrl = new URL((srcUrl==null)?
-                    ("http://"+spiderProject.projectList.get(index).site+"/"):srcUrl);
+            URL newUrl = new URL((downloadingProjectSrcUrl==null)?
+                    ("http://"+spiderProject.projectList.get(index).site+"/"):downloadingProjectSrcUrl);
 
             String newPath=appDir + "/" + newUrl.getHost();
 
@@ -393,7 +398,7 @@ public class SpiderActivity extends Activity
 
             projectState = ProjectState.CHECK;
             btnPauseOrContinue.setImageResource(R.drawable.pause);
-            checkNetworkBeforeStart(isNewProject, srcUrl);
+            checkNetworkBeforeStart(isNewProject);
             infoDrawer.onDisplayProjectChanged();
 
             return true;
@@ -501,11 +506,11 @@ public class SpiderActivity extends Activity
     private void checkAndStart()
     {
         checkStorage();
-        checkNetworkBeforeStart(false, null);
+        checkNetworkBeforeStart(false);
     }
 
 
-    private void checkNetworkBeforeStart(final boolean isNewProject, final String srcUrl)
+    private void checkNetworkBeforeStart(final boolean isNewProject)
     {
         new Thread(new Runnable()
         {
@@ -525,17 +530,17 @@ public class SpiderActivity extends Activity
                             {
                                 if(isNewProject)
                                 {
-                                    sendCmdToSpiderService(StaticValue.CMD_STOP_STORE, srcUrl);
+                                    sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
                                     serviceConnState = CONN_STATE_WAIT_DISCONNECT;
                                 }
                                 else
                                 {
-                                    sendCmdToSpiderService(StaticValue.CMD_START, srcUrl);
+                                    sendCmdToSpiderService(StaticValue.CMD_START);
                                 }
                             }
                             else if (serviceConnState == CONN_STATE_DISCONNECTED || serviceConnState == CONN_STATE_WAIT_DISCONNECT)
                             {
-                                sendCmdToSpiderService(StaticValue.CMD_START, srcUrl);
+                                sendCmdToSpiderService(StaticValue.CMD_START);
                                 serviceConnState = CONN_STATE_WAIT_CONNECT;
                             }
                         }
@@ -598,7 +603,7 @@ public class SpiderActivity extends Activity
         if (serviceConnState != CONN_STATE_DISCONNECTED)
         {
             unbindSpiderService();
-            sendCmdToSpiderService(StaticValue.CMD_STOP_STORE, null);
+            sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
             serviceConnState = CONN_STATE_DISCONNECTED;
         }
     }
@@ -644,7 +649,8 @@ public class SpiderActivity extends Activity
                         }
 
                         openAlbum(albumIndex);
-                        startProject(albumIndex, newUrl.toString());
+                        downloadingProjectSrcUrl=newUrl.toString();
+                        startProject(albumIndex);
                     } catch(MalformedURLException e)
                     {
                         e.printStackTrace();
@@ -658,7 +664,7 @@ public class SpiderActivity extends Activity
     {
         if (serviceConnState != CONN_STATE_DISCONNECTED)
         {
-            sendCmdToSpiderService(StaticValue.CMD_JUST_STOP, null);
+            sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
             inDeleting = true;
             if (dialogDelete == null)
             {
@@ -712,13 +718,13 @@ public class SpiderActivity extends Activity
                             case DOWNLOADING:
                                 projectState = ProjectState.PAUSE;
                                 btnPauseOrContinue.setImageResource(R.drawable.start);
-                                sendCmdToSpiderService(StaticValue.CMD_PAUSE, null);
+                                sendCmdToSpiderService(StaticValue.CMD_PAUSE);
                                 break;
 
                             case PAUSE:
                                 projectState = ProjectState.CHECK;
                                 btnPauseOrContinue.setImageResource(R.drawable.pause);
-                                checkNetworkBeforeStart(false, null);
+                                checkNetworkBeforeStart(false);
                                 break;
 
                             case CHECK:
@@ -729,7 +735,7 @@ public class SpiderActivity extends Activity
                     }
                     else
                     {
-                        startProject(displayProjectIndex, null);
+                        startProject(displayProjectIndex);
                     }
                 }
             });
@@ -951,18 +957,18 @@ public class SpiderActivity extends Activity
 
             // Detach our existing connection.
 
-            if (seviceBindSuccess)
+            if (serviceBindSuccess)
             {
                 unbindService(mConnection);
-                seviceBindSuccess = false;
+                serviceBindSuccess = false;
             }
         }
 
     }
 
-    boolean seviceBindSuccess = false;
+    boolean serviceBindSuccess = false;
 
-    private void sendCmdToSpiderService(int cmd, String srcUrl)
+    private void sendCmdToSpiderService(int cmd)
     {
         Log.i(TAG, "sendCmdToSpiderService " + cmd);
         Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
@@ -971,16 +977,22 @@ public class SpiderActivity extends Activity
 
         Bundle bundle = new Bundle();
         bundle.putInt(StaticValue.BUNDLE_KEY_CMD, cmd);
-        if(srcUrl!=null)
+
+        if(cmd==StaticValue.CMD_START)
         {
-            bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, srcUrl);
+            if(downloadingProjectSrcUrl != null)
+            {
+                bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, downloadingProjectSrcUrl);
+                downloadingProjectSrcUrl = null;
+            }
+            bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_HOST,
+                    spiderProject.projectList.get(downloadingProjectIndex).site);
         }
-        bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_HOST,
-                spiderProject.projectList.get(downloadingProjectIndex).site);
+
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
 
-        seviceBindSuccess = bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
+        serviceBindSuccess = bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
     }
 
     @Override

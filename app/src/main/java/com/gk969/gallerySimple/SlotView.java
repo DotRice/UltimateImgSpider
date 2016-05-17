@@ -49,11 +49,13 @@ public class SlotView extends GLView
 
     private static final int SCROLL_BAR_TAP_WIDTH_IN_DP=30;
     private static final int SCROLL_BAR_WIDTH_IN_DP=20;
-    private static final int SCROLL_BAR_HEIGHT_MAX_IN_DP=150;
+    private static final int SCROLL_BAR_HEIGHT_MAX_IN_DP=100;
     private static final int SCROLL_BAR_HEIGHT_MIN_IN_DP=50;
 
+    private static final int NEED_SMOOTH_SCROLL_BAR=25;
     private static final int NEED_SCROLL_BAR=5;
     private static final int SCROLL_BAR_BACKGROUND_COLOR=0xA020C020;
+
 
     private static final int BAR_SCROLL_VALID_IN_DP=5;
     private int barScrollValid;
@@ -164,7 +166,7 @@ public class SlotView extends GLView
     private BezierScroll barScroll=new BezierScroll(
             new Utils.CubicBezier(0.25f, 0.1f, 0.1f ,1), BAR_SCROLL_DURATION);
     private BezierScroll newLineScroll=new BezierScroll(
-            new Utils.CubicBezier(0.4f, 0.1f, 0.3f, 1f), NEW_LINE_SCROLL_DURATION);
+            new Utils.CubicBezier(0.4f, 0.1f, 0.1f, 1f), NEW_LINE_SCROLL_DURATION);
 
     public interface OnClickListener
     {
@@ -179,6 +181,8 @@ public class SlotView extends GLView
         public void onScrollEnd(int curScrollDistance);
     }
     OnScrollEndListener runOnScrollEnd;
+
+    private boolean isTouching;
 
     private class MyGestureListener implements GestureRecognizer.Listener
     {
@@ -232,12 +236,20 @@ public class SlotView extends GLView
                 }
 
                 int finalScrollDistance = (int) ((double) scrollBarTop * ScrollDistanceMax / scrollBarTopMax);
-                int validScroll=barScrollValid * ScrollDistanceMax / scrollBarTopMax;
-                if((Math.abs(finalScrollDistance - scrollDistance)>validScroll)||
-                        (finalScrollDistance<validScroll)||
-                        ((ScrollDistanceMax-finalScrollDistance)<validScroll))
+
+                if(ScrollDistanceMax>(NEED_SMOOTH_SCROLL_BAR*viewHeight))
                 {
-                    barScroll.start(scrollDistance, finalScrollDistance);
+                    int validScroll = barScrollValid * ScrollDistanceMax / scrollBarTopMax;
+                    if((Math.abs(finalScrollDistance - scrollDistance) > validScroll) ||
+                            (finalScrollDistance < validScroll) ||
+                            ((ScrollDistanceMax - finalScrollDistance) < validScroll))
+                    {
+                        barScroll.start(scrollDistance, finalScrollDistance);
+                    }
+                }
+                else
+                {
+                    scrollAbs(finalScrollDistance);
                 }
             }
             else
@@ -298,9 +310,8 @@ public class SlotView extends GLView
 
             touchOnScrollBar=(x>(viewWidth-scrollBarTapWidth))&&
                     (y>scrollBarTop)&&(y<(scrollBarTop+scrollBarHeight));
-
             validClick=(!isRebounding)&&(flyVelocity==0);
-
+            isTouching=true;
 
             stopAnimation();
 
@@ -319,6 +330,7 @@ public class SlotView extends GLView
                 mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
             }
 
+            isTouching=false;
             runOnScrollEnd.onScrollEnd(scrollDistance);
             mGLRootView.unlockRenderThread();
         }
@@ -429,18 +441,19 @@ public class SlotView extends GLView
     public void onNewImgReceived(int prevImgNum)
     {
         mGLRootView.lockRenderThread();
-        Log.i(TAG, "onNewImgReceived "+prevImgNum+" "+scrollDistance+" "+getSlotDistance(prevImgNum));
-        if(newLineScroll.isScrolling || scrollDistance==getSlotDistance(prevImgNum))
+        if(!isTouching)
         {
-            int albumBottom=getScrollDistanceMax();
-            Log.i(TAG, "albumBottom "+albumBottom);
-            if((albumBottom-scrollDistance)>=slotHeightWithGap)
+            if(newLineScroll.isScrolling || scrollDistance == getSlotDistance(prevImgNum))
             {
-                Log.i(TAG, "newLineScroll.start");
-                newLineScroll.start(scrollDistance, albumBottom);
+                int albumBottom = getScrollDistanceMax();
+                Log.i(TAG, "albumBottom " + albumBottom);
+                if((albumBottom - scrollDistance) >= slotHeightWithGap)
+                {
+                    Log.i(TAG, "newLineScroll.start");
+                    newLineScroll.start(scrollDistance, albumBottom);
+                }
             }
         }
-
         mGLRootView.unlockRenderThread();
     }
 
