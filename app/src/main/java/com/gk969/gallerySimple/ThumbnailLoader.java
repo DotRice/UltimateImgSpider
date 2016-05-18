@@ -66,8 +66,6 @@ public  class ThumbnailLoader
 
     private TextureLoaderThread mTextureLoaderThread;
 
-    private TiledTexture.Uploader mTextureUploader;
-
     private SlotView slotView;
 
     private ThumbnailLoaderHelper loaderHelper;
@@ -94,13 +92,12 @@ public  class ThumbnailLoader
             textureCache[i]=new SlotTexture();
             textureCache[i].mainBmp=Bitmap.createBitmap(StaticValue.THUMBNAIL_SIZE,
                     StaticValue.THUMBNAIL_SIZE, Bitmap.Config.RGB_565);
-
+            textureCache[i].texture=new BitmapTexture(textureCache[i].mainBmp);
             textureCache[i].imgIndex=new AtomicInteger(i);
             textureCache[i].isReady=new AtomicBoolean(false);
             textureCache[i].hasTried=new AtomicBoolean(false);
         }
 
-        mTextureUploader=new TiledTexture.Uploader(glRoot);
         mGLRootView=glRoot;
         loaderHelper=helper;
         helper.setLoader(this);
@@ -168,10 +165,8 @@ public  class ThumbnailLoader
     {
         for (SlotTexture slot : textureCache)
         {
-            slot.prepareToRecycle();
+            slot.recycle();
         }
-
-        mTextureUploader.clear();
     }
 
     public void setAlbumTotalImgNum(int totalImgNum)
@@ -221,7 +216,6 @@ public  class ThumbnailLoader
 
     private void startLoader()
     {
-        TiledTexture.prepareResources();
         isLoaderRunning=true;
         mTextureLoaderThread = new TextureLoaderThread();
         mTextureLoaderThread.setDaemon(true);
@@ -265,14 +259,14 @@ public  class ThumbnailLoader
     public class SlotTexture
     {
         Bitmap mainBmp;
-        TiledTexture texture;
+        BitmapTexture texture;
         StringTexture labelName;
         StringTexture labelInfo;
         AtomicInteger imgIndex;
         AtomicBoolean isReady;
         AtomicBoolean hasTried;
 
-        public void recycleTiledTexture()
+        public void recycle()
         {
             if(texture!=null)
             {
@@ -280,10 +274,6 @@ public  class ThumbnailLoader
                 texture = null;
             }
 
-        }
-
-        public void prepareToRecycle()
-        {
             if(needLabel)
             {
                 if(labelInfo!=null)
@@ -348,7 +338,7 @@ public  class ThumbnailLoader
             {
                 //Log.i(TAG, "recycle cacheIndex:" + cacheIndex + " imgIndex:" + imgIndex);
                 SlotTexture slot=textureCache[imgIndex % CACHE_SIZE];
-                slot.prepareToRecycle();
+                slot.recycle();
 
                 slot.imgIndex.set(imgIndex);
                 imgIndex += step;
@@ -393,14 +383,13 @@ public  class ThumbnailLoader
                     if(!slot.isReady.get())
                     {
                         int imgIndex = slot.imgIndex.get();
-                        slot.recycleTiledTexture();
 
                         Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, slot.mainBmp);
                         if (bmp != null)
                         {
                             if (imgIndex == slot.imgIndex.get())
                             {
-                                TiledTexture texture = new TiledTexture(bmp);
+                                BitmapTexture texture = new BitmapTexture(bmp);
 
                                 loaderPauseLock.waitIfLocked();
 
@@ -408,7 +397,6 @@ public  class ThumbnailLoader
 
                                 slot.texture=texture;
                                 slot.isReady.set(true);
-                                mTextureUploader.addTexture(slot.texture);
 
                                 if(needLabel)
                                 {
@@ -427,6 +415,7 @@ public  class ThumbnailLoader
                                 }
 
                                 mGLRootView.unlockRenderThread();
+                                mGLRootView.requestRender();
                             }
                         }
 

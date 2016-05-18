@@ -639,7 +639,7 @@ public class SlotView extends GLView
                     int slotTop = slotOffsetTop + topIndex * overScrollHeight;
 
 
-                    if (slotTexture.isReady.get()&&slotTexture.texture.isReady())
+                    if (slotTexture.isReady.get())
                     {
                         slotTexture.texture.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
                     }
