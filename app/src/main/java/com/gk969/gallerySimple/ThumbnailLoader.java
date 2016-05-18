@@ -168,7 +168,7 @@ public  class ThumbnailLoader
     {
         for (SlotTexture slot : textureCache)
         {
-            slot.recycle();
+            slot.prepareToRecycle();
         }
 
         mTextureUploader.clear();
@@ -272,15 +272,18 @@ public  class ThumbnailLoader
         AtomicBoolean isReady;
         AtomicBoolean hasTried;
 
-        public void recycle()
+        public void recycleTiledTexture()
         {
             if(texture!=null)
             {
                 texture.recycle();
                 texture = null;
-
             }
 
+        }
+
+        public void prepareToRecycle()
+        {
             if(needLabel)
             {
                 if(labelInfo!=null)
@@ -295,7 +298,6 @@ public  class ThumbnailLoader
                     labelName = null;
                 }
             }
-
             isReady.set(false);
             hasTried.set(false);
         }
@@ -346,7 +348,7 @@ public  class ThumbnailLoader
             {
                 //Log.i(TAG, "recycle cacheIndex:" + cacheIndex + " imgIndex:" + imgIndex);
                 SlotTexture slot=textureCache[imgIndex % CACHE_SIZE];
-                slot.recycle();
+                slot.prepareToRecycle();
 
                 slot.imgIndex.set(imgIndex);
                 imgIndex += step;
@@ -391,7 +393,7 @@ public  class ThumbnailLoader
                     if(!slot.isReady.get())
                     {
                         int imgIndex = slot.imgIndex.get();
-
+                        slot.recycleTiledTexture();
 
                         Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, slot.mainBmp);
                         if (bmp != null)

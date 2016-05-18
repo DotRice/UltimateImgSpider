@@ -19,7 +19,7 @@ public class StaticValue
     public static final int   MAX_IMG_FILE_PER_DIR=1000;
 
     public final static String THUMBNAIL_DIR_NAME="thumbnail";
-    public final static int THUMBNAIL_SIZE = 300;
+    public final static int THUMBNAIL_SIZE = 254;
 
     public final static String THUMBNAIL_FILE_EXT = ".jpg.thumbnail";
 
