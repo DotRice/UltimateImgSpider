@@ -81,9 +81,13 @@ public class WatchdogService extends Service
     private void storeProjectData()
     {
         String dataFileFullPath=dataDirPath+StaticValue.PROJECT_DATA_NAME;
+        long time=System.currentTimeMillis();
         jniStoreProjectData(dataFileFullPath);
+        Log.i(TAG, "jniStoreProjectData time "+(System.currentTimeMillis()-time));
 
+        time=System.currentTimeMillis();
         String md5String = Utils.getFileMD5String(dataFileFullPath);
+        Log.i(TAG, "getFileMD5String time "+(System.currentTimeMillis()-time));
         Utils.stringToFile(md5String, dataDirPath+StaticValue.PROJECT_DATA_MD5);
     }
 
@@ -165,12 +169,12 @@ public class WatchdogService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        int cmdVal = intent.getIntExtra(StaticValue.BUNDLE_KEY_CMD, StaticValue.CMD_NOTHING);
+        int cmd = intent.getIntExtra(StaticValue.BUNDLE_KEY_CMD, StaticValue.CMD_NOTHING);
         String path = intent.getStringExtra(StaticValue.BUNDLE_KEY_PRJ_PATH);
 
-        Log.i(TAG, "onStartCommand:" + cmdVal + " path:" + path);
+        Log.i(TAG, "onStartCommand:" + StaticValue.CMD_DESC[cmd] + " path:" + path);
 
-        switch (cmdVal)
+        switch (cmd)
         {
             case StaticValue.CMD_START:
             {

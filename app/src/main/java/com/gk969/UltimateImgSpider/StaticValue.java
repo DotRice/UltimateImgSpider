@@ -13,8 +13,10 @@ public class StaticValue
     public final static int  CMD_RESTART           = 3;
     public final static int  CMD_STOP_STORE        = 4;
     public final static int  CMD_START             = 5;
-    public final static int  CMD_PAUSE_ON_START    = 6;
-    public final static int  CMD_JUST_STORE        = 7;
+    public final static int  CMD_JUST_STORE        = 6;
+
+    public final static String[] CMD_DESC={"nothing", "just_stop", "pause", "restart", "stop_store",
+                                                "start", "just_store"};
 
     public static final int   MAX_IMG_FILE_PER_DIR=1000;
 

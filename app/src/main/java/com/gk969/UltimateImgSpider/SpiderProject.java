@@ -133,8 +133,9 @@ public class SpiderProject
                 dataDir.mkdirs();
             }
 
-            Utils.stringToFile("{\"scrollDistance\":"+project.albumScrollDistance+"}",
-                    dataDir.getPath()+StaticValue.PROJECT_PARAM_NAME);
+            String param="{\"scrollDistance\":"+project.albumScrollDistance+"}";
+            Utils.stringToFile(param, dataDir.getPath() + StaticValue.PROJECT_PARAM_NAME);
+            Log.i(TAG, "saveProjectParam "+project.site+" "+param);
         }
     }
 }

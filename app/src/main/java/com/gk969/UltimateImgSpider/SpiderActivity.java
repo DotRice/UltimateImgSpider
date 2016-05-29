@@ -86,6 +86,10 @@ public class SpiderActivity extends Activity
     private static final int CONN_STATE_WAIT_CONNECT = 3;
     private static final int CONN_STATE_DISCONNECTED = 4;
 
+    private static final int MIN_FREE_MEM_TO_RESTART_SERVICE=50;
+    private static final int MAX_USED_MEM_TO_RESTART_SERVICE=50;
+    private static final int MIN_FREE_STOREAGE_TO_PAUSE_SERVICE=50;
+
     private int serviceConnState = CONN_STATE_DISCONNECTED;
 
     private ImageButton btnPauseOrContinue;
@@ -165,16 +169,23 @@ public class SpiderActivity extends Activity
 
                 if (serviceConnState == CONN_STATE_WAIT_DISCONNECT)
                 {
-                    Log.i(TAG, "prepare restart service");
-                    mHandler.postDelayed(new Runnable()
+                    if(projectState==ProjectState.DOWNLOADING)
                     {
-                        @Override
-                        public void run()
+                        Log.i(TAG, "prepare restart service");
+                        mHandler.postDelayed(new Runnable()
                         {
-                            serviceConnState = CONN_STATE_WAIT_CONNECT;
-                            sendCmdToSpiderService(StaticValue.CMD_START);
-                        }
-                    }, 2000);
+                            @Override
+                            public void run()
+                            {
+                                serviceConnState = CONN_STATE_WAIT_CONNECT;
+                                sendCmdToSpiderService(StaticValue.CMD_START);
+                            }
+                        }, 500);
+                    }
+                    else
+                    {
+                        Log.i(TAG, "NOT DOWNLOADING  Stop");
+                    }
                 }
                 else
                 {
@@ -284,10 +295,24 @@ public class SpiderActivity extends Activity
                     projectState = ProjectState.COMPLETE;
                     btnPauseOrContinue.setImageResource(R.drawable.start);
                 }
-                else if(freeMem < 50 || serviceNativeMem > 50)
+                else if(freeMem <= MIN_FREE_MEM_TO_RESTART_SERVICE ||
+                        serviceNativeMem >= MAX_USED_MEM_TO_RESTART_SERVICE)
                 {
-                    serviceConnState = CONN_STATE_WAIT_DISCONNECT;
-                    sendCmdToSpiderService(StaticValue.CMD_RESTART);
+                    if(serviceConnState==CONN_STATE_CONNECTED)
+                    {
+                        serviceConnState = CONN_STATE_WAIT_DISCONNECT;
+                        sendCmdToSpiderService(StaticValue.CMD_RESTART);
+                    }
+                }
+                else if(appDir.getFreeSpace()<(MIN_FREE_STOREAGE_TO_PAUSE_SERVICE<<20))
+                {
+                    projectState = ProjectState.PAUSE;
+                    sendCmdToSpiderService(StaticValue.CMD_PAUSE);
+
+                    if(displayProjectIndex==downloadingProjectIndex)
+                    {
+                        btnPauseOrContinue.setImageResource(R.drawable.start);
+                    }
                 }
             }
         } catch (JSONException e)
@@ -356,6 +381,7 @@ public class SpiderActivity extends Activity
 
         return null;
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -970,7 +996,7 @@ public class SpiderActivity extends Activity
 
     private void sendCmdToSpiderService(int cmd)
     {
-        Log.i(TAG, "sendCmdToSpiderService " + cmd);
+        Log.i(TAG, "sendCmdToSpiderService " + StaticValue.CMD_DESC[cmd]);
         Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
         spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
                 .getName());
@@ -992,7 +1018,10 @@ public class SpiderActivity extends Activity
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
 
-        serviceBindSuccess = bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
+        if(cmd==StaticValue.CMD_START)
+        {
+            serviceBindSuccess = bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
+        }
     }
 
     @Override

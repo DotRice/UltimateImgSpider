@@ -15,6 +15,7 @@
 #define jniSetSrcPageUrl            Java_com_gk969_UltimateImgSpider_SpiderService_jniSetSrcPageUrl
 #define jniRecvPageTitle            Java_com_gk969_UltimateImgSpider_SpiderService_jniRecvPageTitle
 #define jniFindNextPageUrl          Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextPageUrl
+#define jniOnImgUrlProcessed        Java_com_gk969_UltimateImgSpider_SpiderService_jniOnImgUrlProcessed
 #define jniFindNextImgUrl           Java_com_gk969_UltimateImgSpider_SpiderService_jniFindNextImgUrl
 #define jniSaveImgStorageInfo       Java_com_gk969_UltimateImgSpider_SpiderService_jniSaveImgStorageInfo
 
