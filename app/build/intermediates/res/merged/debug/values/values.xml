@@ -213,7 +213,7 @@
     <string name="image_info">图片数量</string>
     <string name="image_processed">已扫描图片数</string>
     <string name="image_total">图片总数</string>
-    <string name="image_total_size">图片总大小</string>
+    <string name="image_total_size">已下载图片总大小</string>
     <string name="image_tree_height">图片树高度</string>
     <string name="inDeletingTips">删除中，请稍候...</string>
     <string name="inDeletingToast">正在删除当前项目，请稍候...</string>

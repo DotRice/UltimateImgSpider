@@ -714,12 +714,72 @@ public class SpiderService extends Service
 
                 jniOnImgUrlProcessed((int) imgUrlJniAddr, imgProcParam);
 
-                int imgIndex=0;
                 while(true)
                 {
                     if(file != null)
                     {
-                        imgIndex = (int) imgProcParam[StaticValue.PARA_DOWNLOAD];
+                        int imgIndex = (int) imgProcParam[StaticValue.PARA_DOWNLOAD];
+
+                        String cacheFilePath = file.getPath();
+                        String cacheFileWithoutMark = cacheFilePath.substring(0, cacheFilePath.length() - CACHE_MARK.length());
+                        String imgFileExt = cacheFileWithoutMark.substring(cacheFileWithoutMark.lastIndexOf("."));
+
+                        String dirPath = projectPath + "/" + imgIndex / StaticValue.MAX_IMG_FILE_PER_DIR;
+                        File dir = new File(dirPath);
+                        if(!dir.exists())
+                        {
+                            dir.mkdir();
+                        }
+
+                        String newName = String.format("%03d", imgIndex % StaticValue.MAX_IMG_FILE_PER_DIR);
+                        String newPath = dirPath + "/" + newName + imgFileExt;
+
+                        Log.i(TAG, "cache file " + cacheFilePath);
+                        Log.i(TAG, "final file " + newPath);
+
+                        File finalFile = new File(newPath);
+                        File thumbnailFile = null;
+
+
+                        for(int i = 0; i < 3; i++)
+                        {
+                            if(file.renameTo(finalFile))
+                            {
+                                String thumbnailDirPath = projectPath + "/" + StaticValue.THUMBNAIL_DIR_NAME + "/" +
+                                        imgIndex / StaticValue.MAX_IMG_FILE_PER_DIR;
+                                File thumbnailDir = new File(thumbnailDirPath);
+                                if(!thumbnailDir.exists())
+                                {
+                                    thumbnailDir.mkdirs();
+                                }
+
+                                thumbnailFile = new File(thumbnailDirPath + "/" + newName + StaticValue.THUMBNAIL_FILE_EXT);
+
+                                break;
+                            }
+                            else
+                            {
+                                Log.i("rename fail", newPath);
+                                try
+                                {
+                                    sleep(200);
+                                } catch(InterruptedException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+
+
+                        if(thumbnailFile != null)
+                        {
+                            createThumbnail(finalFile, thumbnailFile);
+                        }
+                        else
+                        {
+                            Log.i("createThumbnail", "thumbnailFile == null");
+                        }
+
                         jniSaveImgStorageInfo((int) imgUrlJniAddr, (int) containerUrlJniAddr, imgProcParam, fileWithSize.size);
 
                         if((imgIndex % SAVE_PROJECT_DATA) == 0)
@@ -734,68 +794,6 @@ public class SpiderService extends Service
                     break;
                 }
 
-                if(file!=null)
-                {
-                    String cacheFilePath = file.getPath();
-                    String cacheFileWithoutMark = cacheFilePath.substring(0, cacheFilePath.length() - CACHE_MARK.length());
-                    String imgFileExt = cacheFileWithoutMark.substring(cacheFileWithoutMark.lastIndexOf("."));
-
-                    String dirPath = projectPath + "/" + imgIndex / StaticValue.MAX_IMG_FILE_PER_DIR;
-                    File dir = new File(dirPath);
-                    if(!dir.exists())
-                    {
-                        dir.mkdir();
-                    }
-
-                    String newName = String.format("%03d", imgIndex % StaticValue.MAX_IMG_FILE_PER_DIR);
-                    String newPath = dirPath + "/" + newName + imgFileExt;
-
-                    Log.i(TAG, "cache file " + cacheFilePath);
-                    Log.i(TAG, "final file " + newPath);
-
-                    File finalFile = new File(newPath);
-                    File thumbnailFile = null;
-
-
-                    for(int i = 0; i < 3; i++)
-                    {
-                        if(file.renameTo(finalFile))
-                        {
-                            String thumbnailDirPath = projectPath + "/" + StaticValue.THUMBNAIL_DIR_NAME + "/" +
-                                    imgIndex / StaticValue.MAX_IMG_FILE_PER_DIR;
-                            File thumbnailDir = new File(thumbnailDirPath);
-                            if(!thumbnailDir.exists())
-                            {
-                                thumbnailDir.mkdirs();
-                            }
-
-                            thumbnailFile = new File(thumbnailDirPath + "/" + newName + StaticValue.THUMBNAIL_FILE_EXT);
-
-                            break;
-                        }
-                        else
-                        {
-                            Log.i("rename fail", newPath);
-                            try
-                            {
-                                sleep(200);
-                            } catch(InterruptedException e)
-                            {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-
-
-                    if(thumbnailFile != null)
-                    {
-                        createThumbnail(finalFile, thumbnailFile);
-                    }
-                    else
-                    {
-                        Log.i("createThumbnail", "thumbnailFile == null");
-                    }
-                }
                 imgFileLock.unlock();
             }
 

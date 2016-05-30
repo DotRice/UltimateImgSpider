@@ -11,384 +11,7 @@
 #include "typeDef.h"
 #include "funcName.h"
 
-/*
- * 使用共享内存存储urlList，实现重启下载服务进程后能恢复工作现场。
- * Spider需要新申请一段内存时，向看门狗进程发出命令，并提供共享内存段名称和大小。
- * 看门狗进程创建共享内存，并将其映射到自己的内存空间，然后向Spider进程返回共享内存的文件描述符。
- * Spider进程用这个文件描述符映射此段共享内存到自己的内存空间。
- */
-
-#define ASHM_NAME_SIZE  32
-
-
-int ashmem_create_region(const char *name, u32 size)
-{
-    int fd = -1;
-    int fdWithOption;
-    char buf[ASHM_NAME_SIZE];
-
-    while(name && size)
-    {
-        fd = open(ASHMEM_NAME_DEF, O_RDWR);
-
-        if(fd < 0)
-        {
-            break;
-        }
-
-        LOGI("ashmem open success %d", fd);
-
-        strlcpy(buf, name, sizeof(buf));
-        fdWithOption = ioctl(fd, ASHMEM_SET_NAME, buf);
-
-        if(fdWithOption < 0)
-        {
-            close(fd);
-            fd = -1;
-            break;
-        }
-
-        fdWithOption = ioctl(fd, ASHMEM_SET_SIZE, size);
-
-        if(fdWithOption < 0)
-        {
-            close(fd);
-            fd = -1;
-            break;
-        }
-
-        break;
-    }
-
-    return fd;
-}
-
-
-#define ASHM_EXIST  0x12345678
-#pragma pack(1)
-typedef struct
-{
-    u32 ashmStat;
-    u8 data[4];
-} t_ashmBlock;
-
-typedef struct
-{
-    char name[ASHM_NAME_SIZE];
-    int size;
-    u32 ashmStat;
-} t_ashmParaStore;
-
-#pragma pack()
-
-typedef struct t_ashm
-{
-    char name[ASHM_NAME_SIZE];
-    int size;
-    int fd;
-    t_ashmBlock *ashmem;
-    struct t_ashm *next;
-} t_ashmNode;
-
-
-t_ashmNode *ashmemChainHead = NULL;
-t_ashmNode *ashmemChainTail = NULL;
-
-
-t_ashmNode *findAshmemByName(const char *name)
-{
-    t_ashmNode *ashmNode = ashmemChainHead;
-
-    while(ashmNode != NULL)
-    {
-        if(strcmp(ashmNode->name, name) == 0)
-        {
-            return ashmNode;
-        }
-
-        ashmNode = ashmNode->next;
-    }
-
-    return NULL;
-}
-
-int createNewAshmem(const char *name, int size, u8 **addr)
-{
-    int fd = ashmem_create_region(name, size + sizeof(u32));
-
-    if(fd >= 0)
-    {
-        LOGI("create ashmem name:%s size:%d fd:%d success!", name, size, fd);
-
-        t_ashmBlock *ashm = mmap(NULL, size, PROT_READ | PROT_WRITE,
-                                 MAP_SHARED, fd, 0);
-
-        if(ashm != NULL)
-        {
-            t_ashmNode *newAshmNode = malloc(sizeof(t_ashmNode));
-
-            if(newAshmNode != NULL)
-            {
-                ashm->ashmStat = 0;
-
-                if(addr != NULL)
-                {
-                    *addr = ashm->data;
-                }
-
-                newAshmNode->ashmem = ashm;
-                newAshmNode->fd = fd;
-                strncpy(newAshmNode->name, name, ASHM_NAME_SIZE);
-                newAshmNode->next = NULL;
-                newAshmNode->size = size;
-
-                if(ashmemChainHead == NULL)
-                {
-                    ashmemChainHead = newAshmNode;
-                }
-
-                if(ashmemChainTail != NULL)
-                {
-                    ashmemChainTail->next = newAshmNode;
-                }
-
-                ashmemChainTail = newAshmNode;
-
-
-                LOGI("ashmem mmap %d to watchdog process success!", (u32) ashm);
-
-                if(strcmp(name, "ashmTest") == 0)
-                {
-                    int i;
-
-                    for(i = 0; i < 8; i++)
-                    {
-                        ashm->data[i] = i;
-                    }
-                }
-            }
-        }
-    }
-
-    return fd;
-}
-
-void jniRestoreProjectData(JNIEnv *env,
-                           jobject thiz, jstring jDataFileFullPath)
-{
-    const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
-
-    LOGI("jniRestoreProjectData path:%s", dataFileFullPath);
-
-    FILE *dataFile = fopen(dataFileFullPath, "r");
-
-    if(dataFile != NULL)
-    {
-        t_ashmParaStore ashmParaStore;
-
-        while(true)
-        {
-            if(fread(&ashmParaStore, sizeof(t_ashmParaStore), 1, dataFile) != 1)
-            {
-                LOGI("fread ashmParaStore error");
-                break;
-            }
-
-            u8 *data;
-            int fd = createNewAshmem(ashmParaStore.name, ashmParaStore.size, &data);
-
-            if(fd < 0)
-            {
-                LOGI("createNewAshmem error");
-                break;
-            }
-
-            if(fread(data, ashmParaStore.size, 1, dataFile) != 1)
-            {
-                LOGI("fread data error");
-                break;
-            }
-
-            LOGI("Restore AshmNode Name:%s Size:%d Success", ashmParaStore.name,
-                 ashmParaStore.size);
-        }
-
-        fclose(dataFile);
-    }
-
-    (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
-}
-
-#define FILE_BLOCK_UPDATE_SIZE  (128*1024)
-
-void fileIncrementalUpdate(FILE *file, void *srcData, int size)
-{
-    void *buf = malloc(FILE_BLOCK_UPDATE_SIZE);
-    if(buf != 0)
-    {
-        int offset = 0;
-        do
-        {
-            int blockSize = size - offset;
-            u8 *data = srcData + offset;
-            offset += FILE_BLOCK_UPDATE_SIZE;
-            if(offset < size)
-            {
-                blockSize = FILE_BLOCK_UPDATE_SIZE;
-            }
-
-            while(true)
-            {
-                if(fread(buf, blockSize, 1, file) == 1)
-                {
-                    if(memcmp(buf, data, blockSize) != 0)
-                    {
-                        fseek(file, 0 - blockSize, SEEK_CUR);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                LOGI("fileIncrementalUpdate %d", blockSize);
-                fwrite(data, blockSize, 1, file);
-                break;
-            }
-
-        } while(offset < size);
-
-        free(buf);
-    }
-}
-
-void jniStoreProjectData(JNIEnv *env,
-                         jobject thiz, jstring jDataFileFullPath)
-{
-    const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
-
-    LOGI("jniStoreProjectData path:%s", dataFileFullPath);
-
-    FILE *dataFile = fopen(dataFileFullPath, "a");
-    if(dataFile != NULL)
-    {
-        fclose(dataFile);
-    }
-
-    dataFile = fopen(dataFileFullPath, "rb+");
-
-    if(dataFile != NULL)
-    {
-        t_ashmNode *ashmNode;
-
-        for(ashmNode = ashmemChainHead; ashmNode != NULL; ashmNode = ashmNode->next)
-        {
-            t_ashmParaStore ashmParaStore;
-            strncpy(ashmParaStore.name, ashmNode->name, ASHM_NAME_SIZE);
-            ashmParaStore.size = ashmNode->size;
-            ashmParaStore.ashmStat = ashmNode->ashmem->ashmStat;
-
-            fileIncrementalUpdate(dataFile, &ashmParaStore, sizeof(t_ashmParaStore));
-            fileIncrementalUpdate(dataFile, ashmNode->ashmem->data, ashmNode->size);
-        }
-
-        fclose(dataFile);
-    }
-
-    (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
-}
-
-int jniGetAshmem(JNIEnv *env,
-                 jobject thiz, jstring jname, jint size)
-{
-    int fd;
-    const char *name = (*env)->GetStringUTFChars(env, jname, NULL);
-
-    LOGI("WatchdogService_jniGetAshmem %s", name);
-    t_ashmNode *ashmNode = findAshmemByName(name);
-
-    if(ashmNode != NULL)
-    {
-        LOGI("ashmNode %s Exist", name);
-        ashmNode->ashmem->ashmStat = ASHM_EXIST;
-        fd = ashmNode->fd;
-    }
-    else
-    {
-        fd = createNewAshmem(name, size, NULL);
-    }
-
-    (*env)->ReleaseStringUTFChars(env, jname, name);
-
-    return fd;
-}
-
-jobject AshmAllocObjectInstance = NULL;
-
-jclass SpiderServiceClass = NULL;
-
-jmethodID getAshmemFromWatchdogMID = NULL;
-
-void *spiderGetAshmemFromWatchdog(JNIEnv *env, const char *name, int size)
-{
-    void *ashmem = NULL;
-
-    LOGI("spiderGetAshmemFromWatchdog name:%s size:%d", name, size);
-
-    if(getAshmemFromWatchdogMID == NULL)
-    {
-        SpiderServiceClass = (*env)->FindClass(env, "com/gk969/UltimateImgSpider/SpiderService");
-
-        if(SpiderServiceClass != NULL)
-        {
-            getAshmemFromWatchdogMID = (*env)->GetMethodID(env, SpiderServiceClass,
-                                                           "getAshmemFromWatchdog",
-                                                           "(Ljava/lang/String;I)I");
-        }
-    }
-
-    if(getAshmemFromWatchdogMID != NULL)
-    {
-        jstring jname = (*env)->NewStringUTF(env, name);
-
-
-        LOGI("spiderGetAshmemFromWatchdog call method");
-        LOGI("AshmAllocObjectInstance %08X %08X", AshmAllocObjectInstance,
-             getAshmemFromWatchdogMID);
-        int fd = (*env)->CallIntMethod(env, AshmAllocObjectInstance, getAshmemFromWatchdogMID,
-                                       jname, size);
-
-        if(fd >= 0)
-        {
-            LOGI("spiderGetAshmemFromWatchdog mmap");
-            ashmem = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-        }
-
-    }
-
-    return ashmem;
-}
-
-
-void ashmemTest(JNIEnv *env)
-{
-    t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, "ashmTest", 32);
-
-    if(ashm != NULL)
-    {
-        u8 i;
-
-        for(i = 0; i < 8; i++)
-        {
-            LOGI("%d", ashm->data[i]);
-        }
-
-        if(ashm->ashmStat == ASHM_EXIST)
-        {
-            LOGI("ashmem already exist");
-        }
-    }
-}
+#include "ashmem.h"
 
 
 void fileTest()
@@ -753,7 +376,7 @@ void *mallocFromPool(JNIEnv *env, u32 size, RelativeAddr *direction)
 
         if(spiderPara->urlPoolNum < TOTAL_POOL)
         {
-            t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(
+            AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(
                     spiderPara->urlPoolNum), sizeof(t_urlPool));
 
             if(ashm != NULL)
@@ -793,7 +416,7 @@ void *mallocFromPool(JNIEnv *env, u32 size, RelativeAddr *direction)
 jboolean spiderParaInit(JNIEnv *env, u64 *imgParam, u64 *pageParam)
 {
 
-    t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, SPIDER_PARA_NAME, sizeof(t_spiderPara));
+    AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, SPIDER_PARA_NAME, sizeof(t_spiderPara));
 
     if(ashm != NULL)
     {
@@ -846,7 +469,7 @@ jboolean urlPoolInit(JNIEnv *env)
 {
     if(spiderPara->urlPoolNum == 0)
     {
-        t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(0),
+        AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(0),
                                                         sizeof(t_urlPool));
 
         if(ashm != NULL)
@@ -864,7 +487,7 @@ jboolean urlPoolInit(JNIEnv *env)
 
         for(i = 0; i < spiderPara->urlPoolNum; i++)
         {
-            t_ashmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(i),
+            AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(i),
                                                             sizeof(t_urlPool));
 
             if(ashm == NULL)
@@ -934,12 +557,12 @@ void jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
     FILE *dataFile = fopen(dataFileFullPath, "r");
     if(dataFile != NULL)
     {
-        t_ashmParaStore ashmParaStore;
+        AshmParaStore ashmParaStore;
         t_spiderPara para;
 
         while(true)
         {
-            if(fread(&ashmParaStore, sizeof(t_ashmParaStore), 1, dataFile) != 1)
+            if(fread(&ashmParaStore, sizeof(AshmParaStore), 1, dataFile) != 1)
             {
                 break;
             }

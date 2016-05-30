@@ -179,23 +179,20 @@ public  class ThumbnailLoader
             return;
         }
 
-        albumTotalImgNum=totalImgNum;
-
         if(totalImgNum==0)
         {
-            if(prevTotalImgNum!=0)
-            {
-                mGLRootView.lockRenderThread();
-                clearCache();
-                slotView.scrollAbs(0);
-                mGLRootView.unlockRenderThread();
-            }
+            mGLRootView.lockRenderThread();
+            albumTotalImgNum=totalImgNum;
+            clearCache();
+            slotView.scrollAbs(0);
+            mGLRootView.unlockRenderThread();
         }
         else if(totalImgNum>prevTotalImgNum)
         {
             if(dispAreaOffset+CACHE_SIZE>prevTotalImgNum)
             {
                 mGLRootView.lockRenderThread();
+                albumTotalImgNum = totalImgNum;
                 refreshCacheOffset(dispAreaOffset, true);
                 mGLRootView.unlockRenderThread();
 
@@ -204,12 +201,17 @@ public  class ThumbnailLoader
                     slot.hasTried.set(false);
                 }
             }
+            else
+            {
+                albumTotalImgNum = totalImgNum;
+            }
 
             if(prevTotalImgNum!=0)
             {
                 slotView.onNewImgReceived(prevTotalImgNum);
             }
         }
+
 
         mGLRootView.requestRender();
     }

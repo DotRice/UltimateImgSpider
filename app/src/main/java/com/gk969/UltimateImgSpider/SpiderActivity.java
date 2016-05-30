@@ -78,17 +78,15 @@ public class SpiderActivity extends Activity
 {
     private final static String TAG = "SpiderActivity";
     public final static int REQUST_SRC_URL = 0;
-
-
-    private static final int CONN_STATE_IDLE = 0;
+    
+    private static final int CONN_STATE_DISCONNECTED = 0;
     private static final int CONN_STATE_CONNECTED = 1;
     private static final int CONN_STATE_WAIT_DISCONNECT = 2;
     private static final int CONN_STATE_WAIT_CONNECT = 3;
-    private static final int CONN_STATE_DISCONNECTED = 4;
 
     private static final int MIN_FREE_MEM_TO_RESTART_SERVICE=50;
     private static final int MAX_USED_MEM_TO_RESTART_SERVICE=50;
-    private static final int MIN_FREE_STOREAGE_TO_PAUSE_SERVICE=50;
+    private static final int MIN_FREE_STORAGE_TO_STOP_SERVICE=100;
 
     private int serviceConnState = CONN_STATE_DISCONNECTED;
 
@@ -167,6 +165,8 @@ public class SpiderActivity extends Activity
 
                 Log.i(TAG, "onServiceDisconnected");
 
+                infoDrawer.onSpiderStop();
+
                 if (serviceConnState == CONN_STATE_WAIT_DISCONNECT)
                 {
                     if(projectState==ProjectState.DOWNLOADING)
@@ -185,6 +185,7 @@ public class SpiderActivity extends Activity
                     else
                     {
                         Log.i(TAG, "NOT DOWNLOADING  Stop");
+                        serviceConnState = CONN_STATE_DISCONNECTED;
                     }
                 }
                 else
@@ -304,10 +305,10 @@ public class SpiderActivity extends Activity
                         sendCmdToSpiderService(StaticValue.CMD_RESTART);
                     }
                 }
-                else if(appDir.getFreeSpace()<(MIN_FREE_STOREAGE_TO_PAUSE_SERVICE<<20))
+                else if(freeStorageIsLow())
                 {
                     projectState = ProjectState.PAUSE;
-                    sendCmdToSpiderService(StaticValue.CMD_PAUSE);
+                    sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
 
                     if(displayProjectIndex==downloadingProjectIndex)
                     {
@@ -320,6 +321,11 @@ public class SpiderActivity extends Activity
             e.printStackTrace();
         }
 
+    }
+
+    private boolean freeStorageIsLow()
+    {
+        return appDir.getFreeSpace()<(MIN_FREE_STORAGE_TO_STOP_SERVICE<<20);
     }
 
     public Dialog sysFaultAlert(String title, String desc, final boolean exit)
@@ -759,7 +765,7 @@ public class SpiderActivity extends Activity
                                 break;
                         }
                     }
-                    else
+                    else if(!freeStorageIsLow())
                     {
                         startProject(displayProjectIndex);
                     }
@@ -879,7 +885,7 @@ public class SpiderActivity extends Activity
 
         public void setDrawer(int viewIndex)
         {
-            drawer.setDrawerLockMode(viewIndex==ALBUM_VIEW?DrawerLayout.LOCK_MODE_UNLOCKED:
+            drawer.setDrawerLockMode(viewIndex == ALBUM_VIEW ? DrawerLayout.LOCK_MODE_UNLOCKED :
                     DrawerLayout.LOCK_MODE_LOCKED_CLOSED, albumInfoDrawer);
         }
 
@@ -905,7 +911,13 @@ public class SpiderActivity extends Activity
             image_total_size.setText(Utils.byteSizeToString(imgInfo[StaticValue.PARA_TOTAL_SIZE]));
             storage_total.setText(Utils.byteSizeToString(appDir.getTotalSpace()));
             storage_free.setText(Utils.byteSizeToString(appDir.getFreeSpace()));
+        }
 
+        public void onSpiderStop()
+        {
+            download_speed.setText("0KB/s");
+            ram_service_vm.setText("0K");
+            ram_service_native.setText("0K");
         }
 
         public void refreshInfoByServiceReport(JSONObject json)
