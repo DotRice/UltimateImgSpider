@@ -222,6 +222,7 @@
     <string name="more">更多</string>
     <string name="newProj">新建</string>
     <string name="notSet">未设置</string>
+    <string name="open">打开</string>
     <string name="option">选项</string>
     <string name="page_info">网页数量</string>
     <string name="page_load_time">网页加载用时</string>
@@ -256,7 +257,9 @@
     <string name="storage_free">存储剩余大小</string>
     <string name="storage_info">存储信息</string>
     <string name="storage_total">存储总大小</string>
+    <string name="title">标题</string>
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
+    <string name="web_url">网址</string>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!--
             Theme customizations available in newer API levels can go in

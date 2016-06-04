@@ -77,7 +77,6 @@ import org.json.JSONObject;
 public class SpiderActivity extends Activity
 {
     private final static String TAG = "SpiderActivity";
-    public final static int REQUST_SRC_URL = 0;
     
     private static final int CONN_STATE_DISCONNECTED = 0;
     private static final int CONN_STATE_CONNECTED = 1;
@@ -95,7 +94,7 @@ public class SpiderActivity extends Activity
     private int downloadingProjectIndex;
     private String downloadingProjectPath;
 
-    private int displayProjectIndex;
+    private int displayProjectIndex=SpiderProject.INVALID_INDEX;
     private String displayProjectPath;
 
     private String downloadingProjectSrcUrl;
@@ -444,21 +443,24 @@ public class SpiderActivity extends Activity
 
     private void openAlbum(int index)
     {
-        if(index<spiderProject.projectList.size())
+        if(displayProjectIndex!=index)
         {
-            displayProjectIndex = index;
-            displayProjectInfo = spiderProject.projectList.get(displayProjectIndex);
-            displayProjectPath = appDir.getPath() + "/" + displayProjectInfo.site;
-            albumLoaderHelper.setProjectPath(displayProjectPath);
-            mThumbnailLoader.setHelper(albumLoaderHelper, (int) displayProjectInfo.imgInfo[StaticValue.PARA_DOWNLOAD],
-                    spiderProject.projectList.get(index).albumScrollDistance);
-            infoDrawer.onDisplayProjectChanged();
+            if(index < spiderProject.projectList.size())
+            {
+                displayProjectIndex = index;
+                displayProjectInfo = spiderProject.projectList.get(displayProjectIndex);
+                displayProjectPath = appDir.getPath() + "/" + displayProjectInfo.site;
+                albumLoaderHelper.setProjectPath(displayProjectPath);
+                mThumbnailLoader.setHelper(albumLoaderHelper, (int) displayProjectInfo.imgInfo[StaticValue.PARA_DOWNLOAD],
+                        spiderProject.projectList.get(index).albumScrollDistance);
+                infoDrawer.onDisplayProjectChanged();
 
-            btnPauseOrContinue.setImageResource((displayProjectIndex != downloadingProjectIndex ||
-                    (projectState == ProjectState.PAUSE || projectState == ProjectState.COMPLETE)) ?
-                    R.drawable.start : R.drawable.pause);
+                btnPauseOrContinue.setImageResource((displayProjectIndex != downloadingProjectIndex ||
+                        (projectState == ProjectState.PAUSE || projectState == ProjectState.COMPLETE)) ?
+                        R.drawable.start : R.drawable.pause);
 
-            setView(ALBUM_VIEW);
+                setView(ALBUM_VIEW);
+            }
         }
     }
 
@@ -655,7 +657,7 @@ public class SpiderActivity extends Activity
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
 
-        if (requestCode == REQUST_SRC_URL)
+        if (requestCode == StaticValue.RESULT_SRC_URL)
         {
             if (resultCode == RESULT_CANCELED)
             {
@@ -717,6 +719,16 @@ public class SpiderActivity extends Activity
         curView=view;
     }
 
+    private void openSelSrcBrowser(String urlToOpen)
+    {
+        Intent intent=new Intent(SpiderActivity.this, SelSrcActivity.class);
+        if(urlToOpen!=null)
+        {
+            intent.putExtra(StaticValue.EXTRA_URL_TO_OPEN, urlToOpen);
+        }
+        startActivityForResult(intent, StaticValue.RESULT_SRC_URL);
+    }
+
     private class ProjectBar
     {
         private LinearLayout projectBarLayout;
@@ -731,8 +743,7 @@ public class SpiderActivity extends Activity
                 @Override
                 public void onClick(View v)
                 {
-                    startActivityForResult(new Intent(SpiderActivity.this, SelSrcActivity.class),
-                            REQUST_SRC_URL);
+                    openSelSrcBrowser(null);
                 }
             });
 
@@ -837,7 +848,8 @@ public class SpiderActivity extends Activity
         private TextView ram_activity_native;
         private TextView ram_service_vm;
         private TextView ram_service_native;
-        private TextView cur_page;
+        private TextView cur_page_url;
+        private TextView cur_page_title;
 
         public InfoDrawer()
         {
@@ -871,7 +883,18 @@ public class SpiderActivity extends Activity
             ram_activity_native = (TextView) findViewById(R.id.ram_activity_native);
             ram_service_vm = (TextView) findViewById(R.id.ram_service_vm);
             ram_service_native = (TextView) findViewById(R.id.ram_service_native);
-            cur_page = (TextView) findViewById(R.id.cur_page);
+            cur_page_url = (TextView) findViewById(R.id.cur_page_url);
+            cur_page_title = (TextView) findViewById(R.id.cur_page_title);
+
+            Button open_cur_page=(Button)findViewById(R.id.open_cur_page);
+            open_cur_page.setOnClickListener(new OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    openSelSrcBrowser(cur_page_url.getText().toString());
+                }
+            });
         }
 
         public void onDisplayProjectChanged()
@@ -916,6 +939,7 @@ public class SpiderActivity extends Activity
         public void onSpiderStop()
         {
             download_speed.setText("0KB/s");
+            image_download_payload.setText("0");
             ram_service_vm.setText("0K");
             ram_service_native.setText("0K");
         }
@@ -951,7 +975,8 @@ public class SpiderActivity extends Activity
                 ram_activity_native.setText(json.getString("activityNativeMem"));
                 ram_service_vm.setText(json.getInt("serviceVmMem")+"K ");
                 ram_service_native.setText(json.getInt("serviceNativeMem")+"K");
-                cur_page.setText(json.getString("curPage"));
+                cur_page_url.setText(json.getString("curPageUrl"));
+                cur_page_title.setText(json.getString("curPageTitle"));
 
             } catch (JSONException e)
             {

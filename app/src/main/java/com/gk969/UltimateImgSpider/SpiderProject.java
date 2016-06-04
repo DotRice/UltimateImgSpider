@@ -66,10 +66,11 @@ public class SpiderProject
     {
         int index=INVALID_INDEX;
 
-        for(ProjectInfo project:projectList)
+        for(int i=0; i<projectList.size(); i++)
         {
-            if(project.site.equals(site))
+            if(projectList.get(i).site.equals(site))
             {
+                index=i;
                 break;
             }
         }

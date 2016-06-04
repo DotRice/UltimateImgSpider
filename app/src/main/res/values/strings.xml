@@ -70,9 +70,6 @@
     <string name="page_load_time">网页加载用时</string>
     <string name="page_scan_time">网页扫描用时</string>
     <string name="page_search_time">网页查找用时</string>
-
-    <string name="cur_page">当前网页</string>
-    
     
     <string name="ram_info">内存信息</string>
     
@@ -82,6 +79,12 @@
     <string name="ram_activity_native">界面Native内存</string>
     <string name="ram_service_vm">服务VM内存</string>
     <string name="ram_service_native">服务Native内存</string>
-    
-    
+
+
+    <string name="cur_page">当前网页</string>
+    <string name="title">标题</string>
+    <string name="web_url">网址</string>
+
+    <string name="open">打开</string>
+
 </resources>

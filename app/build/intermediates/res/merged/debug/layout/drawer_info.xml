@@ -673,15 +673,61 @@
                         android:src="@drawable/scan_page"/>
 
                     <TextView
-                        android:layout_width="match_parent"
+                        android:layout_width="@dimen/drawer_info_item_name_width"
                         android:layout_height="match_parent"
                         android:gravity="center_vertical"
                         android:textSize="@dimen/drawer_info_group_title_text_size"
                         android:text="@string/cur_page"/>
+
+                    <Button
+                        android:id="@+id/open_cur_page"
+                        android:layout_width="100dp"
+                        android:layout_height="match_parent"
+                        android:text="@string/open"
+                        android:textSize="@dimen/drawer_info_item_value_text_size"
+                        android:gravity="center"/>
+
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/title"/>
+                </LinearLayout>
                 <TextView
-                    android:id="@+id/cur_page"
+                    android:id="@+id/cur_page_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left"
+                    android:textColor="@color/drawer_info_item_value_text_color"
+                    android:textSize="@dimen/drawer_info_item_value_text_size"/>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/drawer_info_item_height"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/drawer_info_item_margin_top"
+                    android:paddingLeft="@dimen/drawer_info_item_padding_left">
+
+                    <TextView
+                        android:layout_width="@dimen/drawer_info_item_name_width"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/drawer_info_item_name_text_size"
+                        android:text="@string/web_url"/>
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/cur_page_url"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
                     android:paddingLeft="@dimen/drawer_info_item_padding_left"

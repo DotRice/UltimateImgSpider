@@ -348,14 +348,30 @@ public class SpiderService extends Service
             }
 
 
-            String url = intent.getStringExtra(StaticValue.BUNDLE_KEY_SOURCE_URL);
+            final String url = intent.getStringExtra(StaticValue.BUNDLE_KEY_SOURCE_URL);
             if (url != null)
             {
-                Log.i(TAG, "onStartCommand url:" + url);
+                Log.i(TAG, "onStartCommand srcUrl:" + url);
 
-                if((url.startsWith("http://") || url.startsWith("https://")) && srcUrl == null)
+                if(url.startsWith("http://") || url.startsWith("https://"))
                 {
-                    srcUrl = url;
+                    if(pageProcParam == null)
+                    {
+                        srcUrl = url;
+                    }
+                    else
+                    {
+                        new Thread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                jniDataLock.lock();
+                                jniSetSrcPageUrl(url, md5ForPage.digest(url.getBytes()), pageProcParam);
+                                jniDataLock.unlock();
+                            }
+                        }).start();
+                    }
                 }
             }
 
@@ -482,6 +498,7 @@ public class SpiderService extends Service
     private static final int URL_TYPE_IMG = 1;
 
     private String curPageUrl;
+    private String curPageTitle;
 
     private long[] pageProcParam;
     private long[] imgProcParam;
@@ -506,22 +523,14 @@ public class SpiderService extends Service
     private final static int MAX_SIZE_PER_TITLE = 255;
 
     private native String stringFromJNI(String srcStr);
-
     private native boolean jniSpiderInit(long[] imgPara, long[] pagePara);
-
     private native void jniSetSrcPageUrl(String pageUrl, byte[] srcPageUrlMd5, long[] pagePara);
-
     private native int jniAddUrl(String url, byte[] md5, int type, long[] param);
-
     private native String jniFindNextPageUrl(long[] param);
-
     private native void jniOnImgUrlProcessed(int lastImgUrlAddr, long[] param);
-
     private native String jniFindNextImgUrl(long[] param);
-
     private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr, long[] imgParam, int imgFileSize);
-
-    private native void jniRecvPageTitle(String curPageTitle);
+    private native void jniSavePageTitle(String curPageTitle);
 
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
     private Utils.ReadWaitLock jniDataLock = new Utils.ReadWaitLock();
@@ -1038,7 +1047,8 @@ public class SpiderService extends Service
         jsonReportStr += "\"pageSearchTime\":" + searchTime + ",\r\n";
 
 
-        jsonReportStr += "\"curPage\":" + "\"" + curPageUrl + "\",\r\n";
+        jsonReportStr += "\"curPageUrl\":" + "\"" + curPageUrl + "\",\r\n";
+        jsonReportStr += "\"curPageTitle\":" + "\"" + curPageTitle + "\",\r\n";
         jsonReportStr += "\"curNetSpeed\":" + "\"" + Utils.byteSizeToString(
                 netTrafficCalc.netTrafficPerSec.get()) + "/s\"" + ",\r\n";
 
@@ -1068,15 +1078,15 @@ public class SpiderService extends Service
     {
         pageFinished = true;
 
-        String title = spider.getTitle();
-        if (title != null)
+        curPageTitle = spider.getTitle();
+        if (curPageTitle != null)
         {
-            if (title.length() > MAX_SIZE_PER_TITLE)
+            if (curPageTitle.length() > MAX_SIZE_PER_TITLE)
             {
-                title.substring(0, MAX_SIZE_PER_TITLE);
+                curPageTitle.substring(0, MAX_SIZE_PER_TITLE);
             }
             jniDataLock.lock();
-            jniRecvPageTitle(title);
+            jniSavePageTitle(curPageTitle);
             jniDataLock.unlock();
         }
 

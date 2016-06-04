@@ -43,4 +43,7 @@ public class StaticValue
     public final static int IMG_PARA_NUM = 6;
 
     public final static int INDEX_INVALID=-1;
+
+    public final static int RESULT_SRC_URL=0;
+    public final static String EXTRA_URL_TO_OPEN="urlToOpen";
 }

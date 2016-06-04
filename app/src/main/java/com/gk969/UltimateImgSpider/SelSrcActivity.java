@@ -180,7 +180,7 @@ public class SelSrcActivity extends Activity
         }
     }
     
-    private void browserInit()
+    private void browserInit(String urlToOpen)
     {
         pbWebView = (ProgressBar) findViewById(R.id.progressBarWebView);
         pbWebView.setMax(PROGRESS_MAX);
@@ -281,8 +281,13 @@ public class SelSrcActivity extends Activity
         setting.setLoadWithOverviewMode(true);
         
         browser.requestFocus();
-        
-        browserLoadUrl(ParaConfig.getHomeURL(appCtx));
+
+        if(urlToOpen==null)
+        {
+            urlToOpen=ParaConfig.getHomeURL(appCtx);
+        }
+
+        browserLoadUrl(urlToOpen);
         
         browserIcon = BitmapFactory.decodeResource(getResources(),
                 R.drawable.site);
@@ -724,7 +729,7 @@ public class SelSrcActivity extends Activity
         browserMenuInit();
         URLbarInit();
         naviBarInit();
-        browserInit();
+        browserInit(getIntent().getStringExtra(StaticValue.EXTRA_URL_TO_OPEN));
         
         /*
         Runnable tr=new Runnable()

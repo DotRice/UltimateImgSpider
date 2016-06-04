@@ -74,7 +74,7 @@ jstring stringFromJNI(JNIEnv *env,
 //最大可用内存池总大小
 #define MAX_RAM_TOTAL_POOL  1024*1024*1024
 //每个内存池大小
-#define SIZE_PER_URLPOOL    (1024*1024-12)
+#define SIZE_PER_URLPOOL    (1024*1024-sizeof(u32)-sizeof(u32))
 
 
 /*
@@ -188,8 +188,8 @@ typedef struct
 
 typedef struct memPool
 {
-    u8 mem[SIZE_PER_URLPOOL];
     u32 idleMemPtr;
+    u8 mem[SIZE_PER_URLPOOL];
 } t_urlPool;
 
 
@@ -220,7 +220,7 @@ RelativeAddr nodeAddrAbsToRelative(urlNode *node)
 
         for(i = 0; i < spiderPara->urlPoolNum; i++)
         {
-            s64 ofs = (u32) node - (u32) (urlPools[i]);
+            s64 ofs = (u32) node - (u32) (urlPools[i]->mem);
 
             if(ofs >= 0 && ofs < sizeof(t_urlPool))
             {
@@ -469,8 +469,7 @@ jboolean urlPoolInit(JNIEnv *env)
 {
     if(spiderPara->urlPoolNum == 0)
     {
-        AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(0),
-                                                        sizeof(t_urlPool));
+        AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(0), sizeof(t_urlPool));
 
         if(ashm != NULL)
         {
@@ -487,8 +486,7 @@ jboolean urlPoolInit(JNIEnv *env)
 
         for(i = 0; i < spiderPara->urlPoolNum; i++)
         {
-            AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(i),
-                                                            sizeof(t_urlPool));
+            AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(i), sizeof(t_urlPool));
 
             if(ashm == NULL)
             {
@@ -919,11 +917,8 @@ jlong jniAddUrl(JNIEnv *env,
 void jniSetSrcPageUrl(JNIEnv *env, jobject thiz,
                       jstring jPageUrl, jbyteArray jSrcPageUrlMd5, jlongArray jParam)
 {
-    spiderPara->srcPageNode = Java_com_gk969_UltimateImgSpider_SpiderService_jniAddUrl(env, thiz,
-                                                                                       jPageUrl,
-                                                                                       jSrcPageUrlMd5,
-                                                                                       URL_TYPE_PAGE,
-                                                                                       jParam);
+    spiderPara->srcPageNode = jniAddUrl(env, thiz, jPageUrl, jSrcPageUrlMd5, URL_TYPE_PAGE, jParam);
+    LOGI("jniSetSrcPageUrl %08X", spiderPara->srcPageNode);
 }
 
 
@@ -982,12 +977,12 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
 }
 
 
-void jniRecvPageTitle(
+void jniSavePageTitle(
         JNIEnv *env, jobject thiz, jstring jCurPageTitle)
 {
     urlNode *curNode = nodeAddrRelativeToAbs(spiderPara->curPageNode);
 
-    //LOGI("jniRecvPageTitle");
+    //LOGI("jniSavePageTitle");
 
     AshmAllocObjectInstance = thiz;
 

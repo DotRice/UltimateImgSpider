@@ -95,8 +95,7 @@ int createNewAshmem(const char *name, int size, u8 **addr)
     {
         LOGI("create ashmem name:%s size:%d fd:%d success!", name, size, fd);
 
-        AshmBlock *ashm = mmap(NULL, size, PROT_READ | PROT_WRITE,
-                                 MAP_SHARED, fd, 0);
+        AshmBlock *ashm = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
         if(ashm != NULL)
         {
@@ -148,8 +147,7 @@ int createNewAshmem(const char *name, int size, u8 **addr)
     return fd;
 }
 
-void jniRestoreProjectData(JNIEnv *env,
-                           jobject thiz, jstring jDataFileFullPath)
+void jniRestoreProjectData(JNIEnv *env, jobject thiz, jstring jDataFileFullPath)
 {
     const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
 
@@ -194,9 +192,9 @@ void jniRestoreProjectData(JNIEnv *env,
     (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
 }
 
-#define FILE_BLOCK_UPDATE_SIZE  (4*1024)
+#define FILE_BLOCK_UPDATE_SIZE  4096
 
-void fileIncrementalUpdate(FILE *file, void *srcData, int size)
+int fileIncrementalUpdate(FILE *file, void *srcData, int size)
 {
     void *buf = malloc(FILE_BLOCK_UPDATE_SIZE);
     if(buf != 0)
@@ -236,11 +234,13 @@ void fileIncrementalUpdate(FILE *file, void *srcData, int size)
 
         LOGI("fileIncrementalUpdate rawSize:%d updateSize:%d", size, updateSize);
         free(buf);
+        return updateSize;
     }
+
+    return 0;
 }
 
-void jniStoreProjectData(JNIEnv *env,
-                         jobject thiz, jstring jDataFileFullPath)
+void jniStoreProjectData(JNIEnv *env, jobject thiz, jstring jDataFileFullPath)
 {
     const char *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
 
@@ -254,6 +254,9 @@ void jniStoreProjectData(JNIEnv *env,
 
     dataFile = fopen(dataFileFullPath, "rb+");
 
+    int totalSize=0;
+    int updateSize=0;
+
     if(dataFile != NULL)
     {
         AshmNode *ashmNode;
@@ -265,18 +268,22 @@ void jniStoreProjectData(JNIEnv *env,
             ashmParaStore.size = ashmNode->size;
             ashmParaStore.ashmStat = ashmNode->ashmem->ashmStat;
 
-            fileIncrementalUpdate(dataFile, &ashmParaStore, sizeof(AshmParaStore));
-            fileIncrementalUpdate(dataFile, ashmNode->ashmem->data, ashmNode->size);
+            totalSize+=sizeof(AshmParaStore);
+            updateSize+=fileIncrementalUpdate(dataFile, &ashmParaStore, sizeof(AshmParaStore));
+
+            totalSize+=ashmNode->size;
+            updateSize+=fileIncrementalUpdate(dataFile, ashmNode->ashmem->data, ashmNode->size);
         }
 
         fclose(dataFile);
     }
 
     (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
+
+    LOGI("fileIncrementalUpdate total:%d update:%d", totalSize, updateSize);
 }
 
-int jniGetAshmem(JNIEnv *env,
-                 jobject thiz, jstring jname, jint size)
+int jniGetAshmem(JNIEnv *env, jobject thiz, jstring jname, jint size)
 {
     int fd;
     const char *name = (*env)->GetStringUTFChars(env, jname, NULL);
