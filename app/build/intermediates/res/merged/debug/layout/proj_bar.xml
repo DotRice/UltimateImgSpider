@@ -5,7 +5,7 @@
     android:id="@+id/project_bar"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="100dp">
+    android:layout_height="@dimen/projbar_total_height">
 
     <ImageButton
         android:id="@+id/button_add_project"

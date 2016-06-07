@@ -66,6 +66,8 @@ public class SelSrcActivity extends Activity
     
     private ImageButton          btnSelSearchEngine;
     private View.OnClickListener oclSelSearchEngine;
+
+    private String               recvFailUrl="";
     
     private EditText             etUrl;
     private String               urlToDisp;
@@ -179,7 +181,29 @@ public class SelSrcActivity extends Activity
             etUrl.setText(title);
         }
     }
-    
+
+    private boolean browserGoBack()
+    {
+        if(browser.canGoBack())
+        {
+            browser.goBack();
+
+            Log.i(TAG, urlToDisp+" "+recvFailUrl+" "+browser.getUrl());
+            if(urlToDisp.equals(recvFailUrl) && (!urlToDisp.equals(browser.getUrl())))
+            {
+                Log.i(TAG, "Redirection Rail");
+                if(browser.canGoBack())
+                {
+                    browser.goBack();
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     private void browserInit(String urlToOpen)
     {
         pbWebView = (ProgressBar) findViewById(R.id.progressBarWebView);
@@ -191,6 +215,7 @@ public class SelSrcActivity extends Activity
         {
             public boolean shouldOverrideUrlLoading(WebView view, String url)
             {
+                Log.i(TAG, "shouldOverrideUrlLoading " + url);
                 return false;
             }
             
@@ -223,8 +248,10 @@ public class SelSrcActivity extends Activity
             public void onReceivedError(WebView view, int errorCode,
                     String description, String failingUrl)
             {
-                Log.i(TAG, failingUrl + " ReceivedError " + errorCode + "  "
-                        + description);
+                Log.i(TAG, "ReceivedError " + failingUrl + " " + errorCode + "  " + description+" "+
+                        view.getUrl()+" OriginalUrl "+view.getOriginalUrl());
+
+                recvFailUrl=failingUrl;
             }
         });
         
@@ -235,12 +262,12 @@ public class SelSrcActivity extends Activity
                 btnSelSearchEngine.setImageBitmap(icon);
                 browserIcon = icon;
             }
-            
+
             public void onProgressChanged(WebView view, int newProgress)
             {
-                if (newProgress == PROGRESS_MAX)
+                if(newProgress == PROGRESS_MAX)
                 {
-                    if (pbWebView.getProgress() != 0)
+                    if(pbWebView.getProgress() != 0)
                     {
                         pbWebView.setProgress(PROGRESS_MAX);
                         mHandler.postDelayed(new Runnable()
@@ -257,7 +284,7 @@ public class SelSrcActivity extends Activity
                     pbWebView.setProgress(newProgress);
                 }
             }
-            
+
             public void onReceivedTitle(WebView view, String title)
             {
                 setBrowserTitle(title);
@@ -417,10 +444,7 @@ public class SelSrcActivity extends Activity
                     {
                         case R.id.buttonBack:
                             Log.i(TAG, "buttonBack");
-                            if (browser.canGoBack())
-                            {
-                                browser.goBack();
-                            }
+                            browserGoBack();
                         break;
                         
                         case R.id.buttonForward:
@@ -829,10 +853,8 @@ public class SelSrcActivity extends Activity
                 focusOnWebView();
                 return true;
             }
-            else if (browser.canGoBack())
+            else if (browserGoBack())
             {
-                Log.i(TAG, "browser.goBack();");
-                browser.goBack();
                 return true;
             }
         }

@@ -466,7 +466,6 @@ public class SpiderActivity extends Activity
 
     private void backToAlbumSetView()
     {
-        displayProjectIndex=SpiderProject.INVALID_INDEX;
         if(projectState==ProjectState.DOWNLOADING)
         {
             mThumbnailLoader.refreshSlotInfo(downloadingProjectIndex, "", true);
@@ -476,8 +475,9 @@ public class SpiderActivity extends Activity
             mThumbnailLoader.refreshSlotInfo(StaticValue.INDEX_INVALID, null, false);
         }
 
-        setView(ALBUM_SET_VIEW);
         mThumbnailLoader.setHelper(albumSetLoaderHelper, spiderProject.projectList.size());
+        displayProjectIndex = SpiderProject.INVALID_INDEX;
+        setView(ALBUM_SET_VIEW);
     }
 
     public void refreshDownloadingProjectInfo(String infoStr)
@@ -789,7 +789,7 @@ public class SpiderActivity extends Activity
                 @Override
                 public void onClick(View v)
                 {
-                    infoDrawer.openDrawer(ALBUM_VIEW);
+                    infoDrawer.onInfoKey();
                 }
             });
 
@@ -912,13 +912,22 @@ public class SpiderActivity extends Activity
                     DrawerLayout.LOCK_MODE_LOCKED_CLOSED, albumInfoDrawer);
         }
 
-        public void openDrawer(int viewIndex)
+        public void onInfoKey()
         {
-            if(curView==viewIndex)
+            if(curView==ALBUM_VIEW)
             {
-                drawer.openDrawer(views[viewIndex]);
+                View curInfoView = views[curView];
+                if(drawer.isDrawerOpen(curInfoView))
+                {
+                    drawer.closeDrawer(curInfoView);
+                }
+                else
+                {
+                    drawer.openDrawer(curInfoView);
+                }
             }
         }
+
 
         private void refreshBasicInfo(long[] imgInfo, long[] pageInfo)
         {
@@ -1106,6 +1115,10 @@ public class SpiderActivity extends Activity
                 tryToStopSpiderService();
             }
 
+        }
+        else if (keyCode == KeyEvent.KEYCODE_MENU)
+        {
+            infoDrawer.onInfoKey();
         }
 
         return super.onKeyDown(keyCode, event);

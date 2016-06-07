@@ -232,7 +232,7 @@ int fileIncrementalUpdate(FILE *file, void *srcData, int size)
 
         } while(offset < size);
 
-        LOGI("fileIncrementalUpdate rawSize:%d updateSize:%d", size, updateSize);
+        //LOGI("fileIncrementalUpdate rawSize:%d updateSize:%d", size, updateSize);
         free(buf);
         return updateSize;
     }

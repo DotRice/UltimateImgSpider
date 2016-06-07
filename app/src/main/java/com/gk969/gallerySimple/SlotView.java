@@ -40,7 +40,7 @@ public class SlotView extends GLView
     private static final int SLOT_PER_ROW_PORTRAIT = 3;
     private static final int SLOT_PER_ROW_LANDSCAPE = 5;
 
-    private static final float LABEL_HEIGHT_RATIO = 0.12f;
+    private static final int LABEL_HEIGHT_IN_DP = 15;
     private static final int LABEL_BACKGROUND_COLOR = 0x80000000;
 
     private static final float LABEL_TEXT_HEIGHT_RATIO = 0.7f;
@@ -50,7 +50,7 @@ public class SlotView extends GLView
     private static final int SCROLL_BAR_TAP_WIDTH_IN_DP=30;
     private static final int SCROLL_BAR_WIDTH_IN_DP=20;
     private static final int SCROLL_BAR_HEIGHT_MAX_IN_DP=100;
-    private static final int SCROLL_BAR_HEIGHT_MIN_IN_DP=50;
+    private static final int SCROLL_BAR_HEIGHT_MIN_IN_DP=40;
 
     private static final int NEED_SMOOTH_SCROLL_BAR=25;
     private static final int NEED_SCROLL_BAR=5;
@@ -83,7 +83,8 @@ public class SlotView extends GLView
     private int labelTextTop;
     private int labelPadding;
 
-    private int slotRowsInView;
+    private int maxSlotRowsInView;
+    private int maxSlotRowsInOverScrollView;
     private int slotHeightWithGap;
 
     private int scrollDistance;
@@ -349,6 +350,11 @@ public class SlotView extends GLView
         scrollBarHeightMax=Utils.DisplayUtil.dipToPx(context, SCROLL_BAR_HEIGHT_MAX_IN_DP);
         scrollBarHeightMin=Utils.DisplayUtil.dipToPx(context, SCROLL_BAR_HEIGHT_MIN_IN_DP);
         barScrollValid=Utils.DisplayUtil.dipToPx(context, BAR_SCROLL_VALID_IN_DP);
+
+        labelHeight = Utils.DisplayUtil.dipToPx(context, LABEL_HEIGHT_IN_DP);
+        labelTextSize=(int)(labelHeight*LABEL_TEXT_HEIGHT_RATIO);
+        labelTextTop=(labelHeight-labelTextSize)/2;
+        labelPadding=(int)(slotSize * LABEL_PADDING_RATIO);
         
         mThumbnailLoader = loader;
         mThumbnailLoader.dispAreaScrollToIndex(0);
@@ -392,14 +398,10 @@ public class SlotView extends GLView
         viewWidth=width;
         viewHeight = height;
 
-        labelHeight = (int)(slotSize * LABEL_HEIGHT_RATIO);
-        labelTextSize=(int)(labelHeight*LABEL_TEXT_HEIGHT_RATIO);
-        labelTextTop=(labelHeight-labelTextSize)/2;
-        labelPadding=(int)(slotSize * LABEL_PADDING_RATIO);
-
         slotHeightWithGap = slotSize + slotGap;
-        slotRowsInView = viewHeight / slotHeightWithGap + 2;
-        mThumbnailLoader.initAboutView(slotRowsInView * slotsPerRow, labelTextSize, (int) (slotSize * LABEL_NAME_LIMIT_RATIO));
+        maxSlotRowsInView = viewHeight / slotHeightWithGap + 2;
+        maxSlotRowsInOverScrollView = viewHeight / slotHeightWithGap + 1;
+        mThumbnailLoader.initAboutView(maxSlotRowsInView * slotsPerRow, labelTextSize, (int) (slotSize * LABEL_NAME_LIMIT_RATIO));
 
         if ((scrollDistance != 0) && (prevViewHeight != height))
         {
@@ -613,15 +615,19 @@ public class SlotView extends GLView
 
         int overScrollGapAbs = (int) Math.abs(overScrollGapY);
         int offsetNormal = scrollDistance % slotHeightWithGap;
-        int slotOffsetTop = ((overScrollGapY > 0) ? overScrollGapAbs : (0 - overScrollGapAbs * slotRowsInView)) -
-                offsetNormal;
+
+        int albumTotalImg = mThumbnailLoader.albumTotalImgNum;
+
+        int rowsInView=(scrollMax>0)?maxSlotRowsInOverScrollView:
+                (mThumbnailLoader.albumTotalImgNum + (slotsPerRow - 1)) / slotsPerRow;
+        int slotOffsetTop = ((overScrollGapY > 0) ? overScrollGapAbs :
+                (0 - overScrollGapAbs * rowsInView)) - offsetNormal;
 
         int slotIndexOffset = scrollDistance / slotHeightWithGap * slotsPerRow;
         int overScrollHeight = slotHeightWithGap + overScrollGapAbs;
 
-        int albumTotalImg = mThumbnailLoader.albumTotalImgNum;
 
-        for (int topIndex = 0; topIndex < slotRowsInView; topIndex++)
+        for (int topIndex = 0; topIndex < maxSlotRowsInView; topIndex++)
         {
             for (int leftIndex = 0; leftIndex < slotsPerRow; leftIndex++)
             {
