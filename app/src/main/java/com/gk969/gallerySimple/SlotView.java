@@ -146,14 +146,19 @@ public class SlotView extends GLView
             {
                 float progress = scrollBezier.calculateYByX(
                         ((float) (curTime - scrollStartTime)) / scrollDuration);
-                scrollAbs((int) (scrollStartPoint + progress * scrollTotalDistance));
 
                 if(progress == 1)
                 {
+                    scrollAbs(scrollStartPoint + scrollTotalDistance);
+
                     if(!(isRebounding||(flyVelocity!=0)))
                     {
                         stopAnimation();
                     }
+                }
+                else
+                {
+                    scrollAbs((int) (scrollStartPoint + progress * scrollTotalDistance));
                 }
             }
         }

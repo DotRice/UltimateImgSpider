@@ -10,6 +10,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,6 +53,9 @@ public class WatchdogService extends Service
     public native void jniRestoreProjectData(String path);
 
     public native void jniStoreProjectData(String path);
+
+    private Handler mHandler=new Handler();
+    private ExecutorService singelThreadPool= Executors.newSingleThreadExecutor();
 
     static
     {
@@ -170,7 +175,7 @@ public class WatchdogService extends Service
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         int cmd = intent.getIntExtra(StaticValue.BUNDLE_KEY_CMD, StaticValue.CMD_NOTHING);
-        String path = intent.getStringExtra(StaticValue.BUNDLE_KEY_PRJ_PATH);
+        final String path = intent.getStringExtra(StaticValue.BUNDLE_KEY_PRJ_PATH);
 
         Log.i(TAG, "onStartCommand:" + StaticValue.CMD_DESC[cmd] + " path:" + path);
 
@@ -178,15 +183,38 @@ public class WatchdogService extends Service
         {
             case StaticValue.CMD_START:
             {
-                tryToRestoreProjectData(path);
-                projectPathRecved();
+                singelThreadPool.execute(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        tryToRestoreProjectData(path);
+
+                        mHandler.post(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                projectPathRecved();
+                            }
+                        });
+                    }
+                });
+
                 break;
             }
 
             case StaticValue.CMD_STOP_STORE:
             {
-                storeProjectData();
-                stopSelf();
+                singelThreadPool.execute(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        storeProjectData();
+                        stopSelf();
+                    }
+                });
                 break;
             }
 
@@ -198,8 +226,22 @@ public class WatchdogService extends Service
 
             case StaticValue.CMD_JUST_STORE:
             {
-                storeProjectData();
-                projectDataSaved();
+                singelThreadPool.execute(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        storeProjectData();
+                        mHandler.post(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                projectDataSaved();
+                            }
+                        });
+                    }
+                });
                 break;
             }
 
