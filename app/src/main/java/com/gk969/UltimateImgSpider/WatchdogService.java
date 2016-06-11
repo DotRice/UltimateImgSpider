@@ -55,7 +55,9 @@ public class WatchdogService extends Service
     public native void jniStoreProjectData(String path);
 
     private Handler mHandler=new Handler();
-    private ExecutorService singelThreadPool= Executors.newSingleThreadExecutor();
+    private ExecutorService singleThreadPool= Executors.newSingleThreadExecutor();
+
+    private boolean saveTargetIsBackupFile=false;
 
     static
     {
@@ -83,33 +85,48 @@ public class WatchdogService extends Service
         System.exit(0);
     }
 
-    private void storeProjectData()
+    private void storeProjectData(String dataFileName, String hashDataName)
     {
-        String dataFileFullPath=dataDirPath+StaticValue.PROJECT_DATA_NAME;
+        String dataFileFullPath=dataDirPath+dataFileName;
         long time=System.currentTimeMillis();
         jniStoreProjectData(dataFileFullPath);
-        Log.i(TAG, "jniStoreProjectData time "+(System.currentTimeMillis()-time));
+        Log.i(TAG, "jniStoreProjectData "+dataFileName+" time " + (System.currentTimeMillis() - time));
 
         time=System.currentTimeMillis();
         String md5String = Utils.getFileMD5String(dataFileFullPath);
-        Log.i(TAG, "getFileMD5String time "+(System.currentTimeMillis()-time));
-        Utils.stringToFile(md5String, dataDirPath+StaticValue.PROJECT_DATA_MD5);
+        Log.i(TAG, "getFileMD5String " + hashDataName+" time " + (System.currentTimeMillis() - time));
+                Utils.stringToFile(md5String, dataDirPath + hashDataName);
     }
 
-    public static boolean projectDataIsSafe(String dataDir)
+    private static boolean projectDataIsSafe(String dataFileFullPath, String hashFileFullPath)
     {
-        String dataFileFullPath=dataDir+StaticValue.PROJECT_DATA_NAME;
         String md5OfFile = Utils.getFileMD5String(dataFileFullPath);
 
-        String md5InRec=Utils.fileToString(dataDir+StaticValue.PROJECT_DATA_MD5);
+        String md5InRec=Utils.fileToString(hashFileFullPath);
         Log.i(TAG, "projectDataIsSafe " + md5OfFile + " " + md5InRec);
 
         if(md5OfFile!=null)
         {
-            return md5InRec.equals(md5OfFile);
+            return md5OfFile.equals(md5InRec);
         }
 
         return false;
+    }
+
+    public static String getSafeProjectData(String projectDataDirPath)
+    {
+        if(projectDataIsSafe(projectDataDirPath+StaticValue.PROJECT_DATA_NAME,
+                projectDataDirPath+StaticValue.PROJECT_DATA_MD5))
+        {
+            return StaticValue.PROJECT_DATA_NAME;
+        }
+        else if(projectDataIsSafe(projectDataDirPath+StaticValue.PROJECT_DATA_BACKUP_NAME,
+                projectDataDirPath+StaticValue.PROJECT_DATA_BACKUP_MD5))
+        {
+            return StaticValue.PROJECT_DATA_BACKUP_NAME;
+        }
+
+        return null;
     }
 
     private void tryToRestoreProjectData(String path)
@@ -125,9 +142,15 @@ public class WatchdogService extends Service
             }
             dataDirPath = path+StaticValue.PROJECT_DATA_DIR;
 
-            if (projectDataIsSafe(dataDirPath))
+            if (projectDataIsSafe(dataDirPath+StaticValue.PROJECT_DATA_NAME,
+                    dataDirPath+StaticValue.PROJECT_DATA_MD5))
             {
                 jniRestoreProjectData(dataDirPath+StaticValue.PROJECT_DATA_NAME);
+            }
+            else if(projectDataIsSafe(dataDirPath+StaticValue.PROJECT_DATA_BACKUP_NAME,
+                    dataDirPath+StaticValue.PROJECT_DATA_BACKUP_MD5))
+            {
+                jniRestoreProjectData(dataDirPath+StaticValue.PROJECT_DATA_BACKUP_NAME);
             }
         }
 
@@ -183,7 +206,7 @@ public class WatchdogService extends Service
         {
             case StaticValue.CMD_START:
             {
-                singelThreadPool.execute(new Runnable()
+                singleThreadPool.execute(new Runnable()
                 {
                     @Override
                     public void run()
@@ -206,12 +229,12 @@ public class WatchdogService extends Service
 
             case StaticValue.CMD_STOP_STORE:
             {
-                singelThreadPool.execute(new Runnable()
+                singleThreadPool.execute(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        storeProjectData();
+                        storeProjectData(StaticValue.PROJECT_DATA_NAME, StaticValue.PROJECT_DATA_MD5);
                         stopSelf();
                     }
                 });
@@ -226,12 +249,19 @@ public class WatchdogService extends Service
 
             case StaticValue.CMD_JUST_STORE:
             {
-                singelThreadPool.execute(new Runnable()
+                final String dataFileName=saveTargetIsBackupFile?
+                        StaticValue.PROJECT_DATA_BACKUP_NAME:StaticValue.PROJECT_DATA_NAME;
+                final String hashFileName=saveTargetIsBackupFile?
+                        StaticValue.PROJECT_DATA_BACKUP_MD5:StaticValue.PROJECT_DATA_MD5;
+
+                saveTargetIsBackupFile=!saveTargetIsBackupFile;
+
+                singleThreadPool.execute(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        storeProjectData();
+                        storeProjectData(dataFileName, hashFileName);
                         mHandler.post(new Runnable()
                         {
                             @Override
@@ -242,9 +272,9 @@ public class WatchdogService extends Service
                         });
                     }
                 });
+
                 break;
             }
-
         }
 
         return START_NOT_STICKY;

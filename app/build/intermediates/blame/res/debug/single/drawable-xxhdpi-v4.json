@@ -1,5 +1,13 @@
 [
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi-v4\\new_proj_write.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-xxhdpi\\new_proj_write.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi-v4\\info_write.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-xxhdpi\\info_write.png"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi-v4\\page.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-xxhdpi\\page.png"
     },

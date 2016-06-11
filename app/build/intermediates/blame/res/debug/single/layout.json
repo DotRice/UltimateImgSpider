@@ -1,9 +1,5 @@
 [
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\proj_bar.xml",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\proj_bar.xml"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\navi_bar.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\navi_bar.xml"
     },

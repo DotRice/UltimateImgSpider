@@ -14,7 +14,7 @@
         android:src="@drawable/back"
         android:contentDescription="@string/back"
         android:scaleType="fitCenter"
-    	android:background="@drawable/button_bcakground_selector" />
+    	android:background="@drawable/button_background_selector" />
 
     <ImageButton 
         android:id="@+id/buttonForward"
@@ -24,7 +24,7 @@
         android:src="@drawable/forward"
         android:contentDescription="@string/forward"
        	android:scaleType="fitCenter"
-    	android:background="@drawable/button_bcakground_selector" />
+    	android:background="@drawable/button_background_selector" />
 	   
     <ImageButton 
         android:id="@+id/buttonSpiderGo"
@@ -34,7 +34,7 @@
         android:src="@drawable/spidergo"
         android:contentDescription="@string/spiderGo"
        	android:scaleType="fitCenter"
-    	android:background="@drawable/button_bcakground_selector" />
+    	android:background="@drawable/button_background_selector" />
 	    
     <ImageButton 
         android:id="@+id/buttonHome"
@@ -44,7 +44,7 @@
         android:src="@drawable/home"
         android:contentDescription="@string/home"
       	android:scaleType="fitCenter"
-    	android:background="@drawable/button_bcakground_selector" />
+    	android:background="@drawable/button_background_selector" />
 	 
     <ImageButton 
         android:id="@+id/buttonMenu"
@@ -54,6 +54,6 @@
         android:src="@drawable/menu"
         android:contentDescription="@string/menu"
      	android:scaleType="fitCenter"
-    	android:background="@drawable/button_bcakground_selector" />
+    	android:background="@drawable/button_background_selector" />
 
 </LinearLayout>

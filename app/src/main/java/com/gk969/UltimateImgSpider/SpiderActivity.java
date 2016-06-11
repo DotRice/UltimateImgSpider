@@ -5,6 +5,10 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,6 +30,8 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -120,6 +126,9 @@ public class SpiderActivity extends Activity
 
     private boolean inDeleting = false;
 
+    private LinearLayout albumCtrlPanel;
+    private ImageButton buttonAdd;
+    private ImageButton buttonInfo;
 
     enum ProjectState
     {
@@ -129,20 +138,26 @@ public class SpiderActivity extends Activity
 
     public static final int ALBUM_SET_VIEW=0;
     public static final int ALBUM_VIEW=1;
+    public static final int PHOTO_VIEW=2;
 
     private int curView;
 
     private InfoDrawer infoDrawer;
-    private ProjectBar projectBar;
+
+    private static final int ALBUM_PANEL_ANIMATION_TIME=250;
+    private AtomicInteger albumPanelDisplayTime=new AtomicInteger(0);
+    private static final int TIMER_PERIOD=1000;
+    private static final int ALBUM_PANEL_DISPLAY_TIME=4;
+    private ScheduledExecutorService singleThreadPoolTimer= Executors.newSingleThreadScheduledExecutor();
 
 
+    IRemoteSpiderService mService = null;
 
     private void serviceInterfaceInit()
     {
         mConnection = new ServiceConnection()
         {
-            public void onServiceConnected(ComponentName className,
-                                           IBinder service)
+            public void onServiceConnected(ComponentName className, IBinder service)
             {
                 mService = IRemoteSpiderService.Stub.asInterface(service);
 
@@ -193,7 +208,7 @@ public class SpiderActivity extends Activity
 
                     if (inDeleting)
                     {
-                        new Thread(new Runnable()
+                        singleThreadPoolTimer.execute(new Runnable()
                         {
                             @Override
                             public void run()
@@ -213,7 +228,7 @@ public class SpiderActivity extends Activity
                                     }
                                 });
                             }
-                        }).start();
+                        });
                     }
                 }
             }
@@ -290,7 +305,13 @@ public class SpiderActivity extends Activity
 
                 int serviceNativeMem = jsonReport.getInt("serviceNativeMem") >> 10;
 
-                if(jsonReport.getBoolean("siteScanCompleted"))
+                if(jsonReport.getBoolean("networkFail"))
+                {
+                    projectState = ProjectState.PAUSE;
+                    btnPauseOrContinue.setImageResource(R.drawable.start);
+                    showDialog(DLG_NETWORK_PROMPT);
+                }
+                else if(jsonReport.getBoolean("siteScanCompleted"))
                 {
                     projectState = ProjectState.COMPLETE;
                     btnPauseOrContinue.setImageResource(R.drawable.start);
@@ -351,6 +372,7 @@ public class SpiderActivity extends Activity
                             public void onClick(DialogInterface dialog,
                                                 int which)
                             {
+                                projectState = ProjectState.CHECK;
                                 checkAndStart();
                             }
                         }).create();
@@ -464,6 +486,18 @@ public class SpiderActivity extends Activity
         }
     }
 
+
+    private void openPhotoView(int index)
+    {
+
+        setView(PHOTO_VIEW);
+    }
+
+    private void backToAlbumView()
+    {
+        setView(ALBUM_VIEW);
+    }
+
     private void backToAlbumSetView()
     {
         if(projectState==ProjectState.DOWNLOADING)
@@ -504,10 +538,14 @@ public class SpiderActivity extends Activity
             @Override
             public void onClick(int slotIndex)
             {
-                Log.i(TAG, "Clicked "+slotIndex);
-                if(curView==ALBUM_SET_VIEW)
+                Log.i(TAG, "Clicked " + slotIndex);
+                if(curView == ALBUM_SET_VIEW)
                 {
                     openAlbum(slotIndex);
+                }
+                else if(curView == ALBUM_VIEW)
+                {
+                    openPhotoView(slotIndex);
                 }
             }
         });
@@ -519,6 +557,17 @@ public class SpiderActivity extends Activity
                 if(curView == ALBUM_VIEW)
                 {
                     spiderProject.projectList.get(displayProjectIndex).albumScrollDistance = curScrollDistance;
+                }
+            }
+        });
+        slotView.setOnManuallyScroll(new SlotView.OnManuallyScrollListener()
+        {
+            @Override
+            public void onManuallyScroll()
+            {
+                if(curView == ALBUM_VIEW)
+                {
+                    showAlbumPanel(true);
                 }
             }
         });
@@ -546,7 +595,7 @@ public class SpiderActivity extends Activity
 
     private void checkNetworkBeforeStart(final boolean isNewProject)
     {
-        new Thread(new Runnable()
+        singleThreadPoolTimer.execute(new Runnable()
         {
             @Override
             public void run()
@@ -556,11 +605,13 @@ public class SpiderActivity extends Activity
                     @Override
                     public void run()
                     {
-                        if(projectState==ProjectState.CHECK)
+                        if(projectState == ProjectState.CHECK)
                         {
-                            projectState=ProjectState.DOWNLOADING;
+                            projectState = ProjectState.DOWNLOADING;
+                            btnPauseOrContinue.setImageResource(R.drawable.pause);
 
-                            if (serviceConnState == CONN_STATE_CONNECTED || serviceConnState == CONN_STATE_WAIT_CONNECT)
+                            if(serviceConnState == CONN_STATE_CONNECTED ||
+                                    serviceConnState == CONN_STATE_WAIT_CONNECT)
                             {
                                 if(isNewProject)
                                 {
@@ -572,7 +623,8 @@ public class SpiderActivity extends Activity
                                     sendCmdToSpiderService(StaticValue.CMD_START);
                                 }
                             }
-                            else if (serviceConnState == CONN_STATE_DISCONNECTED || serviceConnState == CONN_STATE_WAIT_DISCONNECT)
+                            else if(serviceConnState == CONN_STATE_DISCONNECTED ||
+                                    serviceConnState == CONN_STATE_WAIT_DISCONNECT)
                             {
                                 sendCmdToSpiderService(StaticValue.CMD_START);
                                 serviceConnState = CONN_STATE_WAIT_CONNECT;
@@ -586,12 +638,14 @@ public class SpiderActivity extends Activity
                     @Override
                     public void run()
                     {
+                        projectState = ProjectState.PAUSE;
+                        btnPauseOrContinue.setImageResource(R.drawable.start);
                         showDialog(DLG_NETWORK_PROMPT);
                     }
                 };
                 mHandler.post(Utils.isNetworkEffective() ? networkValid : networkInvalid);
             }
-        }).start();
+        });
     }
 
     private void onFirstRun()
@@ -715,8 +769,16 @@ public class SpiderActivity extends Activity
     private void setView(int view)
     {
         infoDrawer.setDrawer(view);
-        projectBar.setBarView(view);
         curView=view;
+
+        albumCtrlPanel.setVisibility((view == ALBUM_VIEW) ? View.VISIBLE : View.GONE);
+        buttonAdd.setVisibility((view==ALBUM_SET_VIEW)?View.VISIBLE:View.GONE);
+        buttonInfo.setVisibility((view == PHOTO_VIEW) ? View.VISIBLE : View.GONE);
+
+        if(view==ALBUM_VIEW)
+        {
+            albumPanelDisplayTime.set(ALBUM_PANEL_DISPLAY_TIME);
+        }
     }
 
     private void openSelSrcBrowser(String urlToOpen)
@@ -727,91 +789,6 @@ public class SpiderActivity extends Activity
             intent.putExtra(StaticValue.EXTRA_URL_TO_OPEN, urlToOpen);
         }
         startActivityForResult(intent, StaticValue.RESULT_SRC_URL);
-    }
-
-    private class ProjectBar
-    {
-        private LinearLayout projectBarLayout;
-
-        public ProjectBar()
-        {
-            projectBarLayout=(LinearLayout)findViewById(R.id.project_bar);
-
-            ImageButton btnAdd=(ImageButton)findViewById(R.id.button_add_project);
-            btnAdd.setOnClickListener(new OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    openSelSrcBrowser(null);
-                }
-            });
-
-            btnPauseOrContinue = (ImageButton) findViewById(R.id.buttonPauseOrContinue);
-
-            btnPauseOrContinue.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    if(displayProjectIndex==downloadingProjectIndex)
-                    {
-                        switch(projectState)
-                        {
-                            case DOWNLOADING:
-                                projectState = ProjectState.PAUSE;
-                                btnPauseOrContinue.setImageResource(R.drawable.start);
-                                sendCmdToSpiderService(StaticValue.CMD_PAUSE);
-                                break;
-
-                            case PAUSE:
-                                projectState = ProjectState.CHECK;
-                                btnPauseOrContinue.setImageResource(R.drawable.pause);
-                                checkNetworkBeforeStart(false);
-                                break;
-
-                            case CHECK:
-                                projectState = ProjectState.PAUSE;
-                                btnPauseOrContinue.setImageResource(R.drawable.start);
-                                break;
-                        }
-                    }
-                    else if(!freeStorageIsLow())
-                    {
-                        startProject(displayProjectIndex);
-                    }
-                }
-            });
-
-            ImageButton buttonInfo = (ImageButton) findViewById(R.id.buttonInfo);
-            buttonInfo.setOnClickListener(new OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    infoDrawer.onInfoKey();
-                }
-            });
-
-            ImageButton buttonSetting=(ImageButton)findViewById(R.id.buttonSetting);
-            buttonSetting.setOnClickListener(new OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-
-                }
-            });
-
-        }
-
-        public void setBarView(final int view)
-        {
-            if(curView!=view)
-            {
-                projectBarLayout.setTranslationY(0 - projectBarLayout.getHeight() / 2 * view);
-            }
-        }
     }
 
     private class InfoDrawer
@@ -999,17 +976,153 @@ public class SpiderActivity extends Activity
 
     private void panelViewInit()
     {
-        infoDrawer = new InfoDrawer();
-        projectBar=new ProjectBar();
+        buttonAdd=(ImageButton)findViewById(R.id.button_add);
+        buttonAdd.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                openSelSrcBrowser(null);
+            }
+        });
 
+        buttonInfo=(ImageButton)findViewById(R.id.button_info);
+        buttonInfo.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+
+            }
+        });
+
+        albumCtrlPanel=(LinearLayout)findViewById(R.id.album_ctrl_panel);
+
+        btnPauseOrContinue = (ImageButton) findViewById(R.id.buttonPauseOrContinue);
+        btnPauseOrContinue.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if(displayProjectIndex==downloadingProjectIndex)
+                {
+                    switch(projectState)
+                    {
+                        case DOWNLOADING:
+                            projectState = ProjectState.PAUSE;
+                            btnPauseOrContinue.setImageResource(R.drawable.start);
+                            sendCmdToSpiderService(StaticValue.CMD_PAUSE);
+                            break;
+
+                        case PAUSE:
+                            projectState = ProjectState.CHECK;
+                            btnPauseOrContinue.setImageResource(R.drawable.pause);
+                            checkNetworkBeforeStart(false);
+                            break;
+
+                        case CHECK:
+                            projectState = ProjectState.PAUSE;
+                            btnPauseOrContinue.setImageResource(R.drawable.start);
+                            break;
+                    }
+                }
+                else if(!freeStorageIsLow())
+                {
+                    startProject(displayProjectIndex);
+                }
+            }
+        });
+
+        ImageButton buttonInfo = (ImageButton) findViewById(R.id.buttonInfo);
+        buttonInfo.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                infoDrawer.onInfoKey();
+            }
+        });
+
+
+        ImageButton buttonSetting=(ImageButton)findViewById(R.id.buttonSetting);
+        buttonSetting.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+
+            }
+        });
+
+        singleThreadPoolTimer.scheduleAtFixedRate(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if(albumPanelDisplayTime.get()!=0)
+                {
+                    if(albumPanelDisplayTime.decrementAndGet()==0)
+                    {
+                        mHandler.post(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                showAlbumPanel(false);
+                            }
+                        });
+                    }
+                }
+            }
+        }, 0, TIMER_PERIOD, TimeUnit.MILLISECONDS);
+
+        infoDrawer = new InfoDrawer();
         setView(ALBUM_SET_VIEW);
     }
 
-    /**
-     * The primary interface we will be calling on the service.
-     */
-    IRemoteSpiderService mService = null;
+    private void showAlbumPanel(final boolean isShow)
+    {
+        if(isShow)
+        {
+            albumPanelDisplayTime.set(ALBUM_PANEL_DISPLAY_TIME);
+        }
 
+        if ((albumCtrlPanel.getVisibility() == View.VISIBLE) != isShow)
+        {
+            float fromY = isShow ? 1 : 0;
+            TranslateAnimation browserMenuAnim = new TranslateAnimation(
+                    Animation.RELATIVE_TO_SELF, 0f, Animation.RELATIVE_TO_SELF,
+                    0f, Animation.RELATIVE_TO_SELF, fromY,
+                    Animation.RELATIVE_TO_SELF, 1 - fromY);
+            browserMenuAnim.setDuration(ALBUM_PANEL_ANIMATION_TIME);
+            browserMenuAnim.setAnimationListener(new Animation.AnimationListener()
+            {
+
+                @Override
+                public void onAnimationStart(Animation animation)
+                {
+                    if (isShow)
+                        albumCtrlPanel.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation)
+                {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation)
+                {
+                    if (!isShow)
+                        albumCtrlPanel.setVisibility(View.GONE);
+                }
+            });
+            albumCtrlPanel.startAnimation(browserMenuAnim);
+
+
+        }
+    }
 
     private void unbindSpiderService()
     {
@@ -1085,38 +1198,44 @@ public class SpiderActivity extends Activity
     {
         Log.i(TAG, "onKeyDown " + keyCode);
 
-
-        if (keyCode == KeyEvent.KEYCODE_BACK)
+        if(keyCode == KeyEvent.KEYCODE_BACK)
         {
-            if(curView==ALBUM_VIEW)
+            if(curView == ALBUM_SET_VIEW)
+            {
+                if(inDeleting)
+                {
+                    Toast.makeText(this, R.string.inDeletingToast, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
+                if(SystemClock.uptimeMillis() - exitTim > 2000)
+                {
+                    Toast.makeText(this, getString(R.string.keyBackExitConfirm)
+                            + getString(R.string.app_name), Toast.LENGTH_SHORT).show();
+
+                    exitTim = SystemClock.uptimeMillis();
+                    return true;
+                }
+                else
+                {
+                    Log.i(TAG, "finish");
+                    //Sometimes onDestory() will not been called.So handle spider service here.
+                    tryToStopSpiderService();
+                }
+            }
+            else if(curView == ALBUM_VIEW)
             {
                 backToAlbumSetView();
                 return true;
             }
-
-            if (inDeleting)
+            else if(curView==PHOTO_VIEW)
             {
-                Toast.makeText(this, R.string.inDeletingToast, Toast.LENGTH_SHORT).show();
+                backToAlbumView();
                 return true;
-            }
-
-            if (SystemClock.uptimeMillis() - exitTim > 2000)
-            {
-                Toast.makeText(this, getString(R.string.keyBackExitConfirm)
-                        + getString(R.string.app_name), Toast.LENGTH_SHORT).show();
-
-                exitTim = SystemClock.uptimeMillis();
-                return true;
-            }
-            else
-            {
-                Log.i(TAG, "finish");
-                //Sometimes onDestory() will not been called.So handle spider service here.
-                tryToStopSpiderService();
             }
 
         }
-        else if (keyCode == KeyEvent.KEYCODE_MENU)
+        else if(keyCode == KeyEvent.KEYCODE_MENU)
         {
             infoDrawer.onInfoKey();
         }

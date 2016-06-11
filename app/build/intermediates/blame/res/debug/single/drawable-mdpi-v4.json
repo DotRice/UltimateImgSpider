@@ -8,6 +8,10 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\scan_page.png"
     },
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\info_write.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\info_write.png"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\speed.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\speed.png"
     },
@@ -18,6 +22,10 @@
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\ic_launcher.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\new_proj_write.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\new_proj_write.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\page.png",

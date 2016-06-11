@@ -67,6 +67,8 @@
     <dimen name="appwidget_width">180dp</dimen>
     <dimen name="big_setting_popup_window_width">320dp</dimen>
     <dimen name="big_setting_popup_window_width_xlarge">590dp</dimen>
+    <dimen name="button_add_size">50dp</dimen>
+    <dimen name="button_info_size">40dp</dimen>
     <dimen name="cache_pin_margin">8dp</dimen>
     <dimen name="cache_pin_size">24dp</dimen>
     <dimen name="camera_controls_size">0dip</dimen>
@@ -148,7 +150,7 @@
     <dimen name="popup_title_text_size">22dp</dimen>
     <dimen name="popup_title_text_size_xlarge">22dp</dimen>
     <dimen name="projbar_height">40dp</dimen>
-    <dimen name="projbar_total_height">80dp</dimen>
+    <dimen name="projbar_width">250dp</dimen>
     <dimen name="setting_item_icon_width">28dp</dimen>
     <dimen name="setting_item_icon_width_large">48dp</dimen>
     <dimen name="setting_item_icon_width_xlarge">35dp</dimen>
@@ -187,6 +189,8 @@
     <dimen name="zoom_ring_min">48dp</dimen>
     <drawable name="background_normal">#FFF</drawable>
     <drawable name="background_pressed">#CFC</drawable>
+    <drawable name="trans_background_normal">#CFFF</drawable>
+    <drawable name="trans_background_pressed">#ACFC</drawable>
     <integer name="album_rows_land">2</integer>
     <integer name="album_rows_port">4</integer>
     <integer name="albumset_rows_land">2</integer>

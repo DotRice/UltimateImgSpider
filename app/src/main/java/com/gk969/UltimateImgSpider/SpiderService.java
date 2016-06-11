@@ -11,6 +11,8 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -268,7 +270,7 @@ public class SpiderService extends Service
     private void checkLockAndStopSelf()
     {
         //Prevent locks block main thread of service
-        new Thread(new Runnable()
+        singleThreadPool.execute(new Runnable()
         {
             @Override
             public void run()
@@ -283,7 +285,7 @@ public class SpiderService extends Service
 
                 stopSelf();
             }
-        }).start();
+        });
     }
     
     @Override
@@ -361,7 +363,7 @@ public class SpiderService extends Service
                     }
                     else
                     {
-                        new Thread(new Runnable()
+                        singleThreadPool.execute(new Runnable()
                         {
                             @Override
                             public void run()
@@ -370,7 +372,7 @@ public class SpiderService extends Service
                                 jniSetSrcPageUrl(url, md5ForPage.digest(url.getBytes()), pageProcParam);
                                 jniDataLock.unlock();
                             }
-                        }).start();
+                        });
                     }
                 }
             }
@@ -513,9 +515,16 @@ public class SpiderService extends Service
     private WebView spider;
 
     private Handler spiderHandler = new Handler();
+    private ExecutorService singleThreadPool= Executors.newSingleThreadExecutor();
+
     private AtomicBoolean timerRunning = new AtomicBoolean(true);
     private final static int URL_TIME_OUT = 10;
     private AtomicInteger urlLoadTimer = new AtomicInteger(0);
+
+    private String failUrl;
+    private static final int MAX_FAIL_PAGE_TO_CHECK=3;
+    private volatile int pageUrlFailCnt;
+    private volatile boolean isNetworkFail;
 
     private MessageDigest md5ForPage;
 
@@ -555,6 +564,7 @@ public class SpiderService extends Service
         private final static int IMG_VALID_HEIGHT_MIN = 200;
 
         private final static int SAVE_PROJECT_DATA = 50;
+        private final static int SAVE_PROJECT_DATA_BACKUP = 500;
 
 
         private final static int IMG_DOWNLOAD_BLOCK = 16 * 1024;
@@ -660,15 +670,36 @@ public class SpiderService extends Service
                         if(!pageProcessLock.isLocked.get())
                         {
                             pageProcessLock.lock();
-                            //Log.i(TAG, "post findAndLoadNextPage");
-                            Utils.handlerPostUntilSuccess(spiderHandler, new Runnable()
+
+                            jniDataLock.lock();
+                            long searchTimer = System.currentTimeMillis();
+                            curPageUrl = jniFindNextPageUrl(pageProcParam);
+                            searchTime = (int)(System.currentTimeMillis() - searchTimer);
+                            jniDataLock.unlock();
+
+                            //Log.i(TAG, "loading:" + curPageUrl);
+                            if (curPageUrl == null)
                             {
-                                @Override
-                                public void run()
+                                state.set(STAT_COMPLETE);
+                                Log.i(TAG, "site scan complete");
+
+                                pageProcessLock.unlock();
+                            }
+                            else
+                            {
+                                //Log.i(TAG, "new page url valid");
+
+                                spiderHandler.post(new Runnable()
                                 {
-                                    findAndLoadNextPage();
-                                }
-                            });
+                                    @Override
+                                    public void run()
+                                    {
+                                        spider.loadUrl(curPageUrl);
+                                        urlLoadTimer.set(URL_TIME_OUT);
+                                    }
+                                });
+                            }
+
                         }
                         pageGetLock.unlock();
 
@@ -1052,9 +1083,10 @@ public class SpiderService extends Service
         jsonReportStr += "\"curNetSpeed\":" + "\"" + Utils.byteSizeToString(
                 netTrafficCalc.netTrafficPerSec.get()) + "/s\"" + ",\r\n";
 
-        jsonReportStr += "\"siteScanCompleted\":" + ((state.get() == STAT_COMPLETE) ? "true" : "false");
+        jsonReportStr += "\"siteScanCompleted\":" + ((state.get() == STAT_COMPLETE)) + ",\r\n";
+        jsonReportStr += "\"networkFail\":" + isNetworkFail + ",\r\n";
 
-        jsonReportStr += ",\r\n";
+        isNetworkFail=false;
 
 
         int numOfCallback = mCallbacks.beginBroadcast();
@@ -1083,11 +1115,19 @@ public class SpiderService extends Service
         {
             if (curPageTitle.length() > MAX_SIZE_PER_TITLE)
             {
-                curPageTitle.substring(0, MAX_SIZE_PER_TITLE);
+                curPageTitle=curPageTitle.substring(0, MAX_SIZE_PER_TITLE);
             }
-            jniDataLock.lock();
-            jniSavePageTitle(curPageTitle);
-            jniDataLock.unlock();
+
+            singleThreadPool.execute(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    jniDataLock.lock();
+                    jniSavePageTitle(curPageTitle);
+                    jniDataLock.unlock();
+                }
+            });
         }
 
         // 扫描页面耗时较少，因此此处不检测暂停或者停止命令
@@ -1097,20 +1137,20 @@ public class SpiderService extends Service
                 + "var imgSrc=\"\";"
                 + "var img=document.getElementsByTagName(\"img\");"
                 + "for(i=0; i<img.length; i++){"
-                +     "imgSrc+=(img[i].src+' ');"
+                + "imgSrc+=(img[i].src+' ');"
                 + "}"
                 + "var imgInput=document.getElementsByTagName(\"input\");"
                 + "for(i=0; i<imgInput.length; i++)"
                 + "{"
-                +     "if(imgInput[i].src){"
-                +         "imgSrc+=(imgInput[i].src+' ');"
-                +     "}"
+                + "if(imgInput[i].src){"
+                + "imgSrc+=(imgInput[i].src+' ');"
+                + "}"
                 + "}"
                 + "SpiderCrawl.recvImgUrl(imgSrc);"
                 + "var a=document.getElementsByTagName(\"a\");"
                 + "var aHref=\"\";"
                 + "for(i=0; i<a.length; i++){"
-                +     "aHref+=(a[i].href+' ');"
+                + "aHref+=(a[i].href+' ');"
                 + "}"
                 + "SpiderCrawl.recvPageUrl(aHref);"
                 + "SpiderCrawl.onCurPageScaned();");
@@ -1125,26 +1165,6 @@ public class SpiderService extends Service
             public boolean shouldOverrideUrlLoading(WebView view, String url)
             {
                 return false;
-            }
-
-            public void onPageFinished(WebView view, String url)
-            {
-                loadTime = (int)(System.currentTimeMillis() - loadTimer);
-                Log.i(TAG, "onPageFinished " + url + " loadTime:" + loadTime + " tmr:" + urlLoadTimer.get());
-                //Log.i(TAG, "curPageUrl "+curPageUrl);
-                if (!pageFinished)
-                {
-                    if (curPageUrl != null)
-                    {
-                        if (curPageUrl.equals(url))
-                        {
-                            urlLoadTimer.set(0);
-
-                            //Log.i(TAG, "scanPageWithJS");
-                            scanPageWithJS();
-                        }
-                    }
-                }
             }
 
             public void onPageStarted(WebView view, String url, Bitmap favicon)
@@ -1180,7 +1200,55 @@ public class SpiderService extends Service
             {
                 Log.i(TAG, failingUrl + " ReceivedError " + errorCode + "  "
                         + description);
+
+                if(curPageUrl.equals(failingUrl))
+                {
+                    failUrl=failingUrl;
+                    pageUrlFailCnt++;
+                    if(pageUrlFailCnt==MAX_FAIL_PAGE_TO_CHECK)
+                    {
+                        pageUrlFailCnt=0;
+                        singleThreadPool.execute(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                jniDataLock.lock();
+                                if(!Utils.isNetworkEffective())
+                                {
+                                    isNetworkFail=true;
+                                    state.set(STAT_PAUSE);
+                                }
+                                jniDataLock.unlock();
+                            }
+                        });
+                    }
+                }
             }
+
+            public void onPageFinished(WebView view, String url)
+            {
+                loadTime = (int)(System.currentTimeMillis() - loadTimer);
+                Log.i(TAG, "onPageFinished " + url + " loadTime:" + loadTime + " tmr:" + urlLoadTimer.get());
+                //Log.i(TAG, "curPageUrl "+curPageUrl);
+                if (!pageFinished)
+                {
+                    if (curPageUrl.equals(url))
+                    {
+                        urlLoadTimer.set(0);
+
+                        //Log.i(TAG, "scanPageWithJS");
+                        scanPageWithJS();
+
+                        if(!curPageUrl.equals(failUrl))
+                        {
+                            pageUrlFailCnt=0;
+                        }
+                    }
+
+                }
+            }
+
         });
 
         spider.setWebChromeClient(new WebChromeClient()
@@ -1210,37 +1278,6 @@ public class SpiderService extends Service
 
         spider.addJavascriptInterface(this, "SpiderCrawl");
 
-    }
-
-    private boolean findAndLoadNextPage()
-    {
-
-        jniDataLock.lock();
-        long searchTimer = System.currentTimeMillis();
-        curPageUrl = jniFindNextPageUrl(pageProcParam);
-        searchTime = (int)(System.currentTimeMillis() - searchTimer);
-        jniDataLock.unlock();
-
-
-        boolean newPageFind = false;
-        //Log.i(TAG, "loading:" + curPageUrl);
-        if (curPageUrl == null)
-        {
-            state.set(STAT_COMPLETE);
-            Log.i(TAG, "site scan complete");
-
-            pageProcessLock.unlock();
-        }
-        else
-        {
-            //Log.i(TAG, "new page url valid");
-            spider.loadUrl(curPageUrl);
-            urlLoadTimer.set(URL_TIME_OUT);
-            newPageFind = true;
-        }
-
-
-        return newPageFind;
     }
 
     private void spiderInit()
@@ -1306,7 +1343,7 @@ public class SpiderService extends Service
                 {
                     if (urlLoadTimer.decrementAndGet() == 0)
                     {
-                        Utils.handlerPostUntilSuccess(spiderHandler, new Runnable()
+                        spiderHandler.post(new Runnable()
                         {
 
                             @Override

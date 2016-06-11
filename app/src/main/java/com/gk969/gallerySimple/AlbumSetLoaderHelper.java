@@ -7,16 +7,6 @@ import android.util.Log;
 
 import com.gk969.UltimateImgSpider.SpiderProject;
 import com.gk969.UltimateImgSpider.StaticValue;
-import com.gk969.UltimateImgSpider.WatchdogService;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
 
 public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
 {
@@ -76,22 +66,19 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
 
         if(index < mSpiderProject.projectList.size())
         {
-            String fileName = String.format("%s/%s/%s/%d/%03d%s", appPath, mSpiderProject.projectList.get(index).site,
-                    StaticValue.THUMBNAIL_DIR_NAME, 0, 0, StaticValue.THUMBNAIL_FILE_EXT);
-
-            BitmapFactory.Options bmpOpts = new BitmapFactory.Options();
-            bmpOpts.inPreferredConfig = Bitmap.Config.RGB_565;
-            bmpOpts.inBitmap = container;
-            bmpOpts.inSampleSize = 1;
-
-            Bitmap bmp = BitmapFactory.decodeFile(fileName, bmpOpts);
-            if(bmp==null)
+            SpiderProject.ProjectInfo project=mSpiderProject.projectList.get(index);
+            if(project.thumbnail==null)
             {
-                container.eraseColor(Color.GRAY);
-                bmp = container;
+                String fileName = String.format("%s/%s/%s/%d/%03d%s", appPath, mSpiderProject.projectList.get(index).site,
+                        StaticValue.THUMBNAIL_DIR_NAME, 0, 0, StaticValue.THUMBNAIL_FILE_EXT);
+
+                BitmapFactory.Options bmpOpts = new BitmapFactory.Options();
+                bmpOpts.inPreferredConfig = Bitmap.Config.RGB_565;
+
+                project.thumbnail = BitmapFactory.decodeFile(fileName, bmpOpts);
             }
 
-            return bmp;
+            return project.thumbnail;
         }
 
         return null;

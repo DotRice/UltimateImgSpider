@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/main_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -12,8 +13,9 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_height="match_parent"
+            android:background="#000">
+
             <com.gk969.gallery.gallery3d.ui.GLRootView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -24,16 +26,72 @@
                 android:layout_height="match_parent"/>
         </FrameLayout>
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/projbar_height">
+        <ImageButton
+            android:id="@+id/button_add"
+            android:layout_width="@dimen/projbar_width"
+            android:layout_height="@dimen/button_add_size"
+            android:src="@drawable/new_proj_write"
+            android:scaleType="fitCenter"
+            android:background="#0000"
+            android:padding="3dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"/>
 
-            <include
-                layout="@layout/proj_bar"/>
+        <LinearLayout
+            android:id="@+id/album_ctrl_panel"
+            android:layout_width="@dimen/projbar_width"
+            android:layout_height="@dimen/projbar_height"
+            android:baselineAligned="false"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal">
 
-        </FrameLayout>
+            <ImageButton
+                android:id="@+id/buttonInfo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@drawable/big_menu"
+                android:contentDescription="@string/menu"
+                android:scaleType="fitCenter"
+                android:background="@drawable/button_background_selector" />
 
-    </LinearLayout>
+            <ImageButton
+                android:id="@+id/buttonPauseOrContinue"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@drawable/start"
+                android:contentDescription="@string/start"
+                android:scaleType="fitCenter"
+                android:background="@drawable/button_background_selector" />
+
+
+            <ImageButton
+                android:id="@+id/buttonSetting"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:src="@drawable/setting"
+                android:contentDescription="@string/settings"
+                android:scaleType="fitCenter"
+                android:background="@drawable/button_background_selector" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/button_info"
+            android:layout_width="@dimen/button_info_size"
+            android:layout_height="@dimen/button_info_size"
+            android:src="@drawable/info_write"
+            android:scaleType="fitCenter"
+            android:background="#0000"
+            android:padding="5dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+
+    </RelativeLayout>
 
     <include
         android:layout_height="match_parent"

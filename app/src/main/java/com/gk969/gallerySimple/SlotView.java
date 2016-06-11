@@ -40,7 +40,7 @@ public class SlotView extends GLView
     private static final int SLOT_PER_ROW_PORTRAIT = 3;
     private static final int SLOT_PER_ROW_LANDSCAPE = 5;
 
-    private static final int LABEL_HEIGHT_IN_DP = 15;
+    private static final float LABEL_HEIGHT_RATIO = 0.12f;
     private static final int LABEL_BACKGROUND_COLOR = 0x80000000;
 
     private static final float LABEL_TEXT_HEIGHT_RATIO = 0.7f;
@@ -188,6 +188,14 @@ public class SlotView extends GLView
     }
     OnScrollEndListener runOnScrollEnd;
 
+    public interface OnManuallyScrollListener
+    {
+        public void onManuallyScroll();
+    }
+    OnManuallyScrollListener runOnManuallyScroll;
+
+
+
     private boolean isTouching;
 
     private class MyGestureListener implements GestureRecognizer.Listener
@@ -224,6 +232,7 @@ public class SlotView extends GLView
         public boolean onScroll(float dx, float dy, float totalX, float totalY)
         {
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
+            runOnManuallyScroll.onManuallyScroll();
 
             mGLRootView.lockRenderThread();
 
@@ -356,11 +365,6 @@ public class SlotView extends GLView
         scrollBarHeightMin=Utils.DisplayUtil.dipToPx(context, SCROLL_BAR_HEIGHT_MIN_IN_DP);
         barScrollValid=Utils.DisplayUtil.dipToPx(context, BAR_SCROLL_VALID_IN_DP);
 
-        labelHeight = Utils.DisplayUtil.dipToPx(context, LABEL_HEIGHT_IN_DP);
-        labelTextSize=(int)(labelHeight*LABEL_TEXT_HEIGHT_RATIO);
-        labelTextTop=(labelHeight-labelTextSize)/2;
-        labelPadding=(int)(slotSize * LABEL_PADDING_RATIO);
-        
         mThumbnailLoader = loader;
         mThumbnailLoader.dispAreaScrollToIndex(0);
         mGLRootView = glRootView;
@@ -375,6 +379,7 @@ public class SlotView extends GLView
         GalleryUtils.setViewPointMatrix(mMatrix,
                 (right - left) / 2, (bottom - top) / 2, 0 - GalleryUtils.meterToPixel(0.3f));
 
+        stopAnimation();
         setViewSize(getWidth(), getHeight());
     }
 
@@ -388,7 +393,12 @@ public class SlotView extends GLView
         runOnScrollEnd=listener;
     }
 
-    public void setViewSize(int width, int height)
+    public void setOnManuallyScroll(OnManuallyScrollListener listener)
+    {
+        runOnManuallyScroll=listener;
+    }
+
+    private void setViewSize(int width, int height)
     {
         Log.i(TAG, "setViewSize " + width + " " + height);
 
@@ -400,7 +410,12 @@ public class SlotView extends GLView
 
         slotSize = (width - (slotsPerRow - 1) * slotGap) / slotsPerRow;
 
-        viewWidth=width;
+        labelHeight = (int)(slotSize*LABEL_HEIGHT_RATIO);
+        labelTextSize=(int)(labelHeight*LABEL_TEXT_HEIGHT_RATIO);
+        labelTextTop=(labelHeight-labelTextSize)/2;
+        labelPadding=(int)(slotSize * LABEL_PADDING_RATIO);
+
+        viewWidth = width;
         viewHeight = height;
 
         slotHeightWithGap = slotSize + slotGap;

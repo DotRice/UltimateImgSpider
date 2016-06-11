@@ -29,6 +29,8 @@ public class StaticValue
     public final static String PROJECT_DATA_DIR = "/data";
     public final static String PROJECT_DATA_NAME = "/project.dat";
     public final static String PROJECT_DATA_MD5 = "/hash.dat";
+    public final static String PROJECT_DATA_BACKUP_NAME = "/project.dat.backup";
+    public final static String PROJECT_DATA_BACKUP_MD5 = "/hash.dat.backup";
     public final static String PROJECT_PARAM_NAME = "/param.json";
 
 

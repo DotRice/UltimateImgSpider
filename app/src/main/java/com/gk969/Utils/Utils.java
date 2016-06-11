@@ -121,20 +121,6 @@ public class Utils
         return builder.toString();
     }
 
-    public static void handlerPostUntilSuccess(Handler handler, Runnable runnable)
-    {
-        while(!handler.post(runnable))
-        {
-            try
-            {
-                Thread.currentThread().sleep(100);
-            } catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public static String getFileMD5String(String filePath)
     {
         return byteArrayToHexString(getFileMD5(filePath));

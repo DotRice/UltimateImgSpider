@@ -1,5 +1,6 @@
 package com.gk969.UltimateImgSpider;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.gk969.Utils.Utils;
@@ -34,6 +35,7 @@ public class SpiderProject
         public long[] imgInfo;
         public long[] pageInfo;
         public int albumScrollDistance;
+        public Bitmap thumbnail;
 
 
         public ProjectInfo(String siteHost, long[] paramImgInfo, long[] paramPageInfo, int scrollDistance)
@@ -96,11 +98,12 @@ public class SpiderProject
                 Log.i(TAG, "project dir:" + file.getPath());
 
                 String dataDirPath=file.getPath() + StaticValue.PROJECT_DATA_DIR;
-                if(WatchdogService.projectDataIsSafe(dataDirPath))
+                String safeDataFileName=WatchdogService.getSafeProjectData(dataDirPath);
+                if(safeDataFileName!=null)
                 {
                     long[] imgInfo=new long[StaticValue.IMG_PARA_NUM];
                     long[] pageInfo=new long[StaticValue.PAGE_PARA_NUM];
-                    jniGetProjectInfoOnStart(dataDirPath + StaticValue.PROJECT_DATA_NAME, imgInfo, pageInfo);
+                    jniGetProjectInfoOnStart(dataDirPath + safeDataFileName, imgInfo, pageInfo);
 
                     int scrollDistance=0;
                     try
