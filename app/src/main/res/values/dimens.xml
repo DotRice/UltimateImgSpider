@@ -6,7 +6,11 @@
     <dimen name="projbar_width">250dp</dimen>
 
     <dimen name="button_info_size">40dp</dimen>
+    <dimen name="button_info_radius">20dp</dimen>
+
     <dimen name="button_add_size">50dp</dimen>
+    <dimen name="button_add_radius">25dp</dimen>
+
     <dimen name="projbar_height">40dp</dimen>
 
 

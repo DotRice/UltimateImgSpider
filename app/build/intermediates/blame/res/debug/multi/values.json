@@ -788,8 +788,8 @@
                     "startLine": 69,
                     "startColumn": 4,
                     "startOffset": 3766,
-                    "endColumn": 46,
-                    "endOffset": 3808
+                    "endColumn": 48,
+                    "endOffset": 3810
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -799,28 +799,9 @@
                 "to": {
                     "startLine": 70,
                     "startColumn": 4,
-                    "startOffset": 3813,
-                    "endColumn": 47,
-                    "endOffset": 3856
-                },
-                "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml",
-                    "position": {
-                        "startLine": 7,
-                        "startColumn": 4,
-                        "startOffset": 190,
-                        "endColumn": 47,
-                        "endOffset": 233
-                    }
-                }
-            },
-            {
-                "to": {
-                    "startLine": 71,
-                    "startColumn": 4,
-                    "startOffset": 3861,
+                    "startOffset": 3815,
                     "endColumn": 46,
-                    "endOffset": 3903
+                    "endOffset": 3857
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -828,11 +809,30 @@
             },
             {
                 "to": {
+                    "startLine": 71,
+                    "startColumn": 4,
+                    "startOffset": 3862,
+                    "endColumn": 49,
+                    "endOffset": 3907
+                },
+                "from": {
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml",
+                    "position": {
+                        "startLine": 8,
+                        "startColumn": 4,
+                        "startOffset": 239,
+                        "endColumn": 49,
+                        "endOffset": 284
+                    }
+                }
+            },
+            {
+                "to": {
                     "startLine": 72,
                     "startColumn": 4,
-                    "startOffset": 3908,
-                    "endColumn": 45,
-                    "endOffset": 3949
+                    "startOffset": 3912,
+                    "endColumn": 47,
+                    "endOffset": 3955
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -842,9 +842,9 @@
                 "to": {
                     "startLine": 73,
                     "startColumn": 4,
-                    "startOffset": 3954,
-                    "endColumn": 51,
-                    "endOffset": 4001
+                    "startOffset": 3960,
+                    "endColumn": 46,
+                    "endOffset": 4002
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -854,9 +854,9 @@
                 "to": {
                     "startLine": 74,
                     "startColumn": 4,
-                    "startOffset": 4006,
-                    "endColumn": 53,
-                    "endOffset": 4055
+                    "startOffset": 4007,
+                    "endColumn": 45,
+                    "endOffset": 4048
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -866,9 +866,9 @@
                 "to": {
                     "startLine": 75,
                     "startColumn": 4,
-                    "startOffset": 4060,
-                    "endColumn": 45,
-                    "endOffset": 4101
+                    "startOffset": 4053,
+                    "endColumn": 51,
+                    "endOffset": 4100
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -878,8 +878,8 @@
                 "to": {
                     "startLine": 76,
                     "startColumn": 4,
-                    "startOffset": 4106,
-                    "endColumn": 52,
+                    "startOffset": 4105,
+                    "endColumn": 53,
                     "endOffset": 4154
                 },
                 "from": {
@@ -891,8 +891,8 @@
                     "startLine": 77,
                     "startColumn": 4,
                     "startOffset": 4159,
-                    "endColumn": 50,
-                    "endOffset": 4205
+                    "endColumn": 45,
+                    "endOffset": 4200
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -902,9 +902,9 @@
                 "to": {
                     "startLine": 78,
                     "startColumn": 4,
-                    "startOffset": 4210,
-                    "endColumn": 44,
-                    "endOffset": 4250
+                    "startOffset": 4205,
+                    "endColumn": 52,
+                    "endOffset": 4253
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -914,9 +914,9 @@
                 "to": {
                     "startLine": 79,
                     "startColumn": 4,
-                    "startOffset": 4255,
-                    "endColumn": 55,
-                    "endOffset": 4306
+                    "startOffset": 4258,
+                    "endColumn": 50,
+                    "endOffset": 4304
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -926,9 +926,9 @@
                 "to": {
                     "startLine": 80,
                     "startColumn": 4,
-                    "startOffset": 4311,
-                    "endColumn": 61,
-                    "endOffset": 4368
+                    "startOffset": 4309,
+                    "endColumn": 44,
+                    "endOffset": 4349
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -938,9 +938,9 @@
                 "to": {
                     "startLine": 81,
                     "startColumn": 4,
-                    "startOffset": 4373,
-                    "endColumn": 66,
-                    "endOffset": 4435
+                    "startOffset": 4354,
+                    "endColumn": 55,
+                    "endOffset": 4405
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -950,9 +950,9 @@
                 "to": {
                     "startLine": 82,
                     "startColumn": 4,
-                    "startOffset": 4440,
-                    "endColumn": 66,
-                    "endOffset": 4502
+                    "startOffset": 4410,
+                    "endColumn": 61,
+                    "endOffset": 4467
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -962,9 +962,9 @@
                 "to": {
                     "startLine": 83,
                     "startColumn": 4,
-                    "startOffset": 4507,
-                    "endColumn": 64,
-                    "endOffset": 4567
+                    "startOffset": 4472,
+                    "endColumn": 66,
+                    "endOffset": 4534
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -974,9 +974,9 @@
                 "to": {
                     "startLine": 84,
                     "startColumn": 4,
-                    "startOffset": 4572,
-                    "endColumn": 64,
-                    "endOffset": 4632
+                    "startOffset": 4539,
+                    "endColumn": 66,
+                    "endOffset": 4601
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -986,9 +986,9 @@
                 "to": {
                     "startLine": 85,
                     "startColumn": 4,
-                    "startOffset": 4637,
-                    "endColumn": 54,
-                    "endOffset": 4687
+                    "startOffset": 4606,
+                    "endColumn": 64,
+                    "endOffset": 4666
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -998,9 +998,9 @@
                 "to": {
                     "startLine": 86,
                     "startColumn": 4,
-                    "startOffset": 4692,
-                    "endColumn": 57,
-                    "endOffset": 4745
+                    "startOffset": 4671,
+                    "endColumn": 64,
+                    "endOffset": 4731
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1010,9 +1010,9 @@
                 "to": {
                     "startLine": 87,
                     "startColumn": 4,
-                    "startOffset": 4750,
-                    "endColumn": 62,
-                    "endOffset": 4808
+                    "startOffset": 4736,
+                    "endColumn": 54,
+                    "endOffset": 4786
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1022,9 +1022,9 @@
                 "to": {
                     "startLine": 88,
                     "startColumn": 4,
-                    "startOffset": 4813,
-                    "endColumn": 59,
-                    "endOffset": 4868
+                    "startOffset": 4791,
+                    "endColumn": 57,
+                    "endOffset": 4844
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1034,9 +1034,9 @@
                 "to": {
                     "startLine": 89,
                     "startColumn": 4,
-                    "startOffset": 4873,
-                    "endColumn": 60,
-                    "endOffset": 4929
+                    "startOffset": 4849,
+                    "endColumn": 62,
+                    "endOffset": 4907
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1046,9 +1046,9 @@
                 "to": {
                     "startLine": 90,
                     "startColumn": 4,
-                    "startOffset": 4934,
-                    "endColumn": 63,
-                    "endOffset": 4993
+                    "startOffset": 4912,
+                    "endColumn": 59,
+                    "endOffset": 4967
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1058,9 +1058,9 @@
                 "to": {
                     "startLine": 91,
                     "startColumn": 4,
-                    "startOffset": 4998,
-                    "endColumn": 55,
-                    "endOffset": 5049
+                    "startOffset": 4972,
+                    "endColumn": 60,
+                    "endOffset": 5028
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1070,9 +1070,9 @@
                 "to": {
                     "startLine": 92,
                     "startColumn": 4,
-                    "startOffset": 5054,
-                    "endColumn": 60,
-                    "endOffset": 5110
+                    "startOffset": 5033,
+                    "endColumn": 63,
+                    "endOffset": 5092
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1082,9 +1082,9 @@
                 "to": {
                     "startLine": 93,
                     "startColumn": 4,
-                    "startOffset": 5115,
-                    "endColumn": 58,
-                    "endOffset": 5169
+                    "startOffset": 5097,
+                    "endColumn": 55,
+                    "endOffset": 5148
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1094,9 +1094,9 @@
                 "to": {
                     "startLine": 94,
                     "startColumn": 4,
-                    "startOffset": 5174,
-                    "endColumn": 49,
-                    "endOffset": 5219
+                    "startOffset": 5153,
+                    "endColumn": 60,
+                    "endOffset": 5209
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1106,9 +1106,9 @@
                 "to": {
                     "startLine": 95,
                     "startColumn": 4,
-                    "startOffset": 5224,
-                    "endColumn": 67,
-                    "endOffset": 5287
+                    "startOffset": 5214,
+                    "endColumn": 58,
+                    "endOffset": 5268
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1118,9 +1118,9 @@
                 "to": {
                     "startLine": 96,
                     "startColumn": 4,
-                    "startOffset": 5292,
-                    "endColumn": 74,
-                    "endOffset": 5362
+                    "startOffset": 5273,
+                    "endColumn": 49,
+                    "endOffset": 5318
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1130,9 +1130,9 @@
                 "to": {
                     "startLine": 97,
                     "startColumn": 4,
-                    "startOffset": 5367,
-                    "endColumn": 61,
-                    "endOffset": 5424
+                    "startOffset": 5323,
+                    "endColumn": 67,
+                    "endOffset": 5386
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1142,9 +1142,9 @@
                 "to": {
                     "startLine": 98,
                     "startColumn": 4,
-                    "startOffset": 5429,
-                    "endColumn": 68,
-                    "endOffset": 5493
+                    "startOffset": 5391,
+                    "endColumn": 74,
+                    "endOffset": 5461
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1154,9 +1154,9 @@
                 "to": {
                     "startLine": 99,
                     "startColumn": 4,
-                    "startOffset": 5498,
+                    "startOffset": 5466,
                     "endColumn": 61,
-                    "endOffset": 5555
+                    "endOffset": 5523
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1166,9 +1166,9 @@
                 "to": {
                     "startLine": 100,
                     "startColumn": 4,
-                    "startOffset": 5560,
+                    "startOffset": 5528,
                     "endColumn": 68,
-                    "endOffset": 5624
+                    "endOffset": 5592
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1178,9 +1178,9 @@
                 "to": {
                     "startLine": 101,
                     "startColumn": 4,
-                    "startOffset": 5629,
-                    "endColumn": 60,
-                    "endOffset": 5685
+                    "startOffset": 5597,
+                    "endColumn": 61,
+                    "endOffset": 5654
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1190,9 +1190,9 @@
                 "to": {
                     "startLine": 102,
                     "startColumn": 4,
-                    "startOffset": 5690,
-                    "endColumn": 67,
-                    "endOffset": 5753
+                    "startOffset": 5659,
+                    "endColumn": 68,
+                    "endOffset": 5723
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1202,9 +1202,9 @@
                 "to": {
                     "startLine": 103,
                     "startColumn": 4,
-                    "startOffset": 5758,
-                    "endColumn": 68,
-                    "endOffset": 5822
+                    "startOffset": 5728,
+                    "endColumn": 60,
+                    "endOffset": 5784
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1214,9 +1214,9 @@
                 "to": {
                     "startLine": 104,
                     "startColumn": 4,
-                    "startOffset": 5827,
-                    "endColumn": 75,
-                    "endOffset": 5898
+                    "startOffset": 5789,
+                    "endColumn": 67,
+                    "endOffset": 5852
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1226,9 +1226,9 @@
                 "to": {
                     "startLine": 105,
                     "startColumn": 4,
-                    "startOffset": 5903,
-                    "endColumn": 66,
-                    "endOffset": 5965
+                    "startOffset": 5857,
+                    "endColumn": 68,
+                    "endOffset": 5921
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1238,9 +1238,9 @@
                 "to": {
                     "startLine": 106,
                     "startColumn": 4,
-                    "startOffset": 5970,
-                    "endColumn": 73,
-                    "endOffset": 6039
+                    "startOffset": 5926,
+                    "endColumn": 75,
+                    "endOffset": 5997
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1250,9 +1250,9 @@
                 "to": {
                     "startLine": 107,
                     "startColumn": 4,
-                    "startOffset": 6044,
-                    "endColumn": 60,
-                    "endOffset": 6100
+                    "startOffset": 6002,
+                    "endColumn": 66,
+                    "endOffset": 6064
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1262,9 +1262,9 @@
                 "to": {
                     "startLine": 108,
                     "startColumn": 4,
-                    "startOffset": 6105,
-                    "endColumn": 67,
-                    "endOffset": 6168
+                    "startOffset": 6069,
+                    "endColumn": 73,
+                    "endOffset": 6138
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1274,9 +1274,9 @@
                 "to": {
                     "startLine": 109,
                     "startColumn": 4,
-                    "startOffset": 6173,
-                    "endColumn": 49,
-                    "endOffset": 6218
+                    "startOffset": 6143,
+                    "endColumn": 60,
+                    "endOffset": 6199
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1286,9 +1286,9 @@
                 "to": {
                     "startLine": 110,
                     "startColumn": 4,
-                    "startOffset": 6223,
-                    "endColumn": 49,
-                    "endOffset": 6268
+                    "startOffset": 6204,
+                    "endColumn": 67,
+                    "endOffset": 6267
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1298,8 +1298,8 @@
                 "to": {
                     "startLine": 111,
                     "startColumn": 4,
-                    "startOffset": 6273,
-                    "endColumn": 48,
+                    "startOffset": 6272,
+                    "endColumn": 49,
                     "endOffset": 6317
                 },
                 "from": {
@@ -1311,8 +1311,8 @@
                     "startLine": 112,
                     "startColumn": 4,
                     "startOffset": 6322,
-                    "endColumn": 48,
-                    "endOffset": 6366
+                    "endColumn": 49,
+                    "endOffset": 6367
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1322,8 +1322,8 @@
                 "to": {
                     "startLine": 113,
                     "startColumn": 4,
-                    "startOffset": 6371,
-                    "endColumn": 49,
+                    "startOffset": 6372,
+                    "endColumn": 48,
                     "endOffset": 6416
                 },
                 "from": {
@@ -1335,8 +1335,8 @@
                     "startLine": 114,
                     "startColumn": 4,
                     "startOffset": 6421,
-                    "endColumn": 44,
-                    "endOffset": 6461
+                    "endColumn": 48,
+                    "endOffset": 6465
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1346,9 +1346,9 @@
                 "to": {
                     "startLine": 115,
                     "startColumn": 4,
-                    "startOffset": 6466,
-                    "endColumn": 50,
-                    "endOffset": 6512
+                    "startOffset": 6470,
+                    "endColumn": 49,
+                    "endOffset": 6515
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1358,9 +1358,9 @@
                 "to": {
                     "startLine": 116,
                     "startColumn": 4,
-                    "startOffset": 6517,
-                    "endColumn": 56,
-                    "endOffset": 6569
+                    "startOffset": 6520,
+                    "endColumn": 44,
+                    "endOffset": 6560
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1370,9 +1370,9 @@
                 "to": {
                     "startLine": 117,
                     "startColumn": 4,
-                    "startOffset": 6574,
-                    "endColumn": 57,
-                    "endOffset": 6627
+                    "startOffset": 6565,
+                    "endColumn": 50,
+                    "endOffset": 6611
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1382,9 +1382,9 @@
                 "to": {
                     "startLine": 118,
                     "startColumn": 4,
-                    "startOffset": 6632,
-                    "endColumn": 57,
-                    "endOffset": 6685
+                    "startOffset": 6616,
+                    "endColumn": 56,
+                    "endOffset": 6668
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1394,9 +1394,9 @@
                 "to": {
                     "startLine": 119,
                     "startColumn": 4,
-                    "startOffset": 6690,
-                    "endColumn": 45,
-                    "endOffset": 6731
+                    "startOffset": 6673,
+                    "endColumn": 57,
+                    "endOffset": 6726
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1406,9 +1406,9 @@
                 "to": {
                     "startLine": 120,
                     "startColumn": 4,
-                    "startOffset": 6736,
-                    "endColumn": 53,
-                    "endOffset": 6785
+                    "startOffset": 6731,
+                    "endColumn": 57,
+                    "endOffset": 6784
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1418,9 +1418,9 @@
                 "to": {
                     "startLine": 121,
                     "startColumn": 4,
-                    "startOffset": 6790,
-                    "endColumn": 52,
-                    "endOffset": 6838
+                    "startOffset": 6789,
+                    "endColumn": 45,
+                    "endOffset": 6830
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1430,9 +1430,9 @@
                 "to": {
                     "startLine": 122,
                     "startColumn": 4,
-                    "startOffset": 6843,
-                    "endColumn": 68,
-                    "endOffset": 6907
+                    "startOffset": 6835,
+                    "endColumn": 53,
+                    "endOffset": 6884
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1442,9 +1442,9 @@
                 "to": {
                     "startLine": 123,
                     "startColumn": 4,
-                    "startOffset": 6912,
-                    "endColumn": 75,
-                    "endOffset": 6983
+                    "startOffset": 6889,
+                    "endColumn": 52,
+                    "endOffset": 6937
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1454,9 +1454,9 @@
                 "to": {
                     "startLine": 124,
                     "startColumn": 4,
-                    "startOffset": 6988,
-                    "endColumn": 57,
-                    "endOffset": 7041
+                    "startOffset": 6942,
+                    "endColumn": 68,
+                    "endOffset": 7006
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1466,9 +1466,9 @@
                 "to": {
                     "startLine": 125,
                     "startColumn": 4,
-                    "startOffset": 7046,
-                    "endColumn": 63,
-                    "endOffset": 7105
+                    "startOffset": 7011,
+                    "endColumn": 75,
+                    "endOffset": 7082
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1478,9 +1478,9 @@
                 "to": {
                     "startLine": 126,
                     "startColumn": 4,
-                    "startOffset": 7110,
-                    "endColumn": 64,
-                    "endOffset": 7170
+                    "startOffset": 7087,
+                    "endColumn": 57,
+                    "endOffset": 7140
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1490,9 +1490,9 @@
                 "to": {
                     "startLine": 127,
                     "startColumn": 4,
-                    "startOffset": 7175,
-                    "endColumn": 58,
-                    "endOffset": 7229
+                    "startOffset": 7145,
+                    "endColumn": 63,
+                    "endOffset": 7204
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1502,9 +1502,9 @@
                 "to": {
                     "startLine": 128,
                     "startColumn": 4,
-                    "startOffset": 7234,
-                    "endColumn": 65,
-                    "endOffset": 7295
+                    "startOffset": 7209,
+                    "endColumn": 64,
+                    "endOffset": 7269
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1514,9 +1514,9 @@
                 "to": {
                     "startLine": 129,
                     "startColumn": 4,
-                    "startOffset": 7300,
-                    "endColumn": 56,
-                    "endOffset": 7352
+                    "startOffset": 7274,
+                    "endColumn": 58,
+                    "endOffset": 7328
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1526,9 +1526,9 @@
                 "to": {
                     "startLine": 130,
                     "startColumn": 4,
-                    "startOffset": 7357,
-                    "endColumn": 64,
-                    "endOffset": 7417
+                    "startOffset": 7333,
+                    "endColumn": 65,
+                    "endOffset": 7394
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1538,9 +1538,9 @@
                 "to": {
                     "startLine": 131,
                     "startColumn": 4,
-                    "startOffset": 7422,
-                    "endColumn": 55,
-                    "endOffset": 7473
+                    "startOffset": 7399,
+                    "endColumn": 56,
+                    "endOffset": 7451
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1550,9 +1550,9 @@
                 "to": {
                     "startLine": 132,
                     "startColumn": 4,
-                    "startOffset": 7478,
-                    "endColumn": 63,
-                    "endOffset": 7537
+                    "startOffset": 7456,
+                    "endColumn": 64,
+                    "endOffset": 7516
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1562,9 +1562,9 @@
                 "to": {
                     "startLine": 133,
                     "startColumn": 4,
-                    "startOffset": 7542,
-                    "endColumn": 62,
-                    "endOffset": 7600
+                    "startOffset": 7521,
+                    "endColumn": 55,
+                    "endOffset": 7572
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1574,9 +1574,9 @@
                 "to": {
                     "startLine": 134,
                     "startColumn": 4,
-                    "startOffset": 7605,
-                    "endColumn": 61,
-                    "endOffset": 7662
+                    "startOffset": 7577,
+                    "endColumn": 63,
+                    "endOffset": 7636
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1586,9 +1586,9 @@
                 "to": {
                     "startLine": 135,
                     "startColumn": 4,
-                    "startOffset": 7667,
-                    "endColumn": 55,
-                    "endOffset": 7718
+                    "startOffset": 7641,
+                    "endColumn": 62,
+                    "endOffset": 7699
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1598,9 +1598,9 @@
                 "to": {
                     "startLine": 136,
                     "startColumn": 4,
-                    "startOffset": 7723,
-                    "endColumn": 52,
-                    "endOffset": 7771
+                    "startOffset": 7704,
+                    "endColumn": 61,
+                    "endOffset": 7761
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1610,9 +1610,9 @@
                 "to": {
                     "startLine": 137,
                     "startColumn": 4,
-                    "startOffset": 7776,
-                    "endColumn": 50,
-                    "endOffset": 7822
+                    "startOffset": 7766,
+                    "endColumn": 55,
+                    "endOffset": 7817
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1622,9 +1622,9 @@
                 "to": {
                     "startLine": 138,
                     "startColumn": 4,
-                    "startOffset": 7827,
-                    "endColumn": 45,
-                    "endOffset": 7868
+                    "startOffset": 7822,
+                    "endColumn": 52,
+                    "endOffset": 7870
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1634,9 +1634,9 @@
                 "to": {
                     "startLine": 139,
                     "startColumn": 4,
-                    "startOffset": 7873,
-                    "endColumn": 46,
-                    "endOffset": 7915
+                    "startOffset": 7875,
+                    "endColumn": 50,
+                    "endOffset": 7921
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1646,9 +1646,9 @@
                 "to": {
                     "startLine": 140,
                     "startColumn": 4,
-                    "startOffset": 7920,
-                    "endColumn": 49,
-                    "endOffset": 7965
+                    "startOffset": 7926,
+                    "endColumn": 45,
+                    "endOffset": 7967
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1658,9 +1658,9 @@
                 "to": {
                     "startLine": 141,
                     "startColumn": 4,
-                    "startOffset": 7970,
-                    "endColumn": 47,
-                    "endOffset": 8013
+                    "startOffset": 7972,
+                    "endColumn": 46,
+                    "endOffset": 8014
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1670,9 +1670,9 @@
                 "to": {
                     "startLine": 142,
                     "startColumn": 4,
-                    "startOffset": 8018,
-                    "endColumn": 51,
-                    "endOffset": 8065
+                    "startOffset": 8019,
+                    "endColumn": 49,
+                    "endOffset": 8064
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1682,9 +1682,9 @@
                 "to": {
                     "startLine": 143,
                     "startColumn": 4,
-                    "startOffset": 8070,
+                    "startOffset": 8069,
                     "endColumn": 47,
-                    "endOffset": 8113
+                    "endOffset": 8112
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1694,9 +1694,9 @@
                 "to": {
                     "startLine": 144,
                     "startColumn": 4,
-                    "startOffset": 8118,
-                    "endColumn": 47,
-                    "endOffset": 8161
+                    "startOffset": 8117,
+                    "endColumn": 51,
+                    "endOffset": 8164
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1706,9 +1706,9 @@
                 "to": {
                     "startLine": 145,
                     "startColumn": 4,
-                    "startOffset": 8166,
-                    "endColumn": 45,
-                    "endOffset": 8207
+                    "startOffset": 8169,
+                    "endColumn": 47,
+                    "endOffset": 8212
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1718,9 +1718,9 @@
                 "to": {
                     "startLine": 146,
                     "startColumn": 4,
-                    "startOffset": 8212,
-                    "endColumn": 44,
-                    "endOffset": 8252
+                    "startOffset": 8217,
+                    "endColumn": 47,
+                    "endOffset": 8260
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1730,9 +1730,9 @@
                 "to": {
                     "startLine": 147,
                     "startColumn": 4,
-                    "startOffset": 8257,
-                    "endColumn": 59,
-                    "endOffset": 8312
+                    "startOffset": 8265,
+                    "endColumn": 45,
+                    "endOffset": 8306
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1742,9 +1742,9 @@
                 "to": {
                     "startLine": 148,
                     "startColumn": 4,
-                    "startOffset": 8317,
-                    "endColumn": 66,
-                    "endOffset": 8379
+                    "startOffset": 8311,
+                    "endColumn": 44,
+                    "endOffset": 8351
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1754,9 +1754,9 @@
                 "to": {
                     "startLine": 149,
                     "startColumn": 4,
-                    "startOffset": 8384,
-                    "endColumn": 52,
-                    "endOffset": 8432
+                    "startOffset": 8356,
+                    "endColumn": 59,
+                    "endOffset": 8411
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1766,9 +1766,9 @@
                 "to": {
                     "startLine": 150,
                     "startColumn": 4,
-                    "startOffset": 8437,
-                    "endColumn": 59,
-                    "endOffset": 8492
+                    "startOffset": 8416,
+                    "endColumn": 66,
+                    "endOffset": 8478
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1778,9 +1778,9 @@
                 "to": {
                     "startLine": 151,
                     "startColumn": 4,
-                    "startOffset": 8497,
-                    "endColumn": 45,
-                    "endOffset": 8538
+                    "startOffset": 8483,
+                    "endColumn": 52,
+                    "endOffset": 8531
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1790,9 +1790,9 @@
                 "to": {
                     "startLine": 152,
                     "startColumn": 4,
-                    "startOffset": 8543,
-                    "endColumn": 45,
-                    "endOffset": 8584
+                    "startOffset": 8536,
+                    "endColumn": 59,
+                    "endOffset": 8591
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1802,9 +1802,9 @@
                 "to": {
                     "startLine": 153,
                     "startColumn": 4,
-                    "startOffset": 8589,
-                    "endColumn": 54,
-                    "endOffset": 8639
+                    "startOffset": 8596,
+                    "endColumn": 45,
+                    "endOffset": 8637
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1814,9 +1814,9 @@
                 "to": {
                     "startLine": 154,
                     "startColumn": 4,
-                    "startOffset": 8644,
-                    "endColumn": 60,
-                    "endOffset": 8700
+                    "startOffset": 8642,
+                    "endColumn": 45,
+                    "endOffset": 8683
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1826,9 +1826,9 @@
                 "to": {
                     "startLine": 155,
                     "startColumn": 4,
-                    "startOffset": 8705,
-                    "endColumn": 61,
-                    "endOffset": 8762
+                    "startOffset": 8688,
+                    "endColumn": 54,
+                    "endOffset": 8738
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1838,9 +1838,9 @@
                 "to": {
                     "startLine": 156,
                     "startColumn": 4,
-                    "startOffset": 8767,
-                    "endColumn": 55,
-                    "endOffset": 8818
+                    "startOffset": 8743,
+                    "endColumn": 60,
+                    "endOffset": 8799
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1850,9 +1850,9 @@
                 "to": {
                     "startLine": 157,
                     "startColumn": 4,
-                    "startOffset": 8823,
-                    "endColumn": 62,
-                    "endOffset": 8881
+                    "startOffset": 8804,
+                    "endColumn": 61,
+                    "endOffset": 8861
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1862,9 +1862,9 @@
                 "to": {
                     "startLine": 158,
                     "startColumn": 4,
-                    "startOffset": 8886,
-                    "endColumn": 53,
-                    "endOffset": 8935
+                    "startOffset": 8866,
+                    "endColumn": 55,
+                    "endOffset": 8917
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1874,9 +1874,9 @@
                 "to": {
                     "startLine": 159,
                     "startColumn": 4,
-                    "startOffset": 8940,
-                    "endColumn": 60,
-                    "endOffset": 8996
+                    "startOffset": 8922,
+                    "endColumn": 62,
+                    "endOffset": 8980
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1886,9 +1886,9 @@
                 "to": {
                     "startLine": 160,
                     "startColumn": 4,
-                    "startOffset": 9001,
-                    "endColumn": 54,
-                    "endOffset": 9051
+                    "startOffset": 8985,
+                    "endColumn": 53,
+                    "endOffset": 9034
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1898,9 +1898,9 @@
                 "to": {
                     "startLine": 161,
                     "startColumn": 4,
-                    "startOffset": 9056,
-                    "endColumn": 62,
-                    "endOffset": 9114
+                    "startOffset": 9039,
+                    "endColumn": 60,
+                    "endOffset": 9095
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1910,9 +1910,9 @@
                 "to": {
                     "startLine": 162,
                     "startColumn": 4,
-                    "startOffset": 9119,
-                    "endColumn": 53,
-                    "endOffset": 9168
+                    "startOffset": 9100,
+                    "endColumn": 54,
+                    "endOffset": 9150
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1922,9 +1922,9 @@
                 "to": {
                     "startLine": 163,
                     "startColumn": 4,
-                    "startOffset": 9173,
-                    "endColumn": 49,
-                    "endOffset": 9218
+                    "startOffset": 9155,
+                    "endColumn": 62,
+                    "endOffset": 9213
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1934,9 +1934,9 @@
                 "to": {
                     "startLine": 164,
                     "startColumn": 4,
-                    "startOffset": 9223,
-                    "endColumn": 56,
-                    "endOffset": 9275
+                    "startOffset": 9218,
+                    "endColumn": 53,
+                    "endOffset": 9267
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1946,9 +1946,9 @@
                 "to": {
                     "startLine": 165,
                     "startColumn": 4,
-                    "startOffset": 9280,
-                    "endColumn": 56,
-                    "endOffset": 9332
+                    "startOffset": 9272,
+                    "endColumn": 49,
+                    "endOffset": 9317
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1958,9 +1958,9 @@
                 "to": {
                     "startLine": 166,
                     "startColumn": 4,
-                    "startOffset": 9337,
-                    "endColumn": 62,
-                    "endOffset": 9395
+                    "startOffset": 9322,
+                    "endColumn": 56,
+                    "endOffset": 9374
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1970,9 +1970,9 @@
                 "to": {
                     "startLine": 167,
                     "startColumn": 4,
-                    "startOffset": 9400,
-                    "endColumn": 58,
-                    "endOffset": 9454
+                    "startOffset": 9379,
+                    "endColumn": 56,
+                    "endOffset": 9431
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1982,9 +1982,9 @@
                 "to": {
                     "startLine": 168,
                     "startColumn": 4,
-                    "startOffset": 9459,
-                    "endColumn": 64,
-                    "endOffset": 9519
+                    "startOffset": 9436,
+                    "endColumn": 62,
+                    "endOffset": 9494
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -1994,9 +1994,9 @@
                 "to": {
                     "startLine": 169,
                     "startColumn": 4,
-                    "startOffset": 9524,
-                    "endColumn": 65,
-                    "endOffset": 9585
+                    "startOffset": 9499,
+                    "endColumn": 58,
+                    "endOffset": 9553
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2006,9 +2006,9 @@
                 "to": {
                     "startLine": 170,
                     "startColumn": 4,
-                    "startOffset": 9590,
-                    "endColumn": 49,
-                    "endOffset": 9635
+                    "startOffset": 9558,
+                    "endColumn": 64,
+                    "endOffset": 9618
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2018,9 +2018,9 @@
                 "to": {
                     "startLine": 171,
                     "startColumn": 4,
-                    "startOffset": 9640,
-                    "endColumn": 55,
-                    "endOffset": 9691
+                    "startOffset": 9623,
+                    "endColumn": 65,
+                    "endOffset": 9684
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2030,9 +2030,9 @@
                 "to": {
                     "startLine": 172,
                     "startColumn": 4,
-                    "startOffset": 9696,
-                    "endColumn": 56,
-                    "endOffset": 9748
+                    "startOffset": 9689,
+                    "endColumn": 49,
+                    "endOffset": 9734
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2042,9 +2042,9 @@
                 "to": {
                     "startLine": 173,
                     "startColumn": 4,
-                    "startOffset": 9753,
-                    "endColumn": 46,
-                    "endOffset": 9795
+                    "startOffset": 9739,
+                    "endColumn": 55,
+                    "endOffset": 9790
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2054,9 +2054,9 @@
                 "to": {
                     "startLine": 174,
                     "startColumn": 4,
-                    "startOffset": 9800,
-                    "endColumn": 45,
-                    "endOffset": 9841
+                    "startOffset": 9795,
+                    "endColumn": 56,
+                    "endOffset": 9847
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2066,9 +2066,9 @@
                 "to": {
                     "startLine": 175,
                     "startColumn": 4,
-                    "startOffset": 9846,
-                    "endColumn": 47,
-                    "endOffset": 9889
+                    "startOffset": 9852,
+                    "endColumn": 46,
+                    "endOffset": 9894
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2078,8 +2078,8 @@
                 "to": {
                     "startLine": 176,
                     "startColumn": 4,
-                    "startOffset": 9894,
-                    "endColumn": 50,
+                    "startOffset": 9899,
+                    "endColumn": 45,
                     "endOffset": 9940
                 },
                 "from": {
@@ -2091,8 +2091,8 @@
                     "startLine": 177,
                     "startColumn": 4,
                     "startOffset": 9945,
-                    "endColumn": 49,
-                    "endOffset": 9990
+                    "endColumn": 47,
+                    "endOffset": 9988
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2102,9 +2102,9 @@
                 "to": {
                     "startLine": 178,
                     "startColumn": 4,
-                    "startOffset": 9995,
-                    "endColumn": 47,
-                    "endOffset": 10038
+                    "startOffset": 9993,
+                    "endColumn": 50,
+                    "endOffset": 10039
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2114,9 +2114,9 @@
                 "to": {
                     "startLine": 179,
                     "startColumn": 4,
-                    "startOffset": 10043,
-                    "endColumn": 45,
-                    "endOffset": 10084
+                    "startOffset": 10044,
+                    "endColumn": 49,
+                    "endOffset": 10089
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2126,8 +2126,8 @@
                 "to": {
                     "startLine": 180,
                     "startColumn": 4,
-                    "startOffset": 10089,
-                    "endColumn": 52,
+                    "startOffset": 10094,
+                    "endColumn": 47,
                     "endOffset": 10137
                 },
                 "from": {
@@ -2139,8 +2139,8 @@
                     "startLine": 181,
                     "startColumn": 4,
                     "startOffset": 10142,
-                    "endColumn": 44,
-                    "endOffset": 10182
+                    "endColumn": 45,
+                    "endOffset": 10183
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2150,9 +2150,9 @@
                 "to": {
                     "startLine": 182,
                     "startColumn": 4,
-                    "startOffset": 10187,
-                    "endColumn": 49,
-                    "endOffset": 10232
+                    "startOffset": 10188,
+                    "endColumn": 52,
+                    "endOffset": 10236
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2162,9 +2162,9 @@
                 "to": {
                     "startLine": 183,
                     "startColumn": 4,
-                    "startOffset": 10237,
-                    "endColumn": 46,
-                    "endOffset": 10279
+                    "startOffset": 10241,
+                    "endColumn": 44,
+                    "endOffset": 10281
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2174,9 +2174,9 @@
                 "to": {
                     "startLine": 184,
                     "startColumn": 4,
-                    "startOffset": 10284,
-                    "endColumn": 47,
-                    "endOffset": 10327
+                    "startOffset": 10286,
+                    "endColumn": 49,
+                    "endOffset": 10331
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2186,9 +2186,9 @@
                 "to": {
                     "startLine": 185,
                     "startColumn": 4,
-                    "startOffset": 10332,
+                    "startOffset": 10336,
                     "endColumn": 46,
-                    "endOffset": 10374
+                    "endOffset": 10378
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2198,9 +2198,9 @@
                 "to": {
                     "startLine": 186,
                     "startColumn": 4,
-                    "startOffset": 10379,
+                    "startOffset": 10383,
                     "endColumn": 47,
-                    "endOffset": 10422
+                    "endOffset": 10426
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2210,9 +2210,9 @@
                 "to": {
                     "startLine": 187,
                     "startColumn": 4,
-                    "startOffset": 10427,
-                    "endColumn": 45,
-                    "endOffset": 10468
+                    "startOffset": 10431,
+                    "endColumn": 46,
+                    "endOffset": 10473
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2222,9 +2222,9 @@
                 "to": {
                     "startLine": 188,
                     "startColumn": 4,
-                    "startOffset": 10473,
-                    "endColumn": 44,
-                    "endOffset": 10513
+                    "startOffset": 10478,
+                    "endColumn": 47,
+                    "endOffset": 10521
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2234,33 +2234,33 @@
                 "to": {
                     "startLine": 189,
                     "startColumn": 4,
-                    "startOffset": 10518,
-                    "endColumn": 54,
-                    "endOffset": 10568
+                    "startOffset": 10526,
+                    "endColumn": 45,
+                    "endOffset": 10567
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
                 }
             },
             {
                 "to": {
                     "startLine": 190,
                     "startColumn": 4,
-                    "startOffset": 10573,
-                    "endColumn": 55,
-                    "endOffset": 10624
+                    "startOffset": 10572,
+                    "endColumn": 44,
+                    "endOffset": 10612
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
                 }
             },
             {
                 "to": {
                     "startLine": 191,
                     "startColumn": 4,
-                    "startOffset": 10629,
-                    "endColumn": 61,
-                    "endOffset": 10686
+                    "startOffset": 10617,
+                    "endColumn": 54,
+                    "endOffset": 10667
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
@@ -2270,9 +2270,9 @@
                 "to": {
                     "startLine": 192,
                     "startColumn": 4,
-                    "startOffset": 10691,
-                    "endColumn": 62,
-                    "endOffset": 10749
+                    "startOffset": 10672,
+                    "endColumn": 55,
+                    "endOffset": 10723
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
@@ -2282,32 +2282,32 @@
                 "to": {
                     "startLine": 193,
                     "startColumn": 4,
-                    "startOffset": 10754,
-                    "endColumn": 47,
-                    "endOffset": 10797
+                    "startOffset": 10728,
+                    "endColumn": 61,
+                    "endOffset": 10785
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
                 }
             },
             {
                 "to": {
                     "startLine": 194,
                     "startColumn": 4,
-                    "startOffset": 10802,
-                    "endColumn": 47,
-                    "endOffset": 10845
+                    "startOffset": 10790,
+                    "endColumn": 62,
+                    "endOffset": 10848
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
                 }
             },
             {
                 "to": {
                     "startLine": 195,
                     "startColumn": 4,
-                    "startOffset": 10850,
-                    "endColumn": 50,
+                    "startOffset": 10853,
+                    "endColumn": 47,
                     "endOffset": 10896
                 },
                 "from": {
@@ -2319,8 +2319,8 @@
                     "startLine": 196,
                     "startColumn": 4,
                     "startOffset": 10901,
-                    "endColumn": 50,
-                    "endOffset": 10947
+                    "endColumn": 47,
+                    "endOffset": 10944
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
@@ -2330,33 +2330,33 @@
                 "to": {
                     "startLine": 197,
                     "startColumn": 4,
-                    "startOffset": 10952,
-                    "endColumn": 33,
-                    "endOffset": 10981
+                    "startOffset": 10949,
+                    "endColumn": 50,
+                    "endOffset": 10995
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
                 }
             },
             {
                 "to": {
                     "startLine": 198,
                     "startColumn": 4,
-                    "startOffset": 10986,
-                    "endColumn": 60,
-                    "endOffset": 11042
+                    "startOffset": 11000,
+                    "endColumn": 50,
+                    "endOffset": 11046
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
                 }
             },
             {
                 "to": {
                     "startLine": 199,
                     "startColumn": 4,
-                    "startOffset": 11047,
-                    "endColumn": 41,
-                    "endOffset": 11084
+                    "startOffset": 11051,
+                    "endColumn": 33,
+                    "endOffset": 11080
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2366,9 +2366,9 @@
                 "to": {
                     "startLine": 200,
                     "startColumn": 4,
-                    "startOffset": 11089,
-                    "endColumn": 35,
-                    "endOffset": 11120
+                    "startOffset": 11085,
+                    "endColumn": 60,
+                    "endOffset": 11141
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2378,8 +2378,8 @@
                 "to": {
                     "startLine": 201,
                     "startColumn": 4,
-                    "startOffset": 11125,
-                    "endColumn": 62,
+                    "startOffset": 11146,
+                    "endColumn": 41,
                     "endOffset": 11183
                 },
                 "from": {
@@ -2391,8 +2391,8 @@
                     "startLine": 202,
                     "startColumn": 4,
                     "startOffset": 11188,
-                    "endColumn": 37,
-                    "endOffset": 11221
+                    "endColumn": 35,
+                    "endOffset": 11219
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2402,9 +2402,9 @@
                 "to": {
                     "startLine": 203,
                     "startColumn": 4,
-                    "startOffset": 11226,
-                    "endColumn": 36,
-                    "endOffset": 11258
+                    "startOffset": 11224,
+                    "endColumn": 62,
+                    "endOffset": 11282
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2414,9 +2414,9 @@
                 "to": {
                     "startLine": 204,
                     "startColumn": 4,
-                    "startOffset": 11263,
-                    "endColumn": 41,
-                    "endOffset": 11300
+                    "startOffset": 11287,
+                    "endColumn": 37,
+                    "endOffset": 11320
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2426,9 +2426,9 @@
                 "to": {
                     "startLine": 205,
                     "startColumn": 4,
-                    "startOffset": 11305,
-                    "endColumn": 64,
-                    "endOffset": 11365
+                    "startOffset": 11325,
+                    "endColumn": 36,
+                    "endOffset": 11357
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2438,9 +2438,9 @@
                 "to": {
                     "startLine": 206,
                     "startColumn": 4,
-                    "startOffset": 11370,
-                    "endColumn": 153,
-                    "endOffset": 11519
+                    "startOffset": 11362,
+                    "endColumn": 41,
+                    "endOffset": 11399
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2450,9 +2450,9 @@
                 "to": {
                     "startLine": 207,
                     "startColumn": 4,
-                    "startOffset": 11524,
-                    "endColumn": 37,
-                    "endOffset": 11557
+                    "startOffset": 11404,
+                    "endColumn": 64,
+                    "endOffset": 11464
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2462,9 +2462,9 @@
                 "to": {
                     "startLine": 208,
                     "startColumn": 4,
-                    "startOffset": 11562,
-                    "endColumn": 48,
-                    "endOffset": 11606
+                    "startOffset": 11469,
+                    "endColumn": 153,
+                    "endOffset": 11618
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2474,9 +2474,9 @@
                 "to": {
                     "startLine": 209,
                     "startColumn": 4,
-                    "startOffset": 11611,
-                    "endColumn": 40,
-                    "endOffset": 11647
+                    "startOffset": 11623,
+                    "endColumn": 37,
+                    "endOffset": 11656
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2486,9 +2486,9 @@
                 "to": {
                     "startLine": 210,
                     "startColumn": 4,
-                    "startOffset": 11652,
-                    "endColumn": 47,
-                    "endOffset": 11695
+                    "startOffset": 11661,
+                    "endColumn": 48,
+                    "endOffset": 11705
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2498,9 +2498,9 @@
                 "to": {
                     "startLine": 211,
                     "startColumn": 4,
-                    "startOffset": 11700,
-                    "endColumn": 36,
-                    "endOffset": 11732
+                    "startOffset": 11710,
+                    "endColumn": 40,
+                    "endOffset": 11746
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2510,9 +2510,9 @@
                 "to": {
                     "startLine": 212,
                     "startColumn": 4,
-                    "startOffset": 11737,
-                    "endColumn": 35,
-                    "endOffset": 11768
+                    "startOffset": 11751,
+                    "endColumn": 47,
+                    "endOffset": 11794
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2522,9 +2522,9 @@
                 "to": {
                     "startLine": 213,
                     "startColumn": 4,
-                    "startOffset": 11773,
-                    "endColumn": 38,
-                    "endOffset": 11807
+                    "startOffset": 11799,
+                    "endColumn": 36,
+                    "endOffset": 11831
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2534,9 +2534,9 @@
                 "to": {
                     "startLine": 214,
                     "startColumn": 4,
-                    "startOffset": 11812,
+                    "startOffset": 11836,
                     "endColumn": 35,
-                    "endOffset": 11843
+                    "endOffset": 11867
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2546,9 +2546,9 @@
                 "to": {
                     "startLine": 215,
                     "startColumn": 4,
-                    "startOffset": 11848,
-                    "endColumn": 35,
-                    "endOffset": 11879
+                    "startOffset": 11872,
+                    "endColumn": 38,
+                    "endOffset": 11906
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2558,9 +2558,9 @@
                 "to": {
                     "startLine": 216,
                     "startColumn": 4,
-                    "startOffset": 11884,
+                    "startOffset": 11911,
                     "endColumn": 35,
-                    "endOffset": 11915
+                    "endOffset": 11942
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2570,9 +2570,9 @@
                 "to": {
                     "startLine": 217,
                     "startColumn": 4,
-                    "startOffset": 11920,
-                    "endColumn": 53,
-                    "endOffset": 11969
+                    "startOffset": 11947,
+                    "endColumn": 35,
+                    "endOffset": 11978
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2582,9 +2582,9 @@
                 "to": {
                     "startLine": 218,
                     "startColumn": 4,
-                    "startOffset": 11974,
-                    "endColumn": 57,
-                    "endOffset": 12027
+                    "startOffset": 11983,
+                    "endColumn": 35,
+                    "endOffset": 12014
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2594,9 +2594,9 @@
                 "to": {
                     "startLine": 219,
                     "startColumn": 4,
-                    "startOffset": 12032,
-                    "endColumn": 43,
-                    "endOffset": 12071
+                    "startOffset": 12019,
+                    "endColumn": 53,
+                    "endOffset": 12068
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2606,9 +2606,9 @@
                 "to": {
                     "startLine": 220,
                     "startColumn": 4,
-                    "startOffset": 12076,
-                    "endColumn": 50,
-                    "endOffset": 12122
+                    "startOffset": 12073,
+                    "endColumn": 57,
+                    "endOffset": 12126
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2618,9 +2618,9 @@
                 "to": {
                     "startLine": 221,
                     "startColumn": 4,
-                    "startOffset": 12127,
-                    "endColumn": 44,
-                    "endOffset": 12167
+                    "startOffset": 12131,
+                    "endColumn": 43,
+                    "endOffset": 12170
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2630,8 +2630,8 @@
                 "to": {
                     "startLine": 222,
                     "startColumn": 4,
-                    "startOffset": 12172,
-                    "endColumn": 53,
+                    "startOffset": 12175,
+                    "endColumn": 50,
                     "endOffset": 12221
                 },
                 "from": {
@@ -2643,8 +2643,8 @@
                     "startLine": 223,
                     "startColumn": 4,
                     "startOffset": 12226,
-                    "endColumn": 51,
-                    "endOffset": 12273
+                    "endColumn": 44,
+                    "endOffset": 12266
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2654,9 +2654,9 @@
                 "to": {
                     "startLine": 224,
                     "startColumn": 4,
-                    "startOffset": 12278,
+                    "startOffset": 12271,
                     "endColumn": 53,
-                    "endOffset": 12327
+                    "endOffset": 12320
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2666,9 +2666,9 @@
                 "to": {
                     "startLine": 225,
                     "startColumn": 4,
-                    "startOffset": 12332,
-                    "endColumn": 59,
-                    "endOffset": 12387
+                    "startOffset": 12325,
+                    "endColumn": 51,
+                    "endOffset": 12372
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2678,9 +2678,9 @@
                 "to": {
                     "startLine": 226,
                     "startColumn": 4,
-                    "startOffset": 12392,
-                    "endColumn": 57,
-                    "endOffset": 12445
+                    "startOffset": 12377,
+                    "endColumn": 53,
+                    "endOffset": 12426
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2690,9 +2690,9 @@
                 "to": {
                     "startLine": 227,
                     "startColumn": 4,
-                    "startOffset": 12450,
-                    "endColumn": 35,
-                    "endOffset": 12481
+                    "startOffset": 12431,
+                    "endColumn": 59,
+                    "endOffset": 12486
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2702,9 +2702,9 @@
                 "to": {
                     "startLine": 228,
                     "startColumn": 4,
-                    "startOffset": 12486,
-                    "endColumn": 35,
-                    "endOffset": 12517
+                    "startOffset": 12491,
+                    "endColumn": 57,
+                    "endOffset": 12544
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2714,9 +2714,9 @@
                 "to": {
                     "startLine": 229,
                     "startColumn": 4,
-                    "startOffset": 12522,
-                    "endColumn": 38,
-                    "endOffset": 12556
+                    "startOffset": 12549,
+                    "endColumn": 35,
+                    "endOffset": 12580
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2726,9 +2726,9 @@
                 "to": {
                     "startLine": 230,
                     "startColumn": 4,
-                    "startOffset": 12561,
-                    "endColumn": 38,
-                    "endOffset": 12595
+                    "startOffset": 12585,
+                    "endColumn": 35,
+                    "endOffset": 12616
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2738,9 +2738,9 @@
                 "to": {
                     "startLine": 231,
                     "startColumn": 4,
-                    "startOffset": 12600,
-                    "endColumn": 35,
-                    "endOffset": 12631
+                    "startOffset": 12621,
+                    "endColumn": 38,
+                    "endOffset": 12655
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2750,9 +2750,9 @@
                 "to": {
                     "startLine": 232,
                     "startColumn": 4,
-                    "startOffset": 12636,
-                    "endColumn": 37,
-                    "endOffset": 12669
+                    "startOffset": 12660,
+                    "endColumn": 38,
+                    "endOffset": 12694
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2762,9 +2762,9 @@
                 "to": {
                     "startLine": 233,
                     "startColumn": 4,
-                    "startOffset": 12674,
-                    "endColumn": 42,
-                    "endOffset": 12712
+                    "startOffset": 12699,
+                    "endColumn": 35,
+                    "endOffset": 12730
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2774,9 +2774,9 @@
                 "to": {
                     "startLine": 234,
                     "startColumn": 4,
-                    "startOffset": 12717,
-                    "endColumn": 49,
-                    "endOffset": 12762
+                    "startOffset": 12735,
+                    "endColumn": 37,
+                    "endOffset": 12768
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2786,9 +2786,9 @@
                 "to": {
                     "startLine": 235,
                     "startColumn": 4,
-                    "startOffset": 12767,
-                    "endColumn": 49,
-                    "endOffset": 12812
+                    "startOffset": 12773,
+                    "endColumn": 42,
+                    "endOffset": 12811
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2798,9 +2798,9 @@
                 "to": {
                     "startLine": 236,
                     "startColumn": 4,
-                    "startOffset": 12817,
+                    "startOffset": 12816,
                     "endColumn": 49,
-                    "endOffset": 12862
+                    "endOffset": 12861
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2810,9 +2810,9 @@
                 "to": {
                     "startLine": 237,
                     "startColumn": 4,
-                    "startOffset": 12867,
-                    "endColumn": 51,
-                    "endOffset": 12914
+                    "startOffset": 12866,
+                    "endColumn": 49,
+                    "endOffset": 12911
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2822,9 +2822,9 @@
                 "to": {
                     "startLine": 238,
                     "startColumn": 4,
-                    "startOffset": 12919,
-                    "endColumn": 43,
-                    "endOffset": 12958
+                    "startOffset": 12916,
+                    "endColumn": 49,
+                    "endOffset": 12961
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2834,9 +2834,9 @@
                 "to": {
                     "startLine": 239,
                     "startColumn": 4,
-                    "startOffset": 12963,
-                    "endColumn": 50,
-                    "endOffset": 13009
+                    "startOffset": 12966,
+                    "endColumn": 51,
+                    "endOffset": 13013
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2846,9 +2846,9 @@
                 "to": {
                     "startLine": 240,
                     "startColumn": 4,
-                    "startOffset": 13014,
-                    "endColumn": 36,
-                    "endOffset": 13046
+                    "startOffset": 13018,
+                    "endColumn": 43,
+                    "endOffset": 13057
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2858,9 +2858,9 @@
                 "to": {
                     "startLine": 241,
                     "startColumn": 4,
-                    "startOffset": 13051,
-                    "endColumn": 37,
-                    "endOffset": 13084
+                    "startOffset": 13062,
+                    "endColumn": 50,
+                    "endOffset": 13108
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2870,9 +2870,9 @@
                 "to": {
                     "startLine": 242,
                     "startColumn": 4,
-                    "startOffset": 13089,
-                    "endColumn": 58,
-                    "endOffset": 13143
+                    "startOffset": 13113,
+                    "endColumn": 36,
+                    "endOffset": 13145
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2882,9 +2882,9 @@
                 "to": {
                     "startLine": 243,
                     "startColumn": 4,
-                    "startOffset": 13148,
-                    "endColumn": 50,
-                    "endOffset": 13194
+                    "startOffset": 13150,
+                    "endColumn": 37,
+                    "endOffset": 13183
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2894,9 +2894,9 @@
                 "to": {
                     "startLine": 244,
                     "startColumn": 4,
-                    "startOffset": 13199,
-                    "endColumn": 41,
-                    "endOffset": 13236
+                    "startOffset": 13188,
+                    "endColumn": 58,
+                    "endOffset": 13242
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2906,9 +2906,9 @@
                 "to": {
                     "startLine": 245,
                     "startColumn": 4,
-                    "startOffset": 13241,
-                    "endColumn": 57,
-                    "endOffset": 13294
+                    "startOffset": 13247,
+                    "endColumn": 50,
+                    "endOffset": 13293
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2918,9 +2918,9 @@
                 "to": {
                     "startLine": 246,
                     "startColumn": 4,
-                    "startOffset": 13299,
-                    "endColumn": 49,
-                    "endOffset": 13344
+                    "startOffset": 13298,
+                    "endColumn": 41,
+                    "endOffset": 13335
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2930,9 +2930,9 @@
                 "to": {
                     "startLine": 247,
                     "startColumn": 4,
-                    "startOffset": 13349,
-                    "endColumn": 47,
-                    "endOffset": 13392
+                    "startOffset": 13340,
+                    "endColumn": 57,
+                    "endOffset": 13393
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2942,9 +2942,9 @@
                 "to": {
                     "startLine": 248,
                     "startColumn": 4,
-                    "startOffset": 13397,
-                    "endColumn": 47,
-                    "endOffset": 13440
+                    "startOffset": 13398,
+                    "endColumn": 49,
+                    "endOffset": 13443
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2954,9 +2954,9 @@
                 "to": {
                     "startLine": 249,
                     "startColumn": 4,
-                    "startOffset": 13445,
-                    "endColumn": 38,
-                    "endOffset": 13479
+                    "startOffset": 13448,
+                    "endColumn": 47,
+                    "endOffset": 13491
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2966,9 +2966,9 @@
                 "to": {
                     "startLine": 250,
                     "startColumn": 4,
-                    "startOffset": 13484,
-                    "endColumn": 36,
-                    "endOffset": 13516
+                    "startOffset": 13496,
+                    "endColumn": 47,
+                    "endOffset": 13539
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2978,9 +2978,9 @@
                 "to": {
                     "startLine": 251,
                     "startColumn": 4,
-                    "startOffset": 13521,
-                    "endColumn": 37,
-                    "endOffset": 13554
+                    "startOffset": 13544,
+                    "endColumn": 38,
+                    "endOffset": 13578
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -2990,9 +2990,9 @@
                 "to": {
                     "startLine": 252,
                     "startColumn": 4,
-                    "startOffset": 13559,
-                    "endColumn": 52,
-                    "endOffset": 13607
+                    "startOffset": 13583,
+                    "endColumn": 36,
+                    "endOffset": 13615
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3002,9 +3002,9 @@
                 "to": {
                     "startLine": 253,
                     "startColumn": 4,
-                    "startOffset": 13612,
-                    "endColumn": 50,
-                    "endOffset": 13658
+                    "startOffset": 13620,
+                    "endColumn": 37,
+                    "endOffset": 13653
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3014,9 +3014,9 @@
                 "to": {
                     "startLine": 254,
                     "startColumn": 4,
-                    "startOffset": 13663,
-                    "endColumn": 39,
-                    "endOffset": 13698
+                    "startOffset": 13658,
+                    "endColumn": 52,
+                    "endOffset": 13706
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3026,9 +3026,9 @@
                 "to": {
                     "startLine": 255,
                     "startColumn": 4,
-                    "startOffset": 13703,
-                    "endColumn": 39,
-                    "endOffset": 13738
+                    "startOffset": 13711,
+                    "endColumn": 50,
+                    "endOffset": 13757
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3038,9 +3038,9 @@
                 "to": {
                     "startLine": 256,
                     "startColumn": 4,
-                    "startOffset": 13743,
-                    "endColumn": 43,
-                    "endOffset": 13782
+                    "startOffset": 13762,
+                    "endColumn": 39,
+                    "endOffset": 13797
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3050,9 +3050,9 @@
                 "to": {
                     "startLine": 257,
                     "startColumn": 4,
-                    "startOffset": 13787,
-                    "endColumn": 41,
-                    "endOffset": 13824
+                    "startOffset": 13802,
+                    "endColumn": 39,
+                    "endOffset": 13837
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3062,8 +3062,8 @@
                 "to": {
                     "startLine": 258,
                     "startColumn": 4,
-                    "startOffset": 13829,
-                    "endColumn": 56,
+                    "startOffset": 13842,
+                    "endColumn": 43,
                     "endOffset": 13881
                 },
                 "from": {
@@ -3075,8 +3075,8 @@
                     "startLine": 259,
                     "startColumn": 4,
                     "startOffset": 13886,
-                    "endColumn": 39,
-                    "endOffset": 13921
+                    "endColumn": 41,
+                    "endOffset": 13923
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3086,9 +3086,9 @@
                 "to": {
                     "startLine": 260,
                     "startColumn": 4,
-                    "startOffset": 13926,
-                    "endColumn": 46,
-                    "endOffset": 13968
+                    "startOffset": 13928,
+                    "endColumn": 56,
+                    "endOffset": 13980
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3098,9 +3098,9 @@
                 "to": {
                     "startLine": 261,
                     "startColumn": 4,
-                    "startOffset": 13973,
-                    "endColumn": 36,
-                    "endOffset": 14005
+                    "startOffset": 13985,
+                    "endColumn": 39,
+                    "endOffset": 14020
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3110,9 +3110,9 @@
                 "to": {
                     "startLine": 262,
                     "startColumn": 4,
-                    "startOffset": 14010,
-                    "endColumn": 35,
-                    "endOffset": 14041
+                    "startOffset": 14025,
+                    "endColumn": 46,
+                    "endOffset": 14067
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3122,9 +3122,9 @@
                 "to": {
                     "startLine": 263,
                     "startColumn": 4,
-                    "startOffset": 14046,
-                    "endColumn": 47,
-                    "endOffset": 14089
+                    "startOffset": 14072,
+                    "endColumn": 36,
+                    "endOffset": 14104
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3134,9 +3134,9 @@
                 "to": {
                     "startLine": 264,
                     "startColumn": 4,
-                    "startOffset": 14094,
-                    "endColumn": 45,
-                    "endOffset": 14135
+                    "startOffset": 14109,
+                    "endColumn": 35,
+                    "endOffset": 14140
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3146,9 +3146,9 @@
                 "to": {
                     "startLine": 265,
                     "startColumn": 4,
-                    "startOffset": 14140,
+                    "startOffset": 14145,
                     "endColumn": 47,
-                    "endOffset": 14183
+                    "endOffset": 14188
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3158,9 +3158,9 @@
                 "to": {
                     "startLine": 266,
                     "startColumn": 4,
-                    "startOffset": 14188,
-                    "endColumn": 36,
-                    "endOffset": 14220
+                    "startOffset": 14193,
+                    "endColumn": 45,
+                    "endOffset": 14234
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3170,9 +3170,9 @@
                 "to": {
                     "startLine": 267,
                     "startColumn": 4,
-                    "startOffset": 14225,
-                    "endColumn": 69,
-                    "endOffset": 14290
+                    "startOffset": 14239,
+                    "endColumn": 47,
+                    "endOffset": 14282
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3182,9 +3182,9 @@
                 "to": {
                     "startLine": 268,
                     "startColumn": 4,
-                    "startOffset": 14295,
-                    "endColumn": 38,
-                    "endOffset": 14329
+                    "startOffset": 14287,
+                    "endColumn": 36,
+                    "endOffset": 14319
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
@@ -3194,10 +3194,34 @@
                 "to": {
                     "startLine": 269,
                     "startColumn": 4,
-                    "startOffset": 14334,
-                    "endLine": 275,
+                    "startOffset": 14324,
+                    "endColumn": 69,
+                    "endOffset": 14389
+                },
+                "from": {
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
+                }
+            },
+            {
+                "to": {
+                    "startLine": 270,
+                    "startColumn": 4,
+                    "startOffset": 14394,
+                    "endColumn": 38,
+                    "endOffset": 14428
+                },
+                "from": {
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
+                }
+            },
+            {
+                "to": {
+                    "startLine": 271,
+                    "startColumn": 4,
+                    "startOffset": 14433,
+                    "endLine": 277,
                     "endColumn": 12,
-                    "endOffset": 14625
+                    "endOffset": 14724
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
@@ -3205,12 +3229,12 @@
             },
             {
                 "to": {
-                    "startLine": 276,
+                    "startLine": 278,
                     "startColumn": 4,
-                    "startOffset": 14630,
-                    "endLine": 278,
+                    "startOffset": 14729,
+                    "endLine": 280,
                     "endColumn": 12,
-                    "endOffset": 14765
+                    "endOffset": 14864
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
@@ -3218,12 +3242,12 @@
             },
             {
                 "to": {
-                    "startLine": 279,
+                    "startLine": 281,
                     "startColumn": 4,
-                    "startOffset": 14770,
-                    "endLine": 283,
+                    "startOffset": 14869,
+                    "endLine": 285,
                     "endColumn": 12,
-                    "endOffset": 15055
+                    "endOffset": 15154
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"

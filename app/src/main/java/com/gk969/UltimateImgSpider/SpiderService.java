@@ -64,6 +64,8 @@ public class SpiderService extends Service
 
     private String userAgent;
 
+    private volatile boolean isWaitingForSavingData;
+
     /**
      * The primary interface we will be calling on the service.
      */
@@ -113,7 +115,19 @@ public class SpiderService extends Service
             public void projectDataSaved()
             {
                 Log.i(TAG, "projectDataSaved");
-                jniDataLock.unlock();
+
+                spiderHandler.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if(isWaitingForSavingData)
+                        {
+                            isWaitingForSavingData = false;
+                            jniDataLock.unlock();
+                        }
+                    }
+                });
             }
         };
 
@@ -143,6 +157,12 @@ public class SpiderService extends Service
                 watchdogService = null;
 
                 Log.i(TAG, "onServiceDisconnected");
+
+                if(isWaitingForSavingData)
+                {
+                    isWaitingForSavingData=false;
+                    jniDataLock.unlock();
+                }
 
                 if(state.get()==STAT_STOP)
                 {
@@ -326,12 +346,6 @@ public class SpiderService extends Service
                 case StaticValue.CMD_RESTART:
                 {
                     state.set(STAT_STOP);
-    
-                    if (urlLoadTimer.get() != 0)
-                    {
-                        spider.stopLoading();
-                        scanPageWithJS();
-                    }
 
                     Log.i(TAG, "prepare restart");
                     checkLockAndStopSelf();
@@ -544,7 +558,6 @@ public class SpiderService extends Service
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
     private Utils.ReadWaitLock jniDataLock = new Utils.ReadWaitLock();
     private ReentrantLock imgFileLock = new ReentrantLock();
-    private ReentrantLock pageGetLock=new ReentrantLock();
 
     private ImgDownloader mImgDownloader = new ImgDownloader();
 
@@ -646,43 +659,25 @@ public class SpiderService extends Service
                     exitLock.unlock();
 
                     jniDataLock.lock();
+
                     String urlSet = jniFindNextImgUrl(imgProcParam);
-                    jniDataLock.unlock();
-
-                    if (urlSet != null)
-                    {
-                        Log.i(TAG, "img:"+urlSet);
-
-                        String[] urls = urlSet.split(" ");
-                        imgUrl = urls[0];
-                        containerUrl = urls[2];
-
-                        imgUrlJniAddr = Long.parseLong(urls[1], 16);
-                        containerUrlJniAddr = Long.parseLong(urls[3], 16);
-
-                        downloadImgByUrl(imgUrl);
-                    }
-                    else
+                    if(urlSet==null)
                     {
                         imgUrlJniAddr = URL_JNIADDR_INVALID;
 
-                        pageGetLock.lock();
                         if(!pageProcessLock.isLocked.get())
                         {
                             pageProcessLock.lock();
 
-                            jniDataLock.lock();
                             long searchTimer = System.currentTimeMillis();
                             curPageUrl = jniFindNextPageUrl(pageProcParam);
                             searchTime = (int)(System.currentTimeMillis() - searchTimer);
-                            jniDataLock.unlock();
 
                             //Log.i(TAG, "loading:" + curPageUrl);
                             if (curPageUrl == null)
                             {
-                                state.set(STAT_COMPLETE);
                                 Log.i(TAG, "site scan complete");
-
+                                state.set(STAT_COMPLETE);
                                 pageProcessLock.unlock();
                             }
                             else
@@ -699,12 +694,28 @@ public class SpiderService extends Service
                                     }
                                 });
                             }
-
                         }
-                        pageGetLock.unlock();
 
                     }
-                    reportSpiderLogByHandler();
+
+                    jniDataLock.unlock();
+
+                    if (urlSet != null)
+                    {
+                        Log.i(TAG, "img:"+urlSet);
+
+                        String[] urls = urlSet.split(" ");
+                        imgUrl = urls[0];
+                        containerUrl = urls[2];
+
+                        imgUrlJniAddr = Long.parseLong(urls[1], 16);
+                        containerUrlJniAddr = Long.parseLong(urls[3], 16);
+
+                        downloadImgByUrl(imgUrl);
+
+                        reportSpiderLogByHandler();
+                    }
+
                 }
 
                 readyToExit=true;
@@ -793,7 +804,7 @@ public class SpiderService extends Service
                                     thumbnailDir.mkdirs();
                                 }
 
-                                thumbnailFile = new File(thumbnailDirPath + "/" + newName + StaticValue.THUMBNAIL_FILE_EXT);
+                                thumbnailFile = new File(thumbnailDirPath + "/" + newName + "." + StaticValue.THUMBNAIL_FILE_EXT);
 
                                 break;
                             }
@@ -825,6 +836,7 @@ public class SpiderService extends Service
                         if((imgIndex % SAVE_PROJECT_DATA) == 0)
                         {
                             Log.i(TAG, "post save data cmd imgIndex " + imgIndex);
+                            isWaitingForSavingData=true;
                             sendCmdToWatchdog(StaticValue.CMD_JUST_STORE);
                             break;
                         }
@@ -1380,10 +1392,17 @@ public class SpiderService extends Service
         jniDataLock.lock();
         for (String imgUrl : list)
         {
+            int i;
+            for(i=0; i< StaticValue.IMG_FILE_EXT.length; i++)
+            {
+                if(imgUrl.endsWith(StaticValue.IMG_FILE_EXT[i]))
+                {
+                    break;
+                }
+            }
+
             if ((imgUrl.startsWith("http://") || imgUrl.startsWith("https://"))
-                    && (imgUrl.endsWith(".jpg") || imgUrl.endsWith(".png") || imgUrl
-                    .endsWith(".gif"))
-                    && imgUrl.length() < MAX_SIZE_PER_URL)
+                    && i<StaticValue.IMG_FILE_EXT.length && imgUrl.length() < MAX_SIZE_PER_URL)
             {
                 jniAddUrl(imgUrl, md5ForPage.digest(imgUrl.getBytes()), URL_TYPE_IMG,
                         imgProcParam);

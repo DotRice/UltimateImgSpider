@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.view.MotionEvent;
 
 import com.gk969.UltimateImgSpider.SpiderProject;
+import com.gk969.UltimateImgSpider.StaticValue;
 import com.gk969.Utils.Utils;
 import com.gk969.gallery.gallery3d.common.ApiHelper;
 import com.gk969.gallery.gallery3d.data.MediaItem;
@@ -40,10 +41,7 @@ public class PhotoView extends GLView
     private int viewHeight;
 
     private long renderTime;
-
     private GLRootView mGLRootView;
-
-    private MyGestureListener mGestureListener;
     private GestureRecognizer mGestureRecognizer;
 
     private boolean isTouching;
@@ -52,6 +50,9 @@ public class PhotoView extends GLView
     private volatile boolean isLoaderRunning=true;
 
     private PhotoLoader loader;
+
+    private volatile String curProjectPath;
+    private TiledTexture photoTexture;
 
     private class MyGestureListener implements GestureRecognizer.Listener
     {
@@ -148,8 +149,7 @@ public class PhotoView extends GLView
 
     public PhotoView(Context context, GLRootView glRootView)
     {
-        mGestureListener = new MyGestureListener();
-        mGestureRecognizer = new GestureRecognizer(context, mGestureListener);
+        mGestureRecognizer = new GestureRecognizer(context, new MyGestureListener());
 
         mGLRootView = glRootView;
         loader=new PhotoLoader();
@@ -176,13 +176,11 @@ public class PhotoView extends GLView
         viewHeight = height;
     }
 
-    public void setCurPhoto(int photoIndex)
+    public void openPhoto(String projectPath, int photoIndex)
     {
-        if(curPhotoIndex!=photoIndex)
-        {
-            curPhotoIndex=photoIndex;
-            loader.interrupt();
-        }
+        curProjectPath=projectPath;
+        curPhotoIndex=photoIndex;
+        loader.interrupt();
     }
 
     public void stopAnimation()
@@ -231,10 +229,35 @@ public class PhotoView extends GLView
         {
             Log.i(TAG, "load "+curPhotoIndex);
 
-
+            Bitmap bmp=getCurBitmap();
 
 
             return true;
+        }
+
+        public Bitmap getCurBitmap()
+        {
+            //Log.i(TAG, "try to load index:" + index);
+            int group=curPhotoIndex/ StaticValue.MAX_IMG_FILE_PER_DIR;
+            int offset=curPhotoIndex%StaticValue.MAX_IMG_FILE_PER_DIR;
+
+            Bitmap bmp=null;
+            for(int i=0; i< StaticValue.IMG_FILE_EXT.length; i++)
+            {
+                String fileName=String.format("%s/%d/%03d.%s", curProjectPath,
+                        group, offset, StaticValue.IMG_FILE_EXT[i]);
+
+                BitmapFactory.Options bmpOpts=new BitmapFactory.Options();
+                bmpOpts.inPreferredConfig=Bitmap.Config.RGB_565;
+
+                bmp = BitmapFactory.decodeFile(fileName, bmpOpts);
+                if(bmp!=null)
+                {
+                    break;
+                }
+            }
+
+            return bmp;
         }
 
         public void run()

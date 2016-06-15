@@ -20,12 +20,16 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\image.png"
     },
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\new_proj_write.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\new_proj_write.png"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\ic_launcher.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\ic_launcher.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\new_proj_write.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\new_proj_write.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\info_black.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\info_black.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\page.png",
@@ -34,5 +38,9 @@
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\rom.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\rom.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4\\new_proj_black.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-mdpi\\new_proj_black.png"
     }
 ]

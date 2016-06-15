@@ -28,12 +28,11 @@
 
         <ImageButton
             android:id="@+id/button_add"
-            android:layout_width="@dimen/projbar_width"
+            android:layout_width="@dimen/button_add_size"
             android:layout_height="@dimen/button_add_size"
-            android:src="@drawable/new_proj_write"
+            android:src="@drawable/add"
             android:scaleType="fitCenter"
-            android:background="#0000"
-            android:padding="3dp"
+            android:background="@drawable/button_add_corners_background"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"/>
 
@@ -54,7 +53,7 @@
                 android:src="@drawable/big_menu"
                 android:contentDescription="@string/menu"
                 android:scaleType="fitCenter"
-                android:background="@drawable/button_background_selector" />
+                android:background="@drawable/trans_button_background_selector" />
 
             <ImageButton
                 android:id="@+id/buttonPauseOrContinue"
@@ -64,7 +63,7 @@
                 android:src="@drawable/start"
                 android:contentDescription="@string/start"
                 android:scaleType="fitCenter"
-                android:background="@drawable/button_background_selector" />
+                android:background="@drawable/trans_button_background_selector" />
 
 
             <ImageButton
@@ -75,7 +74,7 @@
                 android:src="@drawable/setting"
                 android:contentDescription="@string/settings"
                 android:scaleType="fitCenter"
-                android:background="@drawable/button_background_selector" />
+                android:background="@drawable/trans_button_background_selector" />
 
         </LinearLayout>
 
@@ -83,10 +82,10 @@
             android:id="@+id/button_info"
             android:layout_width="@dimen/button_info_size"
             android:layout_height="@dimen/button_info_size"
-            android:src="@drawable/info_write"
+            android:src="@drawable/info_black"
             android:scaleType="fitCenter"
-            android:background="#0000"
-            android:padding="5dp"
+            android:layout_margin="3dp"
+            android:background="@drawable/button_info_corners_background"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"/>

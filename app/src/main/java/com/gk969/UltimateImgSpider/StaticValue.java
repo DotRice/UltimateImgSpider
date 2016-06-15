@@ -23,7 +23,8 @@ public class StaticValue
     public final static String THUMBNAIL_DIR_NAME="thumbnail";
     public final static int THUMBNAIL_SIZE = 254;
 
-    public final static String THUMBNAIL_FILE_EXT = ".jpg.thumbnail";
+    public final static String THUMBNAIL_FILE_EXT = "jpg.thumbnail";
+    public final static String[] IMG_FILE_EXT={"jpg", "png", "gif"};
 
 
     public final static String PROJECT_DATA_DIR = "/data";

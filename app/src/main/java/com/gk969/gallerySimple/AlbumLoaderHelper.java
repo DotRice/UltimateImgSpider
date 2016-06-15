@@ -41,7 +41,7 @@ public class AlbumLoaderHelper extends ThumbnailLoaderHelper
         int group=index/ StaticValue.MAX_IMG_FILE_PER_DIR;
         int offset=index%StaticValue.MAX_IMG_FILE_PER_DIR;
 
-        String fileName=String.format("%s/%s/%d/%03d%s", projectPath, StaticValue.THUMBNAIL_DIR_NAME,
+        String fileName=String.format("%s/%s/%d/%03d.%s", projectPath, StaticValue.THUMBNAIL_DIR_NAME,
                 group, offset, StaticValue.THUMBNAIL_FILE_EXT);
 
         BitmapFactory.Options bmpOpts=new BitmapFactory.Options();

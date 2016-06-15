@@ -69,7 +69,7 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
             SpiderProject.ProjectInfo project=mSpiderProject.projectList.get(index);
             if(project.thumbnail==null)
             {
-                String fileName = String.format("%s/%s/%s/%d/%03d%s", appPath, mSpiderProject.projectList.get(index).site,
+                String fileName = String.format("%s/%s/%s/%d/%03d.%s", appPath, mSpiderProject.projectList.get(index).site,
                         StaticValue.THUMBNAIL_DIR_NAME, 0, 0, StaticValue.THUMBNAIL_FILE_EXT);
 
                 BitmapFactory.Options bmpOpts = new BitmapFactory.Options();
