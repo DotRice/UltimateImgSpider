@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.TrafficStats;
 import android.os.Handler;

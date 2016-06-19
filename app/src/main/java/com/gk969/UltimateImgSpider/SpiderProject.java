@@ -2,6 +2,7 @@ package com.gk969.UltimateImgSpider;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.gk969.Utils.Utils;
 
@@ -22,6 +23,9 @@ public class SpiderProject
     private final static String TAG="SpiderProject";
 
     public final static int INVALID_INDEX=-1;
+
+    private Runnable runOnFindProject;
+    private Runnable runOnProjectLoad;
 
     public native void jniGetProjectInfoOnStart(String path, long[] imgInfo, long[] pageInfo);
     static
@@ -59,9 +63,11 @@ public class SpiderProject
 
     private String mAppPath;
 
-    public SpiderProject(String AppPath)
+    public SpiderProject(String AppPath, Runnable pRunOnFindProject, Runnable pRunOnProjectLoad)
     {
         mAppPath=AppPath;
+        runOnFindProject=pRunOnFindProject;
+        runOnProjectLoad=pRunOnProjectLoad;
     }
 
     public int findIndexBySite(String site)
@@ -120,10 +126,12 @@ public class SpiderProject
                     }
 
                     projectList.add(new ProjectInfo(file.getName(), imgInfo, pageInfo, scrollDistance));
+                    runOnFindProject.run();
                 }
             }
         }
 
+        runOnProjectLoad.run();
         Log.i(TAG, "projectList.size " + projectList.size());
     }
 

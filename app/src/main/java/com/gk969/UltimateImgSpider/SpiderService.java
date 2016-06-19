@@ -1096,7 +1096,9 @@ public class SpiderService extends Service
                 netTrafficCalc.netTrafficPerSec.get()) + "/s\"" + ",\r\n";
 
         jsonReportStr += "\"siteScanCompleted\":" + ((state.get() == STAT_COMPLETE)) + ",\r\n";
-        jsonReportStr += "\"networkFail\":" + isNetworkFail + ",\r\n";
+
+
+        jsonReportStr += "\"networkFail\":" + isNetworkFail + "\r\n}";
 
         isNetworkFail=false;
 

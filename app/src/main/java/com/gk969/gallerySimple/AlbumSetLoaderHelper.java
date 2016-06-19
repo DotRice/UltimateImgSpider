@@ -12,8 +12,6 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
 {
     private final static String TAG = "AlbumSetLoaderHelper";
 
-    private boolean needRefreshList = true;
-
     private String appPath;
 
     private ThumbnailLoader mThumbnailLoader;
@@ -56,13 +54,6 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper
     public Bitmap getThumbnailByIndex(int index, Bitmap container)
     {
         //Log.i(TAG, "try to load index:" + index);
-
-        if(needRefreshList)
-        {
-            mSpiderProject.refreshProjectList();
-            mThumbnailLoader.setAlbumTotalImgNum(mSpiderProject.projectList.size());
-            needRefreshList = false;
-        }
 
         if(index < mSpiderProject.projectList.size())
         {

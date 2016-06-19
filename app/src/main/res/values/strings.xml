@@ -41,7 +41,8 @@
     <string name="prompt">提示</string>
     <string name="retry">重试</string>
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
-    <string name="badExternalStoragePrompt">外部存储空间出错！</string>
+    <string name="badExternalStoragePrompt">存储器错误！</string>
+    <string name="storage_lack">存储空间不足！</string>
     
     
     <string name="image_info">图片数量</string>
@@ -80,6 +81,14 @@
     <string name="ram_service_vm">服务VM内存</string>
     <string name="ram_service_native">服务Native内存</string>
 
+    <string name="project_load_complete">工程加载完毕</string>
+
+    <string-array name="project_state">
+        <item>已暂停</item>
+        <item>检查环境</item>
+        <item>正下载</item>
+        <item>扫描结束</item>
+    </string-array>
 
     <string name="cur_page">当前网页</string>
     <string name="title">标题</string>

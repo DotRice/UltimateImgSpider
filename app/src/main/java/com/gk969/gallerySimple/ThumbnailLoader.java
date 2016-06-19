@@ -64,7 +64,7 @@ public  class ThumbnailLoader
 
     private GLRootView mGLRootView;
 
-    private TextureLoaderThread mTextureLoaderThread;
+    private ThumbnailLoaderThread mTextureLoaderThread;
 
     private SlotView slotView;
 
@@ -219,7 +219,7 @@ public  class ThumbnailLoader
     private void startLoader()
     {
         isLoaderRunning=true;
-        mTextureLoaderThread = new TextureLoaderThread();
+        mTextureLoaderThread = new ThumbnailLoaderThread();
         mTextureLoaderThread.setDaemon(true);
         mTextureLoaderThread.start();
     }
@@ -229,11 +229,11 @@ public  class ThumbnailLoader
         isLoaderRunning=false;
     }
 
-    public void initAboutView(int slotNum, int paraLabelTextSize, int paraLabelNameLimit)
+    public void initAboutView(int slotsInDispArea, int paraLabelTextSize, int paraLabelNameLimit)
     {
-        imgsInDispArea=slotNum;
-        bestOffsetOfDispInCache=(CACHE_SIZE-slotNum)/2;
-        Log.i(TAG, "slotNum " + slotNum);
+        imgsInDispArea=slotsInDispArea;
+        bestOffsetOfDispInCache=(CACHE_SIZE-slotsInDispArea)/2;
+        Log.i(TAG, "initAboutView slotsInDispArea " + slotsInDispArea);
 
         labelTextSize=paraLabelTextSize;
         labelNameLimit=paraLabelNameLimit;
@@ -242,10 +242,8 @@ public  class ThumbnailLoader
         {
             startLoader();
         }
-        else
-        {
-            clearCache();
-        }
+
+        mTextureLoaderThread.interrupt();
     }
 
     public SlotTexture getTexture(int index)
@@ -356,13 +354,13 @@ public  class ThumbnailLoader
     }
 
 
-    private class TextureLoaderThread extends Thread
+    private class ThumbnailLoaderThread extends Thread
     {
         private final static int CHECK_INTERVAL=500;
 
-        public TextureLoaderThread()
+        public ThumbnailLoaderThread()
         {
-            super("TextureLoaderThread");
+            super("ThumbnailLoaderThread");
         }
 
         private boolean isOffsetChangedInLoading()

@@ -28,8 +28,10 @@
         <item name="android:minHeight">2dp</item>
         <item name="android:progressDrawable">@drawable/progress_bar</item>
     </style>
-    
-	<drawable name="trans_background_normal">#CFFF</drawable>
+
+    <drawable name="trans_background_green">#A8F8</drawable>
+
+	<drawable name="trans_background_normal">#BFFF</drawable>
 	<drawable name="trans_background_pressed">#ACFC</drawable>
 
 	<drawable name="background_normal">#FFF</drawable>

@@ -30,7 +30,12 @@
     <dimen name="drawer_info_item_name_text_size">14sp</dimen>
     <dimen name="drawer_info_item_value_text_size">14sp</dimen>
 
-    <dimen name="drawer_info_button_width">60dp</dimen>
+    <dimen name="drawer_info_ctrl_panel_height">40dp</dimen>
+    <dimen name="drawer_info_ctrl_panel_text_size">18sp</dimen>
+
+    <dimen name="drawer_info_button_open_width">60dp</dimen>
+    <dimen name="drawer_info_button_ctrl_width">60dp</dimen>
+
 
 
 

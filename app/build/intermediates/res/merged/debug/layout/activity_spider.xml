@@ -11,84 +11,37 @@
         android:orientation="vertical"
         >
 
-        <FrameLayout
+        <com.gk969.gallery.gallery3d.ui.GLRootView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#000">
+            android:id="@+id/gl_root_view"/>
 
-            <com.gk969.gallery.gallery3d.ui.GLRootView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/gl_root_view"/>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-        </FrameLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
         <ImageButton
             android:id="@+id/button_add"
             android:layout_width="@dimen/button_add_size"
             android:layout_height="@dimen/button_add_size"
             android:src="@drawable/add"
+            android:layout_marginBottom="5dp"
             android:scaleType="fitCenter"
             android:background="@drawable/button_add_corners_background"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"/>
 
-        <LinearLayout
-            android:id="@+id/album_ctrl_panel"
-            android:layout_width="@dimen/projbar_width"
-            android:layout_height="@dimen/projbar_height"
-            android:baselineAligned="false"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/buttonInfo"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:src="@drawable/big_menu"
-                android:contentDescription="@string/menu"
-                android:scaleType="fitCenter"
-                android:background="@drawable/trans_button_background_selector" />
-
-            <ImageButton
-                android:id="@+id/buttonPauseOrContinue"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:src="@drawable/start"
-                android:contentDescription="@string/start"
-                android:scaleType="fitCenter"
-                android:background="@drawable/trans_button_background_selector" />
-
-
-            <ImageButton
-                android:id="@+id/buttonSetting"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:src="@drawable/setting"
-                android:contentDescription="@string/settings"
-                android:scaleType="fitCenter"
-                android:background="@drawable/trans_button_background_selector" />
-
-        </LinearLayout>
-
         <ImageButton
-            android:id="@+id/button_info"
+            android:id="@+id/button_menu"
             android:layout_width="@dimen/button_info_size"
             android:layout_height="@dimen/button_info_size"
-            android:src="@drawable/info_black"
+            android:src="@drawable/green_menu"
             android:scaleType="fitCenter"
-            android:layout_margin="3dp"
+            android:layout_margin="5dp"
+            android:padding="5dp"
             android:background="@drawable/button_info_corners_background"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"/>
+            android:layout_centerHorizontal="true"/>
 
     </RelativeLayout>
 
