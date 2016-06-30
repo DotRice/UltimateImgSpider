@@ -133,7 +133,7 @@ public class SlotView extends GLView
 
         public void start(int startPoint, int endPoint)
         {
-            scrollStartTime=System.currentTimeMillis();
+            scrollStartTime=SystemClock.uptimeMillis();
             scrollStartPoint=startPoint;
             scrollTotalDistance=endPoint-startPoint;
             mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -286,7 +286,7 @@ public class SlotView extends GLView
             if(!touchOnScrollBar)
             {
                 startFly(velocityY);
-                renderTime = System.currentTimeMillis();
+                renderTime = SystemClock.uptimeMillis();
                 mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
             }
 
@@ -341,7 +341,7 @@ public class SlotView extends GLView
             if ((overScrollGapY != 0) && (flyVelocity == 0))
             {
                 startRebound();
-                renderTime = System.currentTimeMillis();
+                renderTime = SystemClock.uptimeMillis();
                 mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
             }
 
@@ -462,7 +462,6 @@ public class SlotView extends GLView
 
     public void onNewImgReceived(int prevImgNum)
     {
-        mGLRootView.lockRenderThread();
         if(!isTouching)
         {
             if(newLineScroll.isScrolling || scrollDistance == getSlotDistance(prevImgNum))
@@ -476,7 +475,6 @@ public class SlotView extends GLView
                 }
             }
         }
-        mGLRootView.unlockRenderThread();
     }
 
     private int getSlotDistance(int slotNum)
@@ -620,7 +618,7 @@ public class SlotView extends GLView
 
         //Log.i(TAG, "render");
 
-        long curTime = System.currentTimeMillis();
+        long curTime = SystemClock.uptimeMillis();
         int renderTimeInterval = (int) (curTime - renderTime);
         renderTime = curTime;
 

@@ -74,14 +74,17 @@ public class TiledTexture implements Texture {
         private boolean mIsQueued = false;
 
         public Uploader(GLRoot glRoot) {
+            Log.i(TAG, "Uploader new");
             mGlRoot = glRoot;
         }
 
         public synchronized void clear() {
+            Log.i(TAG, "Uploader clear");
             mTextures.clear();
         }
 
         public synchronized void addTexture(TiledTexture t) {
+            Log.i(TAG, "Uploader addTexture "+t.mWidth+" "+t.mHeight);
             if (t.isReady()) return;
             mTextures.addLast(t);
 
@@ -96,9 +99,12 @@ public class TiledTexture implements Texture {
             synchronized (this) {
                 long now = SystemClock.uptimeMillis();
                 long dueTime = now + UPLOAD_TILE_LIMIT;
+                //Log.i(TAG, "onGLIdle");
                 while (now < dueTime && !deque.isEmpty()) {
                     TiledTexture t = deque.peekFirst();
+                    //Log.i(TAG, "uploadNextTile");
                     if (t.uploadNextTile(canvas)) {
+                        //Log.i(TAG, "success");
                         deque.removeFirst();
                         mGlRoot.requestRender();
                     }
@@ -136,6 +142,7 @@ public class TiledTexture implements Texture {
             // since it might be null'd in a different thread. b/8694871
             Bitmap localBitmapRef = bitmap;
             bitmap = null;
+            //Log.i(TAG, "onGetBitmap");
 
             if (localBitmapRef != null) {
                 int x = BORDER_SIZE - offsetX;
@@ -145,6 +152,8 @@ public class TiledTexture implements Texture {
 
                 sCanvas.drawBitmap(localBitmapRef, x, y, sBitmapPaint);
                 localBitmapRef = null;
+    
+                //Log.i(TAG, "draw borders");
 
                 // draw borders if need
                 if (x > 0) sCanvas.drawLine(x - 1, 0, x - 1, TILE_SIZE, sPaint);
@@ -237,6 +246,7 @@ public class TiledTexture implements Texture {
     }
 
     public static void freeResources() {
+        Log.i(TAG, "freeResources");
         sUploadBitmap = null;
         sCanvas = null;
         sBitmapPaint = null;
@@ -244,6 +254,7 @@ public class TiledTexture implements Texture {
     }
 
     public static void prepareResources() {
+        Log.i(TAG, "prepareResources");
         sUploadBitmap = Bitmap.createBitmap(TILE_SIZE, TILE_SIZE, Config.ARGB_8888);
         sCanvas = new Canvas(sUploadBitmap);
         sBitmapPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
@@ -303,6 +314,7 @@ public class TiledTexture implements Texture {
         float scaleX = (float) width / mWidth;
         float scaleY = (float) height / mHeight;
         synchronized (mTiles) {
+            Log.i(TAG, "draw "+width+" "+height+" tiles "+mTiles.length);
             for (int i = 0, n = mTiles.length; i < n; ++i) {
                 Tile t = mTiles[i];
                 src.set(0, 0, t.contentWidth, t.contentHeight);
@@ -310,6 +322,7 @@ public class TiledTexture implements Texture {
                 mapRect(dest, src, 0, 0, x, y, scaleX, scaleY);
                 src.offset(BORDER_SIZE - t.offsetX, BORDER_SIZE - t.offsetY);
                 canvas.drawTexture(t, mSrcRect, mDestRect);
+
             }
         }
     }

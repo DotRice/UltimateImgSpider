@@ -26,6 +26,7 @@ import android.os.Handler;
 
 import android.content.Context;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.util.Log;
 
 public class Utils
@@ -190,7 +191,7 @@ public class Utils
             long curTraffic=getNetTraffic();
             if(curTraffic!=0)
             {
-                long curTime=System.currentTimeMillis();
+                long curTime = SystemClock.uptimeMillis();
                 if (lastTraffic != 0)
                 {
                     averageBuf[avrgBufIndex]=(curTraffic - lastTraffic);

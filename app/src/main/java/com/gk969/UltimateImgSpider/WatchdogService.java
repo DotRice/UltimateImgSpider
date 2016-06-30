@@ -31,6 +31,7 @@ import android.os.Message;
 import android.os.Process;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -88,13 +89,13 @@ public class WatchdogService extends Service
     private void storeProjectData(String dataFileName, String hashDataName)
     {
         String dataFileFullPath=dataDirPath+dataFileName;
-        long time=System.currentTimeMillis();
+        long time= SystemClock.uptimeMillis();
         jniStoreProjectData(dataFileFullPath);
-        Log.i(TAG, "jniStoreProjectData "+dataFileName+" time " + (System.currentTimeMillis() - time));
+        Log.i(TAG, "jniStoreProjectData "+dataFileName+" time " + (SystemClock.uptimeMillis() - time));
 
-        time=System.currentTimeMillis();
+        time=SystemClock.uptimeMillis();
         String md5String = Utils.getFileMD5String(dataFileFullPath);
-        Log.i(TAG, "getFileMD5String " + hashDataName+" time " + (System.currentTimeMillis() - time));
+        Log.i(TAG, "getFileMD5String " + hashDataName+" time " + (SystemClock.uptimeMillis() - time));
                 Utils.stringToFile(md5String, dataDirPath + hashDataName);
     }
 

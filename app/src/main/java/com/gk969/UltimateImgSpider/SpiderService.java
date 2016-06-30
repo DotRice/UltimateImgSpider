@@ -322,7 +322,7 @@ public class SpiderService extends Service
                 {
                     int prevState = state.get();
                     state.set(STAT_WORKING);
-                    if (prevState == STAT_PAUSE)
+                    if (prevState == STAT_PAUSE && projectPath!=null)
                     {
                         mImgDownloader.startAllThread();
                     }
@@ -514,7 +514,9 @@ public class SpiderService extends Service
     private static final int URL_TYPE_IMG = 1;
 
     private String curPageUrl;
+
     private String curPageTitle;
+    private String urlOfCurPageTitle;
 
     private long[] pageProcParam;
     private long[] imgProcParam;
@@ -669,9 +671,9 @@ public class SpiderService extends Service
                         {
                             pageProcessLock.lock();
 
-                            long searchTimer = System.currentTimeMillis();
+                            long searchTimer = SystemClock.uptimeMillis();
                             curPageUrl = jniFindNextPageUrl(pageProcParam);
-                            searchTime = (int)(System.currentTimeMillis() - searchTimer);
+                            searchTime = (int)(SystemClock.uptimeMillis() - searchTimer);
 
                             //Log.i(TAG, "loading:" + curPageUrl);
                             if (curPageUrl == null)
@@ -1090,7 +1092,7 @@ public class SpiderService extends Service
         jsonReportStr += "\"pageSearchTime\":" + searchTime + ",\r\n";
 
 
-        jsonReportStr += "\"curPageUrl\":" + "\"" + curPageUrl + "\",\r\n";
+        jsonReportStr += "\"curPageUrl\":" + "\"" + urlOfCurPageTitle + "\",\r\n";
         jsonReportStr += "\"curPageTitle\":" + "\"" + curPageTitle + "\",\r\n";
         jsonReportStr += "\"curNetSpeed\":" + "\"" + Utils.byteSizeToString(
                 netTrafficCalc.netTrafficPerSec.get()) + "/s\"" + ",\r\n";
@@ -1124,6 +1126,7 @@ public class SpiderService extends Service
     {
         pageFinished = true;
 
+        urlOfCurPageTitle=spider.getUrl();
         curPageTitle = spider.getTitle();
         if (curPageTitle != null)
         {
@@ -1145,7 +1148,7 @@ public class SpiderService extends Service
         }
 
         // 扫描页面耗时较少，因此此处不检测暂停或者停止命令
-        scanTimer = System.currentTimeMillis();
+        scanTimer = SystemClock.uptimeMillis();
         spider.loadUrl("javascript:"
                 + "var i;"
                 + "var imgSrc=\"\";"
@@ -1184,7 +1187,7 @@ public class SpiderService extends Service
             public void onPageStarted(WebView view, String url, Bitmap favicon)
             {
                 //Log.i(TAG, "onPageStarted " + url);
-                loadTimer = System.currentTimeMillis();
+                loadTimer = SystemClock.uptimeMillis();
                 pageFinished = false;
             }
 
@@ -1242,7 +1245,7 @@ public class SpiderService extends Service
 
             public void onPageFinished(WebView view, String url)
             {
-                loadTime = (int)(System.currentTimeMillis() - loadTimer);
+                loadTime = (int)(SystemClock.uptimeMillis() - loadTimer);
                 Log.i(TAG, "onPageFinished " + url + " loadTime:" + loadTime + " tmr:" + urlLoadTimer.get());
                 //Log.i(TAG, "curPageUrl "+curPageUrl);
                 if (!pageFinished)
@@ -1452,7 +1455,7 @@ public class SpiderService extends Service
     public void onCurPageScaned()
     {
         Log.i(TAG, "onCurPageScaned");
-        scanTime = (int)(System.currentTimeMillis() - scanTimer);
+        scanTime = (int)(SystemClock.uptimeMillis() - scanTimer);
 
         pageProcessLock.unlock();
     }

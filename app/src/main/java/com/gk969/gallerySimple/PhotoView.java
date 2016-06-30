@@ -32,6 +32,7 @@ import com.gk969.gallery.gallery3d.util.GalleryUtils;
 import com.gk969.gallery.gallery3d.util.UsageStatistics;
 
 import java.io.File;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class PhotoView extends GLView
 {
@@ -60,41 +61,64 @@ public class PhotoView extends GLView
 
     private boolean isTouching;
 
-    private volatile int curPhotoIndex= SpiderProject.INVALID_INDEX;
-    private volatile boolean isLoaderRunning=true;
+    private volatile boolean isLoaderRunning;
 
+    private boolean inDisplay;
     private PhotoLoader loader;
-    private Photo photo=new Photo();
+    private int curPhotoIndexInCache;
+    private static final int PHOTO_CACHE_SIZE=5;
+    private Photo[] photoCache;
     private volatile String curProjectPath;
 
+    private class DisplayPosition
+    {
+        int top;
+        int left;
+        int width;
+        int height;
+        
+        void set(DisplayPosition pos)
+        {
+            top=pos.top;
+            left=pos.left;
+            width=pos.width;
+            height=pos.height;
+        }
+    }
+    
     private class Photo
     {
-        int dispTop;
-        int dispLeft;
-        int dispWidth;
-        int dispHeight;
+        int indexInProject=SpiderProject.INVALID_INDEX;
+        volatile boolean bmpLoaded;
+        volatile boolean textureCreate;
 
-        TiledTexture texture;
-        Bitmap wholeBmp;
+        DisplayPosition position=new DisplayPosition();
+        DisplayPosition fillCenter=new DisplayPosition();
+
+        TiledTexture fillCenterTexture;
+        Bitmap fillCenterBmp;
         BitmapFactory.Options bmpOptions = new BitmapFactory.Options();
-        String imgFilePath;
 
-        public void paramInit(int index)
+        public Photo()
         {
-            Log.i(TAG, "paramInit "+index);
+            bmpOptions.inPreferredConfig=Bitmap.Config.RGB_565;
+        }
 
-            if(viewHeight==0 || viewWidth==0)
-            {
-                return;
-            }
+        String getTargetFilePath()
+        {
+            int group=indexInProject/ StaticValue.MAX_IMG_FILE_PER_DIR;
+            int offset=indexInProject%StaticValue.MAX_IMG_FILE_PER_DIR;
+            return String.format("%s/%d/%03d.", curProjectPath, group, offset);
+        }
 
-            int group=index/ StaticValue.MAX_IMG_FILE_PER_DIR;
-            int offset=index%StaticValue.MAX_IMG_FILE_PER_DIR;
+        void loadFillCenterBmp(String targetFilePath)
+        {
+            Log.i(TAG, "loadFillCenterBmp "+targetFilePath);
 
+            String imgFilePath=null;
             for(int i=0; i< StaticValue.IMG_FILE_EXT.length; i++)
             {
-                File file=new File(String.format("%s/%d/%03d.%s", curProjectPath,
-                        group, offset, StaticValue.IMG_FILE_EXT[i]));
+                File file=new File(targetFilePath+StaticValue.IMG_FILE_EXT[i]);
                 if(file.exists())
                 {
                     imgFilePath=file.getPath();
@@ -124,86 +148,88 @@ public class PhotoView extends GLView
             {
                 if(bmpOptions.outHeight>bmpOptions.outWidth)
                 {
-                    dispWidth=bmpOptions.outWidth*minSize/bmpOptions.outHeight;
-                    dispLeft=minSqureLeft+(minSize-dispWidth)/2;
-                    dispHeight=minSize;
-                    dispTop=minSqureTop;
+                    fillCenter.width=bmpOptions.outWidth*minSize/bmpOptions.outHeight;
+                    fillCenter.left=minSqureLeft+(minSize-fillCenter.width)/2;
+                    fillCenter.height=minSize;
+                    fillCenter.top=minSqureTop;
                 }
                 else
                 {
-                    dispWidth=minSize;
-                    dispLeft=minSqureLeft;
-                    dispHeight=bmpOptions.outHeight*minSize/bmpOptions.outWidth;
-                    dispTop=minSqureTop+(minSize-dispHeight)/2;
+                    fillCenter.width=minSize;
+                    fillCenter.left=minSqureLeft;
+                    fillCenter.height=bmpOptions.outHeight*minSize/bmpOptions.outWidth;
+                    fillCenter.top=minSqureTop+(minSize-fillCenter.height)/2;
                 }
             }
             else if(bmpOptions.outWidth<viewWidthForImg && bmpOptions.outHeight<viewHeightForImg)
             {
-                dispWidth=(int)(scaleForImg*bmpOptions.outWidth);
-                dispLeft=(viewWidth-dispWidth)/2;
-                dispHeight=(int)(scaleForImg*bmpOptions.outHeight);
-                dispTop=(viewHeight-dispHeight)/2;
+                fillCenter.width=(int)(scaleForImg*bmpOptions.outWidth);
+                fillCenter.left=(viewWidth-fillCenter.width)/2;
+                fillCenter.height=(int)(scaleForImg*bmpOptions.outHeight);
+                fillCenter.top=(viewHeight-fillCenter.height)/2;
             }
             else if(bmpOptions.outHeight*viewWidthForImg > bmpOptions.outWidth*viewHeight)
             {
-                dispWidth=bmpOptions.outWidth*viewHeight/bmpOptions.outHeight;
-                dispLeft=(viewWidth-dispWidth)/2;
-                dispHeight=viewHeight;
-                dispTop=0;
+                fillCenter.width=bmpOptions.outWidth*viewHeight/bmpOptions.outHeight;
+                fillCenter.left=(viewWidth-fillCenter.width)/2;
+                fillCenter.height=viewHeight;
+                fillCenter.top=0;
             }
             else
             {
-                dispWidth=viewWidth;
-                dispLeft=0;
-                dispHeight=bmpOptions.outHeight*viewWidth/bmpOptions.outWidth;
-                dispTop=(viewHeight-dispHeight)/2;
+                fillCenter.width=viewWidth;
+                fillCenter.left=0;
+                fillCenter.height=bmpOptions.outHeight*viewWidth/bmpOptions.outWidth;
+                fillCenter.top=(viewHeight-fillCenter.height)/2;
             }
 
-            bmpOptions.inSampleSize=(int)(bmpOptions.outHeight/(dispHeight/scaleForImg));
+            bmpOptions.inSampleSize=(int)(bmpOptions.outHeight/(fillCenter.height/scaleForImg));
             bmpOptions.inJustDecodeBounds=false;
 
             Log.i(TAG, String.format("%s raw size:%d*%d inSampleSize:%d", imgFilePath,
                     bmpOptions.outWidth, bmpOptions.outHeight, bmpOptions.inSampleSize));
+
+            fillCenterBmp = BitmapFactory.decodeFile(imgFilePath, bmpOptions);
+            if(fillCenterBmp != null)
+            {
+                Log.i(TAG, String.format("fill center bmp size:%d*%d",
+                        fillCenterBmp.getWidth(), fillCenterBmp.getHeight()));
+            }
+
         }
 
-        void loadWholeBitmap()
+        private void load()
         {
-            if(bmpOptions.outHeight!=0 && bmpOptions.outWidth!=0)
+            if(!bmpLoaded)
             {
-                wholeBmp = BitmapFactory.decodeFile(imgFilePath, bmpOptions);
-                if(wholeBmp != null)
+                Log.i(TAG, "load bmp" + indexInProject);
+
+                String photoFilePath=getTargetFilePath();
+                int indexBeforeLoad=indexInProject;
+
+                mGLRootView.unlockRenderThread();
+                loadFillCenterBmp(photoFilePath);
+                mGLRootView.lockRenderThread();
+
+                if(indexBeforeLoad!=indexInProject)
                 {
-                    Log.i(TAG, String.format("whole bmp size:%d*%d",
-                            wholeBmp.getWidth(), wholeBmp.getHeight()));
+                    return;
                 }
+                bmpLoaded=true;
             }
-        }
 
-        void createTexture()
-        {
-            if(wholeBmp!=null)
+            if((!textureCreate) && inDisplay)
             {
-                texture=new TiledTexture(wholeBmp);
-                mTextureUploader.addTexture(texture);
+                Log.i(TAG, "create texture" + indexInProject);
+
+                position.set(fillCenter);
+                if(fillCenterBmp!=null)
+                {
+                    fillCenterTexture=new TiledTexture(fillCenterBmp);
+                    mTextureUploader.addTexture(fillCenterTexture);
+                }
+                textureCreate=true;
             }
-        }
-
-        private void recycle()
-        {
-            if(texture!=null)
-            {
-                texture.recycle();
-                texture=null;
-            }
-
-            if(wholeBmp!=null)
-            {
-                wholeBmp.recycle();
-                wholeBmp=null;
-            }
-
-
-            imgFilePath=null;
         }
     }
 
@@ -215,29 +241,33 @@ public class PhotoView extends GLView
         scaleForImg=context.getResources().getDisplayMetrics().density;
         mGLRootView = glRootView;
 
-        mTextureUploader=new TiledTexture.Uploader(glRootView);
         TiledTexture.prepareResources();
+        mTextureUploader=new TiledTexture.Uploader(glRootView);
+
+        photoCache=new Photo[PHOTO_CACHE_SIZE];
+        for(int i=0; i<PHOTO_CACHE_SIZE; i++)
+        {
+            photoCache[i]=new Photo();
+        }
         loader=new PhotoLoader();
-        loader.start();
     }
 
     @Override
-    protected void onLayout(boolean changed, int dispLeft, int dispTop, int right, int bottom)
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom)
     {
         // Set the mSlotView as a reference point to the open animation
         GalleryUtils.setViewPointMatrix(mMatrix,
-                (right - dispLeft) / 2, (bottom - dispTop) / 2, 0 - GalleryUtils.meterToPixel(0.3f));
+                (right - left) / 2, (bottom - top) / 2, 0 - GalleryUtils.meterToPixel(0.3f));
 
         stopAnimation();
         setViewSize(getWidth(), getHeight());
     }
 
 
-    private void setViewSize(int dispWidth, int dispHeight)
+    private void setViewSize(int width, int height)
     {
-
-        viewWidth = dispWidth;
-        viewHeight = dispHeight;
+        viewWidth = width;
+        viewHeight = height;
         minSize=Math.min(viewWidth,viewHeight)/3;
 
         if(scaleForImg<1)
@@ -252,15 +282,97 @@ public class PhotoView extends GLView
         minSqureLeft=(viewWidth-minSize)/2;
         minSqureTop=(viewHeight-minSize)/2;
 
-        Log.i(TAG, "setViewSize " + dispWidth + "*" + dispHeight + " scaleForImg:"+scaleForImg);
-        loader.wakeUpFormSleep();
+        Log.i(TAG, "setViewSize " + width + "*" + height + " scaleForImg:" + scaleForImg);
+
+        if(!isLoaderRunning)
+        {
+            isLoaderRunning=true;
+            loader=new PhotoLoader();
+            loader.start();
+        }
+        else
+        {
+            loader.wakeUp();
+        }
     }
 
-    public void openPhoto(String projectPath, int photoIndex)
+    private int getNextPhotoIndex(int index)
     {
+        return (index==(PHOTO_CACHE_SIZE-1))?0:index+1;
+    }
+
+    private int getPrevPhotoIndex(int index)
+    {
+        return (index==0)?(PHOTO_CACHE_SIZE-1):index-1;
+    }
+    
+    public void openPhoto(String projectPath, int indexInProject)
+    {
+        Log.i(TAG, "openPhoto " + projectPath + " " + indexInProject);
+        mGLRootView.lockRenderThread();
         curProjectPath=projectPath;
-        curPhotoIndex=photoIndex;
-        loader.wakeUpFormSleep();
+        int i;
+        for(i=0; i<PHOTO_CACHE_SIZE; i++)
+        {
+            if(photoCache[i].indexInProject==indexInProject)
+            {
+                curPhotoIndexInCache=i;
+                break;
+            }
+        }
+
+        if(i==PHOTO_CACHE_SIZE)
+        {
+            curPhotoIndexInCache=0;
+            photoCache[0].indexInProject=indexInProject;
+            photoCache[0].bmpLoaded=false;
+        }
+
+        int prevIndex=getPrevPhotoIndex(curPhotoIndexInCache);
+        int nextIndex=getNextPhotoIndex(curPhotoIndexInCache);
+        for(i=0; i<(PHOTO_CACHE_SIZE/2); i++)
+        {
+            int newIndex;
+    
+            newIndex=indexInProject-1-i;
+            if(photoCache[prevIndex].indexInProject!=newIndex)
+            {
+                photoCache[prevIndex].indexInProject=newIndex;
+                photoCache[prevIndex].bmpLoaded=false;
+            }
+            prevIndex=getPrevPhotoIndex(prevIndex);
+    
+            newIndex=indexInProject+1+i;
+            if(photoCache[nextIndex].indexInProject!=newIndex)
+            {
+                photoCache[nextIndex].indexInProject=newIndex;
+                photoCache[nextIndex].bmpLoaded=false;
+            }
+            nextIndex=getNextPhotoIndex(nextIndex);
+        }
+
+
+        for(Photo photo:photoCache)
+        {
+            if(!photo.bmpLoaded)
+            {
+                if(photo.fillCenterBmp!=null)
+                {
+                    photo.fillCenterBmp.recycle();
+                    photo.fillCenterBmp=null;
+                }
+            }
+
+            photo.textureCreate=false;
+        }
+
+        inDisplay=true;
+        loader.needReload=true;
+
+        //TiledTexture.prepareResources();
+        mGLRootView.unlockRenderThread();
+
+        loader.wakeUp();
     }
 
     public void stopAnimation()
@@ -281,29 +393,47 @@ public class PhotoView extends GLView
         canvas.save(GLCanvas.SAVE_FLAG_MATRIX);
         canvas.clearBuffer(BACKGROUND_COLOR);
 
-        Log.i(TAG, "render");
 
-        long curTime = System.currentTimeMillis();
+        long curTime = SystemClock.uptimeMillis();
         int renderTimeInterval = (int) (curTime - renderTime);
         renderTime = curTime;
 
-        if(photo.texture!=null && photo.texture.isReady())
+        Photo photo=photoCache[curPhotoIndexInCache];
+        Log.i(TAG, "render "+photo.indexInProject+" "+curPhotoIndexInCache);
+        if(photo.fillCenterTexture!=null)
         {
-            photo.texture.draw(canvas, photo.dispLeft, photo.dispTop, photo.dispWidth, photo.dispHeight);
+            Log.i(TAG, "render not null");
+
+            if(photo.fillCenterTexture.isReady())
+            {
+                Log.i(TAG, "render ready");
+                photo.fillCenterTexture.draw(canvas, photo.position.left, photo.position.top, photo.position.width, photo.position.height);
+            }
         }
     }
 
     public void onDestroy()
     {
         mGLRootView.lockRenderThread();
-        photo.recycle();
+        mTextureUploader.clear();
+        //TiledTexture.freeResources();
+        for(Photo photo:photoCache)
+        {
+            if(photo.fillCenterTexture!=null)
+            {
+                photo.fillCenterTexture.recycle();
+                photo.fillCenterTexture=null;
+            }
+        }
+
+        inDisplay=false;
         mGLRootView.unlockRenderThread();
     }
 
     public void stopLoader()
     {
         isLoaderRunning=false;
-        loader.wakeUpFormSleep();
+        loader.wakeUp();
     }
 
 
@@ -311,6 +441,8 @@ public class PhotoView extends GLView
     {
         private final static long SLEEP_TIME=3600000*24*365;
         private volatile boolean inSleep;
+        
+        public volatile boolean needReload;
 
         public PhotoLoader()
         {
@@ -318,7 +450,7 @@ public class PhotoView extends GLView
             setDaemon(true);
         }
 
-        public void wakeUpFormSleep()
+        public void wakeUp()
         {
             if(inSleep)
             {
@@ -326,49 +458,71 @@ public class PhotoView extends GLView
                 interrupt();
             }
         }
-
-        private boolean photoIndexNotChangedInLoading()
+        
+        private void load()
         {
-            Log.i(TAG, "load "+curPhotoIndex);
-
-            Log.i(TAG, "get wholeBmp success");
+            Log.i(TAG, "start load " + curPhotoIndexInCache);
             mGLRootView.lockRenderThread();
-            photo.recycle();
-            photo.paramInit(curPhotoIndex);
+
+            photoCache[curPhotoIndexInCache].load();
+
             mGLRootView.unlockRenderThread();
-
-            photo.loadWholeBitmap();
+            if(needReload)
+            {
+                return;
+            }
+            mGLRootView.requestRender();
 
             mGLRootView.lockRenderThread();
-            photo.createTexture();
+
+            int prevIndex=getPrevPhotoIndex(curPhotoIndexInCache);
+            int nextIndex=getNextPhotoIndex(curPhotoIndexInCache);
+            for(int i=0; i<(PHOTO_CACHE_SIZE/2); i++)
+            {
+                photoCache[prevIndex].load();
+                if(needReload)
+                {
+                    break;
+                }
+                prevIndex=getPrevPhotoIndex(prevIndex);
+
+                photoCache[nextIndex].load();
+                if(needReload)
+                {
+                    break;
+                }
+                nextIndex=getNextPhotoIndex(nextIndex);
+            }
+
             mGLRootView.unlockRenderThread();
 
             mGLRootView.requestRender();
-
-            return true;
         }
 
         public void run()
         {
             while(isLoaderRunning)
             {
-                if(photoIndexNotChangedInLoading())
+                needReload=false;
+                load();
+                
+                if(!isLoaderRunning)
                 {
-                    if(!isLoaderRunning)
-                    {
-                        break;
-                    }
+                    break;
+                }
 
+                if(!needReload)
+                {
                     try
                     {
-                        inSleep=true;
+                        inSleep = true;
                         sleep(SLEEP_TIME);
                     } catch(InterruptedException e)
                     {
-                        e.printStackTrace();
+                        Log.i(TAG, "loader wake up");
                     }
-                    inSleep=false;
                 }
+                inSleep = false;
             }
         }
     }
@@ -405,7 +559,11 @@ public class PhotoView extends GLView
         public boolean onScroll(float dx, float dy, float totalX, float totalY)
         {
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
+            mGLRootView.lockRenderThread();
+            Photo curPhoto=photoCache[curPhotoIndexInCache];
 
+            curPhoto.position.left-=dx;
+            mGLRootView.unlockRenderThread();
             mGLRootView.requestRender();
             return true;
         }

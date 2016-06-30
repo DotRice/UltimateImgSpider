@@ -146,7 +146,7 @@ public class SpiderActivity extends Activity
     public static final int ALBUM_VIEW=1;
     public static final int PHOTO_VIEW=2;
 
-    private int curView=ALBUM_SET_VIEW;
+    private volatile int curView=ALBUM_SET_VIEW;
 
     private InfoDrawer infoDrawer;
 
@@ -154,10 +154,15 @@ public class SpiderActivity extends Activity
     private AtomicInteger buttonMenuDisplayTime=new AtomicInteger(0);
     private static final int MEMORY_REFRESH_TIME=2;
 
+    private final static int SPIDER_SERVICE_REPORT_TIMEOUT=10;
+    private AtomicInteger spiderServiceReportTimOut=new AtomicInteger(0);
+
     private static final int TIMER_PERIOD=1000;
     private static final int BUTTON_MENU_DISPLAY_SECOND=4;
     private ScheduledExecutorService singleThreadPoolTimer= Executors.newSingleThreadScheduledExecutor();
 
+    private final static long TIME_TO_DISP_TOAST=1000;
+    private long createTime;
 
     IRemoteSpiderService mService = null;
 
@@ -287,6 +292,7 @@ public class SpiderActivity extends Activity
 
     private void parseReport(String report)
     {
+        spiderServiceReportTimOut.set(SPIDER_SERVICE_REPORT_TIMEOUT);
         //Log.i(TAG, report);
         try
         {
@@ -419,6 +425,7 @@ public class SpiderActivity extends Activity
 
         Log.i(TAG, "onCreate");
 
+        createTime=SystemClock.uptimeMillis();
         onFirstRun();
 
         appDir = Utils.getDirInExtSto(getString(R.string.appPackageName));
@@ -427,6 +434,68 @@ public class SpiderActivity extends Activity
         storageExist();
         panelViewInit();
         albumViewInit();
+        timerThreadPoolInit();
+    }
+
+    private void timerThreadPoolInit()
+    {
+        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if(buttonMenuDisplayTime.get() != 0)
+                {
+                    if(buttonMenuDisplayTime.decrementAndGet() == 0)
+                    {
+                        mHandler.post(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                showButtonMenu(false);
+                            }
+                        });
+                    }
+                }
+
+                if(spiderServiceReportTimOut.get()!=0)
+                {
+                    if(spiderServiceReportTimOut.decrementAndGet() == 0)
+                    {
+                        mHandler.post(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if(projectState==ProjectState.DOWNLOADING)
+                                {
+                                    serviceConnState = CONN_STATE_WAIT_DISCONNECT;
+                                    sendCmdToSpiderService(StaticValue.CMD_RESTART);
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }, 0, TIMER_PERIOD, TimeUnit.MILLISECONDS);
+
+        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                mHandler.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        infoDrawer.refreshMemoryInfo();
+                    }
+                });
+            }
+        }, 0, MEMORY_REFRESH_TIME, TimeUnit.SECONDS);
+
     }
 
     private boolean startProject(int index)
@@ -536,7 +605,7 @@ public class SpiderActivity extends Activity
             }
         };
 
-        Runnable runOnProjectLoad=new Runnable()
+        Runnable runOnProjectLoadComplete=new Runnable()
         {
             @Override
             public void run()
@@ -546,17 +615,23 @@ public class SpiderActivity extends Activity
                     @Override
                     public void run()
                     {
-                        Toast toast = Toast.makeText(SpiderActivity.this, R.string.project_load_complete, Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
+                        if((SystemClock.uptimeMillis()-createTime)>TIME_TO_DISP_TOAST && spiderProject.projectList.size()>0)
+                        {
+                            Toast toast = Toast.makeText(SpiderActivity.this, R.string.project_load_complete, Toast.LENGTH_SHORT);
+                            toast.setGravity(Gravity.CENTER, 0, 0);
+                            toast.show();
+                        }
 
-                        buttonShowAnim(buttonAdd, true);
+                        if(curView==ALBUM_SET_VIEW)
+                        {
+                            buttonShowAnim(buttonAdd, true);
+                        }
                     }
                 });
             }
         };
 
-        spiderProject=new SpiderProject(appDir.getPath(), runOnFindProject, runOnProjectLoad);
+        spiderProject=new SpiderProject(appDir.getPath(), runOnFindProject, runOnProjectLoadComplete);
 
         albumLoaderHelper = new AlbumLoaderHelper(downloadingProjectPath);
         albumSetLoaderHelper = new AlbumSetLoaderHelper(appDir.getPath(), spiderProject);
@@ -1153,44 +1228,6 @@ public class SpiderActivity extends Activity
         textViewProjectState=(TextView)findViewById(R.id.project_state);
 
         setProjectState(ProjectState.PAUSE);
-
-        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                if(buttonMenuDisplayTime.get() != 0)
-                {
-                    if(buttonMenuDisplayTime.decrementAndGet() == 0)
-                    {
-                        mHandler.post(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                showButtonMenu(false);
-                            }
-                        });
-                    }
-                }
-            }
-        }, 0, TIMER_PERIOD, TimeUnit.MILLISECONDS);
-
-        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                mHandler.post(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        infoDrawer.refreshMemoryInfo();
-                    }
-                });
-            }
-        }, 0, MEMORY_REFRESH_TIME, TimeUnit.SECONDS);
 
         infoDrawer = new InfoDrawer();
         infoDrawer.setDrawer(curView);
