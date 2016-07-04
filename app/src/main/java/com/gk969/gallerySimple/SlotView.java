@@ -286,8 +286,6 @@ public class SlotView extends GLView
             if(!touchOnScrollBar)
             {
                 startFly(velocityY);
-                renderTime = SystemClock.uptimeMillis();
-                mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
             }
 
             mGLRootView.unlockRenderThread();
@@ -458,6 +456,9 @@ public class SlotView extends GLView
         flyVelocity = velocity;
         flyVelocityRaw = flyVelocity;
         flyAccuracy = (velocity > 0) ? (0 - FLY_ACCURACY_ABS) : FLY_ACCURACY_ABS;
+
+        renderTime = SystemClock.uptimeMillis();
+        mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
 
     public void onNewImgReceived(int prevImgNum)

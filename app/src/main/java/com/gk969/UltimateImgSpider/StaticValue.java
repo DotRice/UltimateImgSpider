@@ -1,5 +1,7 @@
 package com.gk969.UltimateImgSpider;
 
+import com.gk969.Utils.MemoryInfo;
+
 public class StaticValue
 {
     public final static String      BUNDLE_KEY_PROJECT_HOST = "projectHost";
@@ -49,4 +51,14 @@ public class StaticValue
 
     public final static int RESULT_SRC_URL=0;
     public final static String EXTRA_URL_TO_OPEN="urlToOpen";
+
+    public static int getThumbnailCacheSize()
+    {
+        return (int)(MemoryInfo.getTotalMemInMb()/1024+1)*64;
+    }
+
+    public static int getSpiderDownloaderThreadNum()
+    {
+        return (int)(MemoryInfo.getTotalMemInMb()/1024)*5+10;
+    }
 }

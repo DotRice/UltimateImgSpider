@@ -8,6 +8,7 @@ import android.util.Log;
 import android.os.Handler;
 
 import com.gk969.UltimateImgSpider.StaticValue;
+import com.gk969.Utils.MemoryInfo;
 import com.gk969.Utils.Utils;
 import com.gk969.gallery.gallery3d.glrenderer.BitmapTexture;
 import com.gk969.gallery.gallery3d.glrenderer.StringTexture;
@@ -49,9 +50,9 @@ public  class ThumbnailLoader
 {
     private static final String TAG = "ThumbnailLoader";
 
-    private final static int CACHE_SIZE=64;
+    private int cacheSize;
     //A circle cache
-    private SlotTexture[] textureCache=new SlotTexture[CACHE_SIZE];
+    private SlotTexture[] textureCache;
     private volatile int scrollStep=1;
 
     private int bestOffsetOfDispInCache;
@@ -86,8 +87,9 @@ public  class ThumbnailLoader
 
     public ThumbnailLoader(GLRootView glRoot, ThumbnailLoaderHelper helper)
     {
-
-        for(int i=0; i<CACHE_SIZE; i++)
+        cacheSize=StaticValue.getThumbnailCacheSize();
+        textureCache=new SlotTexture[cacheSize];
+        for(int i=0; i<cacheSize; i++)
         {
             textureCache[i]=new SlotTexture();
             textureCache[i].mainBmp=Bitmap.createBitmap(StaticValue.THUMBNAIL_SIZE,
@@ -102,6 +104,8 @@ public  class ThumbnailLoader
         loaderHelper=helper;
         helper.setLoader(this);
         needLabel=helper.needLabel();
+
+        Log.i(TAG, "ThumbnailLoader cache size "+cacheSize);
     }
 
     public void refreshSlotInfo(int slotIndex, String infoStr, boolean isActive)
@@ -111,9 +115,9 @@ public  class ThumbnailLoader
 
         if(infoStr!=null)
         {
-            if((slotIndex >= cacheOffset) && (slotIndex < (cacheOffset + CACHE_SIZE)))
+            if((slotIndex >= cacheOffset) && (slotIndex < (cacheOffset + cacheSize)))
             {
-                textureCache[slotIndex % CACHE_SIZE].labelInfo = StringTexture.newInstance(infoStr,
+                textureCache[slotIndex % cacheSize].labelInfo = StringTexture.newInstance(infoStr,
                         labelTextSize, isActive?LABEL_INFO_ACTIVE_COLOR:LABEL_INFO_INACTIVE_COLOR);
             }
         }
@@ -188,7 +192,7 @@ public  class ThumbnailLoader
         }
         else if(totalImgNum>prevTotalImgNum)
         {
-            if(dispAreaOffset+CACHE_SIZE>prevTotalImgNum)
+            if(dispAreaOffset+cacheSize>prevTotalImgNum)
             {
                 albumTotalImgNum = totalImgNum;
                 refreshCacheOffset(dispAreaOffset, true);
@@ -230,7 +234,7 @@ public  class ThumbnailLoader
     public void initAboutView(int slotsInDispArea, int paraLabelTextSize, int paraLabelNameLimit)
     {
         imgsInDispArea=slotsInDispArea;
-        bestOffsetOfDispInCache=(CACHE_SIZE-slotsInDispArea)/2;
+        bestOffsetOfDispInCache=(cacheSize-slotsInDispArea)/2;
         Log.i(TAG, "initAboutView slotsInDispArea " + slotsInDispArea);
 
         labelTextSize=paraLabelTextSize;
@@ -249,7 +253,7 @@ public  class ThumbnailLoader
         if((index>=0)&&(index<albumTotalImgNum))
         {
             //Log.i(TAG, "getTexture "+index);
-            return textureCache[index % CACHE_SIZE];
+            return textureCache[index % cacheSize];
         }
         return null;
     }
@@ -301,7 +305,7 @@ public  class ThumbnailLoader
     private void refreshCacheOffset(int index, boolean forceRefresh)
     {
         int newCacheOffset=index-bestOffsetOfDispInCache;
-        int cacheOffsetMax=albumTotalImgNum-CACHE_SIZE;
+        int cacheOffsetMax=albumTotalImgNum-cacheSize;
         if(cacheOffsetMax<0)
         {
             cacheOffsetMax=0;
@@ -324,7 +328,7 @@ public  class ThumbnailLoader
             if (newCacheOffset >= cacheOffset)
             {
                 step = 1;
-                imgIndex=cacheOffset+CACHE_SIZE;
+                imgIndex=cacheOffset+cacheSize;
             }
             else
             {
@@ -335,7 +339,7 @@ public  class ThumbnailLoader
             for(int i=0; i<interval; i++)
             {
                 //Log.i(TAG, "recycle cacheIndex:" + cacheIndex + " imgIndex:" + imgIndex);
-                SlotTexture slot=textureCache[imgIndex % CACHE_SIZE];
+                SlotTexture slot=textureCache[imgIndex % cacheSize];
                 slot.recycle();
 
                 slot.imgIndex.set(imgIndex);
@@ -366,14 +370,14 @@ public  class ThumbnailLoader
             int step=scrollStep;
             int dispOffset=dispAreaOffset;
             int imgIndexForLoader=(step==1)?dispOffset:(dispOffset+imgsInDispArea-1);
-            for(int i=0; i<CACHE_SIZE; i++)
+            for(int i=0; i<cacheSize; i++)
             {
                 if(isPaused)
                 {
                     break;
                 }
 
-                SlotTexture slot=textureCache[imgIndexForLoader%CACHE_SIZE];
+                SlotTexture slot=textureCache[imgIndexForLoader%cacheSize];
                 if(!slot.hasTried.get())
                 {
                     //Log.i(TAG, "Try "+slot.imgIndex.get());
@@ -432,7 +436,7 @@ public  class ThumbnailLoader
                 imgIndexForLoader+=step;
                 if(imgIndexForLoader<0)
                 {
-                    imgIndexForLoader=CACHE_SIZE-1;
+                    imgIndexForLoader=cacheSize-1;
                 }
 
             }

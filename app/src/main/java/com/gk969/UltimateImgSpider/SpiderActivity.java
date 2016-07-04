@@ -680,10 +680,12 @@ public class SpiderActivity extends Activity
             @Override
             public void onManuallyScroll()
             {
+                /*
                 if(curView == ALBUM_VIEW)
                 {
                     showButtonMenu(true);
                 }
+                */
             }
         });
 

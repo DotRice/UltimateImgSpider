@@ -314,7 +314,7 @@ public class TiledTexture implements Texture {
         float scaleX = (float) width / mWidth;
         float scaleY = (float) height / mHeight;
         synchronized (mTiles) {
-            Log.i(TAG, "draw "+width+" "+height+" tiles "+mTiles.length);
+            //Log.i(TAG, "draw "+width+" "+height+" tiles "+mTiles.length);
             for (int i = 0, n = mTiles.length; i < n; ++i) {
                 Tile t = mTiles[i];
                 src.set(0, 0, t.contentWidth, t.contentHeight);

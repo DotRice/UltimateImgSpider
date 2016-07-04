@@ -13,6 +13,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -290,7 +292,7 @@ public class SpiderService extends Service
     private void checkLockAndStopSelf()
     {
         //Prevent locks block main thread of service
-        singleThreadPool.execute(new Runnable()
+        singleThreadPoolTimer.execute(new Runnable()
         {
             @Override
             public void run()
@@ -377,7 +379,7 @@ public class SpiderService extends Service
                     }
                     else
                     {
-                        singleThreadPool.execute(new Runnable()
+                        singleThreadPoolTimer.execute(new Runnable()
                         {
                             @Override
                             public void run()
@@ -531,7 +533,7 @@ public class SpiderService extends Service
     private WebView spider;
 
     private Handler spiderHandler = new Handler();
-    private ExecutorService singleThreadPool= Executors.newSingleThreadExecutor();
+    private ScheduledExecutorService singleThreadPoolTimer= Executors.newSingleThreadScheduledExecutor();
 
     private AtomicBoolean timerRunning = new AtomicBoolean(true);
     private final static int URL_TIME_OUT = 10;
@@ -570,8 +572,8 @@ public class SpiderService extends Service
 
     class ImgDownloader
     {
-        private static final int IMG_DOWNLOADER_NUM = 10;
-        private DownloaderThread[] downloaderThreads = new DownloaderThread[IMG_DOWNLOADER_NUM];
+        private int imgDownloaderNum;
+        private DownloaderThread[] downloaderThreads;
         private static final String CACHE_MARK = ".cache";
 
         private final static int IMG_VALID_FILE_MIN = 512 * 1024;
@@ -583,13 +585,18 @@ public class SpiderService extends Service
 
 
         private final static int IMG_DOWNLOAD_BLOCK = 16 * 1024;
-
         private final static int REDIRECT_MAX = 5;
 
+        public ImgDownloader()
+        {
+            imgDownloaderNum=StaticValue.getSpiderDownloaderThreadNum();
+            downloaderThreads = new DownloaderThread[imgDownloaderNum];
+        }
+        
         void startAllThread()
         {
             Log.i(TAG, "startAllThread");
-            for (int i = 0; i < IMG_DOWNLOADER_NUM; i++)
+            for (int i = 0; i < imgDownloaderNum; i++)
             {
                 if (downloaderThreads[i] == null)
                 {
@@ -838,8 +845,7 @@ public class SpiderService extends Service
                         if((imgIndex % SAVE_PROJECT_DATA) == 0)
                         {
                             Log.i(TAG, "post save data cmd imgIndex " + imgIndex);
-                            isWaitingForSavingData=true;
-                            sendCmdToWatchdog(StaticValue.CMD_JUST_STORE);
+                            saveProjectData();
                             break;
                         }
                     }
@@ -1135,7 +1141,7 @@ public class SpiderService extends Service
                 curPageTitle=curPageTitle.substring(0, MAX_SIZE_PER_TITLE);
             }
 
-            singleThreadPool.execute(new Runnable()
+            singleThreadPoolTimer.execute(new Runnable()
             {
                 @Override
                 public void run()
@@ -1225,7 +1231,7 @@ public class SpiderService extends Service
                     if(pageUrlFailCnt==MAX_FAIL_PAGE_TO_CHECK)
                     {
                         pageUrlFailCnt=0;
-                        singleThreadPool.execute(new Runnable()
+                        singleThreadPoolTimer.execute(new Runnable()
                         {
                             @Override
                             public void run()
@@ -1324,8 +1330,38 @@ public class SpiderService extends Service
         {
             state.set(STAT_PAUSE);
         }
+    
+        saveProjectDataTime.set(SAVE_PROJECT_DATA_TIME);
+        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if(saveProjectDataTime.get()!=0)
+                {
+                    if(saveProjectDataTime.decrementAndGet() == 0)
+                    {
+                        jniDataLock.lock();
+                        Log.i(TAG, "save project data by timeout");
+                        saveProjectData();
+                    }
+                }
+            }
+        }, 0, 1000, TimeUnit.MILLISECONDS);
+    }
+    
+    private void saveProjectData()
+    {
+        saveProjectDataTime.set(SAVE_PROJECT_DATA_TIME);
+        if(state.get()==STAT_WORKING)
+        {
+            isWaitingForSavingData = true;
+            sendCmdToWatchdog(StaticValue.CMD_JUST_STORE);
+        }
     }
 
+    private final static int SAVE_PROJECT_DATA_TIME=5*60;
+    private AtomicInteger saveProjectDataTime=new AtomicInteger(0);
 
     private Utils.NetTrafficCalc netTrafficCalc = new Utils.NetTrafficCalc(this);
     private AtomicInteger reportStatusTimer = new AtomicInteger(0);

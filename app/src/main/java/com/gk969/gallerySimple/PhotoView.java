@@ -40,6 +40,8 @@ public class PhotoView extends GLView
     private final float mMatrix[] = new float[16];
     private final static float BACKGROUND_COLOR[] = new float[]{0, 0, 0, 0};
 
+    private final static int NEXT_TEXTURE_MIXED_COLOR=0xFF000000;
+
     private float scaleForImg;
 
     private int viewWidth;
@@ -54,6 +56,14 @@ public class PhotoView extends GLView
     private int minSqureLeft;
 
     private long renderTime;
+    private final static int VELOCITY_END_MIN_IN_DP=100;
+    private final static int VELOCITY_START_MIN_IN_DP=3000;
+    private float velocityMinAtEnd;
+    private float velocityMinAtStart;
+    private float flyVelocity;
+    private float flyStartVelocity;
+    private float flyStartLeft;
+
     private GLRootView mGLRootView;
     private TiledTexture.Uploader mTextureUploader;
 
@@ -70,13 +80,14 @@ public class PhotoView extends GLView
     private Photo[] photoCache;
     private volatile String curProjectPath;
 
+
     private class DisplayPosition
     {
-        int top;
-        int left;
-        int width;
-        int height;
-        
+        float top;
+        float left;
+        float width;
+        float height;
+
         void set(DisplayPosition pos)
         {
             top=pos.top;
@@ -84,8 +95,16 @@ public class PhotoView extends GLView
             width=pos.width;
             height=pos.height;
         }
+
+        void set(float pTop, float pLeft, float pWidth, float pHeight)
+        {
+            top=pTop;
+            left=pLeft;
+            width=pWidth;
+            height=pHeight;
+        }
     }
-    
+
     private class Photo
     {
         int indexInProject=SpiderProject.INVALID_INDEX;
@@ -94,6 +113,8 @@ public class PhotoView extends GLView
 
         DisplayPosition position=new DisplayPosition();
         DisplayPosition fillCenter=new DisplayPosition();
+
+        float scaleRatio;
 
         TiledTexture fillCenterTexture;
         Bitmap fillCenterBmp;
@@ -109,6 +130,19 @@ public class PhotoView extends GLView
             int group=indexInProject/ StaticValue.MAX_IMG_FILE_PER_DIR;
             int offset=indexInProject%StaticValue.MAX_IMG_FILE_PER_DIR;
             return String.format("%s/%d/%03d.", curProjectPath, group, offset);
+        }
+
+        void scale(float scaleRatio)
+        {
+            scale(viewHeight / 2, viewWidth / 2, scaleRatio, fillCenter);
+        }
+
+        void scale(int focusTop, int focusLeft, float scaleRatio, DisplayPosition basePos)
+        {
+            position.top=focusTop+(basePos.top-focusTop)*scaleRatio;
+            position.left=focusLeft+(basePos.left-focusLeft)*scaleRatio;
+            position.width=basePos.width*scaleRatio;
+            position.height=basePos.height*scaleRatio;
         }
 
         void loadFillCenterBmp(String targetFilePath)
@@ -163,9 +197,9 @@ public class PhotoView extends GLView
             }
             else if(bmpOptions.outWidth<viewWidthForImg && bmpOptions.outHeight<viewHeightForImg)
             {
-                fillCenter.width=(int)(scaleForImg*bmpOptions.outWidth);
+                fillCenter.width=scaleForImg*bmpOptions.outWidth;
                 fillCenter.left=(viewWidth-fillCenter.width)/2;
-                fillCenter.height=(int)(scaleForImg*bmpOptions.outHeight);
+                fillCenter.height=scaleForImg*bmpOptions.outHeight;
                 fillCenter.top=(viewHeight-fillCenter.height)/2;
             }
             else if(bmpOptions.outHeight*viewWidthForImg > bmpOptions.outWidth*viewHeight)
@@ -238,7 +272,11 @@ public class PhotoView extends GLView
     {
         mGestureRecognizer = new GestureRecognizer(context, new MyGestureListener());
 
-        scaleForImg=context.getResources().getDisplayMetrics().density;
+        float density=context.getResources().getDisplayMetrics().density;
+        velocityMinAtEnd=VELOCITY_END_MIN_IN_DP*density;
+        velocityMinAtStart=VELOCITY_START_MIN_IN_DP*density;
+        scaleForImg=density;
+
         mGLRootView = glRootView;
 
         TiledTexture.prepareResources();
@@ -262,7 +300,6 @@ public class PhotoView extends GLView
         stopAnimation();
         setViewSize(getWidth(), getHeight());
     }
-
 
     private void setViewSize(int width, int height)
     {
@@ -296,16 +333,16 @@ public class PhotoView extends GLView
         }
     }
 
-    private int getNextPhotoIndex(int index)
+    private int getNextPhotoIndexInCache(int index)
     {
         return (index==(PHOTO_CACHE_SIZE-1))?0:index+1;
     }
 
-    private int getPrevPhotoIndex(int index)
+    private int getPrevPhotoIndexInCache(int index)
     {
         return (index==0)?(PHOTO_CACHE_SIZE-1):index-1;
     }
-    
+
     public void openPhoto(String projectPath, int indexInProject)
     {
         Log.i(TAG, "openPhoto " + projectPath + " " + indexInProject);
@@ -328,27 +365,27 @@ public class PhotoView extends GLView
             photoCache[0].bmpLoaded=false;
         }
 
-        int prevIndex=getPrevPhotoIndex(curPhotoIndexInCache);
-        int nextIndex=getNextPhotoIndex(curPhotoIndexInCache);
+        int prevIndex=getPrevPhotoIndexInCache(curPhotoIndexInCache);
+        int nextIndex=getNextPhotoIndexInCache(curPhotoIndexInCache);
         for(i=0; i<(PHOTO_CACHE_SIZE/2); i++)
         {
             int newIndex;
-    
+
             newIndex=indexInProject-1-i;
             if(photoCache[prevIndex].indexInProject!=newIndex)
             {
                 photoCache[prevIndex].indexInProject=newIndex;
                 photoCache[prevIndex].bmpLoaded=false;
             }
-            prevIndex=getPrevPhotoIndex(prevIndex);
-    
+            prevIndex=getPrevPhotoIndexInCache(prevIndex);
+
             newIndex=indexInProject+1+i;
             if(photoCache[nextIndex].indexInProject!=newIndex)
             {
                 photoCache[nextIndex].indexInProject=newIndex;
                 photoCache[nextIndex].bmpLoaded=false;
             }
-            nextIndex=getNextPhotoIndex(nextIndex);
+            nextIndex=getNextPhotoIndexInCache(nextIndex);
         }
 
 
@@ -378,6 +415,7 @@ public class PhotoView extends GLView
     public void stopAnimation()
     {
         mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        flyVelocity = 0;
     }
 
     @Override
@@ -385,6 +423,17 @@ public class PhotoView extends GLView
     {
         mGestureRecognizer.onTouchEvent(event);
         return true;
+    }
+
+    private void startFly(float velocity)
+    {
+        flyVelocity = velocity;
+        flyStartVelocity=velocity;
+        flyStartLeft=photoCache[curPhotoIndexInCache].position.left;
+
+
+        renderTime = SystemClock.uptimeMillis();
+        mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
 
     @Override
@@ -402,14 +451,70 @@ public class PhotoView extends GLView
         Log.i(TAG, "render "+photo.indexInProject+" "+curPhotoIndexInCache);
         if(photo.fillCenterTexture!=null)
         {
-            Log.i(TAG, "render not null");
+            Log.i(TAG, "render not null velocity "+flyVelocity);
+
+            if(flyVelocity!=0)
+            {
+                float newLeft=photo.position.left+renderTimeInterval*flyVelocity/1000;
+
+                if(flyVelocity>0)
+                {
+                    if(newLeft>=photo.fillCenter.left)
+                    {
+                        stopAnimation();
+                        photo.position.left=photo.fillCenter.left;
+                    }
+                    else
+                    {
+                        flyVelocity=Math.max((photo.fillCenter.left-photo.position.left)/
+                                (photo.fillCenter.left-flyStartLeft)*flyStartVelocity, velocityMinAtEnd);
+                        photo.position.left=newLeft;
+                    }
+                }
+                else
+                {
+                    if(newLeft<=(0-photo.fillCenter.width))
+                    {
+                        stopAnimation();
+                        curPhotoIndexInCache=getNextPhotoIndexInCache(curPhotoIndexInCache);
+                        photo=photoCache[curPhotoIndexInCache];
+                        photo.position.set(photo.fillCenter);
+                    }
+                    else
+                    {
+                        flyVelocity = Math.min((photo.fillCenter.width + photo.position.left) /
+                                (flyStartLeft + photo.fillCenter.width) * flyStartVelocity, (0 - velocityMinAtEnd));
+                        photo.position.left=newLeft;
+                    }
+                }
+            }
+
+
+            if(photo.position.left!=photo.fillCenter.left)
+            {
+                float mainTextureMoveLeftRatio=(photo.fillCenter.left-photo.position.left)/
+                        (photo.fillCenter.width+photo.fillCenter.left);
+                Photo nextPhoto=photoCache[getNextPhotoIndexInCache(curPhotoIndexInCache)];
+                if(nextPhoto.fillCenterTexture!=null)
+                {
+                    if(nextPhoto.fillCenterTexture.isReady())
+                    {
+                        nextPhoto.scale(mainTextureMoveLeftRatio);
+                        nextPhoto.fillCenterTexture.drawMixed(canvas, NEXT_TEXTURE_MIXED_COLOR, 1-mainTextureMoveLeftRatio,
+                                (int)nextPhoto.position.left, (int)nextPhoto.position.top,
+                                (int)nextPhoto.position.width, (int)nextPhoto.position.height);
+                    }
+                }
+            }
 
             if(photo.fillCenterTexture.isReady())
             {
-                Log.i(TAG, "render ready");
-                photo.fillCenterTexture.draw(canvas, photo.position.left, photo.position.top, photo.position.width, photo.position.height);
+                //Log.i(TAG, "render ready");
+                photo.fillCenterTexture.draw(canvas, (int)photo.position.left, (int)photo.position.top,
+                        (int)photo.position.width, (int)photo.position.height);
             }
         }
+
     }
 
     public void onDestroy()
@@ -441,7 +546,7 @@ public class PhotoView extends GLView
     {
         private final static long SLEEP_TIME=3600000*24*365;
         private volatile boolean inSleep;
-        
+
         public volatile boolean needReload;
 
         public PhotoLoader()
@@ -458,7 +563,7 @@ public class PhotoView extends GLView
                 interrupt();
             }
         }
-        
+
         private void load()
         {
             Log.i(TAG, "start load " + curPhotoIndexInCache);
@@ -475,8 +580,8 @@ public class PhotoView extends GLView
 
             mGLRootView.lockRenderThread();
 
-            int prevIndex=getPrevPhotoIndex(curPhotoIndexInCache);
-            int nextIndex=getNextPhotoIndex(curPhotoIndexInCache);
+            int prevIndex=getPrevPhotoIndexInCache(curPhotoIndexInCache);
+            int nextIndex=getNextPhotoIndexInCache(curPhotoIndexInCache);
             for(int i=0; i<(PHOTO_CACHE_SIZE/2); i++)
             {
                 photoCache[prevIndex].load();
@@ -484,14 +589,14 @@ public class PhotoView extends GLView
                 {
                     break;
                 }
-                prevIndex=getPrevPhotoIndex(prevIndex);
+                prevIndex=getPrevPhotoIndexInCache(prevIndex);
 
                 photoCache[nextIndex].load();
                 if(needReload)
                 {
                     break;
                 }
-                nextIndex=getNextPhotoIndex(nextIndex);
+                nextIndex=getNextPhotoIndexInCache(nextIndex);
             }
 
             mGLRootView.unlockRenderThread();
@@ -505,7 +610,7 @@ public class PhotoView extends GLView
             {
                 needReload=false;
                 load();
-                
+
                 if(!isLoaderRunning)
                 {
                     break;
@@ -526,9 +631,6 @@ public class PhotoView extends GLView
             }
         }
     }
-
-
-
 
     private class MyGestureListener implements GestureRecognizer.Listener
     {
@@ -560,9 +662,29 @@ public class PhotoView extends GLView
         {
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
             mGLRootView.lockRenderThread();
-            Photo curPhoto=photoCache[curPhotoIndexInCache];
+            Photo photo=photoCache[curPhotoIndexInCache];
+            float newLeft=photo.position.left-dx;
 
-            curPhoto.position.left-=dx;
+            float leftMin=0-photo.fillCenter.width;
+            if(newLeft>photo.fillCenter.left && photo.position.left<=photo.fillCenter.left)
+            {
+                //Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.position.left+" width "+photo.position.width);
+                curPhotoIndexInCache=getPrevPhotoIndexInCache(curPhotoIndexInCache);
+                photo=photoCache[curPhotoIndexInCache];
+                DisplayPosition fillCenter=photo.fillCenter;
+                photo.position.set(fillCenter.top, 0 - fillCenter.width, fillCenter.width, fillCenter.height);
+                //Log.i(TAG, "prev "+curPhotoIndexInCache+" left "+photo.position.left+" width "+photo.position.width);
+            }
+            else if(newLeft<=leftMin && photo.position.left>leftMin)
+            {
+                //Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.position.left+" width "+photo.position.width);
+                curPhotoIndexInCache=getNextPhotoIndexInCache(curPhotoIndexInCache);
+                photo=photoCache[curPhotoIndexInCache];
+                //Log.i(TAG, "next "+curPhotoIndexInCache+" left "+photo.position.left+" width "+photo.position.width);
+            }
+
+            photo.position.left-=dx;
+
             mGLRootView.unlockRenderThread();
             mGLRootView.requestRender();
             return true;
@@ -571,10 +693,20 @@ public class PhotoView extends GLView
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
         {
-            mGLRootView.lockRenderThread();
-
-            mGLRootView.unlockRenderThread();
-
+            if(velocityX!=0)
+            {
+                mGLRootView.lockRenderThread();
+                if(velocityX>0)
+                {
+                    velocityX=Math.max(velocityX, velocityMinAtStart);
+                }
+                else
+                {
+                    velocityX=Math.min(velocityX, (0 - velocityMinAtStart));
+                }
+                startFly(velocityX);
+                mGLRootView.unlockRenderThread();
+            }
             Log.i(TAG, "onFling " + velocityX + " " + velocityY);
             return true;
         }
@@ -618,7 +750,21 @@ public class PhotoView extends GLView
         {
             Log.i(TAG, "onUp");
             mGLRootView.lockRenderThread();
-
+            if(flyVelocity==0)
+            {
+                Photo photo=photoCache[curPhotoIndexInCache];
+                float leftMinToBack=photo.fillCenter.left-photo.fillCenter.width/2;
+                if(photo.position.left<=leftMinToBack)
+                {
+                    startFly(0-(photo.fillCenter.width+photo.position.left)/
+                            (photo.fillCenter.width+photo.fillCenter.left)*velocityMinAtStart);
+                }
+                else
+                {
+                    startFly((photo.fillCenter.left-photo.position.left)/
+                            (photo.fillCenter.width+photo.fillCenter.left)*velocityMinAtStart);
+                }
+            }
 
             isTouching=false;
             mGLRootView.unlockRenderThread();
