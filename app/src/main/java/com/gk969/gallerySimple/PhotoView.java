@@ -81,6 +81,8 @@ public class PhotoView extends GLView
     private Photo[] photoCache;
     private volatile String curProjectPath;
 
+    private final static int SCROLL_NEXT=1;
+    private final static int SCROLL_PREV=-1;
 
     private class DisplayPosition
     {
@@ -251,6 +253,7 @@ public class PhotoView extends GLView
                 mGLRootView.unlockRenderThread();
                 loadFillCenterBmp(photoFilePath);
 
+                /*
                 try
                 {
                     Thread.sleep(1000);
@@ -258,6 +261,7 @@ public class PhotoView extends GLView
                 {
                     e.printStackTrace();
                 }
+                */
 
                 mGLRootView.lockRenderThread();
 
@@ -372,6 +376,26 @@ public class PhotoView extends GLView
         return (index==0)?(PHOTO_CACHE_SIZE-1):index-1;
     }
 
+    private void photoCacheScroll(int scrollDir)
+    {
+        int recycleCacheIndex=(scrollDir==SCROLL_NEXT)?((curPhotoIndexInCache+(PHOTO_CACHE_SIZE/2)+1)%PHOTO_CACHE_SIZE):
+                ((curPhotoIndexInCache+PHOTO_CACHE_SIZE-(PHOTO_CACHE_SIZE/2)-1)%PHOTO_CACHE_SIZE);
+        Photo photo=photoCache[recycleCacheIndex];
+
+        photo.bmpLoaded=false;
+        if(photo.fillCenterBmp!=null)
+        {
+            photo.fillCenterBmp.recycle();
+            photo.fillCenterBmp=null;
+        }
+        photo.fillCenterTexture.recycle();
+        photo.fillCenterTexture=null;
+        photo.textureCreate=false;
+        photo.indexInProject+=scrollDir*PHOTO_CACHE_SIZE;
+
+        loader.wakeUp();
+    }
+
     public void openPhoto(String projectPath, int indexInProject)
     {
         Log.i(TAG, "openPhoto " + projectPath + " " + indexInProject);
@@ -477,7 +501,7 @@ public class PhotoView extends GLView
         renderTime = curTime;
 
         Photo photo=photoCache[curPhotoIndexInCache];
-        Log.i(TAG, "render "+photo.indexInProject+" "+curPhotoIndexInCache);
+        //Log.i(TAG, "render "+photo.indexInProject+" "+curPhotoIndexInCache);
 
         if(flyVelocity!=0)
         {
@@ -501,6 +525,7 @@ public class PhotoView extends GLView
                 if(newLeft<=(0-viewWidth))
                 {
                     stopAnimation();
+                    photoCacheScroll(SCROLL_NEXT);
                     curPhotoIndexInCache=getNextPhotoIndexInCache(curPhotoIndexInCache);
                     photo=photoCache[curPhotoIndexInCache];
                     photo.boxPos.set(fullScreen);
@@ -548,7 +573,7 @@ public class PhotoView extends GLView
                 //Log.i(TAG, "render not null velocity "+flyVelocity);
                 if(photo.fillCenterTexture.isReady())
                 {
-                    Log.i(TAG, "render ready");
+                    //Log.i(TAG, "render ready");
                     photo.calcRenderPos();
                     photo.fillCenterTexture.draw(canvas, (int) photo.renderPos.left, (int) photo.renderPos.top,
                             (int) photo.renderPos.width, (int) photo.renderPos.height);
@@ -714,6 +739,7 @@ public class PhotoView extends GLView
             if(newLeft>0 && photo.boxPos.left<=0)
             {
                 //Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
+                photoCacheScroll(SCROLL_PREV);
                 curPhotoIndexInCache=getPrevPhotoIndexInCache(curPhotoIndexInCache);
                 photo=photoCache[curPhotoIndexInCache];
                 photo.boxPos.set(0, leftMin, viewWidth, viewHeight);
@@ -722,6 +748,7 @@ public class PhotoView extends GLView
             else if(newLeft<=leftMin && photo.boxPos.left>leftMin)
             {
                 Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
+                photoCacheScroll(SCROLL_NEXT);
                 curPhotoIndexInCache=getNextPhotoIndexInCache(curPhotoIndexInCache);
                 photo=photoCache[curPhotoIndexInCache];
                 photo.boxPos.set(fullScreen);
