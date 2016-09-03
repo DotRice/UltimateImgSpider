@@ -1,5 +1,6 @@
 package com.gk969.UltimateImgSpider;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -51,121 +52,52 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class SelSrcActivity extends Activity
-{
-    private final String         TAG            = "SelSrcActivity";
+import com.gk969.Utils.Utils;
+
+public class SelSrcActivity extends Activity {
+    private final String TAG = "SelSrcActivity";
     
-    private WebView              browser;
-    private ProgressBar          pbWebView;
-    private Bitmap               browserIcon;
+    private WebView browser;
+    private ProgressBar pbWebView;
+    private Bitmap browserIcon;
     
-    private RelativeLayout       layoutWvMask;
-    private LinearLayout         browserMenu;
-    private final static int     MENU_ANI_TIME  = 250;
-    private AlphaAnimation       wvMaskAlphaAni = new AlphaAnimation(0, 1);
+    private RelativeLayout layoutWvMask;
+    private LinearLayout browserMenu;
+    private final static int MENU_ANI_TIME = 250;
+    private AlphaAnimation wvMaskAlphaAni = new AlphaAnimation(0, 1);
     
-    private ImageButton          btnSelSearchEngine;
+    private ImageButton btnSelSearchEngine;
     private View.OnClickListener oclSelSearchEngine;
 
-    private String               recvFailUrl="";
+    private String recvFailUrl = "";
     
-    private EditText             etUrl;
-    private String               urlToDisp;
+    private EditText etUrl;
+    private String urlToDisp;
     
-    private RelativeLayout       urlBar;
+    private RelativeLayout urlBar;
     
-    private Button               btnURLcmd;
+    private Button btnURLcmd;
 
     private Context appCtx;
     
-    private final int            URL_CANCEL     = 0;
-    private final int            URL_REFRESH    = 1;
-    private final int            URL_ENTER      = 2;
-    private final int            URL_SEARCH     = 3;
-    private final int            URLCMD_ICON[]  = { R.drawable.cancel,
-            R.drawable.refresh, R.drawable.enter, R.drawable.search };
-    private int                  URLcmd         = URL_CANCEL;
+    private final int URL_CANCEL = 0;
+    private final int URL_REFRESH = 1;
+    private final int URL_ENTER = 2;
+    private final int URL_SEARCH = 3;
+    private final int URLCMD_ICON[] = {R.drawable.cancel,
+            R.drawable.refresh, R.drawable.enter, R.drawable.search};
+    private int URLcmd = URL_CANCEL;
     
     private View.OnClickListener oclBrowserBtn;
     
-    private final int            PROGRESS_MAX   = 100;
+    private final int PROGRESS_MAX = 100;
     
-    private Handler              mHandler       = new Handler();
+    private Handler mHandler = new Handler();
+
     
-    private enum DLG
-    {
-        SPIDER_GO_CONFIRM, SEL_SEARCH_ENGINE
-    };
-    
-    @Override
-    protected Dialog onCreateDialog(int dlgId)
-    {
-        DLG dlg = DLG.values()[dlgId];
-        switch (dlg)
-        {
-            case SPIDER_GO_CONFIRM:
-            {
-                return new AlertDialog.Builder(this)
-                        .setTitle(R.string.spiderGoConfirm)
-                        .setMultiChoiceItems(
-                                R.array.noLongerConfirm,
-                                new boolean[] { false },
-                                new DialogInterface.OnMultiChoiceClickListener()
-                                {
-                                    public void onClick(DialogInterface dialog,
-                                            int whichButton, boolean isChecked)
-                                    {
-                                        ParaConfig.setSpiderGoConfirm(appCtx, isChecked);
-                                    }
-                                })
-                        .setPositiveButton(R.string.OK,
-                                new DialogInterface.OnClickListener()
-                                {
-                                    public void onClick(DialogInterface dialog,
-                                            int whichButton)
-                                    {
-                                        /* User clicked Yes so do some stuff */
-                                        spiderGo();
-                                    }
-                                })
-                        .setNegativeButton(R.string.cancel,
-                                new DialogInterface.OnClickListener()
-                                {
-                                    public void onClick(DialogInterface dialog,
-                                            int whichButton)
-                                    {
-                                        
-                                        /* User clicked No so do some stuff */
-                                    }
-                                }).create();
-            }
-            
-            case SEL_SEARCH_ENGINE:
-            {
-                return new AlertDialog.Builder(this)
-                        .setTitle(R.string.selSearchEngine)
-                        .setItems(ParaConfig.SEARCH_ENGINE_NAME,
-                                new DialogInterface.OnClickListener()
-                                {
-                                    public void onClick(DialogInterface dialog,
-                                            int whichButton)
-                                    {
-                                        Log.i(TAG, "whichButton:" + whichButton);
-                                        ParaConfig.setSearchEngine(appCtx, whichButton);
-                                        btnSelSearchEngine.setImageResource(ParaConfig
-                                                .getSearchEngineIcon(SelSrcActivity.this));
-                                    }
-                                }).create();
-            }
-        }
-        return null;
-    }
-    
-    private void browserLoadUrl(String URL)
-    {
+    private void browserLoadUrl(String URL) {
         String Protocol = URL.toLowerCase();
-        if (Protocol.startsWith("http://") || Protocol.startsWith("https://"))
-        {
+        if(Protocol.startsWith("http://") || Protocol.startsWith("https://")) {
             browser.stopLoading();
             browser.loadUrl(URL);
             setBrowserTitle(URL);
@@ -174,26 +106,20 @@ public class SelSrcActivity extends Activity
         }
     }
     
-    void setBrowserTitle(String title)
-    {
-        if (!etUrl.hasFocus())
-        {
+    void setBrowserTitle(String title) {
+        if(!etUrl.hasFocus()) {
             etUrl.setText(title);
         }
     }
 
-    private boolean browserGoBack()
-    {
-        if(browser.canGoBack())
-        {
+    private boolean browserGoBack() {
+        if(browser.canGoBack()) {
             browser.goBack();
 
-            Log.i(TAG, urlToDisp+" "+recvFailUrl+" "+browser.getUrl());
-            if(urlToDisp.equals(recvFailUrl) && (!urlToDisp.equals(browser.getUrl())))
-            {
+            Log.i(TAG, urlToDisp + " " + recvFailUrl + " " + browser.getUrl());
+            if(urlToDisp.equals(recvFailUrl) && (!urlToDisp.equals(browser.getUrl()))) {
                 Log.i(TAG, "Redirection Rail");
-                if(browser.canGoBack())
-                {
+                if(browser.canGoBack()) {
                     browser.goBack();
                 }
             }
@@ -204,36 +130,30 @@ public class SelSrcActivity extends Activity
         return false;
     }
 
-    private void browserInit(String urlToOpen)
-    {
+    private void browserInit(String urlToOpen) {
         pbWebView = (ProgressBar) findViewById(R.id.progressBarWebView);
         pbWebView.setMax(PROGRESS_MAX);
         
         browser = (WebView) findViewById(R.id.webViewSelectSrcUrl);
         
-        browser.setWebViewClient(new WebViewClient()
-        {
-            public boolean shouldOverrideUrlLoading(WebView view, String url)
-            {
+        browser.setWebViewClient(new WebViewClient() {
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 Log.i(TAG, "shouldOverrideUrlLoading " + url);
                 return false;
             }
             
-            public void onPageFinished(WebView view, String url)
-            {
+            public void onPageFinished(WebView view, String url) {
                 Log.i(TAG, "onPageFinished " + url);
                 setUrlCmd(URL_REFRESH);
                 
                 String title = browser.getTitle();
-                if (title != null)
-                {
+                if(title != null) {
                     setBrowserTitle(title);
                 }
                 
             }
             
-            public void onPageStarted(WebView view, String url, Bitmap favicon)
-            {
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 Log.i(TAG, "onPageStarted " + url);
                 setBrowserTitle(url);
                 setUrlCmd(URL_CANCEL);
@@ -246,47 +166,37 @@ public class SelSrcActivity extends Activity
             }
             
             public void onReceivedError(WebView view, int errorCode,
-                    String description, String failingUrl)
-            {
-                Log.i(TAG, "ReceivedError " + failingUrl + " " + errorCode + "  " + description+" "+
-                        view.getUrl()+" OriginalUrl "+view.getOriginalUrl());
+                                        String description, String failingUrl) {
+                Log.i(TAG, "ReceivedError " + failingUrl + " " + errorCode + "  " + description + " " +
+                        view.getUrl() + " OriginalUrl " + view.getOriginalUrl());
 
-                recvFailUrl=failingUrl;
+                recvFailUrl = failingUrl;
             }
         });
         
-        browser.setWebChromeClient(new WebChromeClient()
-        {
-            public void onReceivedIcon(WebView view, Bitmap icon)
-            {
+        browser.setWebChromeClient(new WebChromeClient() {
+            public void onReceivedIcon(WebView view, Bitmap icon) {
                 btnSelSearchEngine.setImageBitmap(icon);
                 browserIcon = icon;
             }
 
-            public void onProgressChanged(WebView view, int newProgress)
-            {
-                if(newProgress == PROGRESS_MAX)
-                {
-                    if(pbWebView.getProgress() != 0)
-                    {
+            public void onProgressChanged(WebView view, int newProgress) {
+                if(newProgress == PROGRESS_MAX) {
+                    if(pbWebView.getProgress() != 0) {
                         pbWebView.setProgress(PROGRESS_MAX);
-                        mHandler.postDelayed(new Runnable()
-                        {
-                            public void run()
-                            {
+                        mHandler.postDelayed(new Runnable() {
+                            public void run() {
                                 pbWebView.setProgress(0);
                             }
                         }, 500);
                     }
                 }
-                else
-                {
+                else {
                     pbWebView.setProgress(newProgress);
                 }
             }
 
-            public void onReceivedTitle(WebView view, String title)
-            {
+            public void onReceivedTitle(WebView view, String title) {
                 setBrowserTitle(title);
             }
         });
@@ -309,9 +219,8 @@ public class SelSrcActivity extends Activity
         
         browser.requestFocus();
 
-        if(urlToOpen==null)
-        {
-            urlToOpen=ParaConfig.getHomeURL(appCtx);
+        if(urlToOpen == null) {
+            urlToOpen = ParaConfig.getHomeURL(appCtx);
         }
 
         browserLoadUrl(urlToOpen);
@@ -320,19 +229,16 @@ public class SelSrcActivity extends Activity
                 R.drawable.site);
     }
     
-    private void clearURLbarFocus()
-    {
+    private void clearURLbarFocus() {
         browser.requestFocus();
         ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
                 .hideSoftInputFromWindow(etUrl.getWindowToken(),
                         InputMethodManager.HIDE_NOT_ALWAYS);
         
-        if (pbWebView.getProgress() == 0)
-        {
+        if(pbWebView.getProgress() == 0) {
             setUrlCmd(URL_REFRESH);
         }
-        else
-        {
+        else {
             setUrlCmd(URL_CANCEL);
         }
         
@@ -343,150 +249,192 @@ public class SelSrcActivity extends Activity
         
     }
     
-    private void focusOnWebView()
-    {
-        if (layoutWvMask.getVisibility() == View.VISIBLE)
-        {
+    private void focusOnWebView() {
+        if(layoutWvMask.getVisibility() == View.VISIBLE) {
             clearURLbarFocus();
             showBrowserMenu(false);
         }
     }
     
-    private void focusOnURL()
-    {
+    private void focusOnURL() {
         etUrl.requestFocus();
         ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
                 .showSoftInput(etUrl, InputMethodManager.SHOW_IMPLICIT);
     }
     
-    private void setUrlCmd(int cmd)
-    {
-        if (cmd < URLCMD_ICON.length)
-        {
+    private void setUrlCmd(int cmd) {
+        if(cmd < URLCMD_ICON.length) {
             URLcmd = cmd;
             btnURLcmd.setBackgroundResource(URLCMD_ICON[cmd]);
         }
     }
     
-    private void executeURLcmd()
-    {
-        switch (URLcmd)
-        {
+    private void executeURLcmd() {
+        switch(URLcmd) {
             case URL_CANCEL:
-                if (pbWebView.getProgress() != 0)
-                {
+                if(pbWebView.getProgress() != 0) {
                     browser.stopLoading();
                     pbWebView.setProgress(0);
                     setUrlCmd(URL_REFRESH);
                 }
-            break;
+                break;
             
             case URL_REFRESH:
                 browser.reload();
                 setUrlCmd(URL_CANCEL);
-            break;
+                break;
             
             case URL_ENTER:
-                if (!browser.getUrl().equals(urlToDisp))
-                {
+                if(!browser.getUrl().equals(urlToDisp)) {
                     browserLoadUrl(urlToDisp);
                 }
-            break;
+                break;
             
             case URL_SEARCH:
                 String target;
-                try
-                {
+                try {
                     target = URLEncoder.encode(urlToDisp, "UTF-8");
-                }
-                catch (UnsupportedEncodingException e)
-                {
+                } catch(UnsupportedEncodingException e) {
                     e.printStackTrace();
                     break;
                 }
                 browserLoadUrl(ParaConfig.getSearchEngineURL(appCtx) + target);
-            break;
+                break;
             
             default:
-            break;
+                break;
         }
         
         focusOnWebView();
     }
     
-    void responseMenuKey()
-    {
+    void responseMenuKey() {
         clearURLbarFocus();
-        if (wvMaskAlphaAni.hasEnded() || (!wvMaskAlphaAni.hasStarted()))
-        {
+        if(wvMaskAlphaAni.hasEnded() || (!wvMaskAlphaAni.hasStarted())) {
             showBrowserMenu(layoutWvMask.getVisibility() != View.VISIBLE);
         }
     }
-    
-    private void oclBrowserBtnInit()
-    {
-        oclBrowserBtn = new View.OnClickListener()
-        {
+
+    private void showSpiderGoAlert() {
+        if(browser.getUrl()==null){
+            return;
+        }
+
+        final File[] storageDirs= Utils.getStoDirs(getString(R.string.appPackageName));
+        if(storageDirs.length!=0) {
+            if(ParaConfig.isSpiderGoNeedConfirm(appCtx)) {
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.spiderGoConfirm)
+                        .setMultiChoiceItems(
+                                R.array.noLongerConfirm,
+                                new boolean[]{false},
+                                new DialogInterface.OnMultiChoiceClickListener() {
+                                    public void onClick(DialogInterface dialog,
+                                                        int whichButton, boolean isChecked) {
+                                        ParaConfig.setSpiderGoConfirm(appCtx, isChecked);
+                                    }
+                                })
+                        .setPositiveButton(R.string.OK,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,
+                                                        int whichButton) {
+                                        selStorageAndGo(storageDirs);
+                                    }
+                                })
+                        .setNegativeButton(R.string.cancel, null).create().show();
+            }else {
+                selStorageAndGo(storageDirs);
+            }
+        }else{
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.badExternalStoragePrompt)
+                    .setMessage(R.string.notFindValidStorage)
+                    .setPositiveButton(R.string.OK, null)
+                    .create().show();
+        }
+    }
+
+    private void selStorageAndGo(final File[] storageDirs){
+        if(storageDirs.length==1){
+            spiderGo(browser.getUrl()+" "+storageDirs[0].getPath());
+        }else {
+            String[] storageInfo=new String[storageDirs.length];
+            for(int i=0; i<storageDirs.length; i++){
+                String deviceName=getString((i==0)?R.string.deviceStorage:R.string.sdcardStorage);
+                String totalSpace=getString(R.string.totalSpace)+Utils.byteSizeToString(storageDirs[i].getTotalSpace());
+                String freeSpace=getString(R.string.freeSpace)+Utils.byteSizeToString(storageDirs[i].getFreeSpace());
+
+                storageInfo[i]=deviceName+"  "+totalSpace+" "+freeSpace;
+            }
+            new AlertDialog.Builder(SelSrcActivity.this)
+                    .setTitle(R.string.selStorageDevice)
+                    .setItems(storageInfo,
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,
+                                                    int whichButton) {
+                                    spiderGo(browser.getUrl()+" "+storageDirs[whichButton].getPath());
+                                }
+                            })
+                    .setNegativeButton(R.string.cancel, null).create().show();
+        }
+    }
+
+    public void spiderGo(String urlAndPath) {
+        Log.i(TAG, "spiderGo :" + urlAndPath);
+        setResult(RESULT_OK, (new Intent()).setAction(urlAndPath));
+        finish();
+    }
+
+    private void oclBrowserBtnInit() {
+        oclBrowserBtn = new View.OnClickListener() {
             
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 int viewId = v.getId();
                 
-                if ((viewId == R.id.buttonURLcmd)
-                        || (viewId == R.id.FrameLayoutURLcmd))
-                {
+                if((viewId == R.id.buttonURLcmd)
+                        || (viewId == R.id.FrameLayoutURLcmd)) {
                     executeURLcmd();
                 }
-                else
-                {
-                    switch (viewId)
-                    {
+                else {
+                    switch(viewId) {
                         case R.id.buttonBack:
                             Log.i(TAG, "buttonBack");
                             browserGoBack();
-                        break;
+                            break;
                         
                         case R.id.buttonForward:
-                            if (browser.canGoForward())
-                            {
+                            if(browser.canGoForward()) {
                                 browser.goForward();
                             }
-                        break;
+                            break;
                         
                         case R.id.buttonSpiderGo:
-                            if (ParaConfig.isSpiderGoNeedConfirm(appCtx))
-                            {
-                                spiderGo();
-                            }
-                            else
-                            {
-                                showDialog(DLG.SPIDER_GO_CONFIRM.ordinal());
-                            }
-                        break;
+                            showSpiderGoAlert();
+                            break;
                         
                         case R.id.buttonHome:
                             browserLoadUrl(ParaConfig.getHomeURL(appCtx));
-                        break;
+                            break;
                         
                         case R.id.buttonMenu:
                             responseMenuKey();
                             return;
-                            
+
                         case R.id.buttonSetting:
                             openSettingPage();
-                        break;
+                            break;
                         
                         case R.id.buttonExit:
                             finish();
                             return;
                         case R.id.buttonRefresh:
                             browser.reload();
-                        break;
+                            break;
                         
                         default:
                             Log.i(TAG, "oclBrowserBtn Unknown Button");
-                        break;
+                            break;
                     }
                     
                     focusOnWebView();
@@ -496,32 +444,27 @@ public class SelSrcActivity extends Activity
         };
     }
     
-    private void showWebviewMask(final boolean isShow)
-    {
+    private void showWebviewMask(final boolean isShow) {
         wvMaskAlphaAni = isShow ? (new AlphaAnimation(0, 1))
                 : (new AlphaAnimation(1, 0));
         
         wvMaskAlphaAni.setDuration(MENU_ANI_TIME);
-        wvMaskAlphaAni.setAnimationListener(new AnimationListener()
-        {
+        wvMaskAlphaAni.setAnimationListener(new AnimationListener() {
             
             @Override
-            public void onAnimationStart(Animation animation)
-            {
-                if (isShow)
+            public void onAnimationStart(Animation animation) {
+                if(isShow)
                     layoutWvMask.setVisibility(View.VISIBLE);
             }
             
             @Override
-            public void onAnimationRepeat(Animation animation)
-            {
+            public void onAnimationRepeat(Animation animation) {
                 
             }
             
             @Override
-            public void onAnimationEnd(Animation animation)
-            {
-                if (!isShow)
+            public void onAnimationEnd(Animation animation) {
+                if(!isShow)
                     layoutWvMask.setVisibility(View.INVISIBLE);
             }
         });
@@ -530,38 +473,32 @@ public class SelSrcActivity extends Activity
         
     }
     
-    private void showBrowserMenu(final boolean isShow)
-    {
+    private void showBrowserMenu(final boolean isShow) {
         showWebviewMask(isShow);
         
-        if ((browserMenu.getVisibility() == View.VISIBLE) != isShow)
-        {
+        if((browserMenu.getVisibility() == View.VISIBLE) != isShow) {
             float fromY = isShow ? 1 : 0;
             TranslateAnimation browserMenuAnim = new TranslateAnimation(
                     Animation.RELATIVE_TO_SELF, 0f, Animation.RELATIVE_TO_SELF,
                     0f, Animation.RELATIVE_TO_SELF, fromY,
                     Animation.RELATIVE_TO_SELF, 1 - fromY);
             browserMenuAnim.setDuration(MENU_ANI_TIME);
-            browserMenuAnim.setAnimationListener(new AnimationListener()
-            {
+            browserMenuAnim.setAnimationListener(new AnimationListener() {
                 
                 @Override
-                public void onAnimationStart(Animation animation)
-                {
-                    if (isShow)
+                public void onAnimationStart(Animation animation) {
+                    if(isShow)
                         browserMenu.setVisibility(View.VISIBLE);
                 }
                 
                 @Override
-                public void onAnimationRepeat(Animation animation)
-                {
+                public void onAnimationRepeat(Animation animation) {
                     
                 }
                 
                 @Override
-                public void onAnimationEnd(Animation animation)
-                {
-                    if (!isShow)
+                public void onAnimationEnd(Animation animation) {
+                    if(!isShow)
                         browserMenu.setVisibility(View.INVISIBLE);
                 }
             });
@@ -569,15 +506,12 @@ public class SelSrcActivity extends Activity
         }
     }
     
-    private void browserMenuInit()
-    {
+    private void browserMenuInit() {
         layoutWvMask = (RelativeLayout) findViewById(R.id.RelativeLayoutWvMask);
-        layoutWvMask.setOnClickListener(new View.OnClickListener()
-        {
-            
+        layoutWvMask.setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 // Log.i(TAG, "mask Clicked");
                 focusOnWebView();
             }
@@ -590,35 +524,38 @@ public class SelSrcActivity extends Activity
         findViewById(R.id.buttonRefresh).setOnClickListener(oclBrowserBtn);
     }
     
-    private void URLbarInit()
-    {
+    private void URLbarInit() {
         urlBar = (RelativeLayout) findViewById(R.id.urlBar);
-        urlBar.setOnClickListener(new View.OnClickListener()
-        {
+        urlBar.setOnClickListener(new View.OnClickListener() {
             
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 focusOnURL();
             }
         });
         
-        oclSelSearchEngine = new View.OnClickListener()
-        {
+        oclSelSearchEngine = new View.OnClickListener() {
             
             @Override
-            public void onClick(View v)
-            {
-                if (etUrl.isFocused())
-                {
-                    if ((!URLUtil.isNetworkUrl(etUrl.getText().toString()))
-                            && (etUrl.getText().length() != 0))
-                    {
-                        showDialog(DLG.SEL_SEARCH_ENGINE.ordinal());
+            public void onClick(View v) {
+                if(etUrl.isFocused()) {
+                    if((!URLUtil.isNetworkUrl(etUrl.getText().toString()))
+                            && (etUrl.getText().length() != 0)) {
+                        new AlertDialog.Builder(SelSrcActivity.this)
+                                .setTitle(R.string.selSearchEngine)
+                                .setItems(ParaConfig.SEARCH_ENGINE_NAME,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog,
+                                                                int whichButton) {
+                                                Log.i(TAG, "whichButton:" + whichButton);
+                                                ParaConfig.setSearchEngine(appCtx, whichButton);
+                                                btnSelSearchEngine.setImageResource(ParaConfig
+                                                        .getSearchEngineIcon(SelSrcActivity.this));
+                                            }
+                                        }).create().show();
                     }
                 }
-                else
-                {
+                else {
                     focusOnURL();
                 }
             }
@@ -636,26 +573,21 @@ public class SelSrcActivity extends Activity
         findViewById(R.id.FrameLayoutURLcmd).setOnClickListener(oclBrowserBtn);
         
         etUrl = (EditText) findViewById(R.id.editTextUrl);
-        etUrl.setOnFocusChangeListener(new View.OnFocusChangeListener()
-        {
-            
+        etUrl.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
             @Override
-            public void onFocusChange(View v, boolean hasFocus)
-            {
-                if (hasFocus)
-                {
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus) {
                     showWebviewMask(true);
-                    
+
                     setUrlCmd(URL_ENTER);
-                    
+
                     etUrl.setText(urlToDisp);
                     etUrl.selectAll();
                     etUrl.setEnabled(false);
-                    mHandler.postDelayed(new Runnable()
-                    {
+                    mHandler.postDelayed(new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             etUrl.setEnabled(true);
                             focusOnURL();
                         }
@@ -664,65 +596,54 @@ public class SelSrcActivity extends Activity
             }
         });
         
-        etUrl.addTextChangedListener(new TextWatcher()
-        {
-            
+        etUrl.addTextChangedListener(new TextWatcher() {
+
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count,
-                    int after)
-            {
-                
+                                          int after) {
+
             }
-            
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before,
-                    int count)
-            {
-                
+                                      int count) {
+
             }
-            
+
             @Override
-            public void afterTextChanged(Editable s)
-            {
-                if (etUrl.hasFocus())
-                {
+            public void afterTextChanged(Editable s) {
+                if(etUrl.hasFocus()) {
                     String url = s.toString();
-                    
+
                     urlToDisp = url;
-                    if (URLUtil.isNetworkUrl(url))
-                    {
+                    if(URLUtil.isNetworkUrl(url)) {
                         setUrlCmd(URL_ENTER);
                         btnSelSearchEngine.setImageResource(R.drawable.site);
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_GO);
                     }
-                    else if (url.isEmpty())
-                    {
+                    else if(url.isEmpty()) {
                         setUrlCmd(URL_CANCEL);
                         btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(appCtx));
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_NONE);
                     }
-                    else
-                    {
+                    else {
                         setUrlCmd(URL_SEARCH);
                         btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(appCtx));
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
                     }
-                    
+
                 }
             }
-            
+
         });
         
-        etUrl.setOnEditorActionListener(new TextView.OnEditorActionListener()
-        {
+        etUrl.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId,
-                    KeyEvent event)
-            {
-                if (actionId == EditorInfo.IME_ACTION_GO
+                                          KeyEvent event) {
+                if(actionId == EditorInfo.IME_ACTION_GO
                         || actionId == EditorInfo.IME_ACTION_SEARCH
                         || actionId == EditorInfo.IME_ACTION_NONE
-                        || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
-                {
+                        || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
                     executeURLcmd();
                     return true;
                 }
@@ -731,8 +652,7 @@ public class SelSrcActivity extends Activity
         });
     }
     
-    private void naviBarInit()
-    {
+    private void naviBarInit() {
         findViewById(R.id.buttonBack).setOnClickListener(oclBrowserBtn);
         findViewById(R.id.buttonForward).setOnClickListener(oclBrowserBtn);
         findViewById(R.id.buttonSpiderGo).setOnClickListener(oclBrowserBtn);
@@ -742,12 +662,11 @@ public class SelSrcActivity extends Activity
     }
     
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sel_src);
 
-        appCtx=getApplicationContext();
+        appCtx = getApplicationContext();
         
         oclBrowserBtnInit();
         browserMenuInit();
@@ -771,39 +690,33 @@ public class SelSrcActivity extends Activity
         Log.i(TAG, "onCreate");
     }
     
-    protected void onStart()
-    {
+    protected void onStart() {
         super.onStart();
         Log.i(TAG, "onStart");
     }
     
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         Log.i(TAG, "onResume");
         
-        if (browser != null)
-        {
+        if(browser != null) {
             browser.getSettings().setUserAgentString(ParaConfig.getUserAgent(appCtx));
         }
     }
     
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         Log.i(TAG, "onPause");
         
     }
     
-    protected void onStop()
-    {
+    protected void onStop() {
         Log.i(TAG, "onStop");
         
         super.onStop();
     }
     
-    protected void onDestroy()
-    {
+    protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
         
@@ -814,8 +727,7 @@ public class SelSrcActivity extends Activity
         System.exit(0);
     }
     
-    private void openSettingPage()
-    {
+    private void openSettingPage() {
         Log.i(TAG, "openSettingPage");
         
         Intent intent = new Intent(this, ParaConfigActivity.class);
@@ -828,54 +740,34 @@ public class SelSrcActivity extends Activity
         
         startActivity(intent);
     }
+
     
-    public void spiderGo()
-    {
-        String srcUrl = browser.getUrl();
-        
-        Log.i(TAG, "spiderGo srcUrl:" + srcUrl);
-        
-        if (srcUrl != null)
-        {
-            setResult(RESULT_OK, (new Intent()).setAction(srcUrl));
-        }
-        finish();
-    }
-    
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.i(TAG, "onKeyDown " + keyCode);
         
-        if (keyCode == KeyEvent.KEYCODE_BACK)
-        {
-            if ((layoutWvMask.getVisibility() == View.VISIBLE))
-            {
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
+            if((layoutWvMask.getVisibility() == View.VISIBLE)) {
                 focusOnWebView();
                 return true;
             }
-            else if (browserGoBack())
-            {
+            else if(browserGoBack()) {
                 return true;
             }
         }
-        else if (keyCode == KeyEvent.KEYCODE_MENU)
-        {
+        else if(keyCode == KeyEvent.KEYCODE_MENU) {
             responseMenuKey();
         }
         return super.onKeyDown(keyCode, event);
     }
     
     @Override
-    public void onConfigurationChanged(Configuration newConfig)
-    {
+    public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
-        {
+        if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Log.i(TAG, "Landscape");
         }
-        else
-        {
+        else {
             Log.i(TAG, "Portrait");
         }
     }

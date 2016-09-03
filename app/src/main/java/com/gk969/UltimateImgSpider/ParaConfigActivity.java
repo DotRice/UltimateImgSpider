@@ -21,35 +21,32 @@ import android.webkit.WebViewClient;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 
-public class ParaConfigActivity extends Activity
-{
-    private String      curUrl;
-    private String      TAG          = "ParaConfigActivity";
+public class ParaConfigActivity extends Activity {
+    private String curUrl;
+    private String TAG = "ParaConfigActivity";
     
-    private WebView     wvParaConfig;
+    private WebView wvParaConfig;
     private WebSettings wsParaConfig;
     
-    private Handler     mHandler     = new Handler();
+    private Handler mHandler = new Handler();
 
     private Context appCtx;
     
     final static String assetParaUrl = "file:///android_asset/paraConfig.html";
     
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_para_config);
 
-        appCtx=getApplicationContext();
+        appCtx = getApplicationContext();
 
         Log.i(TAG, "onCreate");
         
         curUrl = getIntent().getExtras().getString(
                 StaticValue.BUNDLE_KEY_SOURCE_URL);
         
-        if (curUrl != null)
-        {
+        if(curUrl != null) {
             Log.i(TAG, "curUrl:" + curUrl);
             webViewInit();
         }
@@ -57,13 +54,11 @@ public class ParaConfigActivity extends Activity
     }
     
     @Override
-    protected void onDestroy()
-    {
+    protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
         
-        if (wvParaConfig != null)
-        {
+        if(wvParaConfig != null) {
             
             Log.i(TAG, "clearCache");
             wvParaConfig.clearCache(true);
@@ -71,26 +66,21 @@ public class ParaConfigActivity extends Activity
         }
     }
     
-    @SuppressLint({ "JavascriptInterface", "SetJavaScriptEnabled" })
-    private void webViewInit()
-    {
+    @SuppressLint({"JavascriptInterface", "SetJavaScriptEnabled"})
+    private void webViewInit() {
         wvParaConfig = (WebView) findViewById(R.id.webViewParaConfig);
         
         wvParaConfig.requestFocus();
         
-        wvParaConfig.setWebViewClient(new WebViewClient()
-        {
-            public boolean shouldOverrideUrlLoading(WebView view, String URL)
-            {
+        wvParaConfig.setWebViewClient(new WebViewClient() {
+            public boolean shouldOverrideUrlLoading(WebView view, String URL) {
                 Log.i(TAG, "UrlLoading " + URL);
                 return false;
             }
         });
         
-        wvParaConfig.setOnLongClickListener(new WebView.OnLongClickListener()
-        {
-            public boolean onLongClick(View v)
-            {
+        wvParaConfig.setOnLongClickListener(new WebView.OnLongClickListener() {
+            public boolean onLongClick(View v) {
                 return true;
             }
         });
@@ -108,19 +98,15 @@ public class ParaConfigActivity extends Activity
     }
     
     @JavascriptInterface
-    public void setHomeUrl(String URL)
-    {
+    public void setHomeUrl(String URL) {
         Log.i(TAG, "setHomeUrl");
         
-        if (!URL.isEmpty())
-        {
-            if (URL.equals("curUrl"))
-            {
+        if(!URL.isEmpty()) {
+            if(URL.equals("curUrl")) {
                 URL = curUrl;
             }
             
-            if (URLUtil.isNetworkUrl(URL))
-            {
+            if(URLUtil.isNetworkUrl(URL)) {
                 ParaConfig.setHomeURL(appCtx, URL);
                 
                 Toast.makeText(this, "已设置主页:" + URL, Toast.LENGTH_SHORT).show();
@@ -129,18 +115,15 @@ public class ParaConfigActivity extends Activity
     }
     
     @JavascriptInterface
-    public String getHomeUrl()
-    {
+    public String getHomeUrl() {
         return ParaConfig.getHomeURL(appCtx);
     }
     
     @JavascriptInterface
-    public void setUserAgent(String ua)
-    {
+    public void setUserAgent(String ua) {
         Log.i(TAG, "setHomeUrl");
         
-        if (!ua.isEmpty())
-        {
+        if(!ua.isEmpty()) {
             ParaConfig.setUserAgent(appCtx, ua);
             
             Toast.makeText(this, "已设置UA:" + ua, Toast.LENGTH_SHORT).show();
@@ -148,18 +131,15 @@ public class ParaConfigActivity extends Activity
     }
     
     @JavascriptInterface
-    public String getUserAgent()
-    {
+    public String getUserAgent() {
         return ParaConfig.getUserAgent(appCtx);
     }
     
     @JavascriptInterface
-    public void setSearchEngine(int seIndex)
-    {
+    public void setSearchEngine(int seIndex) {
         Log.i(TAG, "setHomeUrl");
         
-        if (ParaConfig.setSearchEngine(appCtx, seIndex))
-        {
+        if(ParaConfig.setSearchEngine(appCtx, seIndex)) {
             Toast.makeText(this,
                     "已设置搜索引擎:" + ParaConfig.getSearchEngineName(appCtx),
                     Toast.LENGTH_SHORT).show();
@@ -167,29 +147,23 @@ public class ParaConfigActivity extends Activity
     }
     
     @JavascriptInterface
-    public String getSearchEngine()
-    {
+    public String getSearchEngine() {
         return ParaConfig.getSearchEngineName(appCtx);
     }
     
     @JavascriptInterface
-    public void finishConfig()
-    {
-        mHandler.post(new Runnable()
-        {
-            public void run()
-            {
+    public void finishConfig() {
+        mHandler.post(new Runnable() {
+            public void run() {
                 ParaConfigActivity.this.finish();
             }
         });
     }
     
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.i(TAG, "onKeyDown " + keyCode);
         
-        if (keyCode == KeyEvent.KEYCODE_BACK)
-        {
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
             Log.i(TAG, "goBack ");
             wvParaConfig.loadUrl("javascript:goback()");
             return true;
@@ -198,16 +172,13 @@ public class ParaConfigActivity extends Activity
     }
     
     @Override
-    public void onConfigurationChanged(Configuration newConfig)
-    {
+    public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
-        {
+        if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Log.i(TAG, "Landscape");
         }
-        else
-        {
+        else {
             Log.i(TAG, "Portrait");
         }
     }

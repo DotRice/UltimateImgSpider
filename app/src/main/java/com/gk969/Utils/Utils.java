@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -14,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -27,21 +29,18 @@ import android.os.Handler;
 import android.content.Context;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
-public class Utils
-{
+public class Utils {
     static String TAG = "Utils";
 
-    static public int strSimilarity(String s1, String s2)
-    {
+    static public int strSimilarity(String s1, String s2) {
         int len = (s1.length() < s2.length()) ? s1.length() : s2.length();
 
         int i;
-        for (i = 0; i < len; i++)
-        {
-            if (s1.charAt(i) != s2.charAt(i))
-            {
+        for(i = 0; i < len; i++) {
+            if(s1.charAt(i) != s2.charAt(i)) {
                 break;
             }
         }
@@ -49,16 +48,12 @@ public class Utils
         return i;
     }
 
-    public static boolean isArrayEquals(byte[] array1, byte[] array2)
-    {
-        if (array1.length == array2.length)
-        {
+    public static boolean isArrayEquals(byte[] array1, byte[] array2) {
+        if(array1.length == array2.length) {
             int len = array2.length;
 
-            for (int i = 0; i < len; i++)
-            {
-                if (array1[i] != array2[i])
-                {
+            for(int i = 0; i < len; i++) {
+                if(array1[i] != array2[i]) {
                     return false;
                 }
             }
@@ -69,34 +64,36 @@ public class Utils
         return false;
     }
 
-    public static boolean deleteDir(String dirPath)
-    {
-        if(dirPath==null)
-        {
+    public static File newFile(String filePath) {
+        File file = new File(filePath);
+
+        File dir = new File(file.getParent());
+        if(!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        return file;
+    }
+
+    public static boolean deleteDir(File dirFile) {
+        if(dirFile == null) {
             return false;
         }
 
-        File dirFile = new File(dirPath);
-        if (!dirFile.exists() || !dirFile.isDirectory())
-        {
+        if(!dirFile.exists() || !dirFile.isDirectory()) {
             return false;
         }
 
         File[] files = dirFile.listFiles();
-        if(files!=null)
-        {
-            for (File file : files)
-            {
-                if (file.isFile())
-                {
-                    if (!file.delete())
-                    {
+        if(files != null) {
+            for(File file : files) {
+                if(file.isFile()) {
+                    if(!file.delete()) {
                         return false;
                     }
-                } else
-                {
-                    if (!deleteDir(file.getAbsolutePath()))
-                    {
+                }
+                else {
+                    if(!deleteDir(file)) {
                         return false;
                     }
                 }
@@ -106,60 +103,47 @@ public class Utils
         return dirFile.delete();
     }
 
-    public static String byteArrayToHexString(byte[] arrayIn)
-    {
-        if(arrayIn==null)
-        {
+    public static String byteArrayToHexString(byte[] arrayIn) {
+        if(arrayIn == null) {
             return null;
         }
 
-        StringBuilder builder=new StringBuilder(arrayIn.length*2);
+        StringBuilder builder = new StringBuilder(arrayIn.length * 2);
 
-        for(byte oneByte:arrayIn)
-        {
+        for(byte oneByte : arrayIn) {
             builder.append(String.format("%02X", oneByte));
         }
 
         return builder.toString();
     }
 
-    public static String getFileMD5String(String filePath)
-    {
+    public static String getFileMD5String(String filePath) {
         return byteArrayToHexString(getFileMD5(filePath));
     }
 
-    public static byte[] getFileMD5(String filePath)
-    {
+    public static byte[] getFileMD5(String filePath) {
         FileInputStream fileInputStream = null;
 
-        try
-        {
+        try {
             fileInputStream = new FileInputStream(filePath);
             MessageDigest digester = MessageDigest.getInstance("MD5");
             byte[] bytes = new byte[8192];
             int byteCount;
-            while ((byteCount = fileInputStream.read(bytes)) > 0)
-            {
+            while((byteCount = fileInputStream.read(bytes)) > 0) {
                 digester.update(bytes, 0, byteCount);
             }
 
             return digester.digest();
-        } catch (FileNotFoundException e)
-        {
+        } catch(FileNotFoundException e) {
             e.printStackTrace();
-        } catch (NoSuchAlgorithmException e)
-        {
+        } catch(NoSuchAlgorithmException e) {
             e.printStackTrace();
-        } catch (IOException e)
-        {
+        } catch(IOException e) {
             e.printStackTrace();
-        } finally
-        {
-            try
-            {
-                if (fileInputStream != null) fileInputStream.close();
-            } catch (IOException e)
-            {
+        } finally {
+            try {
+                if(fileInputStream != null) fileInputStream.close();
+            } catch(IOException e) {
                 e.printStackTrace();
             }
         }
@@ -168,62 +152,52 @@ public class Utils
     }
 
 
-
-    public static class NetTrafficCalc
-    {
+    public static class NetTrafficCalc {
         public AtomicLong netTrafficPerSec = new AtomicLong(0);
-        private long lastTraffic=0;
-        private long refreshTime=0;
+        private long lastTraffic = 0;
+        private long refreshTime = 0;
         private Context context;
 
-        private final static int AVERAGE_BUF_SIZE=3;
+        private final static int AVERAGE_BUF_SIZE = 3;
         private int avrgBufIndex;
-        private long[] averageBuf=new long[AVERAGE_BUF_SIZE];
-        private long[] intervalBuf=new long[AVERAGE_BUF_SIZE];
+        private long[] averageBuf = new long[AVERAGE_BUF_SIZE];
+        private long[] intervalBuf = new long[AVERAGE_BUF_SIZE];
 
-        public NetTrafficCalc(Context ctx)
-        {
-            context=ctx;
+        public NetTrafficCalc(Context ctx) {
+            context = ctx;
         }
 
-        public void refreshNetTraffic()
-        {
-            long curTraffic=getNetTraffic();
-            if(curTraffic!=0)
-            {
+        public void refreshNetTraffic() {
+            long curTraffic = getNetTraffic();
+            if(curTraffic != 0) {
                 long curTime = SystemClock.uptimeMillis();
-                if (lastTraffic != 0)
-                {
-                    averageBuf[avrgBufIndex]=(curTraffic - lastTraffic);
-                    intervalBuf[avrgBufIndex]=(curTime-refreshTime);
+                if(lastTraffic != 0) {
+                    averageBuf[avrgBufIndex] = (curTraffic - lastTraffic);
+                    intervalBuf[avrgBufIndex] = (curTime - refreshTime);
 
                     avrgBufIndex++;
-                    avrgBufIndex%=AVERAGE_BUF_SIZE;
+                    avrgBufIndex %= AVERAGE_BUF_SIZE;
 
-                    long traffic=0;
-                    long time=0;
-                    for(int i=0; i<AVERAGE_BUF_SIZE; i++)
-                    {
-                        traffic+=averageBuf[i];
-                        time+=intervalBuf[i];
+                    long traffic = 0;
+                    long time = 0;
+                    for(int i = 0; i < AVERAGE_BUF_SIZE; i++) {
+                        traffic += averageBuf[i];
+                        time += intervalBuf[i];
                     }
 
                     netTrafficPerSec.set(traffic * 1000 / time);
                 }
-                refreshTime=curTime;
+                refreshTime = curTime;
                 lastTraffic = curTraffic;
             }
         }
 
-        private long getNetTraffic()
-        {
-            try
-            {
+        private long getNetTraffic() {
+            try {
                 ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(
                         context.getPackageName(), PackageManager.GET_ACTIVITIES);
-                return TrafficStats.getUidRxBytes(appInfo.uid)+TrafficStats.getUidTxBytes(appInfo.uid);
-            } catch (PackageManager.NameNotFoundException e)
-            {
+                return TrafficStats.getUidRxBytes(appInfo.uid) + TrafficStats.getUidTxBytes(appInfo.uid);
+            } catch(PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
 
@@ -231,120 +205,96 @@ public class Utils
         }
     }
 
-    public static class ReadWaitLock
-    {
+    public static class ReadWaitLock {
         public AtomicBoolean isLocked = new AtomicBoolean(false);
 
-        public synchronized void waitIfLocked()
-        {
-            while (isLocked.get())
-            {
-                try
-                {
+        public synchronized void waitIfLocked() {
+            while(isLocked.get()) {
+                try {
                     wait();
-                } catch (InterruptedException e)
-                {
+                } catch(InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        public synchronized void lock()
-        {
-            while (isLocked.get())
-            {
-                try
-                {
+        public synchronized void lock() {
+            while(isLocked.get()) {
+                try {
                     wait();
-                } catch (InterruptedException e)
-                {
+                } catch(InterruptedException e) {
                     e.printStackTrace();
                 }
             }
             isLocked.set(true);
         }
 
-        public synchronized void unlock()
-        {
+        public synchronized void unlock() {
             isLocked.set(false);
             notifyAll();
         }
     }
 
-    public static class CubicBezier
-    {
-        static final String TAG="CubicBezier";
+    public static class CubicBezier {
+        static final String TAG = "CubicBezier";
 
-        private class Point
-        {
+        private class Point {
             float x;
             float y;
 
-            public Point(float pointX, float pointY)
-            {
-                x=pointX;
-                y=pointY;
+            public Point(float pointX, float pointY) {
+                x = pointX;
+                y = pointY;
             }
         }
 
         private Point controlPointA;
         private Point controlPointB;
 
-        private static final int CALC_POINT_NUM=6;
-        private Point[] midPoints=new Point[CALC_POINT_NUM];
+        private static final int CALC_POINT_NUM = 6;
+        private Point[] midPoints = new Point[CALC_POINT_NUM];
 
-        private final Point cubicStartPoint=new Point(0, 0);
-        private final Point cubicEndPoint=new Point(1, 1);
+        private final Point cubicStartPoint = new Point(0, 0);
+        private final Point cubicEndPoint = new Point(1, 1);
 
-        public CubicBezier(float pointAx, float pointAy, float pointBx, float pointBy)
-        {
-            if(pointAx<0)
-            {
-                pointAx=0;
+        public CubicBezier(float pointAx, float pointAy, float pointBx, float pointBy) {
+            if(pointAx < 0) {
+                pointAx = 0;
             }
-            else if(pointAx>1)
-            {
-                pointAx=1;
+            else if(pointAx > 1) {
+                pointAx = 1;
             }
 
-            if(pointBx<0)
-            {
-                pointBx=0;
+            if(pointBx < 0) {
+                pointBx = 0;
             }
-            else if(pointBx>1)
-            {
-                pointBx=1;
+            else if(pointBx > 1) {
+                pointBx = 1;
             }
 
-            controlPointA=new Point(pointAx, pointAy);
-            controlPointB=new Point(pointBx, pointBy);
+            controlPointA = new Point(pointAx, pointAy);
+            controlPointB = new Point(pointBx, pointBy);
 
-            for(int i=0; i<CALC_POINT_NUM; i++)
-            {
-                midPoints[i]=new Point(0, 0);
+            for(int i = 0; i < CALC_POINT_NUM; i++) {
+                midPoints[i] = new Point(0, 0);
             }
         }
 
-        private void calculateMidPoint(Point startPoint, Point endPoint, Point midPoint, float progress)
-        {
-            midPoint.x=startPoint.x+(endPoint.x-startPoint.x)*progress;
-            midPoint.y=startPoint.y+(endPoint.y-startPoint.y)*progress;
+        private void calculateMidPoint(Point startPoint, Point endPoint, Point midPoint, float progress) {
+            midPoint.x = startPoint.x + (endPoint.x - startPoint.x) * progress;
+            midPoint.y = startPoint.y + (endPoint.y - startPoint.y) * progress;
         }
 
-        public float calculateYByX(float x)
-        {
+        public float calculateYByX(float x) {
             float y;
 
-            if(x<=0)
-            {
-                y=0;
+            if(x <= 0) {
+                y = 0;
             }
-            else if(x>=1)
-            {
-                y=1;
+            else if(x >= 1) {
+                y = 1;
             }
-            else
-            {
+            else {
                 calculateMidPoint(cubicStartPoint, controlPointA, midPoints[0], x);
                 calculateMidPoint(controlPointA, controlPointB, midPoints[1], x);
                 calculateMidPoint(controlPointB, cubicEndPoint, midPoints[2], x);
@@ -354,153 +304,222 @@ public class Utils
 
                 calculateMidPoint(midPoints[3], midPoints[4], midPoints[5], x);
 
-                y=midPoints[5].y;
+                y = midPoints[5].y;
             }
             return y;
         }
 
-        static void test()
-        {
-            String str="";
-            Utils.CubicBezier cubicBezier=new Utils.CubicBezier(0.5f, 0f, 0.5f, 1f);
+        static void test() {
+            String str = "";
+            Utils.CubicBezier cubicBezier = new Utils.CubicBezier(0.5f, 0f, 0.5f, 1f);
 
-            float x=0;
-            for(int i=0; i<50; i++)
-            {
-                str+=String.format("%.3f ", cubicBezier.calculateYByX(x));
-                x+=0.02f;
+            float x = 0;
+            for(int i = 0; i < 50; i++) {
+                str += String.format("%.3f ", cubicBezier.calculateYByX(x));
+                x += 0.02f;
             }
             Log.i(TAG, str);
         }
     }
 
-    public static String byteSizeToString(long size)
-    {
-        String[] sizeUnitName=new String[]{"GB", "MB", "KB"};
-        int[] sizeUnit=new int[]{1<<30, 1<<20, 1<<10, 1};
+    public static String byteSizeToString(long size) {
+        String[] sizeUnitName = new String[]{"GB", "MB", "KB"};
+        int[] sizeUnit = new int[]{1 << 30, 1 << 20, 1 << 10, 1};
 
-        for(int i=0; i<sizeUnitName.length; i++)
-        {
-            if(size>=sizeUnit[i])
-            {
-                size/=sizeUnit[i+1];
-                float sizeInFloat=(float)size/1024;
+        for(int i = 0; i < sizeUnitName.length; i++) {
+            if(size >= sizeUnit[i]) {
+                size /= sizeUnit[i + 1];
+                float sizeInFloat = (float) size / 1024;
                 return String.format("%.2f%s", sizeInFloat, sizeUnitName[i]);
             }
         }
 
-        return size+"B";
+        return size + "B";
     }
 
-    public static void stringToFile(String str, String filePath)
-    {
-        try
-        {
+    public static void stringToFile(String str, String filePath) {
+        try {
             FileOutputStream fileOut = new FileOutputStream(filePath);
             fileOut.write(str.getBytes());
             fileOut.close();
-        } catch(FileNotFoundException e)
-        {
+        } catch(FileNotFoundException e) {
             e.printStackTrace();
-        } catch(IOException e)
-        {
+        } catch(IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static String fileToString(String filePath)
-    {
-        File file=new File(filePath);
-        String string=null;
+    public static String fileToString(String filePath) {
+        File file = new File(filePath);
+        String string = null;
 
-        if(file.isFile())
-        {
+        if(file.isFile()) {
             byte[] buf = new byte[(int) file.length()];
-            try
-            {
+            try {
                 FileInputStream fileIn = new FileInputStream(file);
                 fileIn.read(buf);
                 fileIn.close();
-            } catch(FileNotFoundException e)
-            {
+            } catch(FileNotFoundException e) {
                 e.printStackTrace();
-            } catch(IOException e)
-            {
+            } catch(IOException e) {
                 e.printStackTrace();
             }
             string = new String(buf);
         }
 
-        Log.i(TAG, "fileToString "+filePath+" "+string);
+        Log.i(TAG, "fileToString " + filePath + " " + string);
         return string;
     }
 
-    public static File getDirInExtSto(String path)
-    {
-        File dir = null;
+    public static LinkedList<String> exeShell(String cmd) {
+        LinkedList<String> ret = new LinkedList<String>();
 
-        if (Environment.getExternalStorageState().equals(
-                android.os.Environment.MEDIA_MOUNTED))
-        {
-            if (!path.startsWith("/"))
-            {
-                path = "/" + path;
+        try {
+            Process proc = Runtime.getRuntime().exec(cmd);
+            String line;
+            BufferedReader inputStream = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            while((line = inputStream.readLine()) != null) {
+                ret.add(line);
             }
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
 
-            dir = new File(Environment.getExternalStorageDirectory() + path);
-            if (!dir.exists())
-            {
-                Log.i(TAG, "Dir:" + dir.toString() + " Not Exist!");
-                dir.mkdirs();
-                if (!dir.exists())
-                {
-                    return null;
+
+        return ret;
+    }
+
+    private static class StorageDeviceDir {
+        public long freeSpace;
+        public long totalSpace;
+        public LinkedList<String> path;
+
+        public StorageDeviceDir(long pFreeSpace, long pTotalSpace, String firstPath){
+            freeSpace=pFreeSpace;
+            totalSpace=pTotalSpace;
+            path=new LinkedList<String>();
+            path.add(firstPath);
+        }
+
+        public StorageDeviceDir(){
+            path=new LinkedList<String>();
+        }
+    }
+
+    public static File[] getStoDirs(String dirPath) {
+        LinkedList<StorageDeviceDir> storageDeviceDirList=new LinkedList<StorageDeviceDir>();
+
+        if(Environment.getExternalStorageState().equals(
+                android.os.Environment.MEDIA_MOUNTED)) {
+            File deviceStorage=Environment.getExternalStorageDirectory();
+            storageDeviceDirList.add(new StorageDeviceDir(deviceStorage.getFreeSpace(),
+                    deviceStorage.getTotalSpace(), deviceStorage.getPath()));
+        }
+
+        Log.i(TAG, "exec mount");
+        LinkedList<String> mountList = exeShell("mount");
+        for(String mount : mountList) {
+            String path = mount.split(" ")[1];
+            //Log.i(TAG, value[1]+"     "+value[2]);
+            File stoDir = new File(path);
+            if(stoDir.exists() && stoDir.isDirectory() && stoDir.canWrite()) {
+                Log.i(TAG, mount);
+
+                long freeSpace=stoDir.getFreeSpace();
+                long totalSpace=stoDir.getTotalSpace();
+                Log.i(TAG, path + " size:" + (freeSpace >> 20) + "/" + (totalSpace >> 20));
+
+                boolean linkedDirFound=false;
+                for(StorageDeviceDir storageDeviceDir:storageDeviceDirList){
+                    if(storageDeviceDir.freeSpace==freeSpace && storageDeviceDir.totalSpace==totalSpace){
+                        linkedDirFound=true;
+                        if(!storageDeviceDir.path.contains(path)) {
+                            storageDeviceDir.path.add(path);
+                        }
+                    }
                 }
-            } else
-            {
-                Log.i(TAG, "Dir:" + dir.toString() + " Already Exist!");
+
+                if(!linkedDirFound){
+                    storageDeviceDirList.add(new StorageDeviceDir(freeSpace, totalSpace, path));
+                }
             }
         }
-        else
-        {
-            Log.i(TAG, "External Storage Not Mounted!");
-            return null;
+
+
+        for(StorageDeviceDir storageDeviceDir:storageDeviceDirList){
+            Log.i(TAG, "size "+(storageDeviceDir.freeSpace >> 20) + "/" +
+                    (storageDeviceDir.totalSpace >> 20));
+            for(String dir:storageDeviceDir.path){
+                Log.i(TAG, dir);
+            }
+        }
+
+        File[] stoDir=new File[storageDeviceDirList.size()];
+        for(int i=0; i<stoDir.length; i++){
+            stoDir[i]=new File(storageDeviceDirList.get(i).path.get(0)+"/"+dirPath);
+            if(!stoDir[i].exists()){
+                stoDir[i].mkdirs();
+            }
+        }
+
+        return stoDir;
+    }
+
+    public static File getDirInSto(String path) {
+        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            return getDirInSto(path, Environment.getExternalStorageDirectory().getPath());
+        }
+        return null;
+    }
+    public static File getDirInSto(String path, String storageDir) {
+        File dir = null;
+
+        if(!path.startsWith("/")) {
+            path = "/" + path;
+        }
+
+        dir = new File(storageDir + path);
+        if(!dir.exists()) {
+            Log.i(TAG, "Dir:" + dir.toString() + " Not Exist!");
+            dir.mkdirs();
+            if(!dir.exists()) {
+                return null;
+            }
+        }
+        else {
+            Log.i(TAG, "Dir:" + dir.toString() + " Already Exist!");
         }
 
         return dir;
     }
 
-    public static class LogRecorder extends Thread
-    {
-        private AtomicBoolean isRunning=new AtomicBoolean(true);
+    public static class LogRecorder extends Thread {
+        private AtomicBoolean isRunning = new AtomicBoolean(true);
         private File recordFile;
 
-        public void stopThread()
-        {
+        public void stopThread() {
             isRunning.set(false);
         }
 
-        public LogRecorder(String appName)
-        {
+        public LogRecorder(String appName) {
             setDaemon(true);
-            recordFile=new File(getDirInExtSto(appName + "/log")+"/log.txt");
-
-            start();
+            File logDir=getDirInSto(appName + "/log");
+            if(logDir!=null) {
+                recordFile = new File(logDir.getPath()+"/log.txt");
+                start();
+            }
         }
 
-        public void run()
-        {
+        public void run() {
             Process logcatProcess;
 
-            try
-            {
+            try {
                 Runtime.getRuntime().exec("logcat -c").waitFor();
-                logcatProcess=Runtime.getRuntime().exec("logcat");
+                logcatProcess = Runtime.getRuntime().exec("logcat");
 
-                BufferedReader logStream=null;
-                FileOutputStream logFileOut=null;
-                try
-                {
+                BufferedReader logStream = null;
+                FileOutputStream logFileOut = null;
+                try {
                     logStream = new BufferedReader(
                             new InputStreamReader(logcatProcess.getInputStream()));
 
@@ -508,86 +527,68 @@ public class Utils
 
                     String logLine;
 
-                    while ((logLine = logStream.readLine()) != null)
-                    {
-                        logLine+="\r\n";
+                    while((logLine = logStream.readLine()) != null) {
+                        logLine += "\r\n";
                         logFileOut.write(logLine.getBytes());
 
-                        if (!isRunning.get())
-                        {
+                        if(!isRunning.get()) {
                             break;
                         }
 
                         yield();
                     }
-                }
-                finally
-                {
-                    if(logStream!=null)
-                    {
+                } finally {
+                    if(logStream != null) {
                         logStream.close();
                     }
 
-                    if(logFileOut!=null)
-                    {
+                    if(logFileOut != null) {
                         logFileOut.flush();
                         logFileOut.close();
                     }
                 }
-            } catch (InterruptedException e)
-            {
+            } catch(InterruptedException e) {
                 e.printStackTrace();
-            } catch (IOException e)
-            {
+            } catch(IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public static String getSDKVersion()
-    {
+    public static String getSDKVersion() {
         return android.os.Build.VERSION.RELEASE;
     }
 
-    public static String getPhoneType()
-    {
+    public static String getPhoneType() {
         return android.os.Build.MODEL;
     }
 
-    public static boolean isNetworkEffective()
-    {
+    public static boolean isNetworkEffective() {
         String stableWebUrl[] = {"http://www.baidu.com", "http://www.qq.com"};
 
-        for (String webUrl : stableWebUrl)
-        {
-            try
-            {
+        for(String webUrl : stableWebUrl) {
+            try {
                 URL url = new URL(webUrl);
 
                 HttpURLConnection urlConn = (HttpURLConnection) url
                         .openConnection();
 
-                try
-                {
+                try {
                     urlConn.setConnectTimeout(10000);
                     urlConn.setReadTimeout(5000);
 
-                    if (urlConn.getResponseCode() == 200)
-                    {
+                    if(urlConn.getResponseCode() == 200) {
                         urlConn.disconnect();
                         Log.i(TAG, "isNetworkEffective " + webUrl);
                         return true;
                     }
-                } finally
-                {
-                    if (urlConn != null)
+                } finally {
+                    if(urlConn != null)
                         urlConn.disconnect();
                 }
-            } catch (MalformedURLException e)
-            {
+            } catch(MalformedURLException e) {
                 e.printStackTrace();
-            } catch (IOException e)
-            {
+            } catch(IOException e) {
                 e.printStackTrace();
             }
         }
@@ -597,13 +598,11 @@ public class Utils
     /**
      * dp、sp 转换为 px 的工具类
      */
-    public static class DisplayUtil
-    {
+    public static class DisplayUtil {
         /**
          * 将px值转换为dip或dp值，保证尺寸大小不变
          */
-        public static int pxToDip(Context context, float pxValue)
-        {
+        public static int pxToDip(Context context, float pxValue) {
             final float scale = context.getResources().getDisplayMetrics().density;
             return (int) (pxValue / scale + 0.5f);
         }
@@ -611,8 +610,7 @@ public class Utils
         /**
          * 将dip或dp值转换为px值，保证尺寸大小不变
          */
-        public static int dipToPx(Context context, float dipValue)
-        {
+        public static int dipToPx(Context context, float dipValue) {
             final float scale = context.getResources().getDisplayMetrics().density;
             return (int) (dipValue * scale + 0.5f);
         }
@@ -620,8 +618,7 @@ public class Utils
         /**
          * 将px值转换为sp值，保证文字大小不变
          */
-        public static int pxToSp(Context context, float pxValue)
-        {
+        public static int pxToSp(Context context, float pxValue) {
             final float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
             return (int) (pxValue / fontScale + 0.5f);
         }
@@ -629,31 +626,26 @@ public class Utils
         /**
          * 将sp值转换为px值，保证文字大小不变
          */
-        public static int spToPx(Context context, float spValue)
-        {
+        public static int spToPx(Context context, float spValue) {
             final float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
             return (int) (spValue * fontScale + 0.5f);
         }
 
-        public static int attrToPx(Context context, String attr)
-        {
+        public static int attrToPx(Context context, String attr) {
             int px = 0;
-            try
-            {
+            try {
                 int attrVal = Integer.parseInt(attr.substring(0,
                         attr.length() - 2));
-                if (attr.endsWith("px"))
-                {
+                if(attr.endsWith("px")) {
                     px = attrVal;
-                } else if (attr.endsWith("dp"))
-                {
+                }
+                else if(attr.endsWith("dp")) {
                     px = dipToPx(context, attrVal);
-                } else if (attr.endsWith("sp"))
-                {
+                }
+                else if(attr.endsWith("sp")) {
                     px = spToPx(context, attrVal);
                 }
-            } catch (NumberFormatException e)
-            {
+            } catch(NumberFormatException e) {
                 e.printStackTrace();
             }
             return px;

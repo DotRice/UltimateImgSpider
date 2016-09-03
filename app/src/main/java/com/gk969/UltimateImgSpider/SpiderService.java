@@ -45,8 +45,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-public class SpiderService extends Service
-{
+public class SpiderService extends Service {
     private final String TAG = "SpiderService";
 
     final RemoteCallbackList<IRemoteSpiderServiceCallback> mCallbacks = new RemoteCallbackList<IRemoteSpiderServiceCallback>();
@@ -57,7 +56,7 @@ public class SpiderService extends Service
     private final static int STAT_COMPLETE = 3;
     private final static int STAT_STOP = 4;
 
-    private final static String STAT_DESC[]={"idle", "working", "pause", "complete", "stop"};
+    private final static String STAT_DESC[] = {"idle", "working", "pause", "complete", "stop"};
 
     private AtomicInteger state = new AtomicInteger(STAT_IDLE);
 
@@ -77,54 +76,40 @@ public class SpiderService extends Service
 
     private IRemoteWatchdogServiceCallback watchdogCallback;
 
-    private final IRemoteSpiderService.Stub mBinder = new IRemoteSpiderService.Stub()
-    {
-        public void registerCallback(IRemoteSpiderServiceCallback cb)
-        {
-            if (cb != null)
-            {
+    private final IRemoteSpiderService.Stub mBinder = new IRemoteSpiderService.Stub() {
+        public void registerCallback(IRemoteSpiderServiceCallback cb) {
+            if(cb != null) {
                 mCallbacks.register(cb);
             }
         }
 
-        public void unregisterCallback(IRemoteSpiderServiceCallback cb)
-        {
-            if (cb != null)
-            {
+        public void unregisterCallback(IRemoteSpiderServiceCallback cb) {
+            if(cb != null) {
                 mCallbacks.unregister(cb);
             }
         }
     };
 
-    private void watchdogInterfaceInit()
-    {
-        watchdogCallback = new IRemoteWatchdogServiceCallback.Stub()
-        {
-            public void projectPathRecved()
-            {
+    private void watchdogInterfaceInit() {
+        watchdogCallback = new IRemoteWatchdogServiceCallback.Stub() {
+            public void projectPathRecved() {
                 Log.i(TAG, "projectPathRecved");
 
-                spiderHandler.post(new Runnable()
-                {
+                spiderHandler.post(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         startSpider();
                     }
                 });
             }
 
-            public void projectDataSaved()
-            {
+            public void projectDataSaved() {
                 Log.i(TAG, "projectDataSaved");
 
-                spiderHandler.post(new Runnable()
-                {
+                spiderHandler.post(new Runnable() {
                     @Override
-                    public void run()
-                    {
-                        if(isWaitingForSavingData)
-                        {
+                    public void run() {
+                        if(isWaitingForSavingData) {
                             isWaitingForSavingData = false;
                             jniDataLock.unlock();
                         }
@@ -133,49 +118,41 @@ public class SpiderService extends Service
             }
         };
 
-        watchdogConnection = new ServiceConnection()
-        {
+        watchdogConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className,
-                                           IBinder service)
-            {
+                                           IBinder service) {
                 Log.i(TAG, "onServiceConnected");
 
                 watchdogService = IRemoteWatchdogService.Stub.asInterface(service);
 
-                try
-                {
+                try {
                     watchdogService.registerCallback(watchdogCallback);
 
                     sendCmdToWatchdog(StaticValue.CMD_START);
-                } catch (RemoteException e)
-                {
+                } catch(RemoteException e) {
                     e.printStackTrace();
                 }
 
             }
 
-            public void onServiceDisconnected(ComponentName className)
-            {
+            public void onServiceDisconnected(ComponentName className) {
                 watchdogService = null;
 
                 Log.i(TAG, "onServiceDisconnected");
 
-                if(isWaitingForSavingData)
-                {
-                    isWaitingForSavingData=false;
+                if(isWaitingForSavingData) {
+                    isWaitingForSavingData = false;
                     jniDataLock.unlock();
                 }
 
-                if(state.get()==STAT_STOP)
-                {
+                if(state.get() == STAT_STOP) {
                     checkLockAndStopSelf();
                 }
             }
         };
     }
 
-    private void startSpider()
-    {
+    private void startSpider() {
         stringFromJNI("ashmem");
 
 
@@ -183,12 +160,10 @@ public class SpiderService extends Service
         imgProcParam = new long[StaticValue.IMG_PARA_NUM];
 
 
-        if (jniSpiderInit(imgProcParam, pageProcParam))
-        {
+        if(jniSpiderInit(imgProcParam, pageProcParam)) {
             spiderInit();
         }
-        else
-        {
+        else {
             stopSelfAndWatchdog();
         }
     }
@@ -196,8 +171,7 @@ public class SpiderService extends Service
 
     private boolean serviceBindSuccess = false;
 
-    private void startAndBindWatchdog()
-    {
+    private void startAndBindWatchdog() {
         Log.i(TAG, "startAndBindWatchdog");
 
         Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
@@ -207,23 +181,18 @@ public class SpiderService extends Service
         serviceBindSuccess = bindService(watchdogIntent, watchdogConnection, BIND_ABOVE_CLIENT);
     }
 
-    private void unbindWatchdog()
-    {
-        if (watchdogService != null)
-        {
-            try
-            {
+    private void unbindWatchdog() {
+        if(watchdogService != null) {
+            try {
                 watchdogService.unregisterCallback(watchdogCallback);
-            } catch (RemoteException e)
-            {
+            } catch(RemoteException e) {
                 // There is nothing special we need to do if the service
                 // has crashed.
             }
 
             // Detach our existing connection.
 
-            if (serviceBindSuccess)
-            {
+            if(serviceBindSuccess) {
                 unbindService(watchdogConnection);
                 Log.i(TAG, "unbind unbindWatchdog");
                 serviceBindSuccess = false;
@@ -231,15 +200,13 @@ public class SpiderService extends Service
         }
     }
 
-    private void stopSelfAndWatchdog()
-    {
+    private void stopSelfAndWatchdog() {
         unbindWatchdog();
         stopService(new Intent(this, WatchdogService.class));
         stopSelf();
     }
 
-    private void sendCmdToWatchdog(int cmd)
-    {
+    private void sendCmdToWatchdog(int cmd) {
         Log.i(TAG, "sendCmdToWatchdog " + StaticValue.CMD_DESC[cmd]);
         Intent watchdogIntent = new Intent(IRemoteWatchdogService.class.getName());
         watchdogIntent.setPackage(IRemoteWatchdogService.class.getPackage().getName());
@@ -252,17 +219,14 @@ public class SpiderService extends Service
     }
 
     @Override
-    public void onCreate()
-    {
+    public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate");
     }
 
-    private void stopSpider()
-    {
+    private void stopSpider() {
         timerRunning.set(false);
-        if (spider != null)
-        {
+        if(spider != null) {
             Log.i(TAG, "clearCache");
             spider.stopLoading();
             spider.clearCache(true);
@@ -272,8 +236,7 @@ public class SpiderService extends Service
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
 
         Log.i(TAG, "onDestroy");
@@ -284,19 +247,16 @@ public class SpiderService extends Service
 
         stopSpider();
 
-        Utils.deleteDir(projectCachePath);
+        Utils.deleteDir(new File(projectCachePath));
 
         System.exit(0);
     }
 
-    private void checkLockAndStopSelf()
-    {
+    private void checkLockAndStopSelf() {
         //Prevent locks block main thread of service
-        singleThreadPoolTimer.execute(new Runnable()
-        {
+        singleThreadPoolTimer.execute(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 pageProcessLock.lock();
                 Log.i(TAG, "pageProcessLock pass");
                 imgFileLock.lock();
@@ -311,42 +271,34 @@ public class SpiderService extends Service
     }
     
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId)
-    {
-        if (intent != null)
-        {
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if(intent != null) {
             int cmd = intent.getIntExtra(StaticValue.BUNDLE_KEY_CMD, StaticValue.CMD_NOTHING);
             Log.i(TAG, "onStartCommand:" + StaticValue.CMD_DESC[cmd] + " state:" + STAT_DESC[state.get()]);
 
-            switch (cmd)
-            {
-                case StaticValue.CMD_START:
-                {
+            switch(cmd) {
+                case StaticValue.CMD_START: {
                     int prevState = state.get();
                     state.set(STAT_WORKING);
-                    if (prevState == STAT_PAUSE && projectPath!=null)
-                    {
+                    if(prevState == STAT_PAUSE && projectPath != null) {
                         mImgDownloader.startAllThread();
                     }
                     break;
                 }
 
-                case StaticValue.CMD_JUST_STOP:
-                {
+                case StaticValue.CMD_JUST_STOP: {
                     state.set(STAT_STOP);
                     stopSelfAndWatchdog();
                     break;
                 }
 
-                case StaticValue.CMD_STOP_STORE:
-                {
+                case StaticValue.CMD_STOP_STORE: {
                     state.set(STAT_STOP);
                     sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
                     break;
                 }
 
-                case StaticValue.CMD_RESTART:
-                {
+                case StaticValue.CMD_RESTART: {
                     state.set(STAT_STOP);
 
                     Log.i(TAG, "prepare restart");
@@ -355,8 +307,7 @@ public class SpiderService extends Service
                     break;
                 }
 
-                case StaticValue.CMD_PAUSE:
-                {
+                case StaticValue.CMD_PAUSE: {
                     state.set(STAT_PAUSE);
                     break;
                 }
@@ -367,23 +318,17 @@ public class SpiderService extends Service
 
 
             final String url = intent.getStringExtra(StaticValue.BUNDLE_KEY_SOURCE_URL);
-            if (url != null)
-            {
+            if(url != null) {
                 Log.i(TAG, "onStartCommand srcUrl:" + url);
 
-                if(url.startsWith("http://") || url.startsWith("https://"))
-                {
-                    if(pageProcParam == null)
-                    {
+                if(url.startsWith("http://") || url.startsWith("https://")) {
+                    if(pageProcParam == null) {
                         srcUrl = url;
                     }
-                    else
-                    {
-                        singleThreadPoolTimer.execute(new Runnable()
-                        {
+                    else {
+                        singleThreadPoolTimer.execute(new Runnable() {
                             @Override
-                            public void run()
-                            {
+                            public void run() {
                                 jniDataLock.lock();
                                 jniSetSrcPageUrl(url, md5ForPage.digest(url.getBytes()), pageProcParam);
                                 jniDataLock.unlock();
@@ -394,30 +339,25 @@ public class SpiderService extends Service
             }
 
             String host = intent.getStringExtra(StaticValue.BUNDLE_KEY_PROJECT_HOST);
-            if (host != null)
-            {
+            if(host != null) {
                 Log.i(TAG, "onStartCommand host:" + host);
-                if(srcHost==null)
-                {
+                if(srcHost == null) {
                     srcHost = host;
-                    File siteDir = Utils.getDirInExtSto(getString(R.string.appPackageName) + "/" + srcHost);
-                    if (siteDir == null)
-                    {
-                        stopSelfAndWatchdog();
-                    }
-                    else
-                    {
+                    File siteDir = new File(intent.getStringExtra(StaticValue.BUNDLE_KEY_PROJECT_PATH));
+                    if(siteDir.isDirectory()) {
                         projectPath = siteDir.getPath();
 
                         projectCachePath = projectPath + "/cache/";
                         File cacheDir = new File(projectCachePath);
-                        if (!cacheDir.isDirectory())
-                        {
+                        if(!cacheDir.isDirectory()) {
                             cacheDir.mkdir();
                         }
 
                         watchdogInterfaceInit();
                         startAndBindWatchdog();
+                    }
+                    else {
+                        stopSelfAndWatchdog();
                     }
                 }
             }
@@ -426,32 +366,26 @@ public class SpiderService extends Service
         return START_NOT_STICKY;
     }
 
-    public int getAshmemFromWatchdog(String name, int size)
-    {
+    public int getAshmemFromWatchdog(String name, int size) {
         Log.i(TAG, "getAshmemFromWatchdog name:" + name + " size:" + size);
 
         int fd = -1;
-        try
-        {
+        try {
             ParcelFileDescriptor parcelFd = watchdogService.getAshmem(name, size);
-            if (parcelFd != null)
-            {
+            if(parcelFd != null) {
                 fd = parcelFd.getFd();
             }
-        } catch (RemoteException e)
-        {
+        } catch(RemoteException e) {
             e.printStackTrace();
         }
         return fd;
     }
 
     @Override
-    public void onTrimMemory(int level)
-    {
+    public void onTrimMemory(int level) {
         Log.i("onTrimMemory", "level:" + level);
 
-        switch (level)
-        {
+        switch(level) {
             case TRIM_MEMORY_COMPLETE:
                 Log.i("onTrimMemory", "TRIM_MEMORY_COMPLETE");
                 break;
@@ -471,26 +405,22 @@ public class SpiderService extends Service
     }
 
     @Override
-    public void onLowMemory()
-    {
+    public void onLowMemory() {
         Log.i(TAG, "onLowMemory");
     }
 
     @Override
-    public IBinder onBind(Intent intent)
-    {
+    public IBinder onBind(Intent intent) {
         Log.i(TAG, "onBind:" + intent.getAction());
 
-        if (IRemoteSpiderService.class.getName().equals(intent.getAction()))
-        {
+        if(IRemoteSpiderService.class.getName().equals(intent.getAction())) {
             return mBinder;
         }
         return null;
     }
 
     @Override
-    public void onTaskRemoved(Intent rootIntent)
-    {
+    public void onTaskRemoved(Intent rootIntent) {
         Toast.makeText(this, "Task removed: " + rootIntent, Toast.LENGTH_LONG)
                 .show();
     }
@@ -533,14 +463,14 @@ public class SpiderService extends Service
     private WebView spider;
 
     private Handler spiderHandler = new Handler();
-    private ScheduledExecutorService singleThreadPoolTimer= Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService singleThreadPoolTimer = Executors.newSingleThreadScheduledExecutor();
 
     private AtomicBoolean timerRunning = new AtomicBoolean(true);
     private final static int URL_TIME_OUT = 10;
     private AtomicInteger urlLoadTimer = new AtomicInteger(0);
 
     private String failUrl;
-    private static final int MAX_FAIL_PAGE_TO_CHECK=3;
+    private static final int MAX_FAIL_PAGE_TO_CHECK = 3;
     private volatile int pageUrlFailCnt;
     private volatile boolean isNetworkFail;
 
@@ -550,13 +480,21 @@ public class SpiderService extends Service
     private final static int MAX_SIZE_PER_TITLE = 255;
 
     private native String stringFromJNI(String srcStr);
+
     private native boolean jniSpiderInit(long[] imgPara, long[] pagePara);
+
     private native void jniSetSrcPageUrl(String pageUrl, byte[] srcPageUrlMd5, long[] pagePara);
+
     private native int jniAddUrl(String url, byte[] md5, int type, long[] param);
+
     private native String jniFindNextPageUrl(long[] param);
+
     private native void jniOnImgUrlProcessed(int lastImgUrlAddr, long[] param);
+
     private native String jniFindNextImgUrl(long[] param);
+
     private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr, long[] imgParam, int imgFileSize);
+
     private native void jniSavePageTitle(String curPageTitle);
 
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
@@ -565,13 +503,11 @@ public class SpiderService extends Service
 
     private ImgDownloader mImgDownloader = new ImgDownloader();
 
-    static
-    {
+    static {
         System.loadLibrary("UltimateImgSpider");
     }
 
-    class ImgDownloader
-    {
+    class ImgDownloader {
         private int imgDownloaderNum;
         private DownloaderThread[] downloaderThreads;
         private static final String CACHE_MARK = ".cache";
@@ -587,36 +523,27 @@ public class SpiderService extends Service
         private final static int IMG_DOWNLOAD_BLOCK = 16 * 1024;
         private final static int REDIRECT_MAX = 5;
 
-        public ImgDownloader()
-        {
-            imgDownloaderNum=StaticValue.getSpiderDownloaderThreadNum();
+        public ImgDownloader() {
+            imgDownloaderNum = StaticValue.getSpiderDownloaderThreadNum();
             downloaderThreads = new DownloaderThread[imgDownloaderNum];
         }
         
-        void startAllThread()
-        {
+        void startAllThread() {
             Log.i(TAG, "startAllThread");
-            for (int i = 0; i < imgDownloaderNum; i++)
-            {
-                if (downloaderThreads[i] == null)
-                {
+            for(int i = 0; i < imgDownloaderNum; i++) {
+                if(downloaderThreads[i] == null) {
                     downloaderThreads[i] = new DownloaderThread(i);
                 }
-                else
-                {
-                    if (!downloaderThreads[i].isAlive())
-                    {
+                else {
+                    if(!downloaderThreads[i].isAlive()) {
                         downloaderThreads[i] = new DownloaderThread(i);
                     }
-                    else
-                    {
+                    else {
                         downloaderThreads[i].exitLock.lock();
-                        if(downloaderThreads[i].readyToExit)
-                        {
+                        if(downloaderThreads[i].readyToExit) {
                             downloaderThreads[i] = new DownloaderThread(i);
                         }
-                        else
-                        {
+                        else {
                             downloaderThreads[i].exitLock.unlock();
                         }
                     }
@@ -624,8 +551,7 @@ public class SpiderService extends Service
             }
         }
 
-        class DownloaderThread extends Thread
-        {
+        class DownloaderThread extends Thread {
             private byte[] cacheBuf = new byte[IMG_VALID_FILE_MIN];
             private byte[] blockBuf = new byte[IMG_DOWNLOAD_BLOCK];
 
@@ -639,30 +565,26 @@ public class SpiderService extends Service
             private long imgUrlJniAddr = URL_JNIADDR_INVALID;
             private long containerUrlJniAddr = URL_JNIADDR_INVALID;
 
-            public ReentrantLock exitLock=new ReentrantLock();
-            public volatile boolean readyToExit=false;
+            public ReentrantLock exitLock = new ReentrantLock();
+            public volatile boolean readyToExit = false;
 
-            public DownloaderThread(int index)
-            {
+            public DownloaderThread(int index) {
                 super("DownloaderThread " + index);
                 threadIndex = index;
                 setDaemon(true);
                 start();
             }
 
-            public void run()
-            {
+            public void run() {
                 Log.i(TAG, "thread " + threadIndex + " start");
-                while (true)
-                {
+                while(true) {
                     pageProcessLock.waitIfLocked();
 
                     Log.i(TAG, "thread " + threadIndex + " work");
                     //Log.i(TAG, "state:"+state);
 
                     exitLock.lock();
-                    if (state.get() != STAT_WORKING)
-                    {
+                    if(state.get() != STAT_WORKING) {
                         break;
                     }
                     exitLock.unlock();
@@ -670,34 +592,28 @@ public class SpiderService extends Service
                     jniDataLock.lock();
 
                     String urlSet = jniFindNextImgUrl(imgProcParam);
-                    if(urlSet==null)
-                    {
+                    if(urlSet == null) {
                         imgUrlJniAddr = URL_JNIADDR_INVALID;
 
-                        if(!pageProcessLock.isLocked.get())
-                        {
+                        if(!pageProcessLock.isLocked.get()) {
                             pageProcessLock.lock();
 
                             long searchTimer = SystemClock.uptimeMillis();
                             curPageUrl = jniFindNextPageUrl(pageProcParam);
-                            searchTime = (int)(SystemClock.uptimeMillis() - searchTimer);
+                            searchTime = (int) (SystemClock.uptimeMillis() - searchTimer);
 
                             //Log.i(TAG, "loading:" + curPageUrl);
-                            if (curPageUrl == null)
-                            {
+                            if(curPageUrl == null) {
                                 Log.i(TAG, "site scan complete");
                                 state.set(STAT_COMPLETE);
                                 pageProcessLock.unlock();
                             }
-                            else
-                            {
+                            else {
                                 //Log.i(TAG, "new page url valid");
 
-                                spiderHandler.post(new Runnable()
-                                {
+                                spiderHandler.post(new Runnable() {
                                     @Override
-                                    public void run()
-                                    {
+                                    public void run() {
                                         spider.loadUrl(curPageUrl);
                                         urlLoadTimer.set(URL_TIME_OUT);
                                     }
@@ -709,9 +625,8 @@ public class SpiderService extends Service
 
                     jniDataLock.unlock();
 
-                    if (urlSet != null)
-                    {
-                        Log.i(TAG, "img:"+urlSet);
+                    if(urlSet != null) {
+                        Log.i(TAG, "img:" + urlSet);
 
                         String[] urls = urlSet.split(" ");
                         imgUrl = urls[0];
@@ -727,25 +642,23 @@ public class SpiderService extends Service
 
                 }
 
-                readyToExit=true;
+                readyToExit = true;
                 exitLock.unlock();
 
                 Log.i(TAG, "thread " + threadIndex + " stop");
             }
 
-            private File newImgDownloadCacheFile(String imgUrl)
-            {
+            private File newImgDownloadCacheFile(String imgUrl) {
                 String newFileExt = imgUrl.substring(imgUrl.lastIndexOf(".")) + CACHE_MARK;
 
                 long cacheRandIndex = new Random(SystemClock.currentThreadTimeMillis()).nextInt();
                 File cacheFile;
 
                 imgFileLock.lock();
-                do
-                {
+                do {
                     cacheFile = new File(projectCachePath + cacheRandIndex + newFileExt);
                     cacheRandIndex++;
-                } while (cacheFile.exists());
+                } while(cacheFile.exists());
                 imgFileLock.unlock();
 
                 Log.i(TAG, "new cache file" + cacheFile.getPath());
@@ -753,31 +666,33 @@ public class SpiderService extends Service
                 return cacheFile;
             }
 
-            private class FileWithSize
-            {
+            private class FileWithSize {
                 File file;
                 int size;
 
-                public FileWithSize(File pFile, int pSize)
-                {
-                    file=pFile;
-                    size=pSize;
+                public FileWithSize(File pFile, int pSize) {
+                    file = pFile;
+                    size = pSize;
                 }
             }
 
-            private void onImgUrlProcessed(FileWithSize fileWithSize)
-            {
-                File file=fileWithSize.file;
+            private File newThumbnailFile(int index, String dirName) {
+                return Utils.newFile(projectPath + "/" + dirName + "/" +
+                        index / StaticValue.MAX_IMG_FILE_PER_DIR + "/" +
+                        String.format("%03d", index % StaticValue.MAX_IMG_FILE_PER_DIR) + "." +
+                        StaticValue.THUMBNAIL_FILE_EXT);
+            }
+
+            private void onImgUrlProcessed(FileWithSize fileWithSize) {
+                File file = fileWithSize.file;
 
                 imgFileLock.lock();
                 jniDataLock.lock();
 
                 jniOnImgUrlProcessed((int) imgUrlJniAddr, imgProcParam);
 
-                while(true)
-                {
-                    if(file != null)
-                    {
+                while(true) {
+                    if(file != null) {
                         int imgIndex = (int) imgProcParam[StaticValue.PARA_DOWNLOAD];
 
                         String cacheFilePath = file.getPath();
@@ -786,8 +701,7 @@ public class SpiderService extends Service
 
                         String dirPath = projectPath + "/" + imgIndex / StaticValue.MAX_IMG_FILE_PER_DIR;
                         File dir = new File(dirPath);
-                        if(!dir.exists())
-                        {
+                        if(!dir.exists()) {
                             dir.mkdir();
                         }
 
@@ -801,49 +715,32 @@ public class SpiderService extends Service
                         File thumbnailFile = null;
 
 
-                        for(int i = 0; i < 3; i++)
-                        {
-                            if(file.renameTo(finalFile))
-                            {
-                                String thumbnailDirPath = projectPath + "/" + StaticValue.THUMBNAIL_DIR_NAME + "/" +
-                                        imgIndex / StaticValue.MAX_IMG_FILE_PER_DIR;
-                                File thumbnailDir = new File(thumbnailDirPath);
-                                if(!thumbnailDir.exists())
-                                {
-                                    thumbnailDir.mkdirs();
-                                }
-
-                                thumbnailFile = new File(thumbnailDirPath + "/" + newName + "." + StaticValue.THUMBNAIL_FILE_EXT);
-
+                        for(int i = 0; i < 3; i++) {
+                            if(file.renameTo(finalFile)) {
+                                thumbnailFile = newThumbnailFile(imgIndex, StaticValue.SLOT_THUMBNAIL_DIR_NAME);
                                 break;
                             }
-                            else
-                            {
+                            else {
                                 Log.i("rename fail", newPath);
-                                try
-                                {
+                                try {
                                     sleep(200);
-                                } catch(InterruptedException e)
-                                {
+                                } catch(InterruptedException e) {
                                     e.printStackTrace();
                                 }
                             }
                         }
 
 
-                        if(thumbnailFile != null)
-                        {
-                            createThumbnail(finalFile, thumbnailFile);
+                        if(thumbnailFile != null) {
+                            createThumbnail(finalFile, thumbnailFile, imgIndex);
                         }
-                        else
-                        {
+                        else {
                             Log.i("createThumbnail", "thumbnailFile == null");
                         }
 
                         jniSaveImgStorageInfo((int) imgUrlJniAddr, (int) containerUrlJniAddr, imgProcParam, fileWithSize.size);
 
-                        if((imgIndex % SAVE_PROJECT_DATA) == 0)
-                        {
+                        if((imgIndex % SAVE_PROJECT_DATA) == 0) {
                             Log.i(TAG, "post save data cmd imgIndex " + imgIndex);
                             saveProjectData();
                             break;
@@ -857,20 +754,63 @@ public class SpiderService extends Service
                 imgFileLock.unlock();
             }
 
-            private void createThumbnail(File rawFile, File thumbnailFile)
-            {
+            private void saveBitmapToFile(Bitmap bmp, File file) {
+                FileOutputStream fileOut = null;
+                try {
+                    fileOut = new FileOutputStream(file);
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 90, fileOut);
+                    fileOut.flush();
+                    fileOut.close();
+                } catch(FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch(IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            private void createThumbnail(File rawFile, File thumbnailFile, int index) {
                 BitmapFactory.Options opts = new BitmapFactory.Options();
                 opts.inJustDecodeBounds = true;
                 BitmapFactory.decodeFile(rawFile.getPath(), opts);
-
-                opts.inSampleSize=Math.min(opts.outHeight, opts.outWidth)/StaticValue.THUMBNAIL_SIZE;
-
                 opts.inJustDecodeBounds = false;
+
+                Log.i(TAG, "full raw width " + opts.outWidth + " height " + opts.outHeight);
+
+                int fullRawWidth = opts.outWidth;
+                int fullRawHeight = opts.outHeight;
+
+
+                int maxSize = Math.max(fullRawHeight, fullRawWidth);
+                if(maxSize > StaticValue.FULL_THUMBNAIL_SIZE) {
+                    opts.inSampleSize = maxSize / StaticValue.FULL_THUMBNAIL_SIZE;
+                    Log.i(TAG, "create full thumbnail");
+                    Bitmap sampleBmp = BitmapFactory.decodeFile(rawFile.getPath(), opts);
+                    if(sampleBmp != null) {
+                        Log.i(TAG, "sample width " + sampleBmp.getWidth() + " height " + sampleBmp.getHeight());
+                        float scale = StaticValue.FULL_THUMBNAIL_SIZE /
+                                (float) Math.max(sampleBmp.getWidth(), sampleBmp.getHeight());
+                        Matrix matrix = new Matrix();
+                        matrix.postScale(scale, scale);
+                        Bitmap thumbnail = Bitmap.createBitmap(sampleBmp, 0, 0,
+                                sampleBmp.getWidth(), sampleBmp.getHeight(), matrix, true);
+                        if(thumbnail != sampleBmp) {
+                            sampleBmp.recycle();
+                        }
+
+                        Log.i(TAG, "full thumbnail width " + thumbnail.getWidth() + " height " + thumbnail.getHeight());
+
+                        saveBitmapToFile(thumbnail, newThumbnailFile(index, StaticValue.FULL_THUMBNAIL_DIR_NAME));
+                        thumbnail.recycle();
+                    }
+                }
+
+
+                opts.inSampleSize = Math.min(fullRawWidth, fullRawHeight) / StaticValue.THUMBNAIL_SIZE;
+
                 Bitmap rawBmp = BitmapFactory.decodeFile(rawFile.getPath(), opts);
 
 
-                if (rawBmp != null)
-                {
+                if(rawBmp != null) {
                     int rawWidth = rawBmp.getWidth();
                     int rawHeight = rawBmp.getHeight();
                     float scale;
@@ -878,16 +818,14 @@ public class SpiderService extends Service
                     int x, y, w, h;
 
 
-                    if (rawHeight > rawWidth)
-                    {
+                    if(rawHeight > rawWidth) {
                         x = 0;
                         w = rawWidth;
                         y = (rawHeight - rawWidth) / 2;
                         h = rawWidth;
                         scale = StaticValue.THUMBNAIL_SIZE / (float) rawWidth;
                     }
-                    else
-                    {
+                    else {
                         y = 0;
                         h = rawHeight;
                         x = (rawWidth - rawHeight) / 2;
@@ -900,57 +838,37 @@ public class SpiderService extends Service
 
                     Bitmap thumbnail = Bitmap.createBitmap(rawBmp, x, y, w, h, matrix, true);
 
-                    if(thumbnail!=rawBmp)
-                    {
+                    Log.i(TAG, String.format("save slot thumbnail raw %d*%d slot %d*%d %s",
+                            rawWidth, rawHeight, thumbnail.getWidth(), thumbnail.getHeight(), thumbnailFile.getName()));
+
+                    if(thumbnail != rawBmp) {
                         rawBmp.recycle();
                     }
 
-                    FileOutputStream fileOut = null;
-                    try
-                    {
-                        fileOut = new FileOutputStream(thumbnailFile);
-                        thumbnail.compress(Bitmap.CompressFormat.JPEG, 90, fileOut);
-                        fileOut.flush();
-                        fileOut.close();
-                    } catch (FileNotFoundException e)
-                    {
-                        e.printStackTrace();
-                        Log.i("createThumbnail", "FileNotFoundException");
-                    } catch (IOException e)
-                    {
-                        e.printStackTrace();
-                        Log.i("createThumbnail", "IOException");
-                    }
+                    saveBitmapToFile(thumbnail, thumbnailFile);
 
                     thumbnail.recycle();
                 }
-                else
-                {
+                else {
                     Log.i("createThumbnail", "rawBmp == null");
                 }
             }
 
-            private FileWithSize recvImgDataLoop(InputStream input, String url) throws IOException
-            {
-                File imgFile=null;
+            private FileWithSize recvImgDataLoop(InputStream input, String url) throws IOException {
+                File imgFile = null;
                 int totalLen = 0;
                 int cacheUsage = 0;
                 FileOutputStream output = null;
 
-                while (true)
-                {
+                while(true) {
                     int len = input.read(blockBuf);
-                    if (len != -1)
-                    {
-                        if ((cacheUsage + len) < IMG_VALID_FILE_MIN)
-                        {
+                    if(len != -1) {
+                        if((cacheUsage + len) < IMG_VALID_FILE_MIN) {
                             System.arraycopy(blockBuf, 0, cacheBuf, cacheUsage, len);
                             cacheUsage += len;
                         }
-                        else
-                        {
-                            if (output == null)
-                            {
+                        else {
+                            if(output == null) {
                                 imgFile = newImgDownloadCacheFile(url);
                                 output = new FileOutputStream(imgFile);
                             }
@@ -961,53 +879,44 @@ public class SpiderService extends Service
 
                         totalLen += len;
                     }
-                    else
-                    {
+                    else {
                         break;
                     }
                 }
 
                 //Log.i(TAG, "totalLen "+(totalLen/1024)+"K "+url);
-                if (totalLen < IMG_VALID_FILE_MIN)
-                {
+                if(totalLen < IMG_VALID_FILE_MIN) {
                     BitmapFactory.Options opts = new BitmapFactory.Options();
                     opts.inJustDecodeBounds = true;
                     BitmapFactory.decodeByteArray(cacheBuf, 0, totalLen, opts);
 
                     //Log.i(TAG, "size:" + totalLen + " " + opts.outWidth + "*" + opts.outHeight);
 
-                    if (opts.outHeight > IMG_VALID_HEIGHT_MIN
-                            && opts.outWidth > IMG_VALID_WIDTH_MIN)
-                    {
+                    if(opts.outHeight > IMG_VALID_HEIGHT_MIN
+                            && opts.outWidth > IMG_VALID_WIDTH_MIN) {
                         imgFile = newImgDownloadCacheFile(url);
                         output = new FileOutputStream(imgFile);
                         output.write(cacheBuf, 0, totalLen);
                     }
                 }
-                else
-                {
+                else {
                     output.write(cacheBuf, 0, cacheUsage);
                 }
 
-                if (output != null)
-                {
+                if(output != null) {
                     output.close();
                 }
                 return new FileWithSize(imgFile, totalLen);
             }
 
-            private void downloadImgByUrl(String urlStr)
-            {
-                FileWithSize imgFileWithSize=new FileWithSize(null, 0);
-                for (int redirectCnt = 0; redirectCnt < REDIRECT_MAX; redirectCnt++)
-                {
-                    try
-                    {
+            private void downloadImgByUrl(String urlStr) {
+                FileWithSize imgFileWithSize = new FileWithSize(null, 0);
+                for(int redirectCnt = 0; redirectCnt < REDIRECT_MAX; redirectCnt++) {
+                    try {
                         URL url = new URL(urlStr);
                         HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
 
-                        try
-                        {
+                        try {
                             urlConn.setInstanceFollowRedirects(false);
                             urlConn.setConnectTimeout(5000);
                             urlConn.setReadTimeout(120000);
@@ -1017,40 +926,31 @@ public class SpiderService extends Service
                             int res = urlConn.getResponseCode();
                             //Log.i(TAG, "response "+res+" "+urlStr);
 
-                            if ((res / 100) == 3)
-                            {
+                            if((res / 100) == 3) {
                                 String redirUrl = urlConn.getHeaderField("Location");
 
-                                if (redirUrl != null)
-                                {
+                                if(redirUrl != null) {
                                     urlStr = redirUrl.replaceAll(" ", "%20");
                                 }
-                                else
-                                {
+                                else {
                                     break;
                                 }
                             }
-                            else
-                            {
-                                if (res == 200)
-                                {
-                                    imgFileWithSize=recvImgDataLoop(urlConn.getInputStream(), urlStr);
+                            else {
+                                if(res == 200) {
+                                    imgFileWithSize = recvImgDataLoop(urlConn.getInputStream(), urlStr);
                                 }
                                 break;
                             }
-                        } finally
-                        {
-                            if (urlConn != null)
-                            {
+                        } finally {
+                            if(urlConn != null) {
                                 urlConn.disconnect();
                             }
                         }
 
-                    } catch (MalformedURLException e)
-                    {
+                    } catch(MalformedURLException e) {
                         e.printStackTrace();
-                    } catch (IOException e)
-                    {
+                    } catch(IOException e) {
                         e.printStackTrace();
                     }
                 }
@@ -1060,8 +960,7 @@ public class SpiderService extends Service
         }
     }
 
-    private void reportSpiderLogByHandler()
-    {
+    private void reportSpiderLogByHandler() {
         String jsonReportStr = "{\r\n";
 
         jniDataLock.lock();
@@ -1076,19 +975,16 @@ public class SpiderService extends Service
         jsonReportStr += "\"pageTreeHeight\":" + pageProcParam[StaticValue.PARA_HEIGHT] + ",\r\n";
         jniDataLock.unlock();
 
-        final String finalStr=jsonReportStr;
-        spiderHandler.post(new Runnable()
-        {
+        final String finalStr = jsonReportStr;
+        spiderHandler.post(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 reportSpiderLog(finalStr);
             }
         });
     }
 
-    private void reportSpiderLog(String jsonReportStr)
-    {
+    private void reportSpiderLog(String jsonReportStr) {
         jsonReportStr += "\"srcHost\":" + srcHost + ",\r\n";
         jsonReportStr += "\"serviceVmMem\":" + (Runtime.getRuntime().totalMemory() >> 10) + ",\r\n";
         jsonReportStr += "\"serviceNativeMem\":" + (Debug.getNativeHeapSize() >> 10) + ",\r\n";
@@ -1108,17 +1004,14 @@ public class SpiderService extends Service
 
         jsonReportStr += "\"networkFail\":" + isNetworkFail + "\r\n}";
 
-        isNetworkFail=false;
+        isNetworkFail = false;
 
 
         int numOfCallback = mCallbacks.beginBroadcast();
-        for (int i = 0; i < numOfCallback; i++)
-        {
-            try
-            {
+        for(int i = 0; i < numOfCallback; i++) {
+            try {
                 mCallbacks.getBroadcastItem(i).reportStatus(jsonReportStr);
-            } catch (RemoteException e)
-            {
+            } catch(RemoteException e) {
                 e.printStackTrace();
             }
         }
@@ -1128,24 +1021,19 @@ public class SpiderService extends Service
     }
 
     // javascript回调不在主线程。
-    private void scanPageWithJS()
-    {
+    private void scanPageWithJS() {
         pageFinished = true;
 
-        urlOfCurPageTitle=spider.getUrl();
+        urlOfCurPageTitle = spider.getUrl();
         curPageTitle = spider.getTitle();
-        if (curPageTitle != null)
-        {
-            if (curPageTitle.length() > MAX_SIZE_PER_TITLE)
-            {
-                curPageTitle=curPageTitle.substring(0, MAX_SIZE_PER_TITLE);
+        if(curPageTitle != null) {
+            if(curPageTitle.length() > MAX_SIZE_PER_TITLE) {
+                curPageTitle = curPageTitle.substring(0, MAX_SIZE_PER_TITLE);
             }
 
-            singleThreadPoolTimer.execute(new Runnable()
-            {
+            singleThreadPoolTimer.execute(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     jniDataLock.lock();
                     jniSavePageTitle(curPageTitle);
                     jniDataLock.unlock();
@@ -1179,19 +1067,15 @@ public class SpiderService extends Service
                 + "SpiderCrawl.onCurPageScaned();");
     }
 
-    private void spiderWebViewInit()
-    {
+    private void spiderWebViewInit() {
         spider = new WebView(this);
 
-        spider.setWebViewClient(new WebViewClient()
-        {
-            public boolean shouldOverrideUrlLoading(WebView view, String url)
-            {
+        spider.setWebViewClient(new WebViewClient() {
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 return false;
             }
 
-            public void onPageStarted(WebView view, String url, Bitmap favicon)
-            {
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 //Log.i(TAG, "onPageStarted " + url);
                 loadTimer = SystemClock.uptimeMillis();
                 pageFinished = false;
@@ -1200,16 +1084,13 @@ public class SpiderService extends Service
 
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view,
-                                                              String url)
-            {
+                                                              String url) {
                 WebResourceResponse response = null;
 
                 //Log.i(TAG, "shouldInterceptRequest "+curPageUrl+" "+url);
 
-                if (curPageUrl != null)
-                {
-                    if (!curPageUrl.equals(url))
-                    {
+                if(curPageUrl != null) {
+                    if(!curPageUrl.equals(url)) {
                         response = new WebResourceResponse("image/png", "UTF-8", null);
                     }
                 }
@@ -1219,27 +1100,21 @@ public class SpiderService extends Service
 
 
             public void onReceivedError(WebView view, int errorCode,
-                                        String description, String failingUrl)
-            {
+                                        String description, String failingUrl) {
                 Log.i(TAG, failingUrl + " ReceivedError " + errorCode + "  "
                         + description);
 
-                if(curPageUrl.equals(failingUrl))
-                {
-                    failUrl=failingUrl;
+                if(curPageUrl.equals(failingUrl)) {
+                    failUrl = failingUrl;
                     pageUrlFailCnt++;
-                    if(pageUrlFailCnt==MAX_FAIL_PAGE_TO_CHECK)
-                    {
-                        pageUrlFailCnt=0;
-                        singleThreadPoolTimer.execute(new Runnable()
-                        {
+                    if(pageUrlFailCnt == MAX_FAIL_PAGE_TO_CHECK) {
+                        pageUrlFailCnt = 0;
+                        singleThreadPoolTimer.execute(new Runnable() {
                             @Override
-                            public void run()
-                            {
+                            public void run() {
                                 jniDataLock.lock();
-                                if(!Utils.isNetworkEffective())
-                                {
-                                    isNetworkFail=true;
+                                if(!Utils.isNetworkEffective()) {
+                                    isNetworkFail = true;
                                     state.set(STAT_PAUSE);
                                 }
                                 jniDataLock.unlock();
@@ -1249,23 +1124,19 @@ public class SpiderService extends Service
                 }
             }
 
-            public void onPageFinished(WebView view, String url)
-            {
-                loadTime = (int)(SystemClock.uptimeMillis() - loadTimer);
+            public void onPageFinished(WebView view, String url) {
+                loadTime = (int) (SystemClock.uptimeMillis() - loadTimer);
                 Log.i(TAG, "onPageFinished " + url + " loadTime:" + loadTime + " tmr:" + urlLoadTimer.get());
                 //Log.i(TAG, "curPageUrl "+curPageUrl);
-                if (!pageFinished)
-                {
-                    if (curPageUrl.equals(url))
-                    {
+                if(!pageFinished) {
+                    if(curPageUrl.equals(url)) {
                         urlLoadTimer.set(0);
 
                         //Log.i(TAG, "scanPageWithJS");
                         scanPageWithJS();
 
-                        if(!curPageUrl.equals(failUrl))
-                        {
-                            pageUrlFailCnt=0;
+                        if(!curPageUrl.equals(failUrl)) {
+                            pageUrlFailCnt = 0;
                         }
                     }
 
@@ -1274,12 +1145,9 @@ public class SpiderService extends Service
 
         });
 
-        spider.setWebChromeClient(new WebChromeClient()
-        {
-            public void onProgressChanged(WebView view, int newProgress)
-            {
-                if (newProgress == 100)
-                {
+        spider.setWebChromeClient(new WebChromeClient() {
+            public void onProgressChanged(WebView view, int newProgress) {
+                if(newProgress == 100) {
 
                 }
             }
@@ -1303,44 +1171,34 @@ public class SpiderService extends Service
 
     }
 
-    private void spiderInit()
-    {
+    private void spiderInit() {
         spiderWebViewInit();
 
-        try
-        {
+        try {
             md5ForPage = MessageDigest.getInstance("md5");
-        } catch (NoSuchAlgorithmException e)
-        {
+        } catch(NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
 
-        if(srcUrl!=null)
-        {
+        if(srcUrl != null) {
             jniSetSrcPageUrl(srcUrl, md5ForPage.digest(srcUrl.getBytes()), pageProcParam);
         }
 
         new TimerThread().start();
 
-        if (state.get() == STAT_WORKING)
-        {
+        if(state.get() == STAT_WORKING) {
             mImgDownloader.startAllThread();
         }
-        else
-        {
+        else {
             state.set(STAT_PAUSE);
         }
-    
+
         saveProjectDataTime.set(SAVE_PROJECT_DATA_TIME);
-        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable()
-        {
+        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable() {
             @Override
-            public void run()
-            {
-                if(saveProjectDataTime.get()!=0)
-                {
-                    if(saveProjectDataTime.decrementAndGet() == 0)
-                    {
+            public void run() {
+                if(saveProjectDataTime.get() != 0) {
+                    if(saveProjectDataTime.decrementAndGet() == 0) {
                         jniDataLock.lock();
                         Log.i(TAG, "save project data by timeout");
                         saveProjectData();
@@ -1350,58 +1208,47 @@ public class SpiderService extends Service
         }, 0, 1000, TimeUnit.MILLISECONDS);
     }
     
-    private void saveProjectData()
-    {
+    private void saveProjectData() {
         saveProjectDataTime.set(SAVE_PROJECT_DATA_TIME);
-        if(state.get()==STAT_WORKING)
-        {
+        if(state.get() == STAT_WORKING) {
             isWaitingForSavingData = true;
             sendCmdToWatchdog(StaticValue.CMD_JUST_STORE);
         }
     }
 
-    private final static int SAVE_PROJECT_DATA_TIME=5*60;
-    private AtomicInteger saveProjectDataTime=new AtomicInteger(0);
+    private final static int SAVE_PROJECT_DATA_TIME = 5 * 60;
+    private AtomicInteger saveProjectDataTime = new AtomicInteger(0);
 
     private Utils.NetTrafficCalc netTrafficCalc = new Utils.NetTrafficCalc(this);
     private AtomicInteger reportStatusTimer = new AtomicInteger(0);
 
-    private class TimerThread extends Thread
-    {
+    private class TimerThread extends Thread {
         private final int TIMER_INTERVAL = 1000;
 
         private static final int REPORT_STATUS_MAX_INTERVAL = 2;
 
-        public TimerThread()
-        {
+        public TimerThread() {
             super("TimerThread");
             setDaemon(true);
         }
 
-        public void run()
-        {
-            while (timerRunning.get())
-            {
+        public void run() {
+            while(timerRunning.get()) {
                 netTrafficCalc.refreshNetTraffic();
 
-                if (reportStatusTimer.getAndIncrement() == REPORT_STATUS_MAX_INTERVAL)
-                {
+                if(reportStatusTimer.getAndIncrement() == REPORT_STATUS_MAX_INTERVAL) {
                     reportStatusTimer.set(0);
                     reportSpiderLogByHandler();
                 }
 
                 // Log.i(TAG, "Timer");
 
-                if (urlLoadTimer.get() != 0)
-                {
-                    if (urlLoadTimer.decrementAndGet() == 0)
-                    {
-                        spiderHandler.post(new Runnable()
-                        {
+                if(urlLoadTimer.get() != 0) {
+                    if(urlLoadTimer.decrementAndGet() == 0) {
+                        spiderHandler.post(new Runnable() {
 
                             @Override
-                            public void run()
-                            {
+                            public void run() {
                                 Log.i(TAG, "Load TimeOut!!");
                                 spider.stopLoading();
                                 scanPageWithJS();
@@ -1410,11 +1257,9 @@ public class SpiderService extends Service
                     }
                 }
 
-                try
-                {
+                try {
                     sleep(TIMER_INTERVAL);
-                } catch (InterruptedException e)
-                {
+                } catch(InterruptedException e) {
                     e.printStackTrace();
                 }
             }
@@ -1422,8 +1267,7 @@ public class SpiderService extends Service
     }
 
     @JavascriptInterface
-    public void recvImgUrl(String imgUrlSet)
-    {
+    public void recvImgUrl(String imgUrlSet) {
         // Log.i(TAG, "imgUrl:"+imgUrl);
 
         String[] list = imgUrlSet.split(" ");
@@ -1431,20 +1275,16 @@ public class SpiderService extends Service
         // Log.i(TAG, "length:"+list.length);
 
         jniDataLock.lock();
-        for (String imgUrl : list)
-        {
+        for(String imgUrl : list) {
             int i;
-            for(i=0; i< StaticValue.IMG_FILE_EXT.length; i++)
-            {
-                if(imgUrl.endsWith(StaticValue.IMG_FILE_EXT[i]))
-                {
+            for(i = 0; i < StaticValue.IMG_FILE_EXT.length; i++) {
+                if(imgUrl.endsWith(StaticValue.IMG_FILE_EXT[i])) {
                     break;
                 }
             }
 
-            if ((imgUrl.startsWith("http://") || imgUrl.startsWith("https://"))
-                    && i<StaticValue.IMG_FILE_EXT.length && imgUrl.length() < MAX_SIZE_PER_URL)
-            {
+            if((imgUrl.startsWith("http://") || imgUrl.startsWith("https://"))
+                    && i < StaticValue.IMG_FILE_EXT.length && imgUrl.length() < MAX_SIZE_PER_URL) {
                 jniAddUrl(imgUrl, md5ForPage.digest(imgUrl.getBytes()), URL_TYPE_IMG,
                         imgProcParam);
             }
@@ -1453,8 +1293,7 @@ public class SpiderService extends Service
     }
 
     @JavascriptInterface
-    public void recvPageUrl(String pageUrlSet)
-    {
+    public void recvPageUrl(String pageUrlSet) {
         // Log.i(TAG, "pageUrl:"+pageUrl);
 
         String[] list = pageUrlSet.split(" ");
@@ -1463,23 +1302,19 @@ public class SpiderService extends Service
 
 
         jniDataLock.lock();
-        for (String pageUrl : list)
-        {
-            try
-            {
+        for(String pageUrl : list) {
+            try {
                 URL url = new URL(pageUrl);
 
-                if ((pageUrl.startsWith("http://") || pageUrl
+                if((pageUrl.startsWith("http://") || pageUrl
                         .startsWith("https://"))
                         && (url.getHost().equals(srcHost))
                         && (url.getRef() == null)
-                        && (pageUrl.length() < MAX_SIZE_PER_URL))
-                {
+                        && (pageUrl.length() < MAX_SIZE_PER_URL)) {
                     jniAddUrl(pageUrl, md5ForPage.digest(pageUrl.getBytes()), URL_TYPE_PAGE,
                             pageProcParam);
                 }
-            } catch (MalformedURLException e)
-            {
+            } catch(MalformedURLException e) {
                 // Log.e(TAG,e.toString());
             }
         }
@@ -1488,10 +1323,9 @@ public class SpiderService extends Service
     }
 
     @JavascriptInterface
-    public void onCurPageScaned()
-    {
+    public void onCurPageScaned() {
         Log.i(TAG, "onCurPageScaned");
-        scanTime = (int)(SystemClock.uptimeMillis() - scanTimer);
+        scanTime = (int) (SystemClock.uptimeMillis() - scanTimer);
 
         pageProcessLock.unlock();
     }

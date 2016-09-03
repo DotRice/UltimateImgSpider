@@ -49,7 +49,8 @@ jstring stringFromJNI(JNIEnv *env,
 {
     int i;
     const u8 *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
-    LOGI("stringFromJNI %s", srcStr);
+    LOGI("build @ %s %s", __DATE__, __TIME__);
+    LOGI("stringFromJNI %s ", srcStr);
 
     //ashmemTest(env);
 

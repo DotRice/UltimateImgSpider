@@ -31,4 +31,6 @@ typedef struct t_ashm
 
 extern jobject AshmAllocObjectInstance;
 
+void *spiderGetAshmemFromWatchdog(JNIEnv *env, const char *name, int size);
+
 #endif

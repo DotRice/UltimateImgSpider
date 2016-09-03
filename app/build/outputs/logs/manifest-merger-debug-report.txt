@@ -1,8 +1,6 @@
 -- Merging decision tree log ---
 manifest
 ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:2:1-79:12
-	xmlns:android
-		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:2:11-69
 	package
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:3:5-42
 		INJECTED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml
@@ -15,6 +13,8 @@ ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:2:1-79:
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:4:5-28
 		INJECTED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml
 		INJECTED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:2:11-69
 uses-sdk
 ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:7:5-9:41
 	android:targetSdkVersion
@@ -57,16 +57,16 @@ application
 ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:19:5-77:19
 	android:label
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:24:9-41
+	android:hardwareAccelerated
+		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:22:9-43
 	android:allowBackup
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:21:9-35
 	android:icon
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:23:9-45
-	android:theme
-		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:25:9-68
-	android:hardwareAccelerated
-		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:22:9-43
 	android:largeHeap
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:20:9-33
+	android:theme
+		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:25:9-68
 activity#com.gk969.UltimateImgSpider.SpiderActivity
 ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:27:9-35:20
 	android:configChanges
@@ -85,10 +85,10 @@ ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:33:17-7
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:33:27-74
 activity#com.gk969.UltimateImgSpider.SelSrcActivity
 ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:37:9-42:20
-	android:configChanges
-		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:40:10-71
 	android:process
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:38:13-44
+	android:configChanges
+		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:40:10-71
 	android:name
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:39:13-70
 service#com.gk969.UltimateImgSpider.SpiderService
@@ -129,9 +129,9 @@ ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:68:17-8
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:68:25-84
 activity#com.gk969.UltimateImgSpider.ParaConfigActivity
 ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:72:9-76:20
-	android:configChanges
-		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:75:10-71
 	android:process
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:73:13-44
+	android:configChanges
+		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:75:10-71
 	android:name
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:74:13-74

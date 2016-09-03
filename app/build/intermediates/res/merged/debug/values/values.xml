@@ -220,10 +220,12 @@
     <string name="delete">删除</string>
     <string name="deletedToast">当前项目已删除</string>
     <string name="deleting">删除中</string>
+    <string name="deviceStorage">内部存储</string>
     <string name="download_speed">下载速度</string>
     <string name="enter">进入</string>
     <string name="exit">退出</string>
     <string name="forward">前进</string>
+    <string name="freeSpace">剩余空间:</string>
     <string name="goOn">继续</string>
     <string name="help">帮助</string>
     <string name="home">主页</string>
@@ -240,6 +242,7 @@
     <string name="menu">菜单</string>
     <string name="more">更多</string>
     <string name="newProj">新建</string>
+    <string name="notFindValidStorage">未发现可用存储器</string>
     <string name="notSet">未设置</string>
     <string name="open">打开</string>
     <string name="option">选项</string>
@@ -262,10 +265,12 @@
     <string name="ram_sys_total">系统总内存</string>
     <string name="refresh">刷新</string>
     <string name="retry">重试</string>
+    <string name="sdcardStorage">SD卡</string>
     <string name="search">搜索</string>
     <string name="searchOrInputURL">搜索或输入网址</string>
     <string name="selSearchEngine">选择搜索引擎</string>
     <string name="selSrc">选择站点</string>
+    <string name="selStorageDevice">选择图片存储位置</string>
     <string name="settings">设置</string>
     <string name="speed_info">速度信息</string>
     <string name="spiderGo">开始抓图</string>
@@ -279,6 +284,7 @@
     <string name="storage_lack">存储空间不足！</string>
     <string name="storage_total">存储总大小</string>
     <string name="title">标题</string>
+    <string name="totalSpace">总空间:</string>
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
     <string name="web_url">网址</string>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">

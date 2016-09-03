@@ -82,8 +82,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class SpiderActivity extends Activity
-{
+public class SpiderActivity extends Activity {
     private final static String TAG = "SpiderActivity";
     
     private static final int CONN_STATE_DISCONNECTED = 0;
@@ -91,27 +90,25 @@ public class SpiderActivity extends Activity
     private static final int CONN_STATE_WAIT_DISCONNECT = 2;
     private static final int CONN_STATE_WAIT_CONNECT = 3;
 
-    private static final int MIN_FREE_MEM_TO_RESTART_SERVICE=50;
-    private static final int MAX_USED_MEM_TO_RESTART_SERVICE=50;
-    private static final int MIN_FREE_STORAGE_TO_STOP_SERVICE=100;
+    private static final int MIN_FREE_MEM_TO_RESTART_SERVICE = 50;
+    private static final int MAX_USED_MEM_TO_RESTART_SERVICE = 50;
+    private static final int MIN_FREE_STORAGE_TO_STOP_SERVICE = 100;
 
     private int serviceConnState = CONN_STATE_DISCONNECTED;
 
 
-    private int downloadingProjectIndex;
-    private String downloadingProjectPath;
-
-    private int displayProjectIndex=SpiderProject.INVALID_INDEX;
-    private String displayProjectPath;
-
     private String downloadingProjectSrcUrl;
+    private int downloadingProjectIndex;
+    private SpiderProject.ProjectInfo downloadingProjectInfo;
 
-    private File appDir;
+    private int displayProjectIndex = SpiderProject.INVALID_INDEX;
+    private SpiderProject.ProjectInfo displayProjectInfo;
 
 
     private MessageHandler mHandler = new MessageHandler(this);
 
     private static final int BUMP_MSG = 1;
+
 
     private GLRootView glRootView;
     private SlotView slotView;
@@ -121,7 +118,6 @@ public class SpiderActivity extends Activity
     private AlbumLoaderHelper albumLoaderHelper;
     private AlbumSetLoaderHelper albumSetLoaderHelper;
 
-    private SpiderProject.ProjectInfo displayProjectInfo;
     private SpiderProject spiderProject;
 
     private ServiceConnection mConnection;
@@ -136,49 +132,44 @@ public class SpiderActivity extends Activity
     private ImageButton buttonAdd;
     private ImageButton buttonMenu;
 
-    enum ProjectState
-    {
+    enum ProjectState {
         PAUSE, CHECK, DOWNLOADING, COMPLETE
     }
-    private ProjectState projectState=ProjectState.PAUSE;
 
-    public static final int ALBUM_SET_VIEW=0;
-    public static final int ALBUM_VIEW=1;
-    public static final int PHOTO_VIEW=2;
+    private ProjectState projectState = ProjectState.PAUSE;
 
-    private volatile int curView=ALBUM_SET_VIEW;
+    public static final int ALBUM_SET_VIEW = 0;
+    public static final int ALBUM_VIEW = 1;
+    public static final int PHOTO_VIEW = 2;
+
+    private volatile int curView = ALBUM_SET_VIEW;
 
     private InfoDrawer infoDrawer;
 
-    private static final int BUTTON_MENU_ANIMATION_TIME=250;
-    private AtomicInteger buttonMenuDisplayTime=new AtomicInteger(0);
-    private static final int MEMORY_REFRESH_TIME=2;
+    private static final int BUTTON_MENU_ANIMATION_TIME = 250;
+    private AtomicInteger buttonMenuDisplayTime = new AtomicInteger(0);
+    private static final int MEMORY_REFRESH_TIME = 2;
 
-    private final static int SPIDER_SERVICE_REPORT_TIMEOUT=10;
-    private AtomicInteger spiderServiceReportTimOut=new AtomicInteger(0);
+    private final static int SPIDER_SERVICE_REPORT_TIMEOUT = 60;
+    private AtomicInteger spiderServiceReportTimOut = new AtomicInteger(0);
 
-    private static final int TIMER_PERIOD=1000;
-    private static final int BUTTON_MENU_DISPLAY_SECOND=4;
-    private ScheduledExecutorService singleThreadPoolTimer= Executors.newSingleThreadScheduledExecutor();
+    private static final int TIMER_PERIOD = 1000;
+    private static final int BUTTON_MENU_DISPLAY_SECOND = 4;
+    private ScheduledExecutorService singleThreadPoolTimer = Executors.newSingleThreadScheduledExecutor();
 
-    private final static long TIME_TO_DISP_TOAST=1000;
+    private final static long TIME_TO_DISP_TOAST = 1000;
     private long createTime;
 
     IRemoteSpiderService mService = null;
 
-    private void serviceInterfaceInit()
-    {
-        mConnection = new ServiceConnection()
-        {
-            public void onServiceConnected(ComponentName className, IBinder service)
-            {
+    private void serviceInterfaceInit() {
+        mConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
                 mService = IRemoteSpiderService.Stub.asInterface(service);
 
-                try
-                {
+                try {
                     mService.registerCallback(mCallback);
-                } catch (RemoteException e)
-                {
+                } catch(RemoteException e) {
                     e.printStackTrace();
                 }
 
@@ -186,52 +177,40 @@ public class SpiderActivity extends Activity
                 Log.i(TAG, "onServiceConnected");
             }
 
-            public void onServiceDisconnected(ComponentName className)
-            {
+            public void onServiceDisconnected(ComponentName className) {
                 mService = null;
 
                 Log.i(TAG, "onServiceDisconnected");
 
                 infoDrawer.onSpiderStop();
 
-                if (serviceConnState == CONN_STATE_WAIT_DISCONNECT)
-                {
-                    if(projectState==ProjectState.DOWNLOADING)
-                    {
+                if(serviceConnState == CONN_STATE_WAIT_DISCONNECT) {
+                    if(projectState == ProjectState.DOWNLOADING) {
                         Log.i(TAG, "prepare restart service");
-                        mHandler.postDelayed(new Runnable()
-                        {
+                        mHandler.postDelayed(new Runnable() {
                             @Override
-                            public void run()
-                            {
+                            public void run() {
                                 serviceConnState = CONN_STATE_WAIT_CONNECT;
                                 sendCmdToSpiderService(StaticValue.CMD_START);
                             }
                         }, 500);
                     }
-                    else
-                    {
+                    else {
                         Log.i(TAG, "NOT DOWNLOADING  Stop");
                         serviceConnState = CONN_STATE_DISCONNECTED;
                     }
                 }
-                else
-                {
+                else {
                     serviceConnState = CONN_STATE_DISCONNECTED;
 
-                    if (inDeleting)
-                    {
-                        singleThreadPoolTimer.execute(new Runnable()
-                        {
+                    if(inDeleting) {
+                        singleThreadPoolTimer.execute(new Runnable() {
                             @Override
-                            public void run()
-                            {
-                                Utils.deleteDir(downloadingProjectPath);
-                                mHandler.post(new Runnable()
-                                {
+                            public void run() {
+                                Utils.deleteDir(downloadingProjectInfo.dir);
+                                mHandler.post(new Runnable() {
                                     @Override
-                                    public void run()
-                                    {
+                                    public void run() {
                                         Toast.makeText(SpiderActivity.this, R.string.deletedToast,
                                                 Toast.LENGTH_SHORT).show();
                                         mThumbnailLoader.setAlbumTotalImgNum(0);
@@ -246,41 +225,34 @@ public class SpiderActivity extends Activity
             }
         };
 
-        mCallback = new IRemoteSpiderServiceCallback.Stub()
-        {
+        mCallback = new IRemoteSpiderServiceCallback.Stub() {
             /**
              * Note that IPC calls are dispatched through a thread pool running
              * in each process, so the code executing here will NOT be running
              * in our main thread like most other things -- so, to update the
              * UI, we need to use a Handler to hop over there.
              */
-            public void reportStatus(String value)
-            {
+            public void reportStatus(String value) {
                 mHandler.sendMessage(mHandler.obtainMessage(BUMP_MSG, value));
             }
         };
     }
 
 
-    private static class MessageHandler extends Handler
-    {
+    private static class MessageHandler extends Handler {
         WeakReference<SpiderActivity> mActivity;
 
-        MessageHandler(SpiderActivity activity)
-        {
+        MessageHandler(SpiderActivity activity) {
             mActivity = new WeakReference<SpiderActivity>(activity);
         }
 
         @Override
-        public void handleMessage(Message msg)
-        {
+        public void handleMessage(Message msg) {
             final SpiderActivity theActivity = mActivity.get();
-            switch (msg.what)
-            {
+            switch(msg.what) {
                 case BUMP_MSG:
-                    if (theActivity != null)
-                    {
-                        theActivity.parseReport((String)msg.obj);
+                    if(theActivity != null) {
+                        theActivity.parseReport((String) msg.obj);
                     }
                     break;
                 default:
@@ -290,20 +262,16 @@ public class SpiderActivity extends Activity
 
     }
 
-    private void parseReport(String report)
-    {
+    private void parseReport(String report) {
         spiderServiceReportTimOut.set(SPIDER_SERVICE_REPORT_TIMEOUT);
         //Log.i(TAG, report);
-        try
-        {
+        try {
             JSONObject jsonReport = new JSONObject(report);
 
             if(jsonReport.getString("srcHost").equals(
-                    spiderProject.projectList.get(downloadingProjectIndex).site))
-            {
+                    downloadingProjectInfo.host)) {
                 int imgDownloadNum = jsonReport.getInt("imgDownloadNum");
-                if(displayProjectIndex == downloadingProjectIndex)
-                {
+                if(displayProjectIndex == downloadingProjectIndex) {
                     infoDrawer.refreshInfoByServiceReport(jsonReport);
                     mThumbnailLoader.setAlbumTotalImgNum(imgDownloadNum);
                 }
@@ -312,112 +280,74 @@ public class SpiderActivity extends Activity
 
                 int serviceNativeMem = jsonReport.getInt("serviceNativeMem") >> 10;
 
-                if(jsonReport.getBoolean("networkFail"))
-                {
+                if(jsonReport.getBoolean("networkFail")) {
                     setProjectState(ProjectState.PAUSE);
-                    showDialog(DLG_NETWORK_ERROR);
+                    showSysFaultAlert(getString(R.string.prompt),
+                            getString(R.string.uneffectiveNetworkPrompt), false);
                 }
-                else if(jsonReport.getBoolean("siteScanCompleted"))
-                {
+                else if(jsonReport.getBoolean("siteScanCompleted")) {
                     setProjectState(ProjectState.COMPLETE);
                 }
                 else if(MemoryInfo.getFreeMemInMb(this) <= MIN_FREE_MEM_TO_RESTART_SERVICE ||
-                        serviceNativeMem >= MAX_USED_MEM_TO_RESTART_SERVICE)
-                {
-                    if(serviceConnState==CONN_STATE_CONNECTED)
-                    {
+                        serviceNativeMem >= MAX_USED_MEM_TO_RESTART_SERVICE) {
+                    if(serviceConnState == CONN_STATE_CONNECTED) {
                         serviceConnState = CONN_STATE_WAIT_DISCONNECT;
                         sendCmdToSpiderService(StaticValue.CMD_RESTART);
                     }
                 }
-                else if(freeStorageIsLow())
-                {
+                else if(curProjectFreeStorageIsLow()) {
                     setProjectState(ProjectState.PAUSE);
                     sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
                 }
             }
-        } catch (JSONException e)
-        {
+        } catch(JSONException e) {
             e.printStackTrace();
         }
 
     }
 
-    private boolean freeStorageIsLow()
-    {
-        return appDir.getFreeSpace()<(MIN_FREE_STORAGE_TO_STOP_SERVICE<<20);
+    private boolean curProjectFreeStorageIsLow() {
+        return downloadingProjectInfo.dir.getFreeSpace()
+                < (MIN_FREE_STORAGE_TO_STOP_SERVICE << 20);
     }
 
-    public Dialog sysFaultAlert(String title, String desc, final boolean exit)
-    {
-        return new AlertDialog.Builder(this)
+    private boolean freeStorageIsLow() {
+        File[] storageDirs = Utils.getStoDirs(getString(R.string.appPackageName));
+        for(File dir : storageDirs) {
+            if(dir.getFreeSpace() > (MIN_FREE_STORAGE_TO_STOP_SERVICE << 20)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void showSysFaultAlert(String title, String desc, final boolean exit) {
+        new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(desc)
                 .setPositiveButton(exit ? R.string.exit : R.string.OK,
-                        new DialogInterface.OnClickListener()
-                        {
-                            public void onClick(DialogInterface dialog, int whichButton)
-                            {
-                                if (exit)
-                                {
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                if(exit) {
                                     SpiderActivity.this.finish();
                                 }
                             }
                         })
                 .setNegativeButton(R.string.retry,
-                        new DialogInterface.OnClickListener()
-                        {
+                        new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which)
-                            {
+                            public void onClick(DialogInterface dialog, int which) {
                                 setProjectState(ProjectState.CHECK);
                                 checkAndStart(false);
                             }
-                        }).create();
+                        }).create().show();
     }
 
-    private final static int DLG_NETWORK_ERROR = 0;
-    private final static int DLG_STORAGE_ERROR = 1;
-    private final static int DLG_STORAGE_LACK = 2;
-    private final static int DLG_DELETE = 3;
-
-    private Dialog dialogDelete;
-
-    protected Dialog onCreateDialog(int dlgId)
-    {
-        switch (dlgId)
-        {
-            case DLG_NETWORK_ERROR:
-            {
-                return sysFaultAlert(getString(R.string.prompt),
-                        getString(R.string.uneffectiveNetworkPrompt), false);
-            }
-
-            case DLG_STORAGE_ERROR:
-            {
-                return sysFaultAlert(getString(R.string.prompt),
-                        getString(R.string.badExternalStoragePrompt), true);
-            }
-
-            case DLG_STORAGE_LACK:
-            {
-                return sysFaultAlert(getString(R.string.prompt),
-                        getString(R.string.storage_lack), false);
-            }
-
-            case DLG_DELETE:
-            {
-                return dialogDelete;
-            }
-        }
-
-        return null;
-    }
-
+    private AlertDialog dialogDelete;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -425,51 +355,38 @@ public class SpiderActivity extends Activity
 
         Log.i(TAG, "onCreate");
 
-        createTime=SystemClock.uptimeMillis();
+        createTime = SystemClock.uptimeMillis();
         onFirstRun();
 
-        appDir = Utils.getDirInExtSto(getString(R.string.appPackageName));
-
         serviceInterfaceInit();
-        storageExist();
         panelViewInit();
         albumViewInit();
         timerThreadPoolInit();
     }
 
-    private void timerThreadPoolInit()
-    {
-        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable()
-        {
+    private void timerThreadPoolInit() {
+        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable() {
             @Override
-            public void run()
-            {
-                if(buttonMenuDisplayTime.get() != 0)
-                {
-                    if(buttonMenuDisplayTime.decrementAndGet() == 0)
-                    {
-                        mHandler.post(new Runnable()
-                        {
+            public void run() {
+                if(buttonMenuDisplayTime.get() != 0) {
+                    if(buttonMenuDisplayTime.decrementAndGet() == 0) {
+                        mHandler.post(new Runnable() {
                             @Override
-                            public void run()
-                            {
+                            public void run() {
                                 showButtonMenu(false);
                             }
                         });
                     }
                 }
 
-                if(spiderServiceReportTimOut.get()!=0)
-                {
-                    if(spiderServiceReportTimOut.decrementAndGet() == 0)
-                    {
-                        mHandler.post(new Runnable()
-                        {
+                if(spiderServiceReportTimOut.get() != 0) {
+                    if(spiderServiceReportTimOut.decrementAndGet() == 0) {
+                        spiderServiceReportTimOut.set(SPIDER_SERVICE_REPORT_TIMEOUT);
+                        mHandler.post(new Runnable() {
                             @Override
-                            public void run()
-                            {
-                                if(projectState==ProjectState.DOWNLOADING)
-                                {
+                            public void run() {
+                                if(projectState == ProjectState.DOWNLOADING &&
+                                        serviceConnState == CONN_STATE_CONNECTED) {
                                     serviceConnState = CONN_STATE_WAIT_DISCONNECT;
                                     sendCmdToSpiderService(StaticValue.CMD_RESTART);
                                 }
@@ -480,97 +397,85 @@ public class SpiderActivity extends Activity
             }
         }, 0, TIMER_PERIOD, TimeUnit.MILLISECONDS);
 
-        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable()
-        {
+        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable() {
             @Override
-            public void run()
-            {
-                mHandler.post(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        infoDrawer.refreshMemoryInfo();
-                    }
-                });
+            public void run() {
+                if(curView==ALBUM_VIEW) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(infoDrawer.drawer.isDrawerOpen(infoDrawer.albumInfoDrawer))
+                                infoDrawer.refreshMemoryInfo();
+                        }
+                    });
+                }
             }
         }, 0, MEMORY_REFRESH_TIME, TimeUnit.SECONDS);
 
     }
 
-    private boolean startProject(int index)
-    {
+    private boolean startProject(int index) {
         Log.i(TAG, "startProject " + index);
-        try
-        {
-            URL newUrl = new URL((downloadingProjectSrcUrl==null)?
-                    ("http://"+spiderProject.projectList.get(index).site+"/"):downloadingProjectSrcUrl);
+        try {
+            SpiderProject.ProjectInfo project = spiderProject.projectList.get(index);
+            URL newUrl = new URL((downloadingProjectSrcUrl == null) ?
+                    ("http://" + project.host + "/") : downloadingProjectSrcUrl);
 
-            String newPath=appDir + "/" + newUrl.getHost();
+            downloadingProjectIndex = index;
 
-            downloadingProjectIndex=index;
-
-            boolean isNewProject=false;
-            if(!newPath.equals(downloadingProjectPath))
-            {
-                downloadingProjectPath = newPath;
-                isNewProject=true;
+            boolean isNewProject = false;
+            if(downloadingProjectInfo==null ||
+                    !project.dir.getPath().equals(downloadingProjectInfo.dir.getPath())) {
+                isNewProject = true;
                 infoDrawer.initDownloadingInfo();
+                downloadingProjectInfo=project;
             }
 
             setProjectState(ProjectState.CHECK);
             checkAndStart(isNewProject);
 
             return true;
-        } catch(MalformedURLException e)
-        {
+        } catch(MalformedURLException e) {
             e.printStackTrace();
         }
 
         return false;
     }
 
-    private void openAlbum(int index)
-    {
-        if(displayProjectIndex!=index)
-        {
-            if(index < spiderProject.projectList.size())
-            {
+    private void openAlbum(int index) {
+        if(displayProjectIndex != index) {
+            if(index < spiderProject.projectList.size()) {
                 displayProjectIndex = index;
                 displayProjectInfo = spiderProject.projectList.get(displayProjectIndex);
-                displayProjectPath = appDir.getPath() + "/" + displayProjectInfo.site;
-                albumLoaderHelper.setProjectPath(displayProjectPath);
-                mThumbnailLoader.setHelper(albumLoaderHelper, (int) displayProjectInfo.imgInfo[StaticValue.PARA_DOWNLOAD],
+                albumLoaderHelper.setProjectPath(displayProjectInfo.dir.getPath());
+                mThumbnailLoader.setHelper(albumLoaderHelper, displayProjectInfo.imgDownloadNum,
                         spiderProject.projectList.get(index).albumScrollDistance);
                 infoDrawer.onDisplayProjectChanged();
 
-                dispProjectState((displayProjectIndex != downloadingProjectIndex)?ProjectState.PAUSE:projectState);
+                dispProjectState((displayProjectIndex != downloadingProjectIndex) ? ProjectState.PAUSE : projectState);
 
                 setView(ALBUM_VIEW);
             }
         }
     }
 
-    private void openPhotoView(int index)
-    {
-        setView(PHOTO_VIEW);
-        photoView.openPhoto(displayProjectPath, index);
+    private void openPhotoView(int index) {
+        if(index < displayProjectInfo.imgDownloadNum) {
+            setView(PHOTO_VIEW);
+            photoView.openPhoto(displayProjectInfo.dir.getPath(), index, displayProjectInfo);
+        }
     }
 
-    private void backToAlbumView()
-    {
+    private void backToAlbumView() {
         photoView.onDestroy();
         setView(ALBUM_VIEW);
     }
 
-    private void backToAlbumSetView()
-    {
-        if(projectState==ProjectState.DOWNLOADING)
-        {
+    private void backToAlbumSetView() {
+        if(projectState == ProjectState.DOWNLOADING) {
             mThumbnailLoader.refreshSlotInfo(downloadingProjectIndex, "", true);
         }
-        else
-        {
+        else {
             mThumbnailLoader.refreshSlotInfo(StaticValue.INDEX_INVALID, null, false);
         }
 
@@ -579,51 +484,39 @@ public class SpiderActivity extends Activity
         setView(ALBUM_SET_VIEW);
     }
 
-    public void refreshDownloadingProjectInfo(String infoStr)
-    {
-        if(curView==ALBUM_SET_VIEW)
-        {
+    public void refreshDownloadingProjectInfo(String infoStr) {
+        if(curView == ALBUM_SET_VIEW) {
             mThumbnailLoader.refreshSlotInfo(downloadingProjectIndex, infoStr,
-                    projectState==ProjectState.DOWNLOADING);
+                    projectState == ProjectState.DOWNLOADING);
             glRootView.requestRender();
         }
     }
 
-    private void albumViewInit()
-    {
+    private void albumViewInit() {
         glRootView = (GLRootView) findViewById(R.id.gl_root_view);
 
-        Runnable runOnFindProject=new Runnable()
-        {
+        Runnable runOnFindProject = new Runnable() {
             @Override
-            public void run()
-            {
-                if(curView==ALBUM_SET_VIEW)
-                {
+            public void run() {
+                if(curView == ALBUM_SET_VIEW) {
                     mThumbnailLoader.setAlbumTotalImgNum(spiderProject.projectList.size());
                 }
             }
         };
 
-        Runnable runOnProjectLoadComplete=new Runnable()
-        {
+        Runnable runOnProjectLoadComplete = new Runnable() {
             @Override
-            public void run()
-            {
-                mHandler.post(new Runnable()
-                {
+            public void run() {
+                mHandler.post(new Runnable() {
                     @Override
-                    public void run()
-                    {
-                        if((SystemClock.uptimeMillis()-createTime)>TIME_TO_DISP_TOAST && spiderProject.projectList.size()>0)
-                        {
+                    public void run() {
+                        if((SystemClock.uptimeMillis() - createTime) > TIME_TO_DISP_TOAST && spiderProject.projectList.size() > 0) {
                             Toast toast = Toast.makeText(SpiderActivity.this, R.string.project_load_complete, Toast.LENGTH_SHORT);
                             toast.setGravity(Gravity.CENTER, 0, 0);
                             toast.show();
                         }
 
-                        if(curView==ALBUM_SET_VIEW)
-                        {
+                        if(curView == ALBUM_SET_VIEW) {
                             buttonShowAnim(buttonAdd, true);
                         }
                     }
@@ -631,55 +524,44 @@ public class SpiderActivity extends Activity
             }
         };
 
-        spiderProject=new SpiderProject(appDir.getPath(), runOnFindProject, runOnProjectLoadComplete);
+        spiderProject = new SpiderProject(runOnFindProject, runOnProjectLoadComplete);
 
-        albumLoaderHelper = new AlbumLoaderHelper(downloadingProjectPath);
-        albumSetLoaderHelper = new AlbumSetLoaderHelper(appDir.getPath(), spiderProject);
+        albumLoaderHelper = new AlbumLoaderHelper();
+        albumSetLoaderHelper = new AlbumSetLoaderHelper(spiderProject);
         mThumbnailLoader = new ThumbnailLoader(glRootView, albumSetLoaderHelper);
 
-        singleThreadPoolTimer.execute(new Runnable()
-        {
+        singleThreadPoolTimer.execute(new Runnable() {
             @Override
-            public void run()
-            {
-                spiderProject.refreshProjectList();
+            public void run() {
+                spiderProject.refreshProjectList(Utils.getStoDirs(getString(R.string.appPackageName)));
             }
         });
 
         slotView = new SlotView(this, mThumbnailLoader, glRootView);
-        slotView.setOnClick(new SlotView.OnClickListener()
-        {
+        slotView.setOnClick(new SlotView.OnClickListener() {
             @Override
-            public void onClick(int slotIndex)
-            {
+            public void onClick(int slotIndex) {
                 Log.i(TAG, "Clicked " + slotIndex);
-                if(curView == ALBUM_SET_VIEW)
-                {
+                if(curView == ALBUM_SET_VIEW) {
                     openAlbum(slotIndex);
                 }
-                else if(curView == ALBUM_VIEW)
-                {
+                else if(curView == ALBUM_VIEW) {
                     openPhotoView(slotIndex);
                 }
             }
         });
-        slotView.setOnScrollEnd(new SlotView.OnScrollEndListener()
-        {
+        slotView.setOnScrollEnd(new SlotView.OnScrollEndListener() {
             @Override
-            public void onScrollEnd(int curScrollDistance)
-            {
-                if(curView == ALBUM_VIEW)
-                {
+            public void onScrollEnd(int curScrollDistance) {
+                if(curView == ALBUM_VIEW) {
                     spiderProject.projectList.get(displayProjectIndex).albumScrollDistance = curScrollDistance;
                 }
             }
         });
 
-        slotView.setOnManuallyScroll(new SlotView.OnManuallyScrollListener()
-        {
+        slotView.setOnManuallyScroll(new SlotView.OnManuallyScrollListener() {
             @Override
-            public void onManuallyScroll()
-            {
+            public void onManuallyScroll() {
                 /*
                 if(curView == ALBUM_VIEW)
                 {
@@ -691,83 +573,55 @@ public class SpiderActivity extends Activity
 
         glRootView.setContentPane(slotView);
 
-        photoView=new PhotoView(this, glRootView);
+        photoView = new PhotoView(this, glRootView);
 
-        downloadingProjectIndex=SpiderProject.INVALID_INDEX;
+        downloadingProjectIndex = SpiderProject.INVALID_INDEX;
     }
 
-    private boolean storageExist()
-    {
-        File appDir = Utils.getDirInExtSto(getString(R.string.appPackageName));
-
-        if(appDir == null)
-        {
-            showDialog(DLG_STORAGE_ERROR);
-            return false;
-        }
-
-        return true;
-    }
-
-    private void checkAndStart(boolean isNewProject)
-    {
+    private void checkAndStart(boolean isNewProject) {
         Log.i(TAG, "checkAndStart");
 
-        if(freeStorageIsLow())
-        {
+        if(freeStorageIsLow()) {
             Log.i(TAG, "freeStorageIsLow");
 
             setProjectState(ProjectState.PAUSE);
-            mHandler.postDelayed(new Runnable()
-            {
+            mHandler.postDelayed(new Runnable() {
                 @Override
-                public void run()
-                {
-                    showDialog(DLG_STORAGE_LACK);
+                public void run() {
+                    showSysFaultAlert(getString(R.string.prompt), getString(R.string.storage_lack), false);
                 }
             }, 50);
 
         }
-        else
-        {
+        else {
             checkNetwork(isNewProject);
         }
     }
 
 
-    private void checkNetwork(final boolean isNewProject)
-    {
-        singleThreadPoolTimer.execute(new Runnable()
-        {
+    private void checkNetwork(final boolean isNewProject) {
+        singleThreadPoolTimer.execute(new Runnable() {
             @Override
-            public void run()
-            {
-                Runnable networkValid = new Runnable()
-                {
+            public void run() {
+                Runnable networkValid = new Runnable() {
                     @Override
-                    public void run()
-                    {
-                        if(projectState == ProjectState.CHECK)
-                        {
+                    public void run() {
+                        if(projectState == ProjectState.CHECK) {
                             infoDrawer.displayDownloadingInfo();
                             setProjectState(ProjectState.DOWNLOADING);
 
                             if(serviceConnState == CONN_STATE_CONNECTED ||
-                                    serviceConnState == CONN_STATE_WAIT_CONNECT)
-                            {
-                                if(isNewProject)
-                                {
+                                    serviceConnState == CONN_STATE_WAIT_CONNECT) {
+                                if(isNewProject) {
                                     sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
                                     serviceConnState = CONN_STATE_WAIT_DISCONNECT;
                                 }
-                                else
-                                {
+                                else {
                                     sendCmdToSpiderService(StaticValue.CMD_START);
                                 }
                             }
                             else if(serviceConnState == CONN_STATE_DISCONNECTED ||
-                                    serviceConnState == CONN_STATE_WAIT_DISCONNECT)
-                            {
+                                    serviceConnState == CONN_STATE_WAIT_DISCONNECT) {
                                 sendCmdToSpiderService(StaticValue.CMD_START);
                                 serviceConnState = CONN_STATE_WAIT_CONNECT;
                             }
@@ -775,13 +629,12 @@ public class SpiderActivity extends Activity
                     }
                 };
 
-                Runnable networkInvalid = new Runnable()
-                {
+                Runnable networkInvalid = new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         setProjectState(ProjectState.PAUSE);
-                        showDialog(DLG_NETWORK_ERROR);
+                        showSysFaultAlert(getString(R.string.prompt),
+                                getString(R.string.uneffectiveNetworkPrompt), false);
                     }
                 };
                 mHandler.post(Utils.isNetworkEffective() ? networkValid : networkInvalid);
@@ -789,56 +642,47 @@ public class SpiderActivity extends Activity
         });
     }
 
-    private void onFirstRun()
-    {
-        if (ParaConfig.isFirstRun(getApplicationContext()))
-        {
+    private void onFirstRun() {
+        if(ParaConfig.isFirstRun(getApplicationContext())) {
             Toast.makeText(this, "first run", Toast.LENGTH_SHORT).show();
             ParaConfig.setFirstRun(getApplicationContext());
         }
     }
 
-    protected void onStart()
-    {
+    protected void onStart() {
         super.onStart();
         Log.i(TAG, "onStart");
     }
 
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         mThumbnailLoader.onResume();
         Log.i(TAG, "onResume");
 
     }
 
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         mThumbnailLoader.onPause();
         Log.i(TAG, "onPause");
     }
 
-    protected void onStop()
-    {
+    protected void onStop() {
         super.onStop();
         Log.i(TAG, "onStop");
 
     }
 
-    private void tryToStopSpiderService()
-    {
+    private void tryToStopSpiderService() {
         Log.i(TAG, "tryToStopSpiderService " + serviceConnState + " " + CONN_STATE_DISCONNECTED);
-        if (serviceConnState != CONN_STATE_DISCONNECTED)
-        {
+        if(serviceConnState != CONN_STATE_DISCONNECTED) {
             unbindSpiderService();
             sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
             serviceConnState = CONN_STATE_DISCONNECTED;
         }
     }
 
-    protected void onDestroy()
-    {
+    protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
 
@@ -851,39 +695,33 @@ public class SpiderActivity extends Activity
 
     // 返回至SelSrcActivity
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == StaticValue.RESULT_SRC_URL)
-        {
-            if (resultCode == RESULT_CANCELED)
-            {
+        if(requestCode == StaticValue.RESULT_SRC_URL) {
+            if(resultCode == RESULT_CANCELED) {
                 Log.i(TAG, "REQUST_SRC_URL cancelled!");
             }
-            else
-            {
-                if (data != null)
-                {
-                    try
-                    {
-                        URL newUrl=new URL(data.getAction());
+            else {
+                if(data != null) {
+                    String[] urlAndPath = data.getAction().split(" ");
+                    try {
+                        URL newUrl = new URL(urlAndPath[0]);
 
                         Log.i(TAG, "REQUST_SRC_URL " + newUrl.toString());
-                        int albumIndex = spiderProject.findIndexBySite(newUrl.getHost());
-                        if(albumIndex == SpiderProject.INVALID_INDEX)
-                        {
-                            albumIndex=spiderProject.projectList.size();
+                        String host = newUrl.getHost();
+                        int albumIndex = spiderProject.findIndexBySite(host);
+                        if(albumIndex == SpiderProject.INVALID_INDEX) {
+                            albumIndex = spiderProject.projectList.size();
                             long[] imgInfo = new long[StaticValue.IMG_PARA_NUM];
                             long[] pageInfo = new long[StaticValue.PAGE_PARA_NUM];
                             spiderProject.projectList.add(new SpiderProject.ProjectInfo(
-                                    newUrl.getHost(), imgInfo, pageInfo));
+                                    host, urlAndPath[1] + "/" + host, imgInfo, pageInfo));
                         }
 
                         openAlbum(albumIndex);
-                        downloadingProjectSrcUrl=newUrl.toString();
+                        downloadingProjectSrcUrl = newUrl.toString();
                         startProject(albumIndex);
-                    } catch(MalformedURLException e)
-                    {
+                    } catch(MalformedURLException e) {
                         e.printStackTrace();
                     }
                 }
@@ -891,28 +729,22 @@ public class SpiderActivity extends Activity
         }
     }
 
-    private void deleteProject()
-    {
-        if (serviceConnState != CONN_STATE_DISCONNECTED)
-        {
+    private void deleteProject() {
+        if(serviceConnState != CONN_STATE_DISCONNECTED) {
             sendCmdToSpiderService(StaticValue.CMD_JUST_STOP);
             inDeleting = true;
-            if (dialogDelete == null)
-            {
-                dialogDelete = new AlertDialog.Builder(SpiderActivity.this)
-                        .setTitle(getString(R.string.inDeletingTips))
-                        .setView(LayoutInflater.from(SpiderActivity.this).inflate(R.layout.delete_dialog, null))
-                        .setPositiveButton(R.string.OK, null)
-                        .create();
-            }
-            showDialog(DLG_DELETE);
+            dialogDelete = new AlertDialog.Builder(SpiderActivity.this)
+                    .setTitle(getString(R.string.inDeletingTips))
+                    .setView(LayoutInflater.from(SpiderActivity.this).inflate(R.layout.delete_dialog, null))
+                    .setPositiveButton(R.string.OK, null)
+                    .create();
+            dialogDelete.show();
         }
     }
 
-    private void setView(int view)
-    {
+    private void setView(int view) {
         infoDrawer.setDrawer(view);
-        curView=view;
+        curView = view;
 
         buttonShowAnim(buttonAdd, (view == ALBUM_SET_VIEW));
         showButtonMenu(view != ALBUM_SET_VIEW);
@@ -921,25 +753,22 @@ public class SpiderActivity extends Activity
         glRootView.setContentPane((view == PHOTO_VIEW) ? photoView : slotView);
     }
 
-    private void openSelSrcBrowser(String urlToOpen)
-    {
-        Intent intent=new Intent(SpiderActivity.this, SelSrcActivity.class);
-        if(urlToOpen!=null)
-        {
+    private void openSelSrcBrowser(String urlToOpen) {
+        Intent intent = new Intent(SpiderActivity.this, SelSrcActivity.class);
+        if(urlToOpen != null) {
             intent.putExtra(StaticValue.EXTRA_URL_TO_OPEN, urlToOpen);
         }
         startActivityForResult(intent, StaticValue.RESULT_SRC_URL);
     }
 
-    private class InfoDrawer
-    {
+    private class InfoDrawer {
 
         private DrawerLayout drawer;
 
         private LinearLayout albumInfoDrawer;
         private LinearLayout albumSetInfoDrawer;
 
-        private View[] views=new View[2];
+        private View[] views = new View[2];
 
         private LinearLayout downloadingInfo;
 
@@ -968,24 +797,23 @@ public class SpiderActivity extends Activity
         private TextView cur_page_url;
         private TextView cur_page_title;
 
-        public InfoDrawer()
-        {
-            drawer = (DrawerLayout) findViewById(R.id.main_drawer);
-            albumInfoDrawer = (LinearLayout)findViewById(R.id.album_info_drawer);
+        private String totalMemString = MemoryInfo.getTotalMemInMb() + "M";
 
-            albumInfoDrawer.setOnClickListener(new OnClickListener()
-            {
+        public InfoDrawer() {
+            drawer = (DrawerLayout) findViewById(R.id.main_drawer);
+            albumInfoDrawer = (LinearLayout) findViewById(R.id.album_info_drawer);
+
+            albumInfoDrawer.setOnClickListener(new OnClickListener() {
                 @Override
-                public void onClick(View v)
-                {
+                public void onClick(View v) {
 
                 }
             });
 
-            views[0]=albumSetInfoDrawer;
-            views[1]=albumInfoDrawer;
+            views[0] = albumSetInfoDrawer;
+            views[1] = albumInfoDrawer;
 
-            downloadingInfo=(LinearLayout)findViewById(R.id.downloading_info);
+            downloadingInfo = (LinearLayout) findViewById(R.id.downloading_info);
 
             text_project_site = (TextView) findViewById(R.id.text_project_site);
             image_download_num = (TextView) findViewById(R.id.image_download_num);
@@ -1012,23 +840,19 @@ public class SpiderActivity extends Activity
             cur_page_url = (TextView) findViewById(R.id.cur_page_url);
             cur_page_title = (TextView) findViewById(R.id.cur_page_title);
 
-            Button open_cur_page=(Button)findViewById(R.id.open_cur_page);
-            open_cur_page.setOnClickListener(new OnClickListener()
-            {
+            Button open_cur_page = (Button) findViewById(R.id.open_cur_page);
+            open_cur_page.setOnClickListener(new OnClickListener() {
                 @Override
-                public void onClick(View v)
-                {
-                    String curUrl=cur_page_url.getText().toString();
-                    if(curUrl.startsWith("http"))
-                    {
+                public void onClick(View v) {
+                    String curUrl = cur_page_url.getText().toString();
+                    if(curUrl.startsWith("http")) {
                         openSelSrcBrowser(curUrl);
                     }
                 }
             });
         }
 
-        public void initDownloadingInfo()
-        {
+        public void initDownloadingInfo() {
             page_load_time.setText("");
             page_scan_time.setText("");
             page_search_time.setText("");
@@ -1042,107 +866,92 @@ public class SpiderActivity extends Activity
             cur_page_title.setText("");
         }
 
-        public void displayDownloadingInfo()
-        {
+        public void displayDownloadingInfo() {
             downloadingInfo.setVisibility(View.VISIBLE);
         }
 
-        public void onDisplayProjectChanged()
-        {
-            downloadingInfo.setVisibility(displayProjectIndex==downloadingProjectIndex ?
-                    View.VISIBLE:View.GONE);
+        public void onDisplayProjectChanged() {
+            downloadingInfo.setVisibility(displayProjectIndex == downloadingProjectIndex ?
+                    View.VISIBLE : View.GONE);
 
-            text_project_site.setText(displayProjectInfo.site);
-            refreshBasicInfo(displayProjectInfo.imgInfo, displayProjectInfo.pageInfo);
+            text_project_site.setText(displayProjectInfo.host);
+            refreshBasicInfo();
         }
 
-        public void setDrawer(int viewIndex)
-        {
+        public void setDrawer(int viewIndex) {
             drawer.setDrawerLockMode(viewIndex == ALBUM_VIEW ? DrawerLayout.LOCK_MODE_UNLOCKED :
                     DrawerLayout.LOCK_MODE_LOCKED_CLOSED, albumInfoDrawer);
         }
 
-        public void onInfoKey()
-        {
-            if(curView==ALBUM_VIEW)
-            {
+        public void onInfoKey() {
+            if(curView == ALBUM_VIEW) {
                 View curInfoView = views[curView];
-                if(drawer.isDrawerOpen(curInfoView))
-                {
+                if(drawer.isDrawerOpen(curInfoView)) {
                     drawer.closeDrawer(curInfoView);
                 }
-                else
-                {
+                else {
                     drawer.openDrawer(curInfoView);
                 }
             }
         }
 
-        public void refreshMemoryInfo()
-        {
-            storage_total.setText(Utils.byteSizeToString(appDir.getTotalSpace()));
-            storage_free.setText(Utils.byteSizeToString(appDir.getFreeSpace()));
+        public void refreshMemoryInfo() {
+            storage_total.setText(Utils.byteSizeToString(displayProjectInfo.dir.getTotalSpace()));
+            storage_free.setText(Utils.byteSizeToString(displayProjectInfo.dir.getFreeSpace()));
 
-            ram_sys_total.setText(MemoryInfo.getTotalMemInMb() + "M");
-            ram_sys_free.setText(MemoryInfo.getFreeMemInMb(SpiderActivity.this)+"M");
+            ram_sys_total.setText(totalMemString);
+            ram_sys_free.setText(MemoryInfo.getFreeMemInMb(SpiderActivity.this) + "M");
             ram_activity_vm.setText((Runtime.getRuntime().totalMemory() >> 10) + "K");
             ram_activity_native.setText((Debug.getNativeHeapSize() >> 10) + "K");
         }
 
-        private void refreshBasicInfo(long[] imgInfo, long[] pageInfo)
-        {
-            image_download_num.setText(String.valueOf(imgInfo[StaticValue.PARA_DOWNLOAD]));
-            image_processed.setText(String.valueOf(imgInfo[StaticValue.PARA_PROCESSED]));
-            image_total.setText(String.valueOf(imgInfo[StaticValue.PARA_TOTAL]));
-            image_tree_height.setText(String.valueOf(imgInfo[StaticValue.PARA_HEIGHT]));
+        private void refreshBasicInfo() {
+            image_download_num.setText(String.valueOf(displayProjectInfo.imgDownloadNum));
+            image_processed.setText(String.valueOf(displayProjectInfo.imgProcessedNum));
+            image_total.setText(String.valueOf(displayProjectInfo.imgTotalNum));
+            image_tree_height.setText(String.valueOf(displayProjectInfo.imgTreeHeight));
 
-            page_scaned_num.setText(String.valueOf(pageInfo[StaticValue.PARA_PROCESSED]));
-            page_total.setText(String.valueOf(pageInfo[StaticValue.PARA_TOTAL]));
-            page_tree_height.setText(String.valueOf(pageInfo[StaticValue.PARA_HEIGHT]));
+            page_scaned_num.setText(String.valueOf(displayProjectInfo.pageProcessedNum));
+            page_total.setText(String.valueOf(displayProjectInfo.pageTotalNum));
+            page_tree_height.setText(String.valueOf(displayProjectInfo.pageTreeHeight));
 
-            image_total_size.setText(Utils.byteSizeToString(imgInfo[StaticValue.PARA_TOTAL_SIZE]));
+            image_total_size.setText(Utils.byteSizeToString(displayProjectInfo.imgTotalSize));
         }
 
-        public void onSpiderStop()
-        {
+        public void onSpiderStop() {
             download_speed.setText("0KB/s");
             image_download_payload.setText("0");
             ram_service_vm.setText("0K");
             ram_service_native.setText("0K");
         }
 
-        public void refreshInfoByServiceReport(JSONObject json)
-        {
-            try
-            {
-                long[] imgInfo=displayProjectInfo.imgInfo;
-                imgInfo[StaticValue.PARA_DOWNLOAD]=json.getInt("imgDownloadNum");
-                imgInfo[StaticValue.PARA_PROCESSED]=json.getInt("imgProcessedNum");
-                imgInfo[StaticValue.PARA_TOTAL] = json.getInt("imgTotalNum");
-                imgInfo[StaticValue.PARA_TOTAL_SIZE]=json.getLong("imgTotalSize");
-                imgInfo[StaticValue.PARA_HEIGHT]=json.getInt("imgTreeHeight");
+        public void refreshInfoByServiceReport(JSONObject json) {
+            try {
+                displayProjectInfo.imgDownloadNum = json.getInt("imgDownloadNum");
+                displayProjectInfo.imgProcessedNum = json.getInt("imgProcessedNum");
+                displayProjectInfo.imgTotalNum = json.getInt("imgTotalNum");
+                displayProjectInfo.imgTotalSize = json.getLong("imgTotalSize");
+                displayProjectInfo.imgTreeHeight = json.getInt("imgTreeHeight");
 
-                long[] pageInfo=displayProjectInfo.pageInfo;
-                pageInfo[StaticValue.PARA_PROCESSED]=json.getInt("pageProcessedNum");
-                pageInfo[StaticValue.PARA_TOTAL]=json.getInt("pageTotalNum");
-                pageInfo[StaticValue.PARA_HEIGHT]=json.getInt("pageTreeHeight");
+                displayProjectInfo.pageProcessedNum = json.getInt("pageProcessedNum");
+                displayProjectInfo.pageTotalNum = json.getInt("pageTotalNum");
+                displayProjectInfo.pageTreeHeight = json.getInt("pageTreeHeight");
 
-                refreshBasicInfo(imgInfo, pageInfo);
+                refreshBasicInfo();
 
-                page_load_time.setText(String.valueOf(json.getInt("pageLoadTime"))+"ms");
-                page_scan_time.setText(String.valueOf(json.getInt("pageScanTime"))+"ms");
-                page_search_time.setText(String.valueOf(json.getInt("pageSearchTime"))+"ms");
+                page_load_time.setText(String.valueOf(json.getInt("pageLoadTime")) + "ms");
+                page_scan_time.setText(String.valueOf(json.getInt("pageScanTime")) + "ms");
+                page_search_time.setText(String.valueOf(json.getInt("pageSearchTime")) + "ms");
 
                 image_download_payload.setText(String.valueOf(json.getInt("imgDownloaderPayload")));
                 download_speed.setText(json.getString("curNetSpeed"));
 
-                ram_service_vm.setText(json.getInt("serviceVmMem")+"K ");
-                ram_service_native.setText(json.getInt("serviceNativeMem")+"K");
+                ram_service_vm.setText(json.getInt("serviceVmMem") + "K ");
+                ram_service_native.setText(json.getInt("serviceNativeMem") + "K");
                 cur_page_url.setText(json.getString("curPageUrl"));
                 cur_page_title.setText(json.getString("curPageTitle"));
 
-            } catch (JSONException e)
-            {
+            } catch(JSONException e) {
                 e.printStackTrace();
             }
 
@@ -1150,60 +959,47 @@ public class SpiderActivity extends Activity
 
     }
 
-    private void dispProjectState(ProjectState state)
-    {
-        if(state==ProjectState.CHECK || state==ProjectState.DOWNLOADING)
-        {
+    private void dispProjectState(ProjectState state) {
+        if(state == ProjectState.CHECK || state == ProjectState.DOWNLOADING) {
             buttonProjectCtrl.setImageResource(R.drawable.pause);
         }
-        else
-        {
+        else {
             buttonProjectCtrl.setImageResource(R.drawable.start);
         }
 
         textViewProjectState.setText(projectStateDesc[state.ordinal()]);
     }
 
-    private void setProjectState(ProjectState state)
-    {
+    private void setProjectState(ProjectState state) {
         projectState = state;
         dispProjectState(state);
     }
 
-    private void panelViewInit()
-    {
-        buttonAdd=(ImageButton)findViewById(R.id.button_add);
-        buttonAdd.setOnClickListener(new OnClickListener()
-        {
+    private void panelViewInit() {
+        buttonAdd = (ImageButton) findViewById(R.id.button_add);
+        buttonAdd.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 openSelSrcBrowser(null);
             }
         });
         buttonAdd.setVisibility(View.INVISIBLE);
 
-        buttonMenu=(ImageButton)findViewById(R.id.button_menu);
-        buttonMenu.setOnClickListener(new OnClickListener()
-        {
+        buttonMenu = (ImageButton) findViewById(R.id.button_menu);
+        buttonMenu.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 infoDrawer.onInfoKey();
             }
         });
         buttonMenu.setVisibility(View.INVISIBLE);
 
         buttonProjectCtrl = (ImageButton) findViewById(R.id.project_ctrl);
-        buttonProjectCtrl.setOnClickListener(new View.OnClickListener()
-        {
+        buttonProjectCtrl.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
-                if(displayProjectIndex==downloadingProjectIndex)
-                {
-                    switch(projectState)
-                    {
+            public void onClick(View view) {
+                if(displayProjectIndex == downloadingProjectIndex) {
+                    switch(projectState) {
                         case DOWNLOADING:
                             setProjectState(ProjectState.PAUSE);
                             sendCmdToSpiderService(StaticValue.CMD_PAUSE);
@@ -1219,15 +1015,14 @@ public class SpiderActivity extends Activity
                             break;
                     }
                 }
-                else
-                {
+                else {
                     startProject(displayProjectIndex);
                 }
             }
         });
 
-        projectStateDesc=getResources().getStringArray(R.array.project_state);
-        textViewProjectState=(TextView)findViewById(R.id.project_state);
+        projectStateDesc = getResources().getStringArray(R.array.project_state);
+        textViewProjectState = (TextView) findViewById(R.id.project_state);
 
         setProjectState(ProjectState.PAUSE);
 
@@ -1235,10 +1030,8 @@ public class SpiderActivity extends Activity
         infoDrawer.setDrawer(curView);
     }
 
-    private void buttonShowAnim(final View view, final boolean isShow)
-    {
-        if ((view.getVisibility() == View.VISIBLE) != isShow)
-        {
+    private void buttonShowAnim(final View view, final boolean isShow) {
+        if((view.getVisibility() == View.VISIBLE) != isShow) {
             float fromY = isShow ? 1 : 0;
             TranslateAnimation animation = new TranslateAnimation(
                     Animation.RELATIVE_TO_SELF, 0f,
@@ -1246,25 +1039,21 @@ public class SpiderActivity extends Activity
                     Animation.RELATIVE_TO_SELF, fromY,
                     Animation.RELATIVE_TO_SELF, 1 - fromY);
             animation.setDuration(BUTTON_MENU_ANIMATION_TIME);
-            animation.setAnimationListener(new Animation.AnimationListener()
-            {
+            animation.setAnimationListener(new Animation.AnimationListener() {
                 @Override
-                public void onAnimationStart(Animation animation)
-                {
-                    if (isShow)
+                public void onAnimationStart(Animation animation) {
+                    if(isShow)
                         view.setVisibility(View.VISIBLE);
                 }
 
                 @Override
-                public void onAnimationRepeat(Animation animation)
-                {
+                public void onAnimationRepeat(Animation animation) {
 
                 }
 
                 @Override
-                public void onAnimationEnd(Animation animation)
-                {
-                    if (!isShow)
+                public void onAnimationEnd(Animation animation) {
+                    if(!isShow)
                         view.setVisibility(View.GONE);
                 }
             });
@@ -1272,36 +1061,29 @@ public class SpiderActivity extends Activity
         }
     }
 
-    private void showButtonMenu(boolean isShow)
-    {
-        if(isShow)
-        {
+    private void showButtonMenu(boolean isShow) {
+        if(isShow) {
             buttonMenuDisplayTime.set(BUTTON_MENU_DISPLAY_SECOND);
         }
 
         buttonShowAnim(buttonMenu, isShow);
     }
 
-    private void unbindSpiderService()
-    {
+    private void unbindSpiderService() {
         // If we have received the service, and hence registered with
         // it, then now is the time to unregister.
         Log.i(TAG, "unbind SpiderService");
-        if (mService != null)
-        {
-            try
-            {
+        if(mService != null) {
+            try {
                 mService.unregisterCallback(mCallback);
-            } catch (RemoteException e)
-            {
+            } catch(RemoteException e) {
                 // There is nothing special we need to do if the service
                 // has crashed.
             }
 
             // Detach our existing connection.
 
-            if (serviceBindSuccess)
-            {
+            if(serviceBindSuccess) {
                 unbindService(mConnection);
                 serviceBindSuccess = false;
             }
@@ -1311,8 +1093,7 @@ public class SpiderActivity extends Activity
 
     boolean serviceBindSuccess = false;
 
-    private void sendCmdToSpiderService(int cmd)
-    {
+    private void sendCmdToSpiderService(int cmd) {
         Log.i(TAG, "sendCmdToSpiderService " + StaticValue.CMD_DESC[cmd]);
         Intent spiderIntent = new Intent(IRemoteSpiderService.class.getName());
         spiderIntent.setPackage(IRemoteSpiderService.class.getPackage()
@@ -1321,29 +1102,25 @@ public class SpiderActivity extends Activity
         Bundle bundle = new Bundle();
         bundle.putInt(StaticValue.BUNDLE_KEY_CMD, cmd);
 
-        if(cmd==StaticValue.CMD_START)
-        {
-            if(downloadingProjectSrcUrl != null)
-            {
+        if(cmd == StaticValue.CMD_START) {
+            if(downloadingProjectSrcUrl != null) {
                 bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, downloadingProjectSrcUrl);
                 downloadingProjectSrcUrl = null;
             }
-            bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_HOST,
-                    spiderProject.projectList.get(downloadingProjectIndex).site);
+            bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_HOST, downloadingProjectInfo.host);
+            bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_PATH, downloadingProjectInfo.dir.getPath());
         }
 
         spiderIntent.putExtras(bundle);
         startService(spiderIntent);
 
-        if(cmd==StaticValue.CMD_START)
-        {
+        if(cmd == StaticValue.CMD_START) {
             serviceBindSuccess = bindService(spiderIntent, mConnection, BIND_ABOVE_CLIENT);
         }
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig)
-    {
+    public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
         Log.i(TAG, (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) ?
@@ -1352,49 +1129,40 @@ public class SpiderActivity extends Activity
 
     private long exitTim = 0;
 
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.i(TAG, "onKeyDown " + keyCode);
 
-        if(keyCode == KeyEvent.KEYCODE_BACK)
-        {
-            if(curView == ALBUM_SET_VIEW)
-            {
-                if(inDeleting)
-                {
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
+            if(curView == ALBUM_SET_VIEW) {
+                if(inDeleting) {
                     Toast.makeText(this, R.string.inDeletingToast, Toast.LENGTH_SHORT).show();
                     return true;
                 }
 
-                if(SystemClock.uptimeMillis() - exitTim > 2000)
-                {
+                if(SystemClock.uptimeMillis() - exitTim > 2000) {
                     Toast.makeText(this, getString(R.string.keyBackExitConfirm)
                             + getString(R.string.app_name), Toast.LENGTH_SHORT).show();
 
                     exitTim = SystemClock.uptimeMillis();
                     return true;
                 }
-                else
-                {
+                else {
                     Log.i(TAG, "finish");
                     //Sometimes onDestory() will not been called.So handle spider service here.
                     tryToStopSpiderService();
                 }
             }
-            else if(curView == ALBUM_VIEW)
-            {
+            else if(curView == ALBUM_VIEW) {
                 backToAlbumSetView();
                 return true;
             }
-            else if(curView==PHOTO_VIEW)
-            {
+            else if(curView == PHOTO_VIEW) {
                 backToAlbumView();
                 return true;
             }
 
         }
-        else if(keyCode == KeyEvent.KEYCODE_MENU)
-        {
+        else if(keyCode == KeyEvent.KEYCODE_MENU) {
             infoDrawer.onInfoKey();
         }
 

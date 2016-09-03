@@ -5,8 +5,9 @@
 #include <malloc.h>
 #include <android/log.h>
 #include <linux/ashmem.h>
-#include <asm-generic/fcntl.h>
 #include <sys/mman.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
 
 #include "typeDef.h"
 #include "funcName.h"

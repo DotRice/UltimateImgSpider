@@ -1,5 +1,6 @@
 package com.gk969.UltimateImgSpider;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.widget.Toast;
@@ -18,115 +19,120 @@ import java.util.ArrayList;
 /**
  * Created by songjian on 2016/5/7.
  */
-public class SpiderProject
-{
-    private final static String TAG="SpiderProject";
+public class SpiderProject {
+    private final static String TAG = "SpiderProject";
 
-    public final static int INVALID_INDEX=-1;
+    public final static int INVALID_INDEX = -1;
 
     private Runnable runOnFindProject;
     private Runnable runOnProjectLoad;
 
     public native void jniGetProjectInfoOnStart(String path, long[] imgInfo, long[] pageInfo);
-    static
-    {
+
+    static {
         System.loadLibrary("UltimateImgSpider");
     }
 
-    static public class ProjectInfo
-    {
-        public String site;
-        public long[] imgInfo;
-        public long[] pageInfo;
+    static public class ProjectInfo {
+        public String host;
+        public File dir;
+        public volatile int imgDownloadNum;
+        public volatile int imgProcessedNum;
+        public volatile int imgTotalNum;
+        public long imgTotalSize;
+        public volatile int imgTreeHeight;
+
+        public volatile int pageProcessedNum;
+        public volatile int pageTotalNum;
+        public volatile int pageTreeHeight;
+
         public int albumScrollDistance;
         public Bitmap thumbnail;
 
+        private void init(String siteHost, String sitePath, long[] paramImgInfo, long[] paramPageInfo, int scrollDistance) {
+            host = siteHost;
+            dir = new File(sitePath);
+            if(!dir.exists()){
+                dir.mkdirs();
+            }
 
-        public ProjectInfo(String siteHost, long[] paramImgInfo, long[] paramPageInfo, int scrollDistance)
-        {
-            site=siteHost;
-            imgInfo=paramImgInfo;
-            pageInfo=paramPageInfo;
-            albumScrollDistance=scrollDistance;
+            imgDownloadNum = (int) paramImgInfo[StaticValue.PARA_DOWNLOAD];
+            imgProcessedNum = (int) paramImgInfo[StaticValue.PARA_PROCESSED];
+            imgTotalNum = (int) paramImgInfo[StaticValue.PARA_TOTAL];
+            imgTotalSize = paramImgInfo[StaticValue.PARA_TOTAL_SIZE];
+            imgTreeHeight = (int) paramImgInfo[StaticValue.PARA_HEIGHT];
+
+            pageProcessedNum = (int) paramPageInfo[StaticValue.PARA_PROCESSED];
+            pageTotalNum = (int) paramPageInfo[StaticValue.PARA_TOTAL];
+            pageTreeHeight = (int) paramPageInfo[StaticValue.PARA_HEIGHT];
+
+            albumScrollDistance = scrollDistance;
         }
 
-        public ProjectInfo(String siteHost, long[] paramImgInfo, long[] paramPageInfo)
-        {
-            site=siteHost;
-            imgInfo=paramImgInfo;
-            pageInfo=paramPageInfo;
-            albumScrollDistance=0;
+        public ProjectInfo(String siteHost, String sitePath, long[] paramImgInfo, long[] paramPageInfo, int scrollDistance) {
+            init(siteHost, sitePath, paramImgInfo, paramPageInfo, scrollDistance);
+        }
+
+        public ProjectInfo(String siteHost, String sitePath, long[] paramImgInfo, long[] paramPageInfo) {
+            init(siteHost, sitePath, paramImgInfo, paramPageInfo, 0);
         }
     }
 
     public ArrayList<ProjectInfo> projectList = new ArrayList<ProjectInfo>();
 
-    private String mAppPath;
-
-    public SpiderProject(String AppPath, Runnable pRunOnFindProject, Runnable pRunOnProjectLoad)
-    {
-        mAppPath=AppPath;
-        runOnFindProject=pRunOnFindProject;
-        runOnProjectLoad=pRunOnProjectLoad;
+    public SpiderProject(Runnable pRunOnFindProject, Runnable pRunOnProjectLoad) {
+        runOnFindProject = pRunOnFindProject;
+        runOnProjectLoad = pRunOnProjectLoad;
     }
 
-    public int findIndexBySite(String site)
-    {
-        int index=INVALID_INDEX;
+    public int findIndexBySite(String host) {
+        int index = INVALID_INDEX;
 
-        for(int i=0; i<projectList.size(); i++)
-        {
-            if(projectList.get(i).site.equals(site))
-            {
-                index=i;
+        for(int i = 0; i < projectList.size(); i++) {
+            if(projectList.get(i).host.equals(host)) {
+                index = i;
                 break;
-            }
+
+             }
         }
 
         return index;
     }
 
 
-    public void refreshProjectList()
-    {
+    public void refreshProjectList(File[] storageDir) {
         projectList.clear();
 
-        File appDir = new File(mAppPath);
+        for(File appDir:storageDir) {
+            Log.i(TAG, "refreshProjectList path:" + appDir.getPath());
 
-        Log.i(TAG, "refreshProjectList path:" + mAppPath);
+            File[] fileList = appDir.listFiles();
 
-        File[] fileList = appDir.listFiles();
+            for(File file : fileList) {
+                if(file.isDirectory()) {
+                    Log.i(TAG, "project dir:" + file.getPath());
 
-        for(File file : fileList)
-        {
-            if(file.isDirectory())
-            {
-                Log.i(TAG, "project dir:" + file.getPath());
+                    String dataDirPath = file.getPath() + StaticValue.PROJECT_DATA_DIR;
+                    String safeDataFileName = WatchdogService.getSafeProjectData(dataDirPath);
+                    if(safeDataFileName != null) {
+                        long[] imgInfo = new long[StaticValue.IMG_PARA_NUM];
+                        long[] pageInfo = new long[StaticValue.PAGE_PARA_NUM];
+                        jniGetProjectInfoOnStart(dataDirPath + safeDataFileName, imgInfo, pageInfo);
 
-                String dataDirPath=file.getPath() + StaticValue.PROJECT_DATA_DIR;
-                String safeDataFileName=WatchdogService.getSafeProjectData(dataDirPath);
-                if(safeDataFileName!=null)
-                {
-                    long[] imgInfo=new long[StaticValue.IMG_PARA_NUM];
-                    long[] pageInfo=new long[StaticValue.PAGE_PARA_NUM];
-                    jniGetProjectInfoOnStart(dataDirPath + safeDataFileName, imgInfo, pageInfo);
-
-                    int scrollDistance=0;
-                    try
-                    {
-                        String param=Utils.fileToString(dataDirPath + StaticValue.PROJECT_PARAM_NAME);
-                        if(param!=null)
-                        {
-                            JSONObject jsonParam = new JSONObject(param);
-                            scrollDistance = jsonParam.getInt("scrollDistance");
+                        int scrollDistance = 0;
+                        try {
+                            String param = Utils.fileToString(dataDirPath + StaticValue.PROJECT_PARAM_NAME);
+                            if(param != null) {
+                                JSONObject jsonParam = new JSONObject(param);
+                                scrollDistance = jsonParam.getInt("scrollDistance");
+                            }
+                        } catch(JSONException e) {
+                            e.printStackTrace();
                         }
-                    } catch(JSONException e)
-                    {
-                        e.printStackTrace();
-                    }
 
-                    projectList.add(new ProjectInfo(file.getName(), imgInfo, pageInfo, scrollDistance));
-                    runOnFindProject.run();
+                        projectList.add(new ProjectInfo(file.getName(), file.getPath(), imgInfo, pageInfo, scrollDistance));
+                        runOnFindProject.run();
+                    }
                 }
             }
         }
@@ -135,19 +141,16 @@ public class SpiderProject
         Log.i(TAG, "projectList.size " + projectList.size());
     }
 
-    public void saveProjectParam()
-    {
-        for(ProjectInfo project:projectList)
-        {
-            File dataDir=new File(mAppPath+"/"+project.site+StaticValue.PROJECT_DATA_DIR);
-            if(!dataDir.exists())
-            {
+    public void saveProjectParam() {
+        for(ProjectInfo project : projectList) {
+            File dataDir = new File(project.dir.getPath() + "/" + StaticValue.PROJECT_DATA_DIR);
+            if(!dataDir.exists()) {
                 dataDir.mkdirs();
             }
 
-            String param="{\"scrollDistance\":"+project.albumScrollDistance+"}";
+            String param = "{\"scrollDistance\":" + project.albumScrollDistance + "}";
             Utils.stringToFile(param, dataDir.getPath() + StaticValue.PROJECT_PARAM_NAME);
-            Log.i(TAG, "saveProjectParam "+project.site+" "+param);
+            Log.i(TAG, "saveProjectParam " + project.host + " " + param);
         }
     }
 }

@@ -1,46 +1,46 @@
 [
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\new_proj_black.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\new_proj_black.png"
-    },
-    {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\new_proj_write.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\new_proj_write.png"
-    },
-    {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\scan_page.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\scan_page.png"
-    },
-    {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\rom.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\rom.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\ic_launcher.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\ic_launcher.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\info_black.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\info_black.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\speed.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\speed.png"
-    },
-    {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\ic_launcher.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\ic_launcher.png"
-    },
-    {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\image.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\image.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\info_write.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\info_write.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\page.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\page.png"
     },
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\new_proj_black.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\new_proj_black.png"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\ram.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\ram.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\info_write.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\info_write.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\image.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\image.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\rom.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\rom.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\scan_page.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\scan_page.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\new_proj_write.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\new_proj_write.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\speed.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-hdpi\\speed.png"
     }
 ]
