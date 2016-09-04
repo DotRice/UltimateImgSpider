@@ -49,7 +49,7 @@ public class PhotoView extends GLView {
     private int viewWidthForImg;
     private int viewHeightForImg;
 
-    private int minSize;
+    private int photoViewMinSize;
     private int minSizeForImg;
 
 
@@ -128,12 +128,6 @@ public class PhotoView extends GLView {
             indexInCache = index;
         }
 
-        String getTargetFilePath() {
-            int group = indexInProject / StaticValue.MAX_IMG_FILE_PER_DIR;
-            int offset = indexInProject % StaticValue.MAX_IMG_FILE_PER_DIR;
-            return String.format("%s/%d/%03d.", curProjectPath, group, offset);
-        }
-
         void calcRenderPos() {
             renderPos.width = boxPos.width * widthInBox;
             renderPos.height = boxPos.height * heightInBox;
@@ -154,21 +148,28 @@ public class PhotoView extends GLView {
             boxPos.height = basePos.height * scaleRatio;
         }
 
-        void loadFillCenterBmp(String targetFilePath) {
-            Log.i(TAG, "loadFillCenterBmp " + targetFilePath);
+        void loadFillCenterBmp() {
+            int group = indexInProject / StaticValue.MAX_IMG_FILE_PER_DIR;
+            int offset = indexInProject % StaticValue.MAX_IMG_FILE_PER_DIR;
+            String imgFilePath = String.format("%s/%s/%d/%03d.%s", curProjectPath,
+                    StaticValue.FULL_THUMBNAIL_DIR_NAME, group, offset, StaticValue.THUMBNAIL_FILE_EXT);
+            if(!new File(imgFilePath).exists()) {
+                int i;
+                imgFilePath = String.format("%s/%d/%03d.", curProjectPath, group, offset);
+                for(i = 0; i < StaticValue.IMG_FILE_EXT.length; i++) {
+                    File file = new File(imgFilePath + StaticValue.IMG_FILE_EXT[i]);
+                    if(file.exists()) {
+                        imgFilePath = file.getPath();
+                        break;
+                    }
+                }
 
-            String imgFilePath = null;
-            for(int i = 0; i < StaticValue.IMG_FILE_EXT.length; i++) {
-                File file = new File(targetFilePath + StaticValue.IMG_FILE_EXT[i]);
-                if(file.exists()) {
-                    imgFilePath = file.getPath();
-                    break;
+                if(i == StaticValue.IMG_FILE_EXT.length) {
+                    return;
                 }
             }
-
-            if(imgFilePath == null) {
-                return;
-            }
+            
+            Log.i(TAG, "loadFillCenterBmp "+indexInProject+" @ "+imgFilePath);
 
 
             bmpOptions.inJustDecodeBounds = true;
@@ -186,19 +187,19 @@ public class PhotoView extends GLView {
 
             if(bmpOptions.outWidth <= minSizeForImg && bmpOptions.outHeight <= minSizeForImg) {
                 if(bmpOptions.outHeight > bmpOptions.outWidth) {
-                    width = bmpOptions.outWidth * minSize / bmpOptions.outHeight;
-                    height = minSize;
+                    width = bmpOptions.outWidth * photoViewMinSize / bmpOptions.outHeight;
+                    height = photoViewMinSize;
                 }
                 else {
-                    width = minSize;
-                    height = bmpOptions.outHeight * minSize / bmpOptions.outWidth;
+                    width = photoViewMinSize;
+                    height = bmpOptions.outHeight * photoViewMinSize / bmpOptions.outWidth;
                 }
             }
             else if(bmpOptions.outWidth < viewWidthForImg && bmpOptions.outHeight < viewHeightForImg) {
                 width = scaleForImg * bmpOptions.outWidth;
                 height = scaleForImg * bmpOptions.outHeight;
             }
-            else if(bmpOptions.outHeight * viewWidthForImg > bmpOptions.outWidth * viewHeight) {
+            else if(bmpOptions.outHeight * viewWidthForImg > bmpOptions.outWidth * viewHeightForImg) {
                 width = bmpOptions.outWidth * viewHeight / bmpOptions.outHeight;
                 height = viewHeight;
             }
@@ -229,12 +230,11 @@ public class PhotoView extends GLView {
             if(!bmpLoaded) {
                 Log.i(TAG, "load bmp " + indexInProject + " for cache " + indexInCache);
 
-                String photoFilePath = getTargetFilePath();
                 int projectIndexBeforeLoad = indexInProject;
 
                 mGLRootView.unlockRenderThread();
                 long loadTime = SystemClock.uptimeMillis();
-                loadFillCenterBmp(photoFilePath);
+                loadFillCenterBmp();
                 loadTime = SystemClock.uptimeMillis() - loadTime;
                 Log.i(TAG, "loadTime " + loadTime + "ms");
                 /*
@@ -318,7 +318,7 @@ public class PhotoView extends GLView {
     private void setViewSize(int width, int height) {
         viewWidth = width;
         viewHeight = height;
-        minSize = Math.min(viewWidth, viewHeight) / 3;
+        photoViewMinSize = Math.min(viewWidth, viewHeight) / 3;
 
         if(scaleForImg < 1) {
             scaleForImg = 1;
@@ -326,7 +326,7 @@ public class PhotoView extends GLView {
 
         viewHeightForImg = (int) (viewHeight / scaleForImg);
         viewWidthForImg = (int) (viewWidth / scaleForImg);
-        minSizeForImg = (int) (minSize / scaleForImg);
+        minSizeForImg = (int) (photoViewMinSize / scaleForImg);
 
         Log.i(TAG, "setViewSize " + width + "*" + height + " scaleForImg:" + scaleForImg);
 

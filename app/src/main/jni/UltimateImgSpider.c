@@ -209,7 +209,7 @@ u32 downloadingImgNum = 0;
 #define SELECT_DIFF_PAGE_CNT    3
 u8 pageWithoutNewImgCnt = 0;
 
-char nextImgUrlWithContainerBuf[MAX_SIZE_PER_URL * 2 + 2 + sizeof(u32) * 2 + 2];
+char urlBuf[MAX_SIZE_PER_URL * 2 + 2 + sizeof(u32) * 2 + 2];
 
 RelativeAddr nodeAddrAbsToRelative(urlNode *node)
 {
@@ -356,6 +356,8 @@ void *mallocFromPool(JNIEnv *env, u32 size, RelativeAddr *direction)
     u32 poolIndex;
     u32 offset = 0;
 
+    size=(size + 3) & 0xFFFFFFFC;
+
     if((size > MAX_SIZE_PER_URL) || (spiderPara->urlPoolNum == 0))
     {
         return NULL;
@@ -416,9 +418,7 @@ void *mallocFromPool(JNIEnv *env, u32 size, RelativeAddr *direction)
 
 jboolean spiderParaInit(JNIEnv *env, u64 *imgParam, u64 *pageParam)
 {
-
     AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, SPIDER_PARA_NAME, sizeof(t_spiderPara));
-
     if(ashm != NULL)
     {
         spiderPara = (t_spiderPara *) (ashm->data);
@@ -470,7 +470,8 @@ jboolean urlPoolInit(JNIEnv *env)
 {
     if(spiderPara->urlPoolNum == 0)
     {
-        AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(0), sizeof(t_urlPool));
+        AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(0),
+                                                      sizeof(t_urlPool));
 
         if(ashm != NULL)
         {
@@ -487,7 +488,8 @@ jboolean urlPoolInit(JNIEnv *env)
 
         for(i = 0; i < spiderPara->urlPoolNum; i++)
         {
-            AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(i), sizeof(t_urlPool));
+            AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(i),
+                                                          sizeof(t_urlPool));
 
             if(ashm == NULL)
             {
@@ -511,38 +513,34 @@ jboolean urlPoolInit(JNIEnv *env)
     return false;
 }
 
-jboolean jniSpiderInit(JNIEnv *env,
+jstring jniSpiderInit(JNIEnv *env,
                        jobject thiz, jlongArray jImgParam, jlongArray jPageParam)
 {
     AshmAllocObjectInstance = thiz;
-    jboolean ret = true;
+    char *srcUrl = NULL;
 
     u64 *imgParam = (*env)->GetLongArrayElements(env, jImgParam, NULL);
     u64 *pageParam = (*env)->GetLongArrayElements(env, jPageParam, NULL);
 
-    if(!spiderParaInit(env, imgParam, pageParam))
+    if(spiderParaInit(env, imgParam, pageParam))
     {
-        ret = false;
+        if(urlPoolInit(env))
+        {
+            urlNode *srcNode = nodeAddrRelativeToAbs(spiderPara->srcPageNode);
+            srcUrl = (srcNode == NULL) ? "" : srcNode->url;
+        }
     }
 
     (*env)->ReleaseLongArrayElements(env, jImgParam, imgParam, 0);
     (*env)->ReleaseLongArrayElements(env, jPageParam, pageParam, 0);
 
-    if(ret)
-    {
-        if(!urlPoolInit(env))
-        {
-            ret = false;
-        }
-    }
-
-    return ret;
+    return (*env)->NewStringUTF(env, srcUrl);
 }
 
 
-void jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
-                              jstring jDataFileFullPath, jlongArray jImgParam,
-                              jlongArray jPageParam)
+jstring jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
+                                 jstring jDataFileFullPath, jlongArray jImgParam,
+                                 jlongArray jPageParam)
 {
     const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
 
@@ -557,19 +555,14 @@ void jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
     if(dataFile != NULL)
     {
         AshmParaStore ashmParaStore;
-        t_spiderPara para;
 
-        while(true)
+        if(fread(&ashmParaStore, sizeof(AshmParaStore), 1, dataFile) == 1)
         {
-            if(fread(&ashmParaStore, sizeof(AshmParaStore), 1, dataFile) != 1)
-            {
-                break;
-            }
-
             LOGI("AshmNode Name:%s Size:%d", ashmParaStore.name, ashmParaStore.size);
 
             if(strcmp(ashmParaStore.name, SPIDER_PARA_NAME) == 0)
             {
+                t_spiderPara para;
                 if(fread(&para, sizeof(t_spiderPara), 1, dataFile) == 1)
                 {
                     imgParam[PARA_TOTAL] = para.imgUrlTree.len;
@@ -581,11 +574,26 @@ void jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
                     pageParam[PARA_TOTAL] = para.pageUrlTree.len;
                     pageParam[PARA_PROCESSED] = para.pageUrlTree.processed;
                     pageParam[PARA_HEIGHT] = para.pageUrlTree.height;
-                }
-                break;
-            }
 
-            fseek(dataFile, ashmParaStore.size, SEEK_CUR);
+                    LOGI("para.srcPageNode %08X", para.srcPageNode);
+
+                    u32 srcNodeOffsetInFile=GET_POOL_PTR(para.srcPageNode)*(sizeof(t_urlPool)+sizeof(AshmParaStore))
+                                            +sizeof(AshmParaStore)+OFFSET_IN_STRUCT(t_urlPool, mem)
+                                            +GET_POOL_OFFSET(para.srcPageNode);
+
+                    LOGI("srcNodeOffsetInFile %08X", srcNodeOffsetInFile);
+
+                    fseek(dataFile, srcNodeOffsetInFile, SEEK_CUR);
+                    nodePara srcNodePara;
+                    if(fread(&srcNodePara, sizeof(nodePara), 1, dataFile) == 1){
+                        LOGI("src url size %d", srcNodePara.len);
+                        if(fread(urlBuf, srcNodePara.len+1, 1, dataFile)==1){
+                            srcUrl=urlBuf;
+                            LOGI("srcUrl:%s", srcUrl);
+                        }
+                    }
+                }
+            }
         }
 
         fclose(dataFile);
@@ -596,6 +604,7 @@ void jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
     (*env)->ReleaseStringUTFChars(env, jDataFileFullPath, dataFileFullPath);
 
 
+    return (*env)->NewStringUTF(env, srcUrl);
 }
 
 void urlTreeTraversal(urlTree *tree)
@@ -806,8 +815,7 @@ bool urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl,
     RelativeAddr newNodeAddr = RELATIVE_ADDR_NULL;
 
     u16 urlLen = strlen(newUrl);
-    u32 urlNodeSize = ((urlLen + 1 + sizeof(nodePara)) + 3) & 0xFFFFFFFC;
-    node = mallocFromPool(env, urlNodeSize, nextNodeAddr);
+    node = mallocFromPool(env, urlLen + 1 + sizeof(nodePara), nextNodeAddr);
     if(node != NULL)
     {
         newNodeAddr = *nextNodeAddr;
@@ -991,9 +999,8 @@ void jniSavePageTitle(
     if(jCurPageTitle != NULL)
     {
         const char *title = (*env)->GetStringUTFChars(env, jCurPageTitle, NULL);
-        u32 titleStorageSize = (strlen(title) + 1 + 3) & 0xFFFFFFFC;
         RelativeAddr titleAddr;
-        char *titleBuf = mallocFromPool(env, titleStorageSize, &titleAddr);
+        char *titleBuf = mallocFromPool(env, strlen(title) + 1, &titleAddr);
 
         if(titleBuf != NULL)
         {
@@ -1247,7 +1254,7 @@ jstring jniFindNextImgUrl(JNIEnv *env, jobject thiz, jlongArray jImgParam)
         //logNode(nextNode);
         downloadingImgNum++;
 
-        nextUrl = nextImgUrlWithContainerBuf;
+        nextUrl = urlBuf;
         sprintf(nextUrl, "%s %08X %s %08X", nextNode->url,
                 (u32) nodeAddrAbsToRelative(nextNode),
                 nodeAddrRelativeToAbs(nextNode->para.containerPage)->url,

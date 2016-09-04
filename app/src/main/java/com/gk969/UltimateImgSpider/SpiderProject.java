@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -27,7 +29,7 @@ public class SpiderProject {
     private Runnable runOnFindProject;
     private Runnable runOnProjectLoad;
 
-    public native void jniGetProjectInfoOnStart(String path, long[] imgInfo, long[] pageInfo);
+    public native String jniGetProjectInfoOnStart(String path, long[] imgInfo, long[] pageInfo);
 
     static {
         System.loadLibrary("UltimateImgSpider");
@@ -117,21 +119,28 @@ public class SpiderProject {
                     if(safeDataFileName != null) {
                         long[] imgInfo = new long[StaticValue.IMG_PARA_NUM];
                         long[] pageInfo = new long[StaticValue.PAGE_PARA_NUM];
-                        jniGetProjectInfoOnStart(dataDirPath + safeDataFileName, imgInfo, pageInfo);
+                        String srcUrl=jniGetProjectInfoOnStart(dataDirPath + safeDataFileName, imgInfo, pageInfo);
 
-                        int scrollDistance = 0;
                         try {
-                            String param = Utils.fileToString(dataDirPath + StaticValue.PROJECT_PARAM_NAME);
-                            if(param != null) {
-                                JSONObject jsonParam = new JSONObject(param);
-                                scrollDistance = jsonParam.getInt("scrollDistance");
+                            String host=new URL(srcUrl).getHost();
+
+                            int scrollDistance = 0;
+                            try {
+                                String param = Utils.fileToString(dataDirPath + StaticValue.PROJECT_PARAM_NAME);
+                                if(param != null) {
+                                    JSONObject jsonParam = new JSONObject(param);
+                                    scrollDistance = jsonParam.getInt("scrollDistance");
+                                }
+                            } catch(JSONException e) {
+                                e.printStackTrace();
                             }
-                        } catch(JSONException e) {
+
+                            projectList.add(new ProjectInfo(host, file.getPath(), imgInfo, pageInfo, scrollDistance));
+                            runOnFindProject.run();
+
+                        } catch(MalformedURLException e) {
                             e.printStackTrace();
                         }
-
-                        projectList.add(new ProjectInfo(file.getName(), file.getPath(), imgInfo, pageInfo, scrollDistance));
-                        runOnFindProject.run();
                     }
                 }
             }

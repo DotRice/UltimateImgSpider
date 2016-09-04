@@ -3,7 +3,6 @@ package com.gk969.UltimateImgSpider;
 import com.gk969.Utils.MemoryInfo;
 
 public class StaticValue {
-    public final static String BUNDLE_KEY_PROJECT_HOST = "projectHost";
     public final static String BUNDLE_KEY_PROJECT_PATH = "projectPath";
     public final static String BUNDLE_KEY_SOURCE_URL = "sourceUrl";
     public final static String BUNDLE_KEY_CMD = "cmd";

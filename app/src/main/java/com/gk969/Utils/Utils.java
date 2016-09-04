@@ -471,6 +471,7 @@ public class Utils {
         }
         return null;
     }
+
     public static File getDirInSto(String path, String storageDir) {
         File dir = null;
 
@@ -491,6 +492,11 @@ public class Utils {
         }
 
         return dir;
+    }
+
+    public static boolean mayBeUrl(String str){
+        int posOdDot=str.lastIndexOf(".");
+        return posOdDot>0&&posOdDot<(str.length()-2);
     }
 
     public static class LogRecorder extends Thread {

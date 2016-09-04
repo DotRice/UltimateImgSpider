@@ -404,8 +404,7 @@ public class SpiderActivity extends Activity {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            if(infoDrawer.drawer.isDrawerOpen(infoDrawer.albumInfoDrawer))
-                                infoDrawer.refreshMemoryInfo();
+                            infoDrawer.refreshMemoryInfo();
                         }
                     });
                 }
@@ -416,30 +415,22 @@ public class SpiderActivity extends Activity {
 
     private boolean startProject(int index) {
         Log.i(TAG, "startProject " + index);
-        try {
-            SpiderProject.ProjectInfo project = spiderProject.projectList.get(index);
-            URL newUrl = new URL((downloadingProjectSrcUrl == null) ?
-                    ("http://" + project.host + "/") : downloadingProjectSrcUrl);
+        SpiderProject.ProjectInfo project = spiderProject.projectList.get(index);
 
-            downloadingProjectIndex = index;
+        downloadingProjectIndex = index;
 
-            boolean isNewProject = false;
-            if(downloadingProjectInfo==null ||
-                    !project.dir.getPath().equals(downloadingProjectInfo.dir.getPath())) {
-                isNewProject = true;
-                infoDrawer.initDownloadingInfo();
-                downloadingProjectInfo=project;
-            }
-
-            setProjectState(ProjectState.CHECK);
-            checkAndStart(isNewProject);
-
-            return true;
-        } catch(MalformedURLException e) {
-            e.printStackTrace();
+        boolean isNewProject = false;
+        if(downloadingProjectInfo==null ||
+                !project.dir.getPath().equals(downloadingProjectInfo.dir.getPath())) {
+            isNewProject = true;
+            infoDrawer.initDownloadingInfo();
+            downloadingProjectInfo=project;
         }
 
-        return false;
+        setProjectState(ProjectState.CHECK);
+        checkAndStart(isNewProject);
+
+        return true;
     }
 
     private void openAlbum(int index) {
@@ -498,9 +489,15 @@ public class SpiderActivity extends Activity {
         Runnable runOnFindProject = new Runnable() {
             @Override
             public void run() {
-                if(curView == ALBUM_SET_VIEW) {
-                    mThumbnailLoader.setAlbumTotalImgNum(spiderProject.projectList.size());
-                }
+                Log.i(TAG, "runOnFindProject");
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(curView == ALBUM_SET_VIEW) {
+                            mThumbnailLoader.setAlbumTotalImgNum(spiderProject.projectList.size());
+                        }
+                    }
+                });
             }
         };
 
@@ -1107,7 +1104,6 @@ public class SpiderActivity extends Activity {
                 bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, downloadingProjectSrcUrl);
                 downloadingProjectSrcUrl = null;
             }
-            bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_HOST, downloadingProjectInfo.host);
             bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_PATH, downloadingProjectInfo.dir.getPath());
         }
 

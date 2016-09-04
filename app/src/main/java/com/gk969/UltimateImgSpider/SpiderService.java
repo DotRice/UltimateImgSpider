@@ -159,9 +159,10 @@ public class SpiderService extends Service {
         pageProcParam = new long[StaticValue.PAGE_PARA_NUM];
         imgProcParam = new long[StaticValue.IMG_PARA_NUM];
 
+        String srcUrlInDataFile=jniSpiderInit(imgProcParam, pageProcParam);
 
-        if(jniSpiderInit(imgProcParam, pageProcParam)) {
-            spiderInit();
+        if(srcUrlInDataFile!=null) {
+            spiderInit(srcUrlInDataFile);
         }
         else {
             stopSelfAndWatchdog();
@@ -317,48 +318,44 @@ public class SpiderService extends Service {
             }
 
 
-            final String url = intent.getStringExtra(StaticValue.BUNDLE_KEY_SOURCE_URL);
-            if(url != null) {
-                Log.i(TAG, "onStartCommand srcUrl:" + url);
+            if(cmd==StaticValue.CMD_START) {
+                final String url = intent.getStringExtra(StaticValue.BUNDLE_KEY_SOURCE_URL);
+                if(url != null) {
+                    Log.i(TAG, "onStartCommand srcUrl:" + url);
 
-                if(url.startsWith("http://") || url.startsWith("https://")) {
-                    if(pageProcParam == null) {
-                        srcUrl = url;
-                    }
-                    else {
-                        singleThreadPoolTimer.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                jniDataLock.lock();
-                                jniSetSrcPageUrl(url, md5ForPage.digest(url.getBytes()), pageProcParam);
-                                jniDataLock.unlock();
-                            }
-                        });
+                    if(url.startsWith("http://") || url.startsWith("https://")) {
+                        if(srcUrl == null) {
+                            srcUrl = url;
+                        }
+                        else if(!srcUrl.equals(url)) {
+                            singleThreadPoolTimer.execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    jniDataLock.lock();
+                                    jniSetSrcPageUrl(url, md5ForPage.digest(url.getBytes()), pageProcParam);
+                                    jniDataLock.unlock();
+                                }
+                            });
+                        }
                     }
                 }
-            }
 
-            String host = intent.getStringExtra(StaticValue.BUNDLE_KEY_PROJECT_HOST);
-            if(host != null) {
-                Log.i(TAG, "onStartCommand host:" + host);
-                if(srcHost == null) {
-                    srcHost = host;
-                    File siteDir = new File(intent.getStringExtra(StaticValue.BUNDLE_KEY_PROJECT_PATH));
-                    if(siteDir.isDirectory()) {
-                        projectPath = siteDir.getPath();
+                File siteDir = new File(intent.getStringExtra(StaticValue.BUNDLE_KEY_PROJECT_PATH));
+                if(siteDir.isDirectory()) {
+                    Log.i(TAG, "onStartCommand siteDir:" + siteDir);
+                    projectPath = siteDir.getPath();
 
-                        projectCachePath = projectPath + "/cache/";
-                        File cacheDir = new File(projectCachePath);
-                        if(!cacheDir.isDirectory()) {
-                            cacheDir.mkdir();
-                        }
-
-                        watchdogInterfaceInit();
-                        startAndBindWatchdog();
+                    projectCachePath = projectPath + "/cache/";
+                    File cacheDir = new File(projectCachePath);
+                    if(!cacheDir.isDirectory()) {
+                        cacheDir.mkdir();
                     }
-                    else {
-                        stopSelfAndWatchdog();
-                    }
+
+                    watchdogInterfaceInit();
+                    startAndBindWatchdog();
+                }
+                else {
+                    stopSelfAndWatchdog();
                 }
             }
         }
@@ -481,7 +478,7 @@ public class SpiderService extends Service {
 
     private native String stringFromJNI(String srcStr);
 
-    private native boolean jniSpiderInit(long[] imgPara, long[] pagePara);
+    private native String jniSpiderInit(long[] imgPara, long[] pagePara);
 
     private native void jniSetSrcPageUrl(String pageUrl, byte[] srcPageUrlMd5, long[] pagePara);
 
@@ -961,48 +958,47 @@ public class SpiderService extends Service {
     }
 
     private void reportSpiderLogByHandler() {
-        String jsonReportStr = "{\r\n";
+        final StringBuilder jsonReportStr=new StringBuilder("{\r\n");
 
         jniDataLock.lock();
-        jsonReportStr += "\"imgDownloaderPayload\":" + imgProcParam[StaticValue.PARA_PAYLOAD] + ",\r\n";
-        jsonReportStr += "\"imgDownloadNum\":" + imgProcParam[StaticValue.PARA_DOWNLOAD] + ",\r\n";
-        jsonReportStr += "\"imgProcessedNum\":" + imgProcParam[StaticValue.PARA_PROCESSED] + ",\r\n";
-        jsonReportStr += "\"imgTotalNum\":" + imgProcParam[StaticValue.PARA_TOTAL] + ",\r\n";
-        jsonReportStr += "\"imgTotalSize\":" + imgProcParam[StaticValue.PARA_TOTAL_SIZE] + ",\r\n";
-        jsonReportStr += "\"imgTreeHeight\":" + imgProcParam[StaticValue.PARA_HEIGHT] + ",\r\n";
-        jsonReportStr += "\"pageProcessedNum\":" + pageProcParam[StaticValue.PARA_PROCESSED] + ",\r\n";
-        jsonReportStr += "\"pageTotalNum\":" + pageProcParam[StaticValue.PARA_TOTAL] + ",\r\n";
-        jsonReportStr += "\"pageTreeHeight\":" + pageProcParam[StaticValue.PARA_HEIGHT] + ",\r\n";
+        jsonReportStr.append("\"imgDownloaderPayload\":").append(imgProcParam[StaticValue.PARA_PAYLOAD]).append(",\r\n");
+        jsonReportStr.append("\"imgDownloadNum\":").append(imgProcParam[StaticValue.PARA_DOWNLOAD]).append(",\r\n");
+        jsonReportStr.append("\"imgProcessedNum\":").append(imgProcParam[StaticValue.PARA_PROCESSED]).append(",\r\n");
+        jsonReportStr.append("\"imgTotalNum\":").append(imgProcParam[StaticValue.PARA_TOTAL]).append(",\r\n");
+        jsonReportStr.append("\"imgTotalSize\":").append(imgProcParam[StaticValue.PARA_TOTAL_SIZE]).append(",\r\n");
+        jsonReportStr.append("\"imgTreeHeight\":").append(imgProcParam[StaticValue.PARA_HEIGHT]).append(",\r\n");
+        jsonReportStr.append("\"pageProcessedNum\":").append(pageProcParam[StaticValue.PARA_PROCESSED]).append(",\r\n");
+        jsonReportStr.append("\"pageTotalNum\":").append(pageProcParam[StaticValue.PARA_TOTAL]).append(",\r\n");
+        jsonReportStr.append("\"pageTreeHeight\":").append(pageProcParam[StaticValue.PARA_HEIGHT]).append(",\r\n");
         jniDataLock.unlock();
 
-        final String finalStr = jsonReportStr;
         spiderHandler.post(new Runnable() {
             @Override
             public void run() {
-                reportSpiderLog(finalStr);
+                reportSpiderLog(jsonReportStr);
             }
         });
     }
 
-    private void reportSpiderLog(String jsonReportStr) {
-        jsonReportStr += "\"srcHost\":" + srcHost + ",\r\n";
-        jsonReportStr += "\"serviceVmMem\":" + (Runtime.getRuntime().totalMemory() >> 10) + ",\r\n";
-        jsonReportStr += "\"serviceNativeMem\":" + (Debug.getNativeHeapSize() >> 10) + ",\r\n";
+    private void reportSpiderLog(StringBuilder jsonReportStr) {
+        jsonReportStr.append("\"srcHost\":").append(srcHost).append(",\r\n");
+        jsonReportStr.append("\"serviceVmMem\":").append((Runtime.getRuntime().totalMemory() >> 10)).append(",\r\n");
+        jsonReportStr.append("\"serviceNativeMem\":").append((Debug.getNativeHeapSize() >> 10)).append(",\r\n");
 
-        jsonReportStr += "\"pageLoadTime\":" + loadTime + ",\r\n";
-        jsonReportStr += "\"pageScanTime\":" + scanTime + ",\r\n";
-        jsonReportStr += "\"pageSearchTime\":" + searchTime + ",\r\n";
-
-
-        jsonReportStr += "\"curPageUrl\":" + "\"" + urlOfCurPageTitle + "\",\r\n";
-        jsonReportStr += "\"curPageTitle\":" + "\"" + curPageTitle + "\",\r\n";
-        jsonReportStr += "\"curNetSpeed\":" + "\"" + Utils.byteSizeToString(
-                netTrafficCalc.netTrafficPerSec.get()) + "/s\"" + ",\r\n";
-
-        jsonReportStr += "\"siteScanCompleted\":" + ((state.get() == STAT_COMPLETE)) + ",\r\n";
+        jsonReportStr.append("\"pageLoadTime\":").append(loadTime).append(",\r\n");
+        jsonReportStr.append("\"pageScanTime\":").append(scanTime).append(",\r\n");
+        jsonReportStr.append("\"pageSearchTime\":").append(searchTime).append(",\r\n");
 
 
-        jsonReportStr += "\"networkFail\":" + isNetworkFail + "\r\n}";
+        jsonReportStr.append("\"curPageUrl\":").append("\"").append(urlOfCurPageTitle).append("\",\r\n");
+        jsonReportStr.append("\"curPageTitle\":").append("\"").append(curPageTitle).append("\",\r\n");
+        jsonReportStr.append("\"curNetSpeed\":").append("\"").append(Utils.byteSizeToString(
+                netTrafficCalc.netTrafficPerSec.get())).append("/s\"").append(",\r\n");
+
+        jsonReportStr.append("\"siteScanCompleted\":").append(((state.get() == STAT_COMPLETE))).append(",\r\n");
+
+
+        jsonReportStr.append("\"networkFail\":").append(isNetworkFail).append("\r\n}");
 
         isNetworkFail = false;
 
@@ -1010,7 +1006,7 @@ public class SpiderService extends Service {
         int numOfCallback = mCallbacks.beginBroadcast();
         for(int i = 0; i < numOfCallback; i++) {
             try {
-                mCallbacks.getBroadcastItem(i).reportStatus(jsonReportStr);
+                mCallbacks.getBroadcastItem(i).reportStatus(jsonReportStr.toString());
             } catch(RemoteException e) {
                 e.printStackTrace();
             }
@@ -1171,7 +1167,7 @@ public class SpiderService extends Service {
 
     }
 
-    private void spiderInit() {
+    private void spiderInit(String srcUrlInDataFile) {
         spiderWebViewInit();
 
         try {
@@ -1180,32 +1176,42 @@ public class SpiderService extends Service {
             e.printStackTrace();
         }
 
+
         if(srcUrl != null) {
             jniSetSrcPageUrl(srcUrl, md5ForPage.digest(srcUrl.getBytes()), pageProcParam);
+        }else{
+            srcUrl=srcUrlInDataFile;
         }
 
-        new TimerThread().start();
+        try {
+            srcHost=new URL(srcUrl).getHost();
 
-        if(state.get() == STAT_WORKING) {
-            mImgDownloader.startAllThread();
-        }
-        else {
-            state.set(STAT_PAUSE);
-        }
+            new TimerThread().start();
 
-        saveProjectDataTime.set(SAVE_PROJECT_DATA_TIME);
-        singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                if(saveProjectDataTime.get() != 0) {
-                    if(saveProjectDataTime.decrementAndGet() == 0) {
-                        jniDataLock.lock();
-                        Log.i(TAG, "save project data by timeout");
-                        saveProjectData();
+            if(state.get() == STAT_WORKING) {
+                mImgDownloader.startAllThread();
+            }
+            else {
+                state.set(STAT_PAUSE);
+            }
+
+            saveProjectDataTime.set(SAVE_PROJECT_DATA_TIME);
+            singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable() {
+                @Override
+                public void run() {
+                    if(saveProjectDataTime.get() != 0) {
+                        if(saveProjectDataTime.decrementAndGet() == 0) {
+                            jniDataLock.lock();
+                            Log.i(TAG, "save project data by timeout");
+                            saveProjectData();
+                        }
                     }
                 }
-            }
-        }, 0, 1000, TimeUnit.MILLISECONDS);
+            }, 0, 1000, TimeUnit.MILLISECONDS);
+        } catch(MalformedURLException e) {
+            e.printStackTrace();
+        }
+
     }
     
     private void saveProjectData() {

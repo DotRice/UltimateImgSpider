@@ -285,6 +285,9 @@ public class SelSrcActivity extends Activity {
                 break;
             
             case URL_ENTER:
+                if(!(urlToDisp.startsWith("http://")||urlToDisp.startsWith("https://"))){
+                    urlToDisp="http://"+urlToDisp;
+                }
                 if(!browser.getUrl().equals(urlToDisp)) {
                     browserLoadUrl(urlToDisp);
                 }
@@ -616,7 +619,7 @@ public class SelSrcActivity extends Activity {
                     String url = s.toString();
 
                     urlToDisp = url;
-                    if(URLUtil.isNetworkUrl(url)) {
+                    if(Utils.mayBeUrl(url)) {
                         setUrlCmd(URL_ENTER);
                         btnSelSearchEngine.setImageResource(R.drawable.site);
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_GO);

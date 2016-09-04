@@ -6,6 +6,8 @@ import android.util.Log;
 
 import com.gk969.UltimateImgSpider.StaticValue;
 
+import java.io.File;
+
 public class AlbumLoaderHelper extends ThumbnailLoaderHelper {
     private final static String TAG = "AlbumLoaderHelper";
 
@@ -31,14 +33,18 @@ public class AlbumLoaderHelper extends ThumbnailLoaderHelper {
         int group = index / StaticValue.MAX_IMG_FILE_PER_DIR;
         int offset = index % StaticValue.MAX_IMG_FILE_PER_DIR;
 
-        String fileName = String.format("%s/%s/%d/%03d.%s", projectPath, StaticValue.SLOT_THUMBNAIL_DIR_NAME,
-                group, offset, StaticValue.THUMBNAIL_FILE_EXT);
+        File file=new File(String.format("%s/%s/%d/%03d.%s", projectPath, StaticValue.SLOT_THUMBNAIL_DIR_NAME,
+                group, offset, StaticValue.THUMBNAIL_FILE_EXT));
 
-        BitmapFactory.Options bmpOpts = new BitmapFactory.Options();
-        bmpOpts.inPreferredConfig = Bitmap.Config.RGB_565;
-        bmpOpts.inBitmap = container;
-        bmpOpts.inSampleSize = 1;
+        if(file.exists()) {
+            BitmapFactory.Options bmpOpts = new BitmapFactory.Options();
+            bmpOpts.inPreferredConfig = Bitmap.Config.RGB_565;
+            bmpOpts.inBitmap = container;
+            bmpOpts.inSampleSize = 1;
 
-        return BitmapFactory.decodeFile(fileName, bmpOpts);
+            return BitmapFactory.decodeFile(file.getPath(), bmpOpts);
+        }
+
+        return null;
     }
 }
