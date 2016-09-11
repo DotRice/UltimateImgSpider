@@ -708,7 +708,7 @@
                 <TextView
                     android:id="@+id/cur_page_title"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="wrap_content"
                     android:paddingLeft="@dimen/drawer_info_item_padding_left"
                     android:textColor="@color/drawer_info_item_value_text_color"
                     android:textSize="@dimen/drawer_info_item_value_text_size"/>
@@ -731,7 +731,7 @@
                 <TextView
                     android:id="@+id/cur_page_url"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
+                    android:layout_height="wrap_content"
                     android:paddingLeft="@dimen/drawer_info_item_padding_left"
                     android:textColor="@color/drawer_info_item_value_text_color"
                     android:textSize="@dimen/drawer_info_item_value_text_size"/>

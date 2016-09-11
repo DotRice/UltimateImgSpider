@@ -54,7 +54,7 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper {
         if(index < mSpiderProject.projectList.size()) {
             SpiderProject.ProjectInfo project = mSpiderProject.projectList.get(index);
             if(project.thumbnail == null) {
-                if(project.imgTotalNum<PROJECT_THUMBNAIL_NUM) {
+                if(project.imgDownloadNum<PROJECT_THUMBNAIL_NUM) {
                     String fileName = String.format("%s/%s/%d/%03d.%s", project.dir.getPath(),
                             StaticValue.SLOT_THUMBNAIL_DIR_NAME, 0, 0, StaticValue.THUMBNAIL_FILE_EXT);
                     bmpOpts.inSampleSize = 1;
@@ -72,13 +72,15 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper {
                                 StaticValue.THUMBNAIL_SIZE, StaticValue.BITMAP_TYPE);
                         Canvas canvas=new Canvas(project.thumbnail);
                         int slotSize=StaticValue.THUMBNAIL_SIZE/PROJECT_THUMBNAIL_SLOTS;
-                        Log.i(TAG, "create project thumbnail "+canvas.getWidth()+" "+canvas.getHeight());
+                        Log.i(TAG, "create project thumbnail " + canvas.getWidth() + " " + canvas.getHeight());
                         for(int i=0; i<PROJECT_THUMBNAIL_NUM; i++){
                             Bitmap bmp=BitmapFactory.decodeFile(String.format("%s/%s/%d/%03d.%s",
                                     project.dir.getPath(), StaticValue.SLOT_THUMBNAIL_DIR_NAME,
                                     0, i, StaticValue.THUMBNAIL_FILE_EXT), bmpOpts);
-                            canvas.drawBitmap(bmp, (i%PROJECT_THUMBNAIL_SLOTS)*slotSize,
-                                    (i/PROJECT_THUMBNAIL_SLOTS)*slotSize, null);
+                            if(bmp!=null) {
+                                canvas.drawBitmap(bmp, (i % PROJECT_THUMBNAIL_SLOTS) * slotSize,
+                                        (i / PROJECT_THUMBNAIL_SLOTS) * slotSize, null);
+                            }
                         }
 
                         Utils.saveBitmapToFile(project.thumbnail, thumbnailFile);
