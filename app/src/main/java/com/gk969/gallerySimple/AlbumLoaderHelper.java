@@ -37,11 +37,7 @@ public class AlbumLoaderHelper extends ThumbnailLoaderHelper {
                 group, offset, StaticValue.THUMBNAIL_FILE_EXT));
 
         if(file.exists()) {
-            BitmapFactory.Options bmpOpts = new BitmapFactory.Options();
-            bmpOpts.inPreferredConfig = Bitmap.Config.RGB_565;
             bmpOpts.inBitmap = container;
-            bmpOpts.inSampleSize = 1;
-
             return BitmapFactory.decodeFile(file.getPath(), bmpOpts);
         }
 

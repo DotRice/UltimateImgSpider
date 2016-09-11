@@ -90,7 +90,7 @@ public class ThumbnailLoader {
         for(int i = 0; i < cacheSize; i++) {
             textureCache[i] = new SlotTexture();
             textureCache[i].mainBmp = Bitmap.createBitmap(StaticValue.THUMBNAIL_SIZE,
-                    StaticValue.THUMBNAIL_SIZE, Bitmap.Config.RGB_565);
+                    StaticValue.THUMBNAIL_SIZE, StaticValue.BITMAP_TYPE);
             textureCache[i].texture = new BitmapTexture(textureCache[i].mainBmp);
             textureCache[i].imgIndex = i;
             textureCache[i].isReady = false;

@@ -1,5 +1,7 @@
 package com.gk969.UltimateImgSpider;
 
+import android.graphics.Bitmap;
+
 import com.gk969.Utils.MemoryInfo;
 
 public class StaticValue {
@@ -21,6 +23,8 @@ public class StaticValue {
 
     public static final int MAX_IMG_FILE_PER_DIR = 1000;
 
+    public final static Bitmap.Config BITMAP_TYPE=Bitmap.Config.RGB_565;
+
     public final static String THUMBNAIL_DIR_NAME = "thumbnail";
 
     public final static String SLOT_THUMBNAIL_DIR_NAME = THUMBNAIL_DIR_NAME + "/slot";
@@ -32,6 +36,8 @@ public class StaticValue {
 
     public final static String THUMBNAIL_FILE_EXT = "jpg.thumbnail";
     public final static String[] IMG_FILE_EXT = {"jpg", "png", "gif"};
+
+    public final static String PROJECT_THUMBNAIL="project.thumbnail";
 
 
     public final static String PROJECT_DATA_DIR = "/data";

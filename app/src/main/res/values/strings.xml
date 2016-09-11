@@ -62,7 +62,7 @@
 
 
     <string name="storage_info">存储信息</string>
-    <string name="image_total_size">已下载图片总大小</string>
+    <string name="image_total_size">项目图片总大小</string>
     <string name="storage_total">存储总大小</string>
     <string name="storage_free">存储剩余大小</string>
 

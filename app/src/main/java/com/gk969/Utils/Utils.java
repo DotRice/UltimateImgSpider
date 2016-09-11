@@ -349,6 +349,21 @@ public class Utils {
         }
     }
 
+
+    public static void saveBitmapToFile(Bitmap bmp, File file) {
+        FileOutputStream fileOut;
+        try {
+            fileOut = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 90, fileOut);
+            fileOut.flush();
+            fileOut.close();
+        } catch(FileNotFoundException e) {
+            e.printStackTrace();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static String fileToString(String filePath) {
         File file = new File(filePath);
         String string = null;

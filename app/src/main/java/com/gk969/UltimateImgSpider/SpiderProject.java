@@ -55,11 +55,12 @@ public class SpiderProject {
         private void init(String siteHost, String sitePath, long[] paramImgInfo, long[] paramPageInfo, int scrollDistance) {
             host = siteHost;
             dir = new File(sitePath);
-            dirTotalSpace=Utils.byteSizeToString(dir.getTotalSpace());
 
             if(!dir.exists()){
                 dir.mkdirs();
             }
+
+            dirTotalSpace=Utils.byteSizeToString(dir.getTotalSpace());
 
             imgDownloadNum = (int) paramImgInfo[StaticValue.PARA_DOWNLOAD];
             imgProcessedNum = (int) paramImgInfo[StaticValue.PARA_PROCESSED];

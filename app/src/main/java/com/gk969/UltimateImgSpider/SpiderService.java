@@ -742,20 +742,6 @@ public class SpiderService extends Service {
                 }
             }
 
-            private void saveBitmapToFile(Bitmap bmp, File file) {
-                FileOutputStream fileOut = null;
-                try {
-                    fileOut = new FileOutputStream(file);
-                    bmp.compress(Bitmap.CompressFormat.JPEG, 90, fileOut);
-                    fileOut.flush();
-                    fileOut.close();
-                } catch(FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch(IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
             private void createThumbnail(File rawFile, File thumbnailFile, int index) {
                 BitmapFactory.Options opts = new BitmapFactory.Options();
                 opts.inJustDecodeBounds = true;
@@ -787,7 +773,7 @@ public class SpiderService extends Service {
 
                         Log.i(TAG, "full thumbnail width " + thumbnail.getWidth() + " height " + thumbnail.getHeight());
 
-                        saveBitmapToFile(thumbnail, newThumbnailFile(index, StaticValue.FULL_THUMBNAIL_DIR_NAME));
+                        Utils.saveBitmapToFile(thumbnail, newThumbnailFile(index, StaticValue.FULL_THUMBNAIL_DIR_NAME));
                         thumbnail.recycle();
                     }
                 }
@@ -832,7 +818,7 @@ public class SpiderService extends Service {
                         rawBmp.recycle();
                     }
 
-                    saveBitmapToFile(thumbnail, thumbnailFile);
+                    Utils.saveBitmapToFile(thumbnail, thumbnailFile);
 
                     thumbnail.recycle();
                 } else {

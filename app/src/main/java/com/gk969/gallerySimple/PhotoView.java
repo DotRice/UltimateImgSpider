@@ -124,7 +124,7 @@ public class PhotoView extends GLView {
         BitmapFactory.Options bmpOptions = new BitmapFactory.Options();
 
         public Photo(int index) {
-            bmpOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+            bmpOptions.inPreferredConfig = StaticValue.BITMAP_TYPE;
             indexInCache = index;
         }
 
