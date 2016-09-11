@@ -389,111 +389,6 @@ public class Utils {
         return ret;
     }
 
-    private static class StorageDeviceDir {
-        public long freeSpace;
-        public long totalSpace;
-        public LinkedList<String> path;
-
-        public StorageDeviceDir(long pFreeSpace, long pTotalSpace, String firstPath){
-            freeSpace=pFreeSpace;
-            totalSpace=pTotalSpace;
-            path=new LinkedList<String>();
-            path.add(firstPath);
-        }
-
-        public StorageDeviceDir(){
-            path=new LinkedList<String>();
-        }
-    }
-
-    public static File[] getStoDirs(String dirPath) {
-        LinkedList<StorageDeviceDir> storageDeviceDirList=new LinkedList<StorageDeviceDir>();
-
-        if(Environment.getExternalStorageState().equals(
-                android.os.Environment.MEDIA_MOUNTED)) {
-            File deviceStorage=Environment.getExternalStorageDirectory();
-            storageDeviceDirList.add(new StorageDeviceDir(deviceStorage.getFreeSpace(),
-                    deviceStorage.getTotalSpace(), deviceStorage.getPath()));
-        }
-
-        Log.i(TAG, "exec mount");
-        LinkedList<String> mountList = exeShell("mount");
-        for(String mount : mountList) {
-            String path = mount.split(" ")[1];
-            //Log.i(TAG, value[1]+"     "+value[2]);
-            File stoDir = new File(path);
-            if(stoDir.exists() && stoDir.isDirectory() && stoDir.canWrite()) {
-                Log.i(TAG, mount);
-
-                long freeSpace=stoDir.getFreeSpace();
-                long totalSpace=stoDir.getTotalSpace();
-                Log.i(TAG, path + " size:" + (freeSpace >> 20) + "/" + (totalSpace >> 20));
-
-                boolean linkedDirFound=false;
-                for(StorageDeviceDir storageDeviceDir:storageDeviceDirList){
-                    if(storageDeviceDir.freeSpace==freeSpace && storageDeviceDir.totalSpace==totalSpace){
-                        linkedDirFound=true;
-                        if(!storageDeviceDir.path.contains(path)) {
-                            storageDeviceDir.path.add(path);
-                        }
-                    }
-                }
-
-                if(!linkedDirFound){
-                    storageDeviceDirList.add(new StorageDeviceDir(freeSpace, totalSpace, path));
-                }
-            }
-        }
-
-
-        for(StorageDeviceDir storageDeviceDir:storageDeviceDirList){
-            Log.i(TAG, "size "+(storageDeviceDir.freeSpace >> 20) + "/" +
-                    (storageDeviceDir.totalSpace >> 20));
-            for(String dir:storageDeviceDir.path){
-                Log.i(TAG, dir);
-            }
-        }
-
-        File[] stoDir=new File[storageDeviceDirList.size()];
-        for(int i=0; i<stoDir.length; i++){
-            stoDir[i]=new File(storageDeviceDirList.get(i).path.get(0)+"/"+dirPath);
-            if(!stoDir[i].exists()){
-                stoDir[i].mkdirs();
-            }
-        }
-
-        return stoDir;
-    }
-
-    public static File getDirInSto(String path) {
-        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            return getDirInSto(path, Environment.getExternalStorageDirectory().getPath());
-        }
-        return null;
-    }
-
-    public static File getDirInSto(String path, String storageDir) {
-        File dir = null;
-
-        if(!path.startsWith("/")) {
-            path = "/" + path;
-        }
-
-        dir = new File(storageDir + path);
-        if(!dir.exists()) {
-            Log.i(TAG, "Dir:" + dir.toString() + " Not Exist!");
-            dir.mkdirs();
-            if(!dir.exists()) {
-                return null;
-            }
-        }
-        else {
-            Log.i(TAG, "Dir:" + dir.toString() + " Already Exist!");
-        }
-
-        return dir;
-    }
-
     public static boolean mayBeUrl(String str){
         int posOdDot=str.lastIndexOf(".");
         return posOdDot>0&&posOdDot<(str.length()-2);
@@ -509,7 +404,7 @@ public class Utils {
 
         public LogRecorder(String appName) {
             setDaemon(true);
-            File logDir=getDirInSto(appName + "/log");
+            File logDir=StorageUtils.getDirInSto(appName + "/log");
             if(logDir!=null) {
                 recordFile = new File(logDir.getPath()+"/log.txt");
                 start();

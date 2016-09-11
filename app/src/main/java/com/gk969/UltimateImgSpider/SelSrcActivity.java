@@ -190,8 +190,7 @@ public class SelSrcActivity extends Activity {
                             }
                         }, 500);
                     }
-                }
-                else {
+                } else {
                     pbWebView.setProgress(newProgress);
                 }
             }
@@ -237,8 +236,7 @@ public class SelSrcActivity extends Activity {
         
         if(pbWebView.getProgress() == 0) {
             setUrlCmd(URL_REFRESH);
-        }
-        else {
+        } else {
             setUrlCmd(URL_CANCEL);
         }
         
@@ -285,8 +283,8 @@ public class SelSrcActivity extends Activity {
                 break;
             
             case URL_ENTER:
-                if(!(urlToDisp.startsWith("http://")||urlToDisp.startsWith("https://"))){
-                    urlToDisp="http://"+urlToDisp;
+                if(!(urlToDisp.startsWith("http://") || urlToDisp.startsWith("https://"))) {
+                    urlToDisp = "http://" + urlToDisp;
                 }
                 if(!browser.getUrl().equals(urlToDisp)) {
                     browserLoadUrl(urlToDisp);
@@ -319,72 +317,39 @@ public class SelSrcActivity extends Activity {
     }
 
     private void showSpiderGoAlert() {
-        if(browser.getUrl()==null){
+        final String url = browser.getUrl();
+        if(url == null) {
             return;
         }
 
-        final File[] storageDirs= Utils.getStoDirs(getString(R.string.appPackageName));
-        if(storageDirs.length!=0) {
-            if(ParaConfig.isSpiderGoNeedConfirm(appCtx)) {
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.spiderGoConfirm)
-                        .setMultiChoiceItems(
-                                R.array.noLongerConfirm,
-                                new boolean[]{false},
-                                new DialogInterface.OnMultiChoiceClickListener() {
-                                    public void onClick(DialogInterface dialog,
-                                                        int whichButton, boolean isChecked) {
-                                        ParaConfig.setSpiderGoConfirm(appCtx, isChecked);
-                                    }
-                                })
-                        .setPositiveButton(R.string.OK,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog,
-                                                        int whichButton) {
-                                        selStorageAndGo(storageDirs);
-                                    }
-                                })
-                        .setNegativeButton(R.string.cancel, null).create().show();
-            }else {
-                selStorageAndGo(storageDirs);
-            }
-        }else{
+        if(ParaConfig.isSpiderGoNeedConfirm(appCtx)) {
             new AlertDialog.Builder(this)
-                    .setTitle(R.string.badExternalStoragePrompt)
-                    .setMessage(R.string.notFindValidStorage)
-                    .setPositiveButton(R.string.OK, null)
-                    .create().show();
-        }
-    }
-
-    private void selStorageAndGo(final File[] storageDirs){
-        if(storageDirs.length==1){
-            spiderGo(browser.getUrl()+" "+storageDirs[0].getPath());
-        }else {
-            String[] storageInfo=new String[storageDirs.length];
-            for(int i=0; i<storageDirs.length; i++){
-                String deviceName=getString((i==0)?R.string.deviceStorage:R.string.sdcardStorage);
-                String totalSpace=getString(R.string.totalSpace)+Utils.byteSizeToString(storageDirs[i].getTotalSpace());
-                String freeSpace=getString(R.string.freeSpace)+Utils.byteSizeToString(storageDirs[i].getFreeSpace());
-
-                storageInfo[i]=deviceName+"  "+totalSpace+" "+freeSpace;
-            }
-            new AlertDialog.Builder(SelSrcActivity.this)
-                    .setTitle(R.string.selStorageDevice)
-                    .setItems(storageInfo,
+                    .setTitle(R.string.spiderGoConfirm)
+                    .setMultiChoiceItems(
+                            R.array.noLongerConfirm,
+                            new boolean[]{false},
+                            new DialogInterface.OnMultiChoiceClickListener() {
+                                public void onClick(DialogInterface dialog,
+                                                    int whichButton, boolean isChecked) {
+                                    ParaConfig.setSpiderGoConfirm(appCtx, isChecked);
+                                }
+                            })
+                    .setPositiveButton(R.string.OK,
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog,
                                                     int whichButton) {
-                                    spiderGo(browser.getUrl()+" "+storageDirs[whichButton].getPath());
+                                    spiderGo(url);
                                 }
                             })
                     .setNegativeButton(R.string.cancel, null).create().show();
+        } else {
+            spiderGo(url);
         }
     }
 
-    public void spiderGo(String urlAndPath) {
-        Log.i(TAG, "spiderGo :" + urlAndPath);
-        setResult(RESULT_OK, (new Intent()).setAction(urlAndPath));
+    public void spiderGo(String url) {
+        Log.i(TAG, "spiderGo :" + url);
+        setResult(RESULT_OK, (new Intent()).setAction(url));
         finish();
     }
 
@@ -398,8 +363,7 @@ public class SelSrcActivity extends Activity {
                 if((viewId == R.id.buttonURLcmd)
                         || (viewId == R.id.FrameLayoutURLcmd)) {
                     executeURLcmd();
-                }
-                else {
+                } else {
                     switch(viewId) {
                         case R.id.buttonBack:
                             Log.i(TAG, "buttonBack");
@@ -557,8 +521,7 @@ public class SelSrcActivity extends Activity {
                                             }
                                         }).create().show();
                     }
-                }
-                else {
+                } else {
                     focusOnURL();
                 }
             }
@@ -623,13 +586,11 @@ public class SelSrcActivity extends Activity {
                         setUrlCmd(URL_ENTER);
                         btnSelSearchEngine.setImageResource(R.drawable.site);
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_GO);
-                    }
-                    else if(url.isEmpty()) {
+                    } else if(url.isEmpty()) {
                         setUrlCmd(URL_CANCEL);
                         btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(appCtx));
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_NONE);
-                    }
-                    else {
+                    } else {
                         setUrlCmd(URL_SEARCH);
                         btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(appCtx));
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
@@ -752,12 +713,10 @@ public class SelSrcActivity extends Activity {
             if((layoutWvMask.getVisibility() == View.VISIBLE)) {
                 focusOnWebView();
                 return true;
-            }
-            else if(browserGoBack()) {
+            } else if(browserGoBack()) {
                 return true;
             }
-        }
-        else if(keyCode == KeyEvent.KEYCODE_MENU) {
+        } else if(keyCode == KeyEvent.KEYCODE_MENU) {
             responseMenuKey();
         }
         return super.onKeyDown(keyCode, event);
@@ -769,8 +728,7 @@ public class SelSrcActivity extends Activity {
         
         if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Log.i(TAG, "Landscape");
-        }
-        else {
+        } else {
             Log.i(TAG, "Portrait");
         }
     }

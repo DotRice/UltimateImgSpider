@@ -10,18 +10,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9fcbde4a-5630-4c73-8831-611b2e130144" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/AlbumLoaderHelper.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/AlbumLoaderHelper.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/PhotoView$MyGestureListener.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/PhotoView$MyGestureListener.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/PhotoView$Photo.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/PhotoView$Photo.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/PhotoView$PhotoLoader.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/PhotoView$PhotoLoader.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/PhotoView.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/gallerySimple/PhotoView.class" />
+      <change type="DELETED" beforePath="D:\android\UltimateImgSpider\app\build\intermediates\classes\debug\com\gk969\UltimateImgSpider\SelSrcActivity$12$1.class" afterPath="" />
+      <change type="DELETED" beforePath="D:\android\UltimateImgSpider\app\build\intermediates\classes\debug\com\gk969\UltimateImgSpider\SelSrcActivity$14.class" afterPath="" />
+      <change type="DELETED" beforePath="D:\android\UltimateImgSpider\app\build\intermediates\classes\debug\com\gk969\Utils\Utils$StorageDeviceDir.class" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$10.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$10.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$11$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$11$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$11.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$11.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$12$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$12$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$12.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$12.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$13.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$13.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$14.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$14.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$2.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$2.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$3.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$3.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$4.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$4.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$5.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$5.class" />
@@ -30,6 +27,8 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$8.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$8.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$9.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity$9.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SelSrcActivity.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$1$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$1$1.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$10.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$10.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$11.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$11.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$12.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$12.class" />
@@ -42,8 +41,14 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$17.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$17.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$18.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$18.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$19.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$19.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$3.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$3.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$4.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$4.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$5$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$5$1.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$5$2.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$5$2.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$5.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$5.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$6$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$6$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$6.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$6.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$7$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$7$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$7.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$7.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$8$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$8$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$8.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$8.class" />
@@ -51,11 +56,16 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$InfoDrawer$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$InfoDrawer$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$InfoDrawer$2.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$InfoDrawer$2.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$InfoDrawer.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$InfoDrawer.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$ProjectState.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity$ProjectState.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderActivity.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderProject$ProjectInfo.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderProject$ProjectInfo.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderProject.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderProject.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$10.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$10.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$4.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$4.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$2$1.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$2$1.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$2$2.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$2$2.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$2.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$2.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$3.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$3.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$5.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$5.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$6.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$6.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$7.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$7.class" />
@@ -70,13 +80,6 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$TimerThread.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService$TimerThread.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/SpiderService.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/StaticValue.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/UltimateImgSpider/StaticValue.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/arm64-v8a/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/arm64-v8a/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/armeabi-v7a/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/armeabi-v7a/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/armeabi/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/armeabi/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips64/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips64/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86_64/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86_64/objs/UltimateImgSpider/D_/android/UltimateImgSpider/app/src/main/jni/UltimateImgSpider.o" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/Utils/Utils$DisplayUtil.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/Utils/Utils$DisplayUtil.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/Utils/Utils$LogRecorder.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/Utils/Utils$LogRecorder.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/Utils/Utils.class" afterPath="$PROJECT_DIR$/app/build/intermediates/classes/debug/com/gk969/Utils/Utils.class" />
@@ -87,41 +90,16 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/pre-dexed/debug/debug_eed19ed9cff66fdf9d46198c29f290d3c8ae1ca2.jar" afterPath="$PROJECT_DIR$/app/build/intermediates/pre-dexed/debug/debug_eed19ed9cff66fdf9d46198c29f290d3c8ae1ca2.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/fileHashes.bin" afterPath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/fileHashes.bin" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/fileSnapshots.bin" afterPath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/fileSnapshots.bin" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/arm64-v8a/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/arm64-v8a/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/armeabi/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/armeabi/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/armeabi-v7a/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/armeabi-v7a/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/mips/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/mips/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/mips64/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/mips64/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/x86/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/x86/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/x86_64/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/lib/x86_64/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/arm64-v8a/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/arm64-v8a/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/armeabi/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/armeabi/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/armeabi-v7a/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/armeabi-v7a/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips64/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/mips64/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86_64/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/ndk/debug/obj/local/x86_64/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/arm64-v8a/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/arm64-v8a/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/armeabi/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/armeabi/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/armeabi-v7a/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/armeabi-v7a/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/mips/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/mips/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/mips64/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/mips64/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/x86/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/x86/libUltimateImgSpider.so" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/x86_64/libUltimateImgSpider.so" afterPath="$PROJECT_DIR$/app/build/intermediates/transforms/mergeJniLibs/debug/folders/2000/1f/main/lib/x86_64/libUltimateImgSpider.so" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/tasks/_app_compileDebugJavaWithJavac/localClassSetAnalysis/localClassSetAnalysis.bin" afterPath="$PROJECT_DIR$/.gradle/2.10/tasks/_app_compileDebugJavaWithJavac/localClassSetAnalysis/localClassSetAnalysis.bin" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/tasks/_app_compileDebugJavaWithJavac/localClassSetAnalysis/localClassSetAnalysis.lock" afterPath="$PROJECT_DIR$/.gradle/2.10/tasks/_app_compileDebugJavaWithJavac/localClassSetAnalysis/localClassSetAnalysis.lock" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/tasks/_app_compileDebugJavaWithJavac/localJarClasspathSnapshot/localJarClasspathSnapshot.lock" afterPath="$PROJECT_DIR$/.gradle/2.10/tasks/_app_compileDebugJavaWithJavac/localJarClasspathSnapshot/localJarClasspathSnapshot.lock" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/taskArtifacts.bin" afterPath="$PROJECT_DIR$/.gradle/2.10/taskArtifacts/taskArtifacts.bin" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/AlbumLoaderHelper.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/AlbumLoaderHelper.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/PhotoView.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/PhotoView.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SelSrcActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SelSrcActivity.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderProject.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderProject.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/StaticValue.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/StaticValue.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c" afterPath="$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java" afterPath="$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/jni/typeDef.h" afterPath="$PROJECT_DIR$/app/src/main/jni/typeDef.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="UltimateImgSpider.iws" />
@@ -154,27 +132,17 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="1100" column="0" selection-start-line="1100" selection-start-column="0" selection-end-line="1100" selection-end-column="0" />
+              <caret line="99" column="0" selection-start-line="99" selection-start-column="0" selection-end-line="99" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SpiderProject.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderProject.java">
+      <file leaf-file-name="StorageUtils.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/StorageUtils.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="103" column="0" selection-start-line="103" selection-start-column="0" selection-end-line="103" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SelSrcActivity.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SelSrcActivity.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="597" column="17" selection-start-line="597" selection-start-column="17" selection-end-line="597" selection-end-column="17" />
+            <state vertical-scroll-proportion="0.6837416">
+              <caret line="163" column="82" selection-start-line="163" selection-start-column="82" selection-end-line="163" selection-end-column="82" />
               <folding />
             </state>
           </provider>
@@ -184,8 +152,40 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="505" column="34" selection-start-line="505" selection-start-column="34" selection-end-line="505" selection-end-column="34" />
+              <caret line="386" column="0" selection-start-line="386" selection-start-column="0" selection-end-line="386" selection-end-column="0" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="File.java" pinned="false" current-in-tab="false">
+        <entry file="file://G:/Develop/android/adt-bundle-windows-x86_64/sdk/sources/android-19/java/io/File.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="1151" column="7" selection-start-line="1151" selection-start-column="7" selection-end-line="1151" selection-end-column="7" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SpiderProject.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderProject.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="111" column="61" selection-start-line="111" selection-start-column="61" selection-end-line="111" selection-end-column="61" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SelSrcActivity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SelSrcActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="639" column="8" selection-start-line="639" selection-start-column="8" selection-end-line="639" selection-end-column="8" />
+              <folding>
+                <marker date="1473400899986" expanded="true" signature="25241:25300" placeholder="{...}" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -194,63 +194,42 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="321" column="25" selection-start-line="321" selection-start-column="25" selection-end-line="321" selection-end-column="25" />
-              <folding />
+              <caret line="124" column="49" selection-start-line="124" selection-start-column="49" selection-end-line="124" selection-end-column="49" />
+              <folding>
+                <marker date="1473527729724" expanded="true" signature="42559:43273" placeholder="{...}" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="UltimateImgSpider.c" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.41567695">
-              <caret line="526" column="28" selection-start-line="526" selection-start-column="28" selection-end-line="526" selection-end-column="28" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="typeDef.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/jni/typeDef.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-7.0">
-              <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ThumbnailLoader.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/ThumbnailLoader.java">
+      <file leaf-file-name="StaticValue.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/StaticValue.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="162" column="26" selection-start-line="162" selection-start-column="26" selection-end-line="162" selection-end-column="26" />
+              <caret line="26" column="49" selection-start-line="26" selection-start-column="49" selection-end-line="26" selection-end-column="49" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ashmem.c" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/jni/ashmem.c">
+      <file leaf-file-name="PhotoView.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/PhotoView.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-11.5">
-              <caret line="29" column="29" selection-start-line="29" selection-start-column="29" selection-end-line="29" selection-end-column="29" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ashmem.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/jni/ashmem.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-11.571428">
-              <caret line="24" column="30" selection-start-line="24" selection-start-column="30" selection-end-line="24" selection-end-column="30" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="505" column="0" selection-start-line="505" selection-start-column="0" selection-end-line="505" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -1907,20 +1886,22 @@
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/ParaConfigActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/AlbumSetLoaderHelper.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/SlotView.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/ThumbnailLoader.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/ThumbnailLoaderHelper.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/AlbumLoaderHelper.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/PhotoView.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/StaticValue.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderProject.java" />
         <option value="$PROJECT_DIR$/app/src/main/jni/typeDef.h" />
         <option value="$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/SlotView.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderProject.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/StaticValue.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/StorageInfo.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SelSrcActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SelSrcActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/StorageUtils.java" />
       </list>
     </option>
   </component>
@@ -1964,7 +1945,6 @@
     </navigator>
     <panes>
       <pane id="ProjectPane" />
-      <pane id="Scratches" />
       <pane id="PackagesPane" />
       <pane id="AndroidView">
         <subPane>
@@ -1998,20 +1978,6 @@
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="jni" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="UltimateImgSpider" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="java" />
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
             </PATH_ELEMENT>
@@ -2038,51 +2004,7 @@
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Utils" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
               <option name="myItemId" value="UltimateImgSpider" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gk969" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="UltimateImgSpider" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="UltimateImgSpider" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gk969" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gallerySimple" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -2102,6 +2024,7 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
       <pane id="Scope" />
     </panes>
   </component>
@@ -2112,7 +2035,7 @@
     <property name="MemberChooser.sorted" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="MemberChooser.copyJavadoc" value="false" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Font" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Java" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="android.sdk.path" value="G:/Develop/android/adt-bundle-windows-x86_64/sdk" />
     <property name="recentsLimit" value="5" />
@@ -2356,8 +2279,8 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <editor active="false" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32925472" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3291714" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -2367,7 +2290,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.36151278" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Android Monitor" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4682981" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32925472" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34371525" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -2375,10 +2298,9 @@
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16204691" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.46162403" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16151386" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.31716418" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23614073" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -2388,6 +2310,7 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2914349" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -2406,44 +2329,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://G:/Develop/android/adt-bundle-windows-x86_64/sdk/sources/android-19/android/os/Environment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="388" column="56" selection-start-line="388" selection-start-column="23" selection-end-line="388" selection-end-column="56" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/MemoryInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="76" column="78" selection-start-line="76" selection-start-column="78" selection-end-line="76" selection-end-column="78" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/StaticValue.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="61" column="32" selection-start-line="61" selection-start-column="32" selection-end-line="61" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="427" column="31" selection-start-line="427" selection-start-column="31" selection-end-line="427" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2619,13 +2504,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="42" column="0" selection-start-line="42" selection-start-column="0" selection-end-line="42" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/build.gradle">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2648,27 +2526,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/SlotView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="31" column="13" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/PhotoView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="85" column="0" selection-start-line="85" selection-start-column="0" selection-end-line="85" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/ThumbnailLoaderHelper.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="6" column="22" selection-start-line="6" selection-start-column="22" selection-end-line="6" selection-end-column="22" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2676,15 +2537,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/StaticValue.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="4" column="26" selection-start-line="4" selection-start-column="26" selection-end-line="4" selection-end-column="26" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2692,7 +2544,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-193.0">
           <caret line="427" column="18" selection-start-line="427" selection-start-column="18" selection-end-line="427" selection-end-column="18" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2700,7 +2551,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="29" column="57" selection-start-line="29" selection-start-column="57" selection-end-line="29" selection-end-column="57" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2708,7 +2558,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-11.5">
           <caret line="29" column="29" selection-start-line="29" selection-start-column="29" selection-end-line="29" selection-end-column="29" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2716,31 +2565,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-7.0">
           <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/jni/ashmem.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-11.571428">
+        <state vertical-scroll-proportion="0.0">
           <caret line="24" column="30" selection-start-line="24" selection-start-column="30" selection-end-line="24" selection-end-column="30" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderProject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="103" column="0" selection-start-line="103" selection-start-column="0" selection-end-line="103" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/ThumbnailLoader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="162" column="26" selection-start-line="162" selection-start-column="26" selection-end-line="162" selection-end-column="26" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2748,6 +2579,80 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33333334">
           <caret line="228" column="26" selection-start-line="228" selection-start-column="26" selection-end-line="228" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="512" column="17" selection-start-line="512" selection-start-column="17" selection-end-line="512" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/ThumbnailLoader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="190" column="46" selection-start-line="190" selection-start-column="46" selection-end-line="190" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/SlotView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="130" column="20" selection-start-line="130" selection-start-column="20" selection-end-line="130" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/StaticValue.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="26" column="49" selection-start-line="26" selection-start-column="49" selection-end-line="26" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/gallerySimple/PhotoView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="505" column="0" selection-start-line="505" selection-start-column="0" selection-end-line="505" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://G:/Develop/android/adt-bundle-windows-x86_64/sdk/sources/android-19/java/util/concurrent/atomic/AtomicLong.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.4367816">
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://G:/Develop/android/adt-bundle-windows-x86_64/sdk/sources/android-19/java/io/File.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1151" column="7" selection-start-line="1151" selection-start-column="7" selection-end-line="1151" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://G:/Develop/android/adt-bundle-windows-x86_64/sdk/sources/android-19/java/util/concurrent/Executor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.5770115">
+          <caret line="98" column="17" selection-start-line="98" selection-start-column="17" selection-end-line="98" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://G:/Develop/android/adt-bundle-windows-x86_64/sdk/sources/android-19/java/util/concurrent/ExecutorService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33333334">
+          <caret line="111" column="45" selection-start-line="111" selection-start-column="45" selection-end-line="111" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="386" column="0" selection-start-line="386" selection-start-column="0" selection-end-line="386" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -2755,15 +2660,25 @@
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SelSrcActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="597" column="17" selection-start-line="597" selection-start-column="17" selection-end-line="597" selection-end-column="17" />
+          <caret line="639" column="8" selection-start-line="639" selection-start-column="8" selection-end-line="639" selection-end-column="8" />
+          <folding>
+            <marker date="1473400899986" expanded="true" signature="25241:25300" placeholder="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderProject.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="111" column="61" selection-start-line="111" selection-start-column="61" selection-end-line="111" selection-end-column="61" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/Utils.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/WatchdogService.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="505" column="34" selection-start-line="505" selection-start-column="34" selection-end-line="505" selection-end-column="34" />
+        <state vertical-scroll-proportion="1.2517241">
+          <caret line="226" column="54" selection-start-line="226" selection-start-column="54" selection-end-line="226" selection-end-column="54" />
           <folding />
         </state>
       </provider>
@@ -2771,23 +2686,25 @@
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderService.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="321" column="25" selection-start-line="321" selection-start-column="25" selection-end-line="321" selection-end-column="25" />
-          <folding />
+          <caret line="124" column="49" selection-start-line="124" selection-start-column="49" selection-end-line="124" selection-end-column="49" />
+          <folding>
+            <marker date="1473527729724" expanded="true" signature="42559:43273" placeholder="{...}" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/UltimateImgSpider/SpiderActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="1100" column="0" selection-start-line="1100" selection-start-column="0" selection-end-line="1100" selection-end-column="0" />
+          <caret line="99" column="0" selection-start-line="99" selection-start-column="0" selection-end-line="99" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/jni/UltimateImgSpider.c">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/gk969/Utils/StorageUtils.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.41567695">
-          <caret line="526" column="28" selection-start-line="526" selection-start-column="28" selection-end-line="526" selection-end-column="28" />
+        <state vertical-scroll-proportion="0.6837416">
+          <caret line="163" column="82" selection-start-line="163" selection-start-column="82" selection-end-line="163" selection-end-column="82" />
           <folding />
         </state>
       </provider>

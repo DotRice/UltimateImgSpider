@@ -38,6 +38,7 @@ public class SpiderProject {
     static public class ProjectInfo {
         public String host;
         public File dir;
+        public String dirTotalSpace;
         public volatile int imgDownloadNum;
         public volatile int imgProcessedNum;
         public volatile int imgTotalNum;
@@ -54,6 +55,8 @@ public class SpiderProject {
         private void init(String siteHost, String sitePath, long[] paramImgInfo, long[] paramPageInfo, int scrollDistance) {
             host = siteHost;
             dir = new File(sitePath);
+            dirTotalSpace=Utils.byteSizeToString(dir.getTotalSpace());
+
             if(!dir.exists()){
                 dir.mkdirs();
             }
