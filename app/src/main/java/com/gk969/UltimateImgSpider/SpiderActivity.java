@@ -272,7 +272,10 @@ public class SpiderActivity extends Activity {
                     downloadingProjectInfo.host)) {
                 int imgDownloadNum = jsonReport.getInt("imgDownloadNum");
                 if(displayProjectIndex == downloadingProjectIndex) {
-                    infoDrawer.refreshInfoByServiceReport(jsonReport);
+                    if(serviceConnState != CONN_STATE_DISCONNECTED) {
+                        infoDrawer.refreshInfoByServiceReport(jsonReport);
+                    }
+
                     mThumbnailLoader.setAlbumTotalImgNum(imgDownloadNum);
                 }
 
