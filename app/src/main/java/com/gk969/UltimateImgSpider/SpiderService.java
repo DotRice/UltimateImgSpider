@@ -79,12 +79,14 @@ public class SpiderService extends Service {
 
     private final IRemoteSpiderService.Stub mBinder = new IRemoteSpiderService.Stub() {
         public void registerCallback(IRemoteSpiderServiceCallback cb) {
+            Log.i(TAG, "registerCallback");
             if(cb != null) {
                 mCallbacks.register(cb);
             }
         }
 
         public void unregisterCallback(IRemoteSpiderServiceCallback cb) {
+            Log.i(TAG, "unregisterCallback");
             if(cb != null) {
                 mCallbacks.unregister(cb);
             }
@@ -294,8 +296,7 @@ public class SpiderService extends Service {
                 }
 
                 case StaticValue.CMD_STOP_STORE: {
-                    state.set(STAT_STOP);
-                    sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
+                    stopStoreProject();
                     break;
                 }
 
@@ -361,6 +362,13 @@ public class SpiderService extends Service {
         return START_NOT_STICKY;
     }
 
+    private void stopStoreProject(){
+        if(state.get()!=STAT_STOP) {
+            state.set(STAT_STOP);
+            sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
+        }
+    }
+
     public int getAshmemFromWatchdog(String name, int size) {
         Log.i(TAG, "getAshmemFromWatchdog name:" + name + " size:" + size);
 
@@ -402,6 +410,16 @@ public class SpiderService extends Service {
     @Override
     public void onLowMemory() {
         Log.i(TAG, "onLowMemory");
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent){
+        Log.i(TAG, "onUnbind:" + intent.getAction());
+        if(IRemoteSpiderService.class.getName().equals(intent.getAction())) {
+            stopStoreProject();
+        }
+
+        return false;
     }
 
     @Override
@@ -1211,7 +1229,7 @@ public class SpiderService extends Service {
             while(timerRunning.get()) {
                 netTrafficCalc.refreshNetTraffic();
 
-                if(reportStatusTimer.getAndIncrement() == REPORT_STATUS_MAX_INTERVAL) {
+                if(reportStatusTimer.incrementAndGet() == REPORT_STATUS_MAX_INTERVAL) {
                     reportStatusTimer.set(0);
                     reportSpiderLogByHandler();
                 }

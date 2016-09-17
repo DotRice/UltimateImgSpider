@@ -27,78 +27,65 @@ import android.util.Log;
 
 /**
  * operate memory information
- * 
  */
-public class MemoryInfo
-{
-	
-	private static final String TAG = MemoryInfo.class.getSimpleName();
-	
-	public static long getTotalMemInMb()
-	{
+public class MemoryInfo {
 
-		String memInfoPath = "/proc/meminfo";
-		String readTemp = "";
-		String memTotal = "";
-		long memory = 0;
-		try
-		{
-			FileReader fr = new FileReader(memInfoPath);
-			BufferedReader localBufferedReader = new BufferedReader(fr, 8192);
-			while ((readTemp = localBufferedReader.readLine()) != null)
-			{
-				if (readTemp.contains("MemTotal"))
-				{
-					String[] total = readTemp.split(":");
-					memTotal = total[1].trim();
-				}
-			}
-			localBufferedReader.close();
-			String[] memKb = memTotal.split(" ");
-			memTotal = memKb[0].trim();
-			//Log.d(TAG, "memTotal: " + memTotal);
-			memory = Long.parseLong(memTotal);
-		}
-		catch (IOException e)
-		{
-			Log.e(TAG, "IOException: " + e.getMessage());
-		}
-		return memory>>10;
-	}
-	
-	/**
-	 * get free memory.
-	 * 
-	 * @return free memory of device
-	 * 
-	 */
-	public static long getFreeMemInMb(Context context)
-	{
-		ActivityManager.MemoryInfo outInfo = new ActivityManager.MemoryInfo();
-		ActivityManager am = (ActivityManager) context
-		        .getSystemService(Context.ACTIVITY_SERVICE);
-		am.getMemoryInfo(outInfo);
-		long avaliMem = outInfo.availMem;
-		return avaliMem >> 20;
-	}
-	
-	/**
-	 * get the memory of process with certain pid.
-	 * 
-	 * @param pid
-	 *            pid of process
-	 * @param context
-	 *            context of certain activity
-	 * @return memory usage of certain process
-	 */
-	public static int getPidMemorySize(int pid, Context context)
-	{
-		ActivityManager am = (ActivityManager) context
-		        .getSystemService(Context.ACTIVITY_SERVICE);
-		int[] myMempid = new int[] { pid };
-		Debug.MemoryInfo[] memoryInfo = am.getProcessMemoryInfo(myMempid);
-		memoryInfo[0].getTotalSharedDirty();
-		int memSize = memoryInfo[0].getTotalPss();
-		return memSize;
-	}
+    private static final String TAG = MemoryInfo.class.getSimpleName();
+
+    public static long getTotalMemInMb() {
+
+        String memInfoPath = "/proc/meminfo";
+        String readTemp = "";
+        String memTotal = "";
+        long memory = 0;
+        try {
+            FileReader fr = new FileReader(memInfoPath);
+            BufferedReader localBufferedReader = new BufferedReader(fr, 8192);
+            while((readTemp = localBufferedReader.readLine()) != null) {
+                if(readTemp.contains("MemTotal")) {
+                    String[] total = readTemp.split(":");
+                    memTotal = total[1].trim();
+                }
+            }
+            localBufferedReader.close();
+            String[] memKb = memTotal.split(" ");
+            memTotal = memKb[0].trim();
+            //Log.d(TAG, "memTotal: " + memTotal);
+            memory = Long.parseLong(memTotal);
+        } catch(IOException e) {
+            Log.e(TAG, "IOException: " + e.getMessage());
+        }
+        return memory >> 10;
+    }
+
+    /**
+     * get free memory.
+     *
+     * @return free memory of device
+     */
+    public static long getFreeMemInMb(Context context) {
+        ActivityManager.MemoryInfo outInfo = new ActivityManager.MemoryInfo();
+        ActivityManager am = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        am.getMemoryInfo(outInfo);
+        long avaliMem = outInfo.availMem;
+        return avaliMem >> 20;
+    }
+
+    /**
+     * get the memory of process with certain pid.
+     *
+     * @param pid     pid of process
+     * @param context context of certain activity
+     * @return memory usage of certain process
+     */
+    public static int getPidMemorySize(int pid, Context context) {
+        ActivityManager am = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        int[] myMempid = new int[]{pid};
+        Debug.MemoryInfo[] memoryInfo = am.getProcessMemoryInfo(myMempid);
+        memoryInfo[0].getTotalSharedDirty();
+        int memSize = memoryInfo[0].getTotalPss();
+        return memSize;
+    }
 }

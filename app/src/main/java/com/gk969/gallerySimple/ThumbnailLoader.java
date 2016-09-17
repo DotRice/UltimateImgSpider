@@ -173,8 +173,7 @@ public class ThumbnailLoader {
             albumTotalImgNum = totalImgNum;
             clearCache();
             slotView.scrollAbs(0);
-        }
-        else if(totalImgNum > prevTotalImgNum) {
+        } else if(totalImgNum > prevTotalImgNum) {
             if(dispAreaOffset + cacheSize > prevTotalImgNum) {
                 albumTotalImgNum = totalImgNum;
                 refreshCacheOffset(dispAreaOffset, true);
@@ -182,8 +181,7 @@ public class ThumbnailLoader {
                 for(SlotTexture slot : textureCache) {
                     slot.hasTried = false;
                 }
-            }
-            else {
+            } else {
                 albumTotalImgNum = totalImgNum;
             }
 
@@ -276,8 +274,7 @@ public class ThumbnailLoader {
 
         if(newCacheOffset < 0) {
             newCacheOffset = 0;
-        }
-        else if(newCacheOffset > cacheOffsetMax) {
+        } else if(newCacheOffset > cacheOffsetMax) {
             newCacheOffset = cacheOffsetMax;
         }
 
@@ -288,8 +285,7 @@ public class ThumbnailLoader {
             if(newCacheOffset >= cacheOffset) {
                 step = 1;
                 imgIndex = cacheOffset + cacheSize;
-            }
-            else {
+            } else {
                 step = -1;
                 imgIndex = cacheOffset - 1;
             }

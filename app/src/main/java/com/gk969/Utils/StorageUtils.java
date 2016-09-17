@@ -12,8 +12,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Created by songjian on 2016/9/8.
  */
 public class StorageUtils {
-    private final static String TAG="StorageUtils";
-    private final static int INFO_REFRESH_INTERVAL=30000;
+    private final static String TAG = "StorageUtils";
+    private final static int INFO_REFRESH_INTERVAL = 30000;
 
     private static class StorageDeviceDir {
         public long freeSpace;
@@ -21,37 +21,37 @@ public class StorageUtils {
         public String path;
         public LinkedList<String> pathList;
 
-        public StorageDeviceDir(long pFreeSpace, long pTotalSpace, String firstPath){
-            freeSpace=pFreeSpace;
-            totalSpace=pTotalSpace;
-            pathList=new LinkedList<String>();
+        public StorageDeviceDir(long pFreeSpace, long pTotalSpace, String firstPath) {
+            freeSpace = pFreeSpace;
+            totalSpace = pTotalSpace;
+            pathList = new LinkedList<String>();
             pathList.add(firstPath);
-            path=firstPath;
+            path = firstPath;
         }
     }
 
-    public class StorageDir{
+    public class StorageDir {
         public long freeSpace;
         public long totalSpace;
         public String path;
 
-        public StorageDir(long pFreeSpace, long pTotalSpace, String firstPath){
-            freeSpace=pFreeSpace;
-            totalSpace=pTotalSpace;
-            path=firstPath;
+        public StorageDir(long pFreeSpace, long pTotalSpace, String firstPath) {
+            freeSpace = pFreeSpace;
+            totalSpace = pTotalSpace;
+            path = firstPath;
         }
     }
 
-    private LinkedList<StorageDeviceDir> storageDeviceDirList=new LinkedList<StorageDeviceDir>();
-    private ReentrantLock storageInfoLock=new ReentrantLock();
+    private LinkedList<StorageDeviceDir> storageDeviceDirList = new LinkedList<StorageDeviceDir>();
+    private ReentrantLock storageInfoLock = new ReentrantLock();
 
-    public LinkedList<StorageDir> getCachedStorageDir(String appName){
-        LinkedList<StorageDir> storageInfo=new LinkedList<StorageDir>();
+    public LinkedList<StorageDir> getCachedStorageDir(String appName) {
+        LinkedList<StorageDir> storageInfo = new LinkedList<StorageDir>();
 
         storageInfoLock.lock();
-        for(StorageDeviceDir storageDeviceDir:storageDeviceDirList){
-            File appDir=new File(storageDeviceDir.path+"/"+appName);
-            if(!appDir.exists()){
+        for(StorageDeviceDir storageDeviceDir : storageDeviceDirList) {
+            File appDir = new File(storageDeviceDir.path + "/" + appName);
+            if(!appDir.exists()) {
                 appDir.mkdirs();
             }
 
@@ -63,12 +63,12 @@ public class StorageUtils {
         return storageInfo;
     }
 
-    public long getFreeSpace(String path){
-        long freeSpace=0;
+    public long getFreeSpace(String path) {
+        long freeSpace = 0;
         storageInfoLock.lock();
-        for(StorageDeviceDir info:storageDeviceDirList){
-            if(path.startsWith(info.path)){
-                freeSpace=info.freeSpace;
+        for(StorageDeviceDir info : storageDeviceDirList) {
+            if(path.startsWith(info.path)) {
+                freeSpace = info.freeSpace;
                 break;
             }
         }
@@ -76,12 +76,12 @@ public class StorageUtils {
         return freeSpace;
     }
 
-    public long getMaxFreeSize(){
-        long freeSpace=0;
+    public long getMaxFreeSize() {
+        long freeSpace = 0;
         storageInfoLock.lock();
-        for(StorageDeviceDir info:storageDeviceDirList){
-            if(info.freeSpace>freeSpace){
-                freeSpace=info.freeSpace;
+        for(StorageDeviceDir info : storageDeviceDirList) {
+            if(info.freeSpace > freeSpace) {
+                freeSpace = info.freeSpace;
             }
         }
         storageInfoLock.unlock();
@@ -91,16 +91,16 @@ public class StorageUtils {
     private volatile boolean isThreadRunning;
     private Thread thread;
 
-    public StorageUtils(){
-        isThreadRunning=true;
+    public StorageUtils() {
+        isThreadRunning = true;
 
-        thread=new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while(isThreadRunning){
-                    LinkedList<StorageDeviceDir> newStorageDirList=getStorageInfo();
+                while(isThreadRunning) {
+                    LinkedList<StorageDeviceDir> newStorageDirList = getStorageInfo();
                     storageInfoLock.lock();
-                    storageDeviceDirList=newStorageDirList;
+                    storageDeviceDirList = newStorageDirList;
                     storageInfoLock.unlock();
                     
                     if(isThreadRunning) {
@@ -116,22 +116,22 @@ public class StorageUtils {
         thread.start();
     }
 
-    public void stopRefresh(){
-        isThreadRunning=false;
+    public void stopRefresh() {
+        isThreadRunning = false;
         thread.interrupt();
     }
 
-    public static LinkedList<StorageDeviceDir> getStorageInfo(){
-        LinkedList<StorageDeviceDir> newStorageDirList=new LinkedList<StorageDeviceDir>();
+    public static LinkedList<StorageDeviceDir> getStorageInfo() {
+        LinkedList<StorageDeviceDir> newStorageDirList = new LinkedList<StorageDeviceDir>();
 
-        long startTime= SystemClock.uptimeMillis();
+        long startTime = SystemClock.uptimeMillis();
         if(Environment.getExternalStorageState().equals(
                 android.os.Environment.MEDIA_MOUNTED)) {
-            File deviceStorage=Environment.getExternalStorageDirectory();
+            File deviceStorage = Environment.getExternalStorageDirectory();
             newStorageDirList.add(new StorageDeviceDir(deviceStorage.getFreeSpace(),
                     deviceStorage.getTotalSpace(), deviceStorage.getPath()));
         }
-    
+
         //Log.i(TAG, "exec mount");
         LinkedList<String> mountList = Utils.exeShell("cat /proc/mounts");
         for(String mount : mountList) {
@@ -141,27 +141,27 @@ public class StorageUtils {
             if(stoDir.exists() && stoDir.isDirectory() && stoDir.canWrite()) {
                 //Log.i(TAG, mount);
 
-                long freeSpace=stoDir.getFreeSpace();
-                long totalSpace=stoDir.getTotalSpace();
+                long freeSpace = stoDir.getFreeSpace();
+                long totalSpace = stoDir.getTotalSpace();
                 //Log.i(TAG, path + " size:" + (freeSpace >> 20) + "/" + (totalSpace >> 20));
 
-                boolean linkedDirFound=false;
-                for(StorageDeviceDir storageDeviceDir:newStorageDirList){
-                    if(storageDeviceDir.freeSpace==freeSpace && storageDeviceDir.totalSpace==totalSpace){
-                        linkedDirFound=true;
+                boolean linkedDirFound = false;
+                for(StorageDeviceDir storageDeviceDir : newStorageDirList) {
+                    if(storageDeviceDir.freeSpace == freeSpace && storageDeviceDir.totalSpace == totalSpace) {
+                        linkedDirFound = true;
                         if(!storageDeviceDir.pathList.contains(path)) {
                             storageDeviceDir.pathList.add(path);
                         }
                     }
                 }
 
-                if(!linkedDirFound){
+                if(!linkedDirFound) {
                     newStorageDirList.add(new StorageDeviceDir(freeSpace, totalSpace, path));
                 }
             }
         }
 
-        Log.i(TAG, "getStorageInfo time "+(SystemClock.uptimeMillis()-startTime));
+        Log.i(TAG, "getStorageInfo time " + (SystemClock.uptimeMillis() - startTime));
 
         /*
         for(StorageDeviceDir storageDeviceDir:newStorageDirList){
@@ -176,13 +176,13 @@ public class StorageUtils {
         return newStorageDirList;
     }
 
-    public static File[] getAppStoDirs(String appName){
-        LinkedList<StorageDeviceDir> newStorageDirList=getStorageInfo();
+    public static File[] getAppStoDirs(String appName) {
+        LinkedList<StorageDeviceDir> newStorageDirList = getStorageInfo();
 
-        File[] stoDir=new File[newStorageDirList.size()];
-        for(int i=0; i<stoDir.length; i++){
-            stoDir[i]=new File(newStorageDirList.get(i).path+"/"+appName);
-            if(!stoDir[i].exists()){
+        File[] stoDir = new File[newStorageDirList.size()];
+        for(int i = 0; i < stoDir.length; i++) {
+            stoDir[i] = new File(newStorageDirList.get(i).path + "/" + appName);
+            if(!stoDir[i].exists()) {
                 stoDir[i].mkdirs();
             }
         }
@@ -211,8 +211,7 @@ public class StorageUtils {
             if(!dir.exists()) {
                 return null;
             }
-        }
-        else {
+        } else {
             Log.i(TAG, "Dir:" + dir.toString() + " Already Exist!");
         }
 

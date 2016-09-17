@@ -311,7 +311,7 @@ public class SpiderActivity extends Activity {
     }
 
     private boolean freeStorageIsLow() {
-        return storageInfo.getMaxFreeSize()<(MIN_FREE_STORAGE_TO_STOP_SERVICE << 20);
+        return storageInfo.getMaxFreeSize() < (MIN_FREE_STORAGE_TO_STOP_SERVICE << 20);
     }
 
     public void showSysFaultAlert(String title, String desc, final boolean exit) {
@@ -350,7 +350,7 @@ public class SpiderActivity extends Activity {
         createTime = SystemClock.uptimeMillis();
         onFirstRun();
 
-        storageInfo=new StorageUtils();
+        storageInfo = new StorageUtils();
         serviceInterfaceInit();
         panelViewInit();
         albumViewInit();
@@ -725,7 +725,7 @@ public class SpiderActivity extends Activity {
 
     private void showSelStoAlert(final String host) {
         final LinkedList<StorageUtils.StorageDir> storageDir = storageInfo.getCachedStorageDir(getString(R.string.appPackageName));
-        int stoNum=storageDir.size();
+        int stoNum = storageDir.size();
         if(stoNum != 0) {
             if(stoNum == 1) {
                 openStartNewProject(host, storageDir.get(0).path);

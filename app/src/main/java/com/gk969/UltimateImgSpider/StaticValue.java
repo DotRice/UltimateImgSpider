@@ -23,7 +23,7 @@ public class StaticValue {
 
     public static final int MAX_IMG_FILE_PER_DIR = 1000;
 
-    public final static Bitmap.Config BITMAP_TYPE=Bitmap.Config.RGB_565;
+    public final static Bitmap.Config BITMAP_TYPE = Bitmap.Config.RGB_565;
 
     public final static String THUMBNAIL_DIR_NAME = "thumbnail";
 
@@ -31,13 +31,13 @@ public class StaticValue {
     public final static int THUMBNAIL_SIZE = 254;
 
     public final static String FULL_THUMBNAIL_DIR_NAME = THUMBNAIL_DIR_NAME + "/full";
-    public final static int SIZE_TO_CREATE_FULL_THUMBNAIL=2000;
+    public final static int SIZE_TO_CREATE_FULL_THUMBNAIL = 2000;
     public final static int FULL_THUMBNAIL_SIZE = 1200;
 
     public final static String THUMBNAIL_FILE_EXT = "jpg.thumbnail";
     public final static String[] IMG_FILE_EXT = {"jpg", "png", "gif"};
 
-    public final static String PROJECT_THUMBNAIL="project.thumbnail";
+    public final static String PROJECT_THUMBNAIL = "project.thumbnail";
 
 
     public final static String PROJECT_DATA_DIR = "/data";

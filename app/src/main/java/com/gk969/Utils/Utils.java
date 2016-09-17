@@ -91,8 +91,7 @@ public class Utils {
                     if(!file.delete()) {
                         return false;
                     }
-                }
-                else {
+                } else {
                     if(!deleteDir(file)) {
                         return false;
                     }
@@ -260,15 +259,13 @@ public class Utils {
         public CubicBezier(float pointAx, float pointAy, float pointBx, float pointBy) {
             if(pointAx < 0) {
                 pointAx = 0;
-            }
-            else if(pointAx > 1) {
+            } else if(pointAx > 1) {
                 pointAx = 1;
             }
 
             if(pointBx < 0) {
                 pointBx = 0;
-            }
-            else if(pointBx > 1) {
+            } else if(pointBx > 1) {
                 pointBx = 1;
             }
 
@@ -290,11 +287,9 @@ public class Utils {
 
             if(x <= 0) {
                 y = 0;
-            }
-            else if(x >= 1) {
+            } else if(x >= 1) {
                 y = 1;
-            }
-            else {
+            } else {
                 calculateMidPoint(cubicStartPoint, controlPointA, midPoints[0], x);
                 calculateMidPoint(controlPointA, controlPointB, midPoints[1], x);
                 calculateMidPoint(controlPointB, cubicEndPoint, midPoints[2], x);
@@ -404,9 +399,9 @@ public class Utils {
         return ret;
     }
 
-    public static boolean mayBeUrl(String str){
-        int posOdDot=str.lastIndexOf(".");
-        return posOdDot>0&&posOdDot<(str.length()-2);
+    public static boolean mayBeUrl(String str) {
+        int posOdDot = str.lastIndexOf(".");
+        return posOdDot > 0 && posOdDot < (str.length() - 2);
     }
 
     public static class LogRecorder extends Thread {
@@ -419,9 +414,9 @@ public class Utils {
 
         public LogRecorder(String appName) {
             setDaemon(true);
-            File logDir=StorageUtils.getDirInSto(appName + "/log");
-            if(logDir!=null) {
-                recordFile = new File(logDir.getPath()+"/log.txt");
+            File logDir = StorageUtils.getDirInSto(appName + "/log");
+            if(logDir != null) {
+                recordFile = new File(logDir.getPath() + "/log.txt");
                 start();
             }
         }
@@ -554,11 +549,9 @@ public class Utils {
                         attr.length() - 2));
                 if(attr.endsWith("px")) {
                     px = attrVal;
-                }
-                else if(attr.endsWith("dp")) {
+                } else if(attr.endsWith("dp")) {
                     px = dipToPx(context, attrVal);
-                }
-                else if(attr.endsWith("sp")) {
+                } else if(attr.endsWith("sp")) {
                     px = spToPx(context, attrVal);
                 }
             } catch(NumberFormatException e) {

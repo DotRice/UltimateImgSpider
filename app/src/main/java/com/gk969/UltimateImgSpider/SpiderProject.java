@@ -56,11 +56,11 @@ public class SpiderProject {
             host = siteHost;
             dir = new File(sitePath);
 
-            if(!dir.exists()){
+            if(!dir.exists()) {
                 dir.mkdirs();
             }
 
-            dirTotalSpace=Utils.byteSizeToString(dir.getTotalSpace());
+            dirTotalSpace = Utils.byteSizeToString(dir.getTotalSpace());
 
             imgDownloadNum = (int) paramImgInfo[StaticValue.PARA_DOWNLOAD];
             imgProcessedNum = (int) paramImgInfo[StaticValue.PARA_PROCESSED];
@@ -99,7 +99,7 @@ public class SpiderProject {
                 index = i;
                 break;
 
-             }
+            }
         }
 
         return index;
@@ -109,7 +109,7 @@ public class SpiderProject {
     public void refreshProjectList(File[] storageDir) {
         projectList.clear();
 
-        for(File appDir:storageDir) {
+        for(File appDir : storageDir) {
             Log.i(TAG, "refreshProjectList path:" + appDir.getPath());
 
             File[] fileList = appDir.listFiles();
@@ -123,10 +123,10 @@ public class SpiderProject {
                     if(safeDataFileName != null) {
                         long[] imgInfo = new long[StaticValue.IMG_PARA_NUM];
                         long[] pageInfo = new long[StaticValue.PAGE_PARA_NUM];
-                        String srcUrl=jniGetProjectInfoOnStart(dataDirPath + safeDataFileName, imgInfo, pageInfo);
+                        String srcUrl = jniGetProjectInfoOnStart(dataDirPath + safeDataFileName, imgInfo, pageInfo);
 
                         try {
-                            String host=new URL(srcUrl).getHost();
+                            String host = new URL(srcUrl).getHost();
 
                             int scrollDistance = 0;
                             try {

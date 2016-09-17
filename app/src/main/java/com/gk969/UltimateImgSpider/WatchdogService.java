@@ -111,8 +111,7 @@ public class WatchdogService extends Service {
         if(projectDataIsSafe(projectDataDirPath + StaticValue.PROJECT_DATA_NAME,
                 projectDataDirPath + StaticValue.PROJECT_DATA_MD5)) {
             return StaticValue.PROJECT_DATA_NAME;
-        }
-        else if(projectDataIsSafe(projectDataDirPath + StaticValue.PROJECT_DATA_BACKUP_NAME,
+        } else if(projectDataIsSafe(projectDataDirPath + StaticValue.PROJECT_DATA_BACKUP_NAME,
                 projectDataDirPath + StaticValue.PROJECT_DATA_BACKUP_MD5)) {
             return StaticValue.PROJECT_DATA_BACKUP_NAME;
         }
@@ -133,8 +132,7 @@ public class WatchdogService extends Service {
             if(projectDataIsSafe(dataDirPath + StaticValue.PROJECT_DATA_NAME,
                     dataDirPath + StaticValue.PROJECT_DATA_MD5)) {
                 jniRestoreProjectData(dataDirPath + StaticValue.PROJECT_DATA_NAME);
-            }
-            else if(projectDataIsSafe(dataDirPath + StaticValue.PROJECT_DATA_BACKUP_NAME,
+            } else if(projectDataIsSafe(dataDirPath + StaticValue.PROJECT_DATA_BACKUP_NAME,
                     dataDirPath + StaticValue.PROJECT_DATA_BACKUP_MD5)) {
                 jniRestoreProjectData(dataDirPath + StaticValue.PROJECT_DATA_BACKUP_NAME);
             }

@@ -33,7 +33,7 @@ public class AlbumLoaderHelper extends ThumbnailLoaderHelper {
         int group = index / StaticValue.MAX_IMG_FILE_PER_DIR;
         int offset = index % StaticValue.MAX_IMG_FILE_PER_DIR;
 
-        File file=new File(String.format("%s/%s/%d/%03d.%s", projectPath, StaticValue.SLOT_THUMBNAIL_DIR_NAME,
+        File file = new File(String.format("%s/%s/%d/%03d.%s", projectPath, StaticValue.SLOT_THUMBNAIL_DIR_NAME,
                 group, offset, StaticValue.THUMBNAIL_FILE_EXT));
 
         if(file.exists()) {
