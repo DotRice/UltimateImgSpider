@@ -147,8 +147,8 @@ public class PhotoView extends GLView {
         }
 
         void calcRenderPos() {
-            //Log.i(TAG, String.format("calcRenderPos %d boxPos %f %f %f %f inbox %.3f %.3f",
-            //                indexInProject, boxPos.width, boxPos.height, boxPos.top, boxPos.left, widthInBox, heightInBox));
+            Log.i(TAG, String.format("calcRenderPos %d boxPos %f %f %f %f inbox %.3f %.3f",
+                            indexInProject, boxPos.width, boxPos.height, boxPos.top, boxPos.left, widthInBox, heightInBox));
             renderPos.width = boxPos.width * widthInBox;
             renderPos.height = boxPos.height * heightInBox;
             renderPos.top = boxPos.top + (boxPos.height - renderPos.height) / 2;
@@ -468,7 +468,7 @@ public class PhotoView extends GLView {
         renderTime = curTime;
 
         Photo photo = photoCache[curPhotoIndexInCache];
-        Log.i(TAG, "render " + photo.indexInProject + " " + curPhotoIndexInCache + " time " + renderTimeInterval);
+        //Log.i(TAG, "render " + photo.indexInProject + " " + curPhotoIndexInCache + " time " + renderTimeInterval);
 
         if(flyVelocity != 0) {
             float newLeft = photo.boxPos.left + renderTimeInterval * flyVelocity / 1000;

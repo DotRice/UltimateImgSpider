@@ -519,12 +519,12 @@ public class SpiderActivity extends Activity {
         albumSetLoaderHelper = new AlbumSetLoaderHelper(spiderProject);
         mThumbnailLoader = new ThumbnailLoader(glRootView, albumSetLoaderHelper);
 
-        singleThreadPoolTimer.execute(new Runnable() {
+        singleThreadPoolTimer.schedule(new Runnable() {
             @Override
             public void run() {
                 spiderProject.refreshProjectList(StorageUtils.getAppStoDirs(getString(R.string.appPackageName)));
             }
-        });
+        }, 500, TimeUnit.MILLISECONDS);
 
         slotView = new SlotView(this, mThumbnailLoader, glRootView);
         slotView.setOnClick(new SlotView.OnClickListener() {
