@@ -182,6 +182,12 @@ public class SlotView extends GLView {
 
     OnManuallyScrollListener runOnManuallyScroll;
 
+    public interface OnStartListener{
+        public void onStart();
+    }
+    OnStartListener runOnStart;
+    private boolean hasStarted=false;
+
 
     private boolean isTouching;
 
@@ -340,6 +346,11 @@ public class SlotView extends GLView {
 
         stopAnimation();
         setViewSize(getWidth(), getHeight());
+
+        if(runOnStart!=null && hasStarted==false){
+            runOnStart.onStart();
+            hasStarted=true;
+        }
     }
 
     public void setOnClick(OnClickListener listener) {
@@ -352,6 +363,10 @@ public class SlotView extends GLView {
 
     public void setOnManuallyScroll(OnManuallyScrollListener listener) {
         runOnManuallyScroll = listener;
+    }
+
+    public void setOnStart(OnStartListener listener){
+        runOnStart = listener;
     }
 
     private void setViewSize(int width, int height) {
