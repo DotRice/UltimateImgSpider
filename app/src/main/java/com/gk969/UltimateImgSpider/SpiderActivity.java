@@ -560,7 +560,7 @@ public class SpiderActivity extends Activity {
                 singleThreadPoolTimer.execute(new Runnable() {
                     @Override
                     public void run() {
-                        spiderProject.refreshProjectList(StorageUtils.getAppStoDirs(getString(R.string.appPackageName)));
+                        spiderProject.refreshProjectList(StorageUtils.getAppStoDirs(), getString(R.string.appPackageName));
                     }
                 });
             }
@@ -725,13 +725,17 @@ public class SpiderActivity extends Activity {
         int albumIndex = spiderProject.projectList.size();
         long[] imgInfo = new long[StaticValue.IMG_PARA_NUM];
         long[] pageInfo = new long[StaticValue.PAGE_PARA_NUM];
+        File appDir=new File(storagePath+"/"+getString(R.string.appPackageName));
+        if((!appDir.isDirectory())||(!appDir.exists())){
+            appDir.mkdirs();
+        }
         spiderProject.projectList.add(new SpiderProject.ProjectInfo(
-                host, storagePath + "/" + host, imgInfo, pageInfo));
+                host, appDir.getPath() + "/" + host, imgInfo, pageInfo));
         openStartProject(albumIndex);
     }
 
     private void showSelStoAlert(final String host) {
-        final LinkedList<StorageUtils.StorageDir> storageDir = storageInfo.getCachedStorageDir(getString(R.string.appPackageName));
+        final LinkedList<StorageUtils.StorageDir> storageDir = storageInfo.getCachedStorageDir();
         int stoNum = storageDir.size();
         if(stoNum != 0) {
             if(stoNum == 1) {

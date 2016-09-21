@@ -106,11 +106,16 @@ public class SpiderProject {
     }
 
 
-    public void refreshProjectList(File[] storageDir) {
+    public void refreshProjectList(File[] storageDir, String appName) {
         projectList.clear();
 
-        for(File appDir : storageDir) {
-            Log.i(TAG, "refreshProjectList path:" + appDir.getPath());
+        for(File stoDir : storageDir) {
+            Log.i(TAG, "refreshProjectList path:" + stoDir.getPath());
+
+            File appDir=new File(stoDir.getPath()+"/"+appName);
+            if((!appDir.isDirectory())||(!appDir.exists())){
+                continue;
+            }
 
             File[] fileList = appDir.listFiles();
 

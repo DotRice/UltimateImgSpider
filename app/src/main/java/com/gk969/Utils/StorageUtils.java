@@ -45,18 +45,13 @@ public class StorageUtils {
     private LinkedList<StorageDeviceDir> storageDeviceDirList = new LinkedList<StorageDeviceDir>();
     private ReentrantLock storageInfoLock = new ReentrantLock();
 
-    public LinkedList<StorageDir> getCachedStorageDir(String appName) {
+    public LinkedList<StorageDir> getCachedStorageDir() {
         LinkedList<StorageDir> storageInfo = new LinkedList<StorageDir>();
 
         storageInfoLock.lock();
         for(StorageDeviceDir storageDeviceDir : storageDeviceDirList) {
-            File appDir = new File(storageDeviceDir.path + "/" + appName);
-            if(!appDir.exists()) {
-                appDir.mkdirs();
-            }
-
             storageInfo.add(new StorageDir(storageDeviceDir.freeSpace, storageDeviceDir.totalSpace,
-                    appDir.getPath()));
+                    storageDeviceDir.path));
         }
         storageInfoLock.unlock();
 
@@ -147,7 +142,7 @@ public class StorageUtils {
 
                 boolean linkedDirFound = false;
                 for(StorageDeviceDir storageDeviceDir : newStorageDirList) {
-                    if(storageDeviceDir.freeSpace == freeSpace && storageDeviceDir.totalSpace == totalSpace) {
+                    if(storageDeviceDir.totalSpace == totalSpace && (Math.abs(storageDeviceDir.freeSpace-freeSpace)<(1<<20))) {
                         linkedDirFound = true;
                         if(!storageDeviceDir.pathList.contains(path)) {
                             storageDeviceDir.pathList.add(path);
@@ -176,15 +171,12 @@ public class StorageUtils {
         return newStorageDirList;
     }
 
-    public static File[] getAppStoDirs(String appName) {
+    public static File[] getAppStoDirs() {
         LinkedList<StorageDeviceDir> newStorageDirList = getStorageInfo();
 
         File[] stoDir = new File[newStorageDirList.size()];
         for(int i = 0; i < stoDir.length; i++) {
-            stoDir[i] = new File(newStorageDirList.get(i).path + "/" + appName);
-            if(!stoDir[i].exists()) {
-                stoDir[i].mkdirs();
-            }
+            stoDir[i] = new File(newStorageDirList.get(i).path);
         }
 
         return stoDir;
