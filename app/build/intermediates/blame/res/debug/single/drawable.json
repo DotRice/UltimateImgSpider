@@ -166,5 +166,9 @@
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\ram.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\ram.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\leak_canary_toast_background.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\drawable\\leak_canary_toast_background.xml"
     }
 ]

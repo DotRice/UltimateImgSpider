@@ -23,7 +23,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.LongSparseArray;
 import android.util.DisplayMetrics;
-import android.util.FloatMath;
+
 import android.view.WindowManager;
 
 import com.gk969.gallery.gallery3d.app.GalleryContext;
@@ -313,10 +313,10 @@ public class TileImageView extends GLView {
         int height = (int) Math.ceil(Math.max(
                 Math.abs(sin * w + cos * h), Math.abs(sin * w - cos * h)));
 
-        int left = (int) FloatMath.floor(cX - width / (2f * scale));
-        int top = (int) FloatMath.floor(cY - height / (2f * scale));
-        int right = (int) FloatMath.ceil(left + width / scale);
-        int bottom = (int) FloatMath.ceil(top + height / scale);
+        int left = (int) (float)Math.floor(cX - width / (2f * scale));
+        int top = (int) (float)Math.floor(cY - height / (2f * scale));
+        int right = (int) (float)Math.ceil(left + width / scale);
+        int bottom = (int) (float)Math.ceil(top + height / scale);
 
         // align the rectangle to tile boundary
         int size = sTileSize << level;

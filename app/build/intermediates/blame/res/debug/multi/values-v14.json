@@ -22,6 +22,27 @@
                         "endOffset": 361
                     }
                 }
+            },
+            {
+                "to": {
+                    "startLine": 5,
+                    "startColumn": 4,
+                    "startOffset": 192,
+                    "endLine": 6,
+                    "endColumn": 10,
+                    "endOffset": 273
+                },
+                "from": {
+                    "file": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\values-v14\\values-v14.xml",
+                    "position": {
+                        "startLine": 2,
+                        "startColumn": 4,
+                        "startOffset": 55,
+                        "endLine": 3,
+                        "endColumn": 10,
+                        "endOffset": 136
+                    }
+                }
             }
         ]
     }

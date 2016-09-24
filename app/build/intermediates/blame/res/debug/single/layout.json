@@ -24,12 +24,32 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\url_bar.xml"
     },
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\leak_canary_heap_dump_toast.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\layout\\leak_canary_heap_dump_toast.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\leak_canary_leak_row.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\layout\\leak_canary_leak_row.xml"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\activity_sel_src.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\activity_sel_src.xml"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\activity_spider.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\activity_spider.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\leak_canary_ref_row.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\layout\\leak_canary_ref_row.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\leak_canary_display_leak.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\layout\\leak_canary_display_leak.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\leak_canary_ref_top_row.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\layout\\leak_canary_ref_top_row.xml"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\image_text_button.xml",

@@ -917,6 +917,7 @@ public class SpiderActivity extends Activity {
             text_project_site.setText(displayProjectInfo.host);
             storage_total.setText(displayProjectInfo.dirTotalSpace);
             refreshBasicInfo();
+            refreshMemoryInfo();
         }
 
         public void setDrawer(int viewIndex) {

@@ -1220,6 +1220,10 @@ void jniOnImgUrlProcessed(JNIEnv *env, jobject thiz, jint jLastImgUrlAddr, jlong
         downloadingImgNum--;
         deleteUrlNodeFromList(curTree, lastImgNode);
     }
+    else
+    {
+        LOGI("invalid lastUrlAddr %08X", jLastImgUrlAddr);
+    }
 
     u64 *param = (*env)->GetLongArrayElements(env, jImgParam, NULL);
     param[PARA_PAYLOAD] = downloadingImgNum;

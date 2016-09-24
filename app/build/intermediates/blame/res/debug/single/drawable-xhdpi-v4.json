@@ -1,5 +1,9 @@
 [
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi-v4\\leak_canary_icon.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\drawable-xhdpi-v4\\leak_canary_icon.png"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi-v4\\new_proj_black.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-xhdpi\\new_proj_black.png"
     },

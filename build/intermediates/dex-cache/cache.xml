@@ -1,3 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" />
+<items version="2" >
 
+    <item
+        jar="C:\Users\songjian\.gradle\caches\modules-2\files-2.1\com.squareup.leakcanary\leakcanary-watcher\1.4\5afc3a836f7523c7dec8ea0da5632a19b354b0a0\leakcanary-watcher-1.4.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="5afc3a836f7523c7dec8ea0da5632a19b354b0a0">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\leakcanary-watcher-1.4_c7c8a55781f7a54bda7cd888a4bb61373352afe9.jar" />
+    </item>
+    <item
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.squareup.leakcanary\leakcanary-android\1.4\jars\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="d5e583b1683726f97ea955f0ca8dca78ac761ec5">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.squareup.leakcanary-leakcanary-android-1.4_d363915723886c181d20947b6360533e7c8618d3.jar" />
+    </item>
+    <item
+        jar="C:\Users\songjian\.gradle\caches\modules-2\files-2.1\com.squareup.haha\haha\2.0.3\640a438d2d415c056ca6a673ac26b183b044e160\haha-2.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="640a438d2d415c056ca6a673ac26b183b044e160">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\haha-2.0.3_bb756bfac188f446b89ad170351960795524ec2e.jar" />
+    </item>
+    <item
+        jar="C:\Users\songjian\.gradle\caches\modules-2\files-2.1\com.squareup.leakcanary\leakcanary-analyzer\1.4\5faf46d7b5f99d8bdc887ba83c7a966b426740e1\leakcanary-analyzer-1.4.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="5faf46d7b5f99d8bdc887ba83c7a966b426740e1">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\leakcanary-analyzer-1.4_8f0a2db0e8ce26deae3682ca6e4209ac3280212e.jar" />
+    </item>
+
+</items>

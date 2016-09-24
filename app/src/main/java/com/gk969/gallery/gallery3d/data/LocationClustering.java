@@ -19,7 +19,7 @@ package com.gk969.gallery.gallery3d.data;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.FloatMath;
+
 import android.widget.Toast;
 
 import com.gk969.UltimateImgSpider.R;
@@ -298,7 +298,7 @@ class LocationClustering extends Clustering {
             }
 
             // step 5: calculate the final score
-            float score = totalDistance * FloatMath.sqrt(realK);
+            float score = totalDistance * (float)Math.sqrt(realK);
 
             if (score < bestScore) {
                 bestScore = score;

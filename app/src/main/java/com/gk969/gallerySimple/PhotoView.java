@@ -9,7 +9,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Message;
 import android.os.SystemClock;
-import android.util.FloatMath;
 import android.util.Log;
 import android.os.Handler;
 import android.view.MotionEvent;

@@ -24,6 +24,10 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-xxhdpi\\new_proj_black.png"
     },
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi-v4\\leak_canary_icon.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\drawable-xxhdpi-v4\\leak_canary_icon.png"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi-v4\\speed.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable-xxhdpi\\speed.png"
     },

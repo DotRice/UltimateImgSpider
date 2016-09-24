@@ -3,4 +3,6 @@
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!-- API 14 theme customizations can go here. -->
     </style>
+    <style name="leak_canary_LeakCanary.Base" parent="android:Theme.Holo">
+  </style>
 </resources>
