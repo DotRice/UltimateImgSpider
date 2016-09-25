@@ -47,8 +47,7 @@ void fileTest()
 jstring stringFromJNI(JNIEnv *env,
                       jobject thiz, jstring jSrcStr)
 {
-    int i;
-    const u8 *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
+    const char *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
     LOGI("build @ %s %s", __DATE__, __TIME__);
     LOGI("stringFromJNI %s ", srcStr);
 
@@ -213,7 +212,7 @@ char urlBuf[MAX_SIZE_PER_URL * 2 + 2 + sizeof(u32) * 2 + 2];
 
 RelativeAddr nodeAddrAbsToRelative(urlNode *node)
 {
-    RelativeAddr relativeAddr;
+    RelativeAddr relativeAddr = RELATIVE_ADDR_NULL;
 
     if(node != NULL)
     {
@@ -225,14 +224,10 @@ RelativeAddr nodeAddrAbsToRelative(urlNode *node)
 
             if(ofs >= 0 && ofs < sizeof(t_urlPool))
             {
-                relativeAddr = NEW_RELATIVE_ADDR(i, ofs);
+                relativeAddr = NEW_RELATIVE_ADDR(i, (u32) ofs);
                 break;
             }
         }
-    }
-    else
-    {
-        relativeAddr = RELATIVE_ADDR_NULL;
     }
 
     return relativeAddr;
@@ -352,11 +347,11 @@ char *urlPoolIndexToName(u32 index)
 void *mallocFromPool(JNIEnv *env, u32 size, RelativeAddr *direction)
 {
     void *node = NULL;
-    t_urlPool *urlPool;
+    t_urlPool *urlPool = NULL;
     u32 poolIndex;
     u32 offset = 0;
 
-    size=(size + 3) & 0xFFFFFFFC;
+    size = (size + 3) & 0xFFFFFFFC;
 
     if((size > MAX_SIZE_PER_URL) || (spiderPara->urlPoolNum == 0))
     {
@@ -484,8 +479,6 @@ jboolean urlPoolInit(JNIEnv *env)
     else
     {
         u32 i;
-        t_urlPool *urlPool;
-
         for(i = 0; i < spiderPara->urlPoolNum; i++)
         {
             AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, urlPoolIndexToName(i),
@@ -514,15 +507,15 @@ jboolean urlPoolInit(JNIEnv *env)
 }
 
 jstring jniSpiderInit(JNIEnv *env,
-                       jobject thiz, jlongArray jImgParam, jlongArray jPageParam)
+                      jobject thiz, jlongArray jImgParam, jlongArray jPageParam)
 {
     AshmAllocObjectInstance = thiz;
     char *srcUrl = NULL;
 
-    u64 *imgParam = (*env)->GetLongArrayElements(env, jImgParam, NULL);
-    u64 *pageParam = (*env)->GetLongArrayElements(env, jPageParam, NULL);
+    jlong *imgParam = (*env)->GetLongArrayElements(env, jImgParam, NULL);
+    jlong *pageParam = (*env)->GetLongArrayElements(env, jPageParam, NULL);
 
-    if(spiderParaInit(env, imgParam, pageParam))
+    if(spiderParaInit(env, (u64*)imgParam, (u64*)pageParam))
     {
         if(urlPoolInit(env))
         {
@@ -538,16 +531,15 @@ jstring jniSpiderInit(JNIEnv *env,
 }
 
 
-jstring jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
-                                 jstring jDataFileFullPath, jlongArray jImgParam,
-                                 jlongArray jPageParam)
+jstring jniGetProjectInfo(JNIEnv *env, jobject thiz, jstring jDataFileFullPath,
+                                 jlongArray jImgParam, jlongArray jPageParam)
 {
-    const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
+    const char *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
 
-    u64 *imgParam = (*env)->GetLongArrayElements(env, jImgParam, NULL);
-    u64 *pageParam = (*env)->GetLongArrayElements(env, jPageParam, NULL);
+    jlong *imgParam = (*env)->GetLongArrayElements(env, jImgParam, NULL);
+    jlong *pageParam = (*env)->GetLongArrayElements(env, jPageParam, NULL);
 
-    LOGI("jniGetProjectInfoOnStart path:%s", dataFileFullPath);
+    LOGI("jniGetProjectInfo path:%s", dataFileFullPath);
 
     char *srcUrl = NULL;
 
@@ -577,18 +569,22 @@ jstring jniGetProjectInfoOnStart(JNIEnv *env, jobject thiz,
 
                     LOGI("para.srcPageNode %08X", para.srcPageNode);
 
-                    u32 srcNodeOffsetInFile=GET_POOL_PTR(para.srcPageNode)*(sizeof(t_urlPool)+sizeof(AshmParaStore))
-                                            +sizeof(AshmParaStore)+OFFSET_IN_STRUCT(t_urlPool, mem)
-                                            +GET_POOL_OFFSET(para.srcPageNode);
+                    u32 srcNodeOffsetInFile = (u32)(GET_POOL_PTR(para.srcPageNode)
+                                              * (sizeof(t_urlPool) + sizeof(AshmParaStore))
+                                              + sizeof(AshmParaStore)
+                                              + OFFSET_IN_STRUCT(t_urlPool, mem)
+                                              + GET_POOL_OFFSET(para.srcPageNode));
 
                     LOGI("srcNodeOffsetInFile %08X", srcNodeOffsetInFile);
 
                     fseek(dataFile, srcNodeOffsetInFile, SEEK_CUR);
                     nodePara srcNodePara;
-                    if(fread(&srcNodePara, sizeof(nodePara), 1, dataFile) == 1){
+                    if(fread(&srcNodePara, sizeof(nodePara), 1, dataFile) == 1)
+                    {
                         LOGI("src url size %d", srcNodePara.len);
-                        if(fread(urlBuf, srcNodePara.len+1, 1, dataFile)==1){
-                            srcUrl=urlBuf;
+                        if(fread(urlBuf, srcNodePara.len + 1, 1, dataFile) == 1)
+                        {
+                            srcUrl = urlBuf;
                             LOGI("srcUrl:%s", srcUrl);
                         }
                     }
@@ -633,7 +629,7 @@ void urlTreeTraversal(urlTree *tree)
 void rbUrlTreeFixup(urlTree *tree, urlNode *node)
 {
     urlNode *parent = nodeAddrRelativeToAbs(node->para.parent);
-    urlNode *grandParent;
+    urlNode *grandParent=NULL;
     urlNode *uncle;
 
     if(parent != NULL)
@@ -766,7 +762,7 @@ urlNode *findUrlNodeByMd5(urlTree *tree, u64 md5)
     return NULL;
 }
 
-bool urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl,
+bool urlTreeInsert(JNIEnv *env, urlTree *tree, const char *newUrl,
                    u64 newMd5_64, RelativeAddr *nodeAddr)
 {
     RelativeAddr *nextNodeAddr = &(tree->root);
@@ -814,7 +810,7 @@ bool urlTreeInsert(JNIEnv *env, urlTree *tree, const u8 *newUrl,
 
     RelativeAddr newNodeAddr = RELATIVE_ADDR_NULL;
 
-    u16 urlLen = strlen(newUrl);
+    u16 urlLen = (u16)strlen(newUrl);
     node = mallocFromPool(env, urlLen + 1 + sizeof(nodePara), nextNodeAddr);
     if(node != NULL)
     {
@@ -882,7 +878,7 @@ jlong jniAddUrl(JNIEnv *env,
 {
     urlTree *curTree =
             (jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
-    const u8 *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
+    const char *url = (*env)->GetStringUTFChars(env, jUrl, NULL);
 
     AshmAllocObjectInstance = thiz;
 
@@ -910,7 +906,7 @@ jlong jniAddUrl(JNIEnv *env,
         */
     }
 
-    u64 *param = (*env)->GetLongArrayElements(env, jParam, NULL);
+    jlong *param = (*env)->GetLongArrayElements(env, jParam, NULL);
     param[PARA_TOTAL] = curTree->len;
     param[PARA_HEIGHT] = curTree->height;
     (*env)->ReleaseLongArrayElements(env, jParam, param, 0);

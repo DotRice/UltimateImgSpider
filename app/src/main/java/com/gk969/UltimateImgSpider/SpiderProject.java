@@ -29,12 +29,6 @@ public class SpiderProject {
     private Runnable runOnFindProject;
     private Runnable runOnProjectLoad;
 
-    public native String jniGetProjectInfoOnStart(String path, long[] imgInfo, long[] pageInfo);
-
-    static {
-        System.loadLibrary("UltimateImgSpider");
-    }
-
     static public class ProjectInfo {
         public String host;
         public File dir;
@@ -124,12 +118,10 @@ public class SpiderProject {
                     Log.i(TAG, "project dir:" + file.getPath());
 
                     String dataDirPath = file.getPath() + StaticValue.PROJECT_DATA_DIR;
-                    String safeDataFileName = WatchdogService.getSafeProjectData(dataDirPath);
-                    if(safeDataFileName != null) {
-                        long[] imgInfo = new long[StaticValue.IMG_PARA_NUM];
-                        long[] pageInfo = new long[StaticValue.PAGE_PARA_NUM];
-                        String srcUrl = jniGetProjectInfoOnStart(dataDirPath + safeDataFileName, imgInfo, pageInfo);
-
+                    long[] imgInfo = new long[StaticValue.IMG_PARA_NUM];
+                    long[] pageInfo = new long[StaticValue.PAGE_PARA_NUM];
+                    String srcUrl = WatchdogService.getProjectInfo(dataDirPath, imgInfo, pageInfo);
+                    if(srcUrl != null) {
                         try {
                             String host = new URL(srcUrl).getHost();
 

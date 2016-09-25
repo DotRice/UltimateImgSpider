@@ -48,16 +48,19 @@ public class WatchdogService extends Service {
 
     private String dataDirPath;
 
-    public native int jniGetAshmem(String name, int size);
+    private native int jniGetAshmem(String name, int size);
+    private native void jniRestoreProjectData(String path);
+    private native void jniStoreProjectData(String path);
+    private static native String jniGetProjectInfo(String dataFileFullPath, long[] imgParam, long[] pageParam);
 
-    public native void jniRestoreProjectData(String path);
 
-    public native void jniStoreProjectData(String path);
+    private static final String[] DATA_FILE={StaticValue.PROJECT_DATA_NAME, StaticValue.PROJECT_DATA_BACKUP_NAME};
+    private static final String[] DATA_HASH_FILE={StaticValue.PROJECT_DATA_MD5, StaticValue.PROJECT_DATA_BACKUP_MD5};
 
     private Handler mHandler = new Handler();
     private ExecutorService singleThreadPool = Executors.newSingleThreadExecutor();
 
-    private boolean saveTargetIsBackupFile = false;
+    private int saveDataBackupIndex=0;
 
     static {
         System.loadLibrary("UltimateImgSpider");
@@ -82,17 +85,39 @@ public class WatchdogService extends Service {
         System.exit(0);
     }
 
-    private void storeProjectData(String dataFileName, String hashDataName) {
-        String dataFileFullPath = dataDirPath + dataFileName;
-        long time = SystemClock.uptimeMillis();
-        jniStoreProjectData(dataFileFullPath);
-        Log.i(TAG, "jniStoreProjectData " + dataFileName + " time " + (SystemClock.uptimeMillis() - time));
+    private void storeProjectData(final boolean shouldReport) {
+        singleThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                String dataFileName = DATA_FILE[saveDataBackupIndex];
+                String hashDataName = DATA_HASH_FILE[saveDataBackupIndex];
 
-        time = SystemClock.uptimeMillis();
-        String md5String = Utils.getFileMD5String(dataFileFullPath);
-        Log.i(TAG, "getFileMD5String " + hashDataName + " time " + (SystemClock.uptimeMillis() - time));
-        Utils.stringToFile(md5String, dataDirPath + hashDataName);
+                saveDataBackupIndex=(saveDataBackupIndex+1)%DATA_FILE.length;
+
+                String dataFileFullPath = dataDirPath + dataFileName;
+                long time = SystemClock.uptimeMillis();
+                jniStoreProjectData(dataFileFullPath);
+                Log.i(TAG, "jniStoreProjectData " + dataFileName + " time " + (SystemClock.uptimeMillis() - time));
+
+                time = SystemClock.uptimeMillis();
+                String md5String = Utils.getFileMD5String(dataFileFullPath);
+                Log.i(TAG, "getFileMD5String " + hashDataName + " time " + (SystemClock.uptimeMillis() - time));
+                Utils.stringToFile(md5String, dataDirPath + hashDataName);
+
+                if(shouldReport) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            projectDataSaved();
+                        }
+                    });
+                }
+            }
+        });
     }
+
+
+
 
     private static boolean projectDataIsSafe(String dataFileFullPath, String hashFileFullPath) {
         String md5OfFile = Utils.getFileMD5String(dataFileFullPath);
@@ -107,16 +132,54 @@ public class WatchdogService extends Service {
         return false;
     }
 
-    public static String getSafeProjectData(String projectDataDirPath) {
-        if(projectDataIsSafe(projectDataDirPath + StaticValue.PROJECT_DATA_NAME,
-                projectDataDirPath + StaticValue.PROJECT_DATA_MD5)) {
-            return StaticValue.PROJECT_DATA_NAME;
-        } else if(projectDataIsSafe(projectDataDirPath + StaticValue.PROJECT_DATA_BACKUP_NAME,
-                projectDataDirPath + StaticValue.PROJECT_DATA_BACKUP_MD5)) {
-            return StaticValue.PROJECT_DATA_BACKUP_NAME;
+
+    public static String getProjectInfo(String dataDirPath, long[] imgParam, long[] pageparam){
+        return getProjectInfo(dataDirPath, imgParam, pageparam, null);
+    }
+
+    public static String getProjectInfo(String dataDirPath, long[] imgParam, long[] pageParam, int[] bestDataFileIndex){
+        String srcUrl=null;
+
+        if(imgParam==null){
+            imgParam=new long[StaticValue.IMG_PARA_NUM];
+        }
+        if(pageParam==null){
+            pageParam=new long[StaticValue.PAGE_PARA_NUM];
         }
 
-        return null;
+        for(long imgInfo:imgParam){
+            imgInfo=0;
+        }
+        for(long pageInfo:pageParam){
+            pageInfo=0;
+        }
+
+        for(int i=0; i<DATA_FILE.length; i++){
+            String dataFile=dataDirPath+DATA_FILE[i];
+            if(projectDataIsSafe(dataFile, dataDirPath+DATA_HASH_FILE[i])){
+                long[] curImgParam=new long[StaticValue.IMG_PARA_NUM];
+                long[] curPageParam=new long[StaticValue.PAGE_PARA_NUM];
+                String curSrcUrl=jniGetProjectInfo(dataFile, curImgParam, curPageParam);
+
+                if(curImgParam[StaticValue.PARA_TOTAL]>imgParam[StaticValue.PARA_TOTAL]
+                        ||curImgParam[StaticValue.PARA_PROCESSED]>imgParam[StaticValue.PARA_PROCESSED]
+                        ||curPageParam[StaticValue.PARA_TOTAL]>pageParam[StaticValue.PARA_TOTAL]
+                        ||curPageParam[StaticValue.PARA_PROCESSED]>pageParam[StaticValue.PARA_PROCESSED]) {
+
+                    Log.i(TAG, "better dataFilePath " + dataFile);
+
+                    srcUrl=curSrcUrl;
+                    System.arraycopy(curImgParam, 0, imgParam, 0, StaticValue.IMG_PARA_NUM);
+                    System.arraycopy(curPageParam, 0, pageParam, 0, StaticValue.PAGE_PARA_NUM);
+
+                    if(bestDataFileIndex!=null){
+                        bestDataFileIndex[0]=i;
+                    }
+                }
+            }
+        }
+
+        return srcUrl;
     }
 
     private void tryToRestoreProjectData(String path) {
@@ -129,12 +192,12 @@ public class WatchdogService extends Service {
             }
             dataDirPath = path + StaticValue.PROJECT_DATA_DIR;
 
-            if(projectDataIsSafe(dataDirPath + StaticValue.PROJECT_DATA_NAME,
-                    dataDirPath + StaticValue.PROJECT_DATA_MD5)) {
-                jniRestoreProjectData(dataDirPath + StaticValue.PROJECT_DATA_NAME);
-            } else if(projectDataIsSafe(dataDirPath + StaticValue.PROJECT_DATA_BACKUP_NAME,
-                    dataDirPath + StaticValue.PROJECT_DATA_BACKUP_MD5)) {
-                jniRestoreProjectData(dataDirPath + StaticValue.PROJECT_DATA_BACKUP_NAME);
+            int[] bestDataFileIndex=new int[1];
+            if(getProjectInfo(dataDirPath, null, null, bestDataFileIndex)!=null){
+                String bestDataFilePath=dataDirPath+DATA_FILE[bestDataFileIndex[0]];
+                Log.i(TAG, "bestDataFilePath " + bestDataFilePath);
+                saveDataBackupIndex=(bestDataFileIndex[0]+1)%DATA_FILE.length;
+                jniRestoreProjectData(bestDataFilePath);
             }
         }
 
@@ -198,7 +261,7 @@ public class WatchdogService extends Service {
                 singleThreadPool.execute(new Runnable() {
                     @Override
                     public void run() {
-                        storeProjectData(StaticValue.PROJECT_DATA_NAME, StaticValue.PROJECT_DATA_MD5);
+                        storeProjectData(false);
                         stopSelf();
                     }
                 });
@@ -211,26 +274,7 @@ public class WatchdogService extends Service {
             }
 
             case StaticValue.CMD_JUST_STORE: {
-                final String dataFileName = saveTargetIsBackupFile ?
-                        StaticValue.PROJECT_DATA_BACKUP_NAME : StaticValue.PROJECT_DATA_NAME;
-                final String hashFileName = saveTargetIsBackupFile ?
-                        StaticValue.PROJECT_DATA_BACKUP_MD5 : StaticValue.PROJECT_DATA_MD5;
-
-                saveTargetIsBackupFile = !saveTargetIsBackupFile;
-
-                singleThreadPool.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        storeProjectData(dataFileName, hashFileName);
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                projectDataSaved();
-                            }
-                        });
-                    }
-                });
-
+                storeProjectData(true);
                 break;
             }
         }

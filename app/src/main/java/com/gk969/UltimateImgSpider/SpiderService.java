@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.gk969.Utils.MemoryInfo;
 import com.gk969.Utils.Utils;
 
 import android.app.Service;
@@ -243,6 +244,7 @@ public class SpiderService extends Service {
         super.onDestroy();
 
         Log.i(TAG, "onDestroy");
+        Log.i(TAG, "System Free Memory "+ MemoryInfo.getFreeMemInMb(this) + "M");
         // Unregister all callbacks.
         mCallbacks.kill();
 
@@ -255,24 +257,26 @@ public class SpiderService extends Service {
         System.exit(0);
     }
 
+    private void checkLock(){
+        pageProcessLock.lock();
+        Log.i(TAG, "pageProcessLock pass");
+        imgFileLock.lock();
+        Log.i(TAG, "imgFileLock pass");
+        jniDataLock.lock();
+        Log.i(TAG, "jniDataLock pass");
+    }
+
     private void checkLockAndStopSelf() {
         //Prevent locks block main thread of service
         singleThreadPoolTimer.execute(new Runnable() {
             @Override
             public void run() {
-                pageProcessLock.lock();
-                Log.i(TAG, "pageProcessLock pass");
-                imgFileLock.lock();
-                Log.i(TAG, "imgFileLock pass");
-                jniDataLock.lock();
-                Log.i(TAG, "jniDataLock pass");
-
-
+                checkLock();
                 stopSelf();
             }
         });
     }
-    
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if(intent != null) {
@@ -362,10 +366,18 @@ public class SpiderService extends Service {
         return START_NOT_STICKY;
     }
 
-    private void stopStoreProject(){
-        if(state.get()!=STAT_STOP) {
+    private void stopStoreProject() {
+        if(state.get() != STAT_STOP) {
             state.set(STAT_STOP);
-            sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
+            singleThreadPoolTimer.execute(new Runnable() {
+                @Override
+                public void run() {
+                    checkLock();
+                    unbindWatchdog();
+                    sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
+                    stopSelf();
+                }
+            });
         }
     }
 
