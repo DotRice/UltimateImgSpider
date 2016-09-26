@@ -43,7 +43,7 @@ public class SpiderProject {
         public volatile int pageTotalNum;
         public volatile int pageTreeHeight;
 
-        public int albumScrollDistance;
+        public volatile int albumScrollDistance;
         public Bitmap thumbnail;
 
         private void init(String siteHost, String sitePath, long[] paramImgInfo, long[] paramPageInfo, int scrollDistance) {
@@ -75,6 +75,17 @@ public class SpiderProject {
 
         public ProjectInfo(String siteHost, String sitePath, long[] paramImgInfo, long[] paramPageInfo) {
             init(siteHost, sitePath, paramImgInfo, paramPageInfo, 0);
+        }
+
+        public void saveParam() {
+            File dataDir = new File(dir.getPath() + "/" + StaticValue.PROJECT_DATA_DIR);
+            if(!dataDir.exists()) {
+                dataDir.mkdirs();
+            }
+
+            String param = "{\"scrollDistance\":" + albumScrollDistance + "}";
+            Utils.stringToFile(param, dataDir.getPath() + StaticValue.PROJECT_PARAM_NAME);
+            Log.i(TAG, "saveProjectParam " + host + " " + param);
         }
     }
 
@@ -149,18 +160,5 @@ public class SpiderProject {
 
         runOnProjectLoad.run();
         Log.i(TAG, "projectList.size " + projectList.size());
-    }
-
-    public void saveProjectParam() {
-        for(ProjectInfo project : projectList) {
-            File dataDir = new File(project.dir.getPath() + "/" + StaticValue.PROJECT_DATA_DIR);
-            if(!dataDir.exists()) {
-                dataDir.mkdirs();
-            }
-
-            String param = "{\"scrollDistance\":" + project.albumScrollDistance + "}";
-            Utils.stringToFile(param, dataDir.getPath() + StaticValue.PROJECT_PARAM_NAME);
-            Log.i(TAG, "saveProjectParam " + project.host + " " + param);
-        }
     }
 }

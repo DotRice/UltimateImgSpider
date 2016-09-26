@@ -131,7 +131,6 @@ public class SpiderService extends Service {
 
                 try {
                     watchdogService.registerCallback(watchdogCallback);
-
                     sendCmdToWatchdog(StaticValue.CMD_START);
                 } catch(RemoteException e) {
                     e.printStackTrace();
@@ -150,7 +149,7 @@ public class SpiderService extends Service {
                 }
 
                 if(state.get() == STAT_STOP) {
-                    checkLockAndStopSelf();
+                    stopSelf();
                 }
             }
         };
@@ -367,15 +366,20 @@ public class SpiderService extends Service {
     }
 
     private void stopStoreProject() {
+        Log.i(TAG, "stopStoreProject curState "+STAT_DESC[state.get()]);
         if(state.get() != STAT_STOP) {
             state.set(STAT_STOP);
             singleThreadPoolTimer.execute(new Runnable() {
                 @Override
                 public void run() {
                     checkLock();
-                    unbindWatchdog();
-                    sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
-                    stopSelf();
+                    spiderHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
+                            stopSelf();
+                        }
+                    });
                 }
             });
         }
@@ -427,10 +431,7 @@ public class SpiderService extends Service {
     @Override
     public boolean onUnbind(Intent intent){
         Log.i(TAG, "onUnbind:" + intent.getAction());
-        if(IRemoteSpiderService.class.getName().equals(intent.getAction())) {
-            stopStoreProject();
-        }
-
+        stopStoreProject();
         return false;
     }
 

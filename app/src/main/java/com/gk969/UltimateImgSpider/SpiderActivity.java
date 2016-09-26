@@ -355,6 +355,7 @@ public class SpiderActivity extends Activity {
         panelViewInit();
         albumViewInit();
         timerThreadPoolInit();
+
     }
 
     private void timerThreadPoolInit() {
@@ -461,6 +462,14 @@ public class SpiderActivity extends Activity {
         } else {
             mThumbnailLoader.refreshSlotInfo(StaticValue.INDEX_INVALID, null, false);
         }
+
+        final SpiderProject.ProjectInfo curProjectInfo=displayProjectInfo;
+        singleThreadPoolTimer.execute(new Runnable() {
+            @Override
+            public void run() {
+                curProjectInfo.saveParam();
+            }
+        });
 
         mThumbnailLoader.setHelper(albumSetLoaderHelper, spiderProject.projectList.size());
         displayProjectIndex = SpiderProject.INVALID_INDEX;
@@ -681,7 +690,6 @@ public class SpiderActivity extends Activity {
         mThumbnailLoader.stopLoader();
         photoView.stopLoader();
         tryToStopSpiderService();
-        spiderProject.saveProjectParam();
         singleThreadPoolTimer.shutdown();
         storageInfo.stopRefresh();
     }

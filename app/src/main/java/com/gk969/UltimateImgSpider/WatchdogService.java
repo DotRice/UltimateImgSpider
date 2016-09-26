@@ -85,7 +85,7 @@ public class WatchdogService extends Service {
         System.exit(0);
     }
 
-    private void storeProjectData(final boolean shouldReport) {
+    private void storeProjectData(final boolean onStop) {
         singleThreadPool.execute(new Runnable() {
             @Override
             public void run() {
@@ -104,7 +104,9 @@ public class WatchdogService extends Service {
                 Log.i(TAG, "getFileMD5String " + hashDataName + " time " + (SystemClock.uptimeMillis() - time));
                 Utils.stringToFile(md5String, dataDirPath + hashDataName);
 
-                if(shouldReport) {
+                if(onStop) {
+                    stopSelf();
+                }else{
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -261,8 +263,7 @@ public class WatchdogService extends Service {
                 singleThreadPool.execute(new Runnable() {
                     @Override
                     public void run() {
-                        storeProjectData(false);
-                        stopSelf();
+                        storeProjectData(true);
                     }
                 });
                 break;
@@ -274,7 +275,7 @@ public class WatchdogService extends Service {
             }
 
             case StaticValue.CMD_JUST_STORE: {
-                storeProjectData(true);
+                storeProjectData(false);
                 break;
             }
         }
