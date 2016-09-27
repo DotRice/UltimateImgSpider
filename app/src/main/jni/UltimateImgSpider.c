@@ -506,8 +506,7 @@ jboolean urlPoolInit(JNIEnv *env)
     return false;
 }
 
-jstring jniSpiderInit(JNIEnv *env,
-                      jobject thiz, jlongArray jImgParam, jlongArray jPageParam)
+jstring jniSpiderInit(JNIEnv *env, jobject thiz, jlongArray jImgParam, jlongArray jPageParam)
 {
     AshmAllocObjectInstance = thiz;
     char *srcUrl = NULL;

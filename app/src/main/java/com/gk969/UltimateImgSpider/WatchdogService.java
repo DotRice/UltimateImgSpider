@@ -187,19 +187,22 @@ public class WatchdogService extends Service {
     private void tryToRestoreProjectData(String path) {
         Log.i(TAG, "tryToRestoreProjectData " + path);
 
-        if((path != null) && (dataDirPath == null)) {
-            File dataDir = new File(path + StaticValue.PROJECT_DATA_DIR);
-            if(!dataDir.exists() || !dataDir.isDirectory()) {
-                dataDir.mkdirs();
-            }
-            dataDirPath = path + StaticValue.PROJECT_DATA_DIR;
+        if(path != null){
+            String newDataDirPath=path + StaticValue.PROJECT_DATA_DIR;
+            if(!newDataDirPath.equals(dataDirPath)){
+                File dataDir = new File(path + StaticValue.PROJECT_DATA_DIR);
+                if(!dataDir.exists() || !dataDir.isDirectory()) {
+                    dataDir.mkdirs();
+                }
+                dataDirPath = newDataDirPath;
 
-            int[] bestDataFileIndex=new int[1];
-            if(getProjectInfo(dataDirPath, null, null, bestDataFileIndex)!=null){
-                String bestDataFilePath=dataDirPath+DATA_FILE[bestDataFileIndex[0]];
-                Log.i(TAG, "bestDataFilePath " + bestDataFilePath);
-                saveDataBackupIndex=(bestDataFileIndex[0]+1)%DATA_FILE.length;
-                jniRestoreProjectData(bestDataFilePath);
+                int[] bestDataFileIndex = new int[1];
+                if(getProjectInfo(dataDirPath, null, null, bestDataFileIndex) != null) {
+                    String bestDataFilePath = dataDirPath + DATA_FILE[bestDataFileIndex[0]];
+                    Log.i(TAG, "bestDataFilePath " + bestDataFilePath);
+                    saveDataBackupIndex = (bestDataFileIndex[0] + 1) % DATA_FILE.length;
+                    jniRestoreProjectData(bestDataFilePath);
+                }
             }
         }
 

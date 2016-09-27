@@ -94,8 +94,8 @@ public class SpiderActivity extends Activity {
     private static final int CONN_STATE_WAIT_DISCONNECT = 2;
     private static final int CONN_STATE_WAIT_CONNECT = 3;
 
-    private static final int MIN_FREE_MEM_TO_RESTART_SERVICE = 50;
-    private static final int MAX_USED_MEM_TO_RESTART_SERVICE = 50;
+    //private static final int MIN_FREE_MEM_TO_RESTART_SERVICE = 50;
+    private static final int MAX_USED_MEM_TO_RESTART_SERVICE = 10;
     private static final int MIN_FREE_STORAGE_TO_STOP_SERVICE = 200;
 
     private int serviceConnState = CONN_STATE_DISCONNECTED;
@@ -289,8 +289,7 @@ public class SpiderActivity extends Activity {
                             getString(R.string.uneffectiveNetworkPrompt), false);
                 } else if(jsonReport.getBoolean("siteScanCompleted")) {
                     setProjectState(ProjectState.COMPLETE);
-                } else if(MemoryInfo.getFreeMemInMb(this) <= MIN_FREE_MEM_TO_RESTART_SERVICE ||
-                        serviceNativeMem >= MAX_USED_MEM_TO_RESTART_SERVICE) {
+                } else if(serviceNativeMem >= MAX_USED_MEM_TO_RESTART_SERVICE) {
                     if(serviceConnState == CONN_STATE_CONNECTED) {
                         serviceConnState = CONN_STATE_WAIT_DISCONNECT;
                         sendCmdToSpiderService(StaticValue.CMD_RESTART);
@@ -677,7 +676,8 @@ public class SpiderActivity extends Activity {
     private void tryToStopSpiderService() {
         Log.i(TAG, "tryToStopSpiderService " + serviceConnState + " " + CONN_STATE_DISCONNECTED);
         if(serviceConnState != CONN_STATE_DISCONNECTED) {
-            unbindSpiderService();
+            projectState=ProjectState.PAUSE;
+            //unbindSpiderService();
             sendCmdToSpiderService(StaticValue.CMD_STOP_STORE);
             serviceConnState = CONN_STATE_DISCONNECTED;
         }

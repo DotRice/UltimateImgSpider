@@ -80,12 +80,13 @@ AshmNode *findAshmemByName(const char *name) {
 }
 
 int createNewAshmem(const char *name, int size, u8 **addr) {
-    int fd = ashmem_create_region(name, size + sizeof(u32));
+    int sizeWithStat=size+SIZE_IN_STRUCT(AshmBlock, ashmStat);
+    int fd = ashmem_create_region(name, sizeWithStat);
 
     if(fd >= 0) {
-        LOGI("create ashmem name:%s size:%d fd:%d success!", name, size, fd);
+        LOGI("create ashmem name:%s size:%d %d fd:%d success!", name, size, sizeWithStat, fd);
 
-        AshmBlock *ashm = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        AshmBlock *ashm = mmap(NULL, sizeWithStat, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
         if(ashm != NULL) {
             AshmNode *newAshmNode = malloc(sizeof(AshmNode));
@@ -134,6 +135,22 @@ void jniRestoreProjectData(JNIEnv *env, jobject thiz, jstring jDataFileFullPath)
     const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
 
     LOGI("jniRestoreProjectData path:%s", dataFileFullPath);
+
+    if(ashmemChainHead!=NULL){
+        LOGI("ashmem chain not empty");
+        AshmNode *nextAshmNode;
+        AshmNode *ashmNode=ashmemChainHead;
+        while(ashmNode!=NULL){
+            LOGI("free ashmem node %s", ashmNode->name);
+            munmap(ashmNode->ashmem, ashmNode->size + SIZE_IN_STRUCT(AshmBlock, ashmStat));
+            close(ashmNode->fd);
+            nextAshmNode=ashmNode->next;
+            free(ashmNode);
+            ashmNode=nextAshmNode;
+        }
+        ashmemChainHead=NULL;
+        ashmemChainTail=NULL;
+    }
 
     FILE *dataFile = fopen(dataFileFullPath, "r");
 

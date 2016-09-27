@@ -14,6 +14,7 @@ typedef long long 			s64;
 typedef u8 bool;
 
 #define OFFSET_IN_STRUCT(st, var) (u32)(&(((st*)0)->var))
+#define SIZE_IN_STRUCT(st, var) sizeof(((st*)0)->var)
 
 #define false 0
 #define true 1
