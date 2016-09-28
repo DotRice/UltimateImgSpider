@@ -69,10 +69,28 @@ public class WatchdogService extends Service {
     final RemoteCallbackList<IRemoteWatchdogServiceCallback> mCallbacks
             = new RemoteCallbackList<IRemoteWatchdogServiceCallback>();
 
+    private static final int TIME_STOP_AFTER_UNBIND=20;
+    private int stopTimer=0;
+    private Runnable timerRunnable=new Runnable() {
+        @Override
+        public void run() {
+            if(stopTimer!=0){
+                stopTimer--;
+                Log.i(TAG, "stopTimer "+stopTimer);
+                if(stopTimer==0){
+                    // Lost connection unexpected.Project data maybe dirty.
+                    stopSelf();
+                }
+            }
+            mHandler.postDelayed(timerRunnable, 1000);
+        }
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
 
+        mHandler.post(timerRunnable);
         Log.i(TAG, "onCreate");
     }
 
@@ -92,7 +110,7 @@ public class WatchdogService extends Service {
                 String dataFileName = DATA_FILE[saveDataBackupIndex];
                 String hashDataName = DATA_HASH_FILE[saveDataBackupIndex];
 
-                saveDataBackupIndex=(saveDataBackupIndex+1)%DATA_FILE.length;
+                saveDataBackupIndex = (saveDataBackupIndex + 1) % DATA_FILE.length;
 
                 String dataFileFullPath = dataDirPath + dataFileName;
                 long time = SystemClock.uptimeMillis();
@@ -106,7 +124,7 @@ public class WatchdogService extends Service {
 
                 if(onStop) {
                     stopSelf();
-                }else{
+                } else {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -296,6 +314,25 @@ public class WatchdogService extends Service {
         return null;
     }
 
+    @Override
+    public void onRebind(Intent intent) {
+        Log.i(TAG, "onRebind:" + intent.getAction());
+
+        if(IRemoteWatchdogService.class.getName().equals(intent.getAction())) {
+            stopTimer=0;
+        }
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent){
+        Log.i(TAG, "onUnbind:" + intent.getAction());
+
+        if(IRemoteWatchdogService.class.getName().equals(intent.getAction())) {
+            stopTimer = TIME_STOP_AFTER_UNBIND;
+        }
+        return true;
+    }
+
     /**
      * The IRemoteInterface is defined through IDL
      */
@@ -305,8 +342,7 @@ public class WatchdogService extends Service {
                 throws RemoteException {
             ParcelFileDescriptor parcelFd = null;
             try {
-                parcelFd = ParcelFileDescriptor.fromFd(jniGetAshmem(name,
-                        size));
+                parcelFd = ParcelFileDescriptor.fromFd(jniGetAshmem(name, size));
             } catch(IOException e) {
                 e.printStackTrace();
             }

@@ -507,10 +507,14 @@ public class SpiderActivity extends Activity {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if((SystemClock.uptimeMillis() - createTime) > TIME_TO_DISP_TOAST && spiderProject.projectList.size() > 0) {
-                            Toast toast = Toast.makeText(SpiderActivity.this, R.string.project_load_complete, Toast.LENGTH_SHORT);
-                            toast.setGravity(Gravity.CENTER, 0, 0);
-                            toast.show();
+                        if(curView==ALBUM_SET_VIEW) {
+                            if((SystemClock.uptimeMillis() - createTime) > TIME_TO_DISP_TOAST
+                                    && spiderProject.projectList.size() > 0) {
+                                Toast toast = Toast.makeText(SpiderActivity.this,
+                                        R.string.project_load_complete, Toast.LENGTH_SHORT);
+                                toast.setGravity(Gravity.CENTER, 0, 0);
+                                toast.show();
+                            }
                         }
 
                         if(curView == ALBUM_SET_VIEW) {

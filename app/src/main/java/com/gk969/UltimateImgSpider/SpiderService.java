@@ -123,8 +123,7 @@ public class SpiderService extends Service {
         };
 
         watchdogConnection = new ServiceConnection() {
-            public void onServiceConnected(ComponentName className,
-                                           IBinder service) {
+            public void onServiceConnected(ComponentName className, IBinder service) {
                 Log.i(TAG, "onServiceConnected");
 
                 watchdogService = IRemoteWatchdogService.Stub.asInterface(service);
@@ -148,9 +147,7 @@ public class SpiderService extends Service {
                     jniDataLock.unlock();
                 }
 
-                if(state.get() == STAT_STOP) {
-                    stopSelf();
-                }
+                stopSelf();
             }
         };
     }
@@ -429,13 +426,6 @@ public class SpiderService extends Service {
     }
 
     @Override
-    public boolean onUnbind(Intent intent){
-        Log.i(TAG, "onUnbind:" + intent.getAction());
-        stopStoreProject();
-        return false;
-    }
-
-    @Override
     public IBinder onBind(Intent intent) {
         Log.i(TAG, "onBind:" + intent.getAction());
 
@@ -446,9 +436,18 @@ public class SpiderService extends Service {
     }
 
     @Override
+    public boolean onUnbind(Intent intent){
+        Log.i(TAG, "onUnbind:" + intent.getAction());
+
+        if(IRemoteSpiderService.class.getName().equals(intent.getAction())) {
+            stopStoreProject();
+        }
+        return false;
+    }
+
+    @Override
     public void onTaskRemoved(Intent rootIntent) {
-        Toast.makeText(this, "Task removed: " + rootIntent, Toast.LENGTH_LONG)
-                .show();
+        Toast.makeText(this, "Task removed: " + rootIntent, Toast.LENGTH_LONG).show();
     }
     
     /*
