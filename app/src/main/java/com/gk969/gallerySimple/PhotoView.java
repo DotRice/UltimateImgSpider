@@ -447,13 +447,15 @@ public class PhotoView extends GLView {
     }
 
     private void startFly(float velocity) {
-        flyVelocity = velocity;
-        flyStartVelocity = velocity;
-        flyStartLeft = photoCache[curPhotoIndexInCache].boxPos.left;
+        if(velocity!=0) {
+            flyVelocity = velocity;
+            flyStartVelocity = velocity;
+            flyStartLeft = photoCache[curPhotoIndexInCache].boxPos.left;
 
 
-        renderTime = SystemClock.uptimeMillis();
-        mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+            renderTime = SystemClock.uptimeMillis();
+            mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+        }
     }
 
     @Override
@@ -653,8 +655,9 @@ public class PhotoView extends GLView {
             Photo photo = photoCache[curPhotoIndexInCache];
             float newLeft = photo.boxPos.left - dx;
 
-            boolean isEdge = false;
             float leftMin = 0 - viewWidth;
+
+            boolean isEdge=false;
             if(newLeft > 0 && photo.boxPos.left <= 0) {
                 //Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
                 if(photo.indexInProject > 0) {
@@ -663,42 +666,43 @@ public class PhotoView extends GLView {
                     photo.boxPos.set(0, leftMin, viewWidth, viewHeight);
                     photoCacheScroll(SCROLL_PREV);
                 } else {
-                    isEdge = true;
+                    isEdge=true;
                 }
                 //Log.i(TAG, "prev "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
             } else if(newLeft <= leftMin && photo.boxPos.left > leftMin) {
                 //Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
-
-                if(photo.indexInProject < (curProjectInfo.imgDownloadNum - 1)) {
-                    curPhotoIndexInCache = getNextPhotoIndexInCache(curPhotoIndexInCache);
-                    photo = photoCache[curPhotoIndexInCache];
-                    photo.boxPos.set(fullScreen);
-                    photoCacheScroll(SCROLL_NEXT);
-                } else {
-                    isEdge = true;
-                }
+                curPhotoIndexInCache = getNextPhotoIndexInCache(curPhotoIndexInCache);
+                photo = photoCache[curPhotoIndexInCache];
+                photo.boxPos.set(fullScreen);
+                photoCacheScroll(SCROLL_NEXT);
                 //Log.i(TAG, "next "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
+            }
+
+            if(dx > 0 && photo.indexInProject == (curProjectInfo.imgDownloadNum - 1)) {
+                isEdge=true;
             }
 
             if(!isEdge) {
                 photo.boxPos.left -= dx;
             }
 
-
             mGLRootView.unlockRenderThread();
             mGLRootView.requestRender();
-            return !isEdge;
+            return isEdge;
         }
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             if(velocityX != 0) {
                 mGLRootView.lockRenderThread();
+                int indexInProject=photoCache[curPhotoIndexInCache].indexInProject;
                 if(velocityX > 0) {
-                    velocityX = Math.max(velocityX, velocityMinAtStart);
+                    velocityX = (indexInProject==0)?0:Math.max(velocityX, velocityMinAtStart);
                 } else {
-                    velocityX = Math.min(velocityX, (0 - velocityMinAtStart));
+                    velocityX = (indexInProject==(curProjectInfo.imgDownloadNum - 1))?
+                            0:Math.min(velocityX, (0 - velocityMinAtStart));
                 }
+
                 startFly(velocityX);
                 mGLRootView.unlockRenderThread();
             }

@@ -99,7 +99,7 @@ public class GestureRecognizer {
             if(firstScroll)
             {
                 firstScroll=false;
-                return false;
+                return true;
             }
             return mListener.onScroll(
                     dx, dy, e2.getX() - e1.getX(), e2.getY() - e1.getY());
