@@ -3,6 +3,7 @@ package com.gk969.gallerySimple;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.opengl.GLSurfaceView;
@@ -29,8 +30,11 @@ import com.gk969.gallery.gallery3d.ui.Paper;
 import com.gk969.gallery.gallery3d.ui.SynchronizedHandler;
 import com.gk969.gallery.gallery3d.util.GalleryUtils;
 import com.gk969.gallery.gallery3d.util.UsageStatistics;
+import com.gk969.gallery.photos.BitmapRegionTileSource;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.LinkedList;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PhotoView extends GLView {
@@ -120,6 +124,11 @@ public class PhotoView extends GLView {
         Bitmap fillCenterBmp;
         BitmapFactory.Options bmpOptions = new BitmapFactory.Options();
 
+        BitmapRegionDecoder regionDecoder;
+
+        LinkedList<Bitmap> tiledBmpCache=new LinkedList<>();
+        LinkedList<BitmapTexture> tiledTextureCache=new LinkedList<>();
+
         public Photo(int index) {
             bmpOptions.inPreferredConfig = StaticValue.BITMAP_TYPE;
             indexInCache = index;
@@ -130,6 +139,11 @@ public class PhotoView extends GLView {
                 fillCenterBmp.recycle();
                 fillCenterBmp = null;
             }
+
+            for(Bitmap bmp:tiledBmpCache){
+                bmp.recycle();
+            }
+            tiledBmpCache.clear();
         }
 
         public void recycleTexture() {
@@ -137,6 +151,11 @@ public class PhotoView extends GLView {
                 fillCenterTexture.recycle();
                 fillCenterTexture = null;
             }
+
+            for(BitmapTexture texture:tiledTextureCache){
+                texture.recycle();
+            }
+            tiledTextureCache.clear();
         }
 
         public void recycle() {
@@ -231,6 +250,14 @@ public class PhotoView extends GLView {
 
             Log.i(TAG, String.format("%s raw size:%d*%d inSampleSize:%d", imgFilePath,
                     bmpOptions.outWidth, bmpOptions.outHeight, bmpOptions.inSampleSize));
+
+            try {
+                regionDecoder=BitmapRegionDecoder.newInstance(imgFilePath, false);
+
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
+
 
             fillCenterBmp = BitmapFactory.decodeFile(imgFilePath, bmpOptions);
             if(fillCenterBmp != null) {

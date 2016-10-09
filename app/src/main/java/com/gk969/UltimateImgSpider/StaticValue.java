@@ -27,8 +27,9 @@ public class StaticValue {
 
     public final static String THUMBNAIL_DIR_NAME = "thumbnail";
 
+    public final static int TILED_BMP_SLOT_SIZE = 254;
     public final static String SLOT_THUMBNAIL_DIR_NAME = THUMBNAIL_DIR_NAME + "/slot";
-    public final static int THUMBNAIL_SIZE = 254;
+    public final static int THUMBNAIL_SIZE = TILED_BMP_SLOT_SIZE;
 
     public final static String FULL_THUMBNAIL_DIR_NAME = THUMBNAIL_DIR_NAME + "/full";
     public final static int SIZE_TO_CREATE_FULL_THUMBNAIL = 2000;

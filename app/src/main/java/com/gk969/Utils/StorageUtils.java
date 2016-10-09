@@ -6,6 +6,9 @@ import android.util.Log;
 
 import java.io.File;
 import java.util.LinkedList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -13,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class StorageUtils {
     private final static String TAG = "StorageUtils";
-    private final static int INFO_REFRESH_INTERVAL = 30000;
+    private final static int INFO_REFRESH_INTERVAL = 30;
 
     private static class StorageDeviceDir {
         public long freeSpace;
@@ -45,17 +48,26 @@ public class StorageUtils {
     private LinkedList<StorageDeviceDir> storageDeviceDirList = new LinkedList<StorageDeviceDir>();
     private ReentrantLock storageInfoLock = new ReentrantLock();
 
-    public LinkedList<StorageDir> getCachedStorageDir() {
-        LinkedList<StorageDir> storageInfo = new LinkedList<StorageDir>();
+    public interface OnGottenStorageDirListener{
+        public void onGotten(LinkedList<StorageDir> storageDirs);
+    }
+    public void getStorageDir(final OnGottenStorageDirListener listener) {
+        mScheduledExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                storageInfoLock.lock();
+                storageDeviceDirList = getStorageInfo();
+                storageInfoLock.unlock();
 
-        storageInfoLock.lock();
-        for(StorageDeviceDir storageDeviceDir : storageDeviceDirList) {
-            storageInfo.add(new StorageDir(storageDeviceDir.freeSpace, storageDeviceDir.totalSpace,
-                    storageDeviceDir.path));
-        }
-        storageInfoLock.unlock();
+                LinkedList<StorageDir> storageInfo = new LinkedList<StorageDir>();
+                for(StorageDeviceDir storageDeviceDir : storageDeviceDirList) {
+                    storageInfo.add(new StorageDir(storageDeviceDir.freeSpace, storageDeviceDir.totalSpace,
+                            storageDeviceDir.path));
+                }
 
-        return storageInfo;
+                listener.onGotten(storageInfo);
+            }
+        });
     }
 
     public long getFreeSpace(String path) {
@@ -83,37 +95,22 @@ public class StorageUtils {
         return freeSpace;
     }
 
-    private volatile boolean isThreadRunning;
-    private Thread thread;
+    private ScheduledExecutorService mScheduledExecutor= Executors.newSingleThreadScheduledExecutor();
 
     public StorageUtils() {
-        isThreadRunning = true;
-
-        thread = new Thread(new Runnable() {
+        mScheduledExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                while(isThreadRunning) {
                     LinkedList<StorageDeviceDir> newStorageDirList = getStorageInfo();
                     storageInfoLock.lock();
                     storageDeviceDirList = newStorageDirList;
                     storageInfoLock.unlock();
-                    
-                    if(isThreadRunning) {
-                        try {
-                            Thread.sleep(INFO_REFRESH_INTERVAL);
-                        } catch(InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
             }
-        });
-        thread.start();
+        }, 0, INFO_REFRESH_INTERVAL, TimeUnit.SECONDS);
     }
 
     public void stopRefresh() {
-        isThreadRunning = false;
-        thread.interrupt();
+        mScheduledExecutor.shutdown();
     }
 
     public static LinkedList<StorageDeviceDir> getStorageInfo() {

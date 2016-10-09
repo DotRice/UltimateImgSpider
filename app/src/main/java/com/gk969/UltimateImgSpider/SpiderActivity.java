@@ -95,7 +95,7 @@ public class SpiderActivity extends Activity {
     private static final int CONN_STATE_WAIT_CONNECT = 3;
 
     //private static final int MIN_FREE_MEM_TO_RESTART_SERVICE = 50;
-    private static final int MAX_USED_MEM_TO_RESTART_SERVICE = 10;
+    private static final int MAX_USED_MEM_TO_RESTART_SERVICE = 50;
     private static final int MIN_FREE_STORAGE_TO_STOP_SERVICE = 200;
 
     private int serviceConnState = CONN_STATE_DISCONNECTED;
@@ -747,38 +747,47 @@ public class SpiderActivity extends Activity {
     }
 
     private void showSelStoAlert(final String host) {
-        final LinkedList<StorageUtils.StorageDir> storageDir = storageInfo.getCachedStorageDir();
-        int stoNum = storageDir.size();
-        if(stoNum != 0) {
-            if(stoNum == 1) {
-                openStartNewProject(host, storageDir.get(0).path);
-            } else {
-                String[] storageInfo = new String[stoNum];
-                for(int i = 0; i < stoNum; i++) {
-                    String deviceName = getString((i == 0) ? R.string.deviceStorage : R.string.sdcardStorage);
-                    String totalSpace = getString(R.string.totalSpace) + Utils.byteSizeToString(storageDir.get(i).totalSpace);
-                    String freeSpace = getString(R.string.freeSpace) + Utils.byteSizeToString(storageDir.get(i).freeSpace);
+        storageInfo.getStorageDir(new StorageUtils.OnGottenStorageDirListener() {
+            @Override
+            public void onGotten(final LinkedList<StorageUtils.StorageDir> storageDirs) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int stoNum = storageDirs.size();
+                        if(stoNum != 0) {
+                            if(stoNum == 1) {
+                                openStartNewProject(host, storageDirs.get(0).path);
+                            } else {
+                                String[] storageInfo = new String[stoNum];
+                                for(int i = 0; i < stoNum; i++) {
+                                    String deviceName = getString((i == 0) ? R.string.deviceStorage : R.string.sdcardStorage);
+                                    String totalSpace = getString(R.string.totalSpace) + Utils.byteSizeToString(storageDirs.get(i).totalSpace);
+                                    String freeSpace = getString(R.string.freeSpace) + Utils.byteSizeToString(storageDirs.get(i).freeSpace);
 
-                    storageInfo[i] = deviceName + "  " + totalSpace + " " + freeSpace;
-                }
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.selStorageDevice)
-                        .setItems(storageInfo,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog,
-                                                        int whichButton) {
-                                        openStartNewProject(host, storageDir.get(whichButton).path);
-                                    }
-                                })
-                        .setNegativeButton(R.string.cancel, null).create().show();
+                                    storageInfo[i] = deviceName + "  " + totalSpace + " " + freeSpace;
+                                }
+                                new AlertDialog.Builder(SpiderActivity.this)
+                                        .setTitle(R.string.selStorageDevice)
+                                        .setItems(storageInfo,
+                                                new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog,
+                                                                        int whichButton) {
+                                                        openStartNewProject(host, storageDirs.get(whichButton).path);
+                                                    }
+                                                })
+                                        .setNegativeButton(R.string.cancel, null).create().show();
+                            }
+                        } else {
+                            new AlertDialog.Builder(SpiderActivity.this)
+                                    .setTitle(R.string.badExternalStoragePrompt)
+                                    .setMessage(R.string.notFindValidStorage)
+                                    .setPositiveButton(R.string.OK, null)
+                                    .create().show();
+                        }
+                    }
+                });
             }
-        } else {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.badExternalStoragePrompt)
-                    .setMessage(R.string.notFindValidStorage)
-                    .setPositiveButton(R.string.OK, null)
-                    .create().show();
-        }
+        });
     }
 
     private void deleteProject() {
