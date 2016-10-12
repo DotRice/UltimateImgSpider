@@ -169,20 +169,17 @@ public class ThumbnailLoader {
         }
 
         mGLRootView.lockRenderThread();
+        albumTotalImgNum = totalImgNum;
         if(totalImgNum == 0) {
-            albumTotalImgNum = totalImgNum;
             clearCache();
             slotView.scrollAbs(0);
         } else if(totalImgNum > prevTotalImgNum) {
             if(dispAreaOffset + cacheSize > prevTotalImgNum) {
-                albumTotalImgNum = totalImgNum;
                 refreshCacheOffset(dispAreaOffset, true);
 
                 for(SlotTexture slot : textureCache) {
                     slot.hasTried = false;
                 }
-            } else {
-                albumTotalImgNum = totalImgNum;
             }
 
             if(prevTotalImgNum != 0) {
@@ -265,8 +262,8 @@ public class ThumbnailLoader {
         refreshCacheOffset(index, false);
     }
 
-    private void refreshCacheOffset(int index, boolean forceRefresh) {
-        int newCacheOffset = index - bestOffsetOfDispInCache;
+    private void refreshCacheOffset(int firstDispSlotIndex, boolean forceRefresh) {
+        int newCacheOffset = firstDispSlotIndex - bestOffsetOfDispInCache;
         int cacheOffsetMax = albumTotalImgNum - cacheSize;
         if(cacheOffsetMax < 0) {
             cacheOffsetMax = 0;
@@ -303,7 +300,7 @@ public class ThumbnailLoader {
             cacheOffset = newCacheOffset;
         }
 
-        dispAreaOffset = index;
+        dispAreaOffset = firstDispSlotIndex;
 
         //Log.i(TAG, "scrollToIndex "+index+" cacheOffset "+cacheOffset);
     }

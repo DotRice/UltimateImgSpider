@@ -541,7 +541,7 @@ public class SpiderService extends Service {
         private final static int IMG_VALID_WIDTH_MIN = 200;
         private final static int IMG_VALID_HEIGHT_MIN = 200;
 
-        private final static int NUM_TO_SAVE_PROJECT_DATA = 50;
+        private final static int BASE_NUM_TO_SAVE_PROJECT_DATA = 50;
 
 
         private final static int IMG_DOWNLOAD_BLOCK = 16 * 1024;
@@ -765,12 +765,17 @@ public class SpiderService extends Service {
                 jniDataLock.unlock();
                 imgFileLock.unlock();
 
-                if((imgIndex % NUM_TO_SAVE_PROJECT_DATA) == 0)
+                if((imgIndex % getNumToSaveProjectData(imgIndex)) == 0)
                 {
                     Log.i(TAG, "post save data cmd imgIndex " + imgIndex);
                     saveProjectData();
                 }
             }
+            
+            private int getNumToSaveProjectData(int imgIndex){
+                return (imgIndex/10000+1)*BASE_NUM_TO_SAVE_PROJECT_DATA;
+            }
+            
 
             private void createThumbnail(File rawFile, File thumbnailFile, int index) {
                 BitmapFactory.Options opts = new BitmapFactory.Options();
