@@ -332,7 +332,7 @@ public class SlotView extends GLView {
         barScrollValid = Utils.DisplayUtil.dipToPx(context, BAR_SCROLL_VALID_IN_DP);
 
         mThumbnailLoader = loader;
-        mThumbnailLoader.dispAreaScrollToIndex(0);
+        mThumbnailLoader.onViewScrollOverLine(0);
         mGLRootView = glRootView;
         loader.setView(this);
     }
@@ -340,6 +340,7 @@ public class SlotView extends GLView {
     @Override
     protected void onLayout(
             boolean changed, int left, int top, int right, int bottom) {
+        Log.i(TAG, "onLayout");
         // Set the mSlotView as a reference point to the open animation
         GalleryUtils.setViewPointMatrix(mMatrix,
                 (right - left) / 2, (bottom - top) / 2, 0 - GalleryUtils.meterToPixel(0.3f));
@@ -494,7 +495,7 @@ public class SlotView extends GLView {
         //Log.i(TAG, scrollDistance+" "+scrollDistanceOverRow+" "+slotHeightWithGap);
         if(scrollDistance / slotHeightWithGap != scrollDistanceOverRow / slotHeightWithGap) {
             scrollDistanceOverRow = scrollDistance;
-            mThumbnailLoader.dispAreaScrollToIndex(scrollDistance / slotHeightWithGap * slotsPerRow);
+            mThumbnailLoader.onViewScrollOverLine(scrollDistance / slotHeightWithGap * slotsPerRow);
         }
     }
 

@@ -575,7 +575,7 @@ public class PhotoView extends GLView {
 
 
     private class PhotoLoader extends Thread {
-        private final static long SLEEP_TIME = 3600000 * 24 * 365;
+        private final static long SLEEP_TIME = 1000*3600 * 24 * 365;
         private volatile boolean inSleep;
 
         public volatile boolean needReload;

@@ -8,24 +8,24 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\gl_root_group.xml"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\browser_menu.xml",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\browser_menu.xml"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\activity_para_config.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\activity_para_config.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\browser_menu.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\browser_menu.xml"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\delete_dialog.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\delete_dialog.xml"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\url_bar.xml",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\url_bar.xml"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\leak_canary_heap_dump_toast.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\layout\\leak_canary_heap_dump_toast.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\url_bar.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\layout\\url_bar.xml"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\layout\\leak_canary_leak_row.xml",

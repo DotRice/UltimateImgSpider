@@ -507,6 +507,7 @@ public class SpiderActivity extends Activity {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
+                        Log.i(TAG, "runOnProjectLoadComplete");
                         if(curView==ALBUM_SET_VIEW) {
                             if((SystemClock.uptimeMillis() - createTime) > TIME_TO_DISP_TOAST
                                     && spiderProject.projectList.size() > 0) {
@@ -1090,6 +1091,7 @@ public class SpiderActivity extends Activity {
     }
 
     private void buttonShowAnim(final View view, final boolean isShow) {
+        Log.i(TAG, "buttonShowAnim "+view+" "+isShow);
         if((view.getVisibility() == View.VISIBLE) != isShow) {
             float fromY = isShow ? 1 : 0;
             TranslateAnimation animation = new TranslateAnimation(

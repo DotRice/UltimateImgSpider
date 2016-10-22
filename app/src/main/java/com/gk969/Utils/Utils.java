@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -464,6 +465,25 @@ public class Utils {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static int getCpuCoresNum(){
+        return new File("/sys/devices/system/cpu/").listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    String path = pathname.getName();
+                    //regex is slow, so checking char by char.
+                    if(path.startsWith("cpu")) {
+                        for(int i = 3; i < path.length(); i++) {
+                            if(path.charAt(i) < '0' || path.charAt(i) > '9') {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            }).length;
     }
 
     public static String getSDKVersion() {

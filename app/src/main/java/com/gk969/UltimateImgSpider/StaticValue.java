@@ -65,7 +65,7 @@ public class StaticValue {
     public final static String EXTRA_URL_TO_OPEN = "urlToOpen";
 
     public static int getThumbnailCacheSize() {
-        return (int) (MemoryInfo.getTotalMemInMb() / 2048 + 1) * 128;
+        return (int) (MemoryInfo.getTotalMemInMb() / 2048 + 1) * 32;
     }
 
     public static int getSpiderDownloaderThreadNum() {

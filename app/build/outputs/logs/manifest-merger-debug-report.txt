@@ -184,3 +184,5 @@ ADDED from [com.squareup.leakcanary:leakcanary-android:1.4] D:\android\UltimateI
 		ADDED from [com.squareup.leakcanary:leakcanary-android:1.4] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.squareup.leakcanary\leakcanary-android\1.4\AndroidManifest.xml:55:13-59
 	android:name
 		ADDED from [com.squareup.leakcanary:leakcanary-android:1.4] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.squareup.leakcanary\leakcanary-android\1.4\AndroidManifest.xml:51:13-93
+android:uses-permission#android.permission.READ_EXTERNAL_STORAGE
+IMPLIED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:2:1-76:12 reason: com.squareup.leakcanary requested WRITE_EXTERNAL_STORAGE
