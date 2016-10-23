@@ -354,8 +354,8 @@ public class SpiderActivity extends Activity {
         panelViewInit();
         albumViewInit();
         timerThreadPoolInit();
-
     }
+
 
     private void timerThreadPoolInit() {
         singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable() {

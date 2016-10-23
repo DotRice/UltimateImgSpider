@@ -10,7 +10,6 @@
 #include <fcntl.h>
 
 #include "typeDef.h"
-#include "funcName.h"
 
 #include "ashmem.h"
 

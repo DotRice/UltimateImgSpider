@@ -11,6 +11,7 @@
         android:orientation="vertical"
         >
 
+
         <com.gk969.gallery.gallery3d.ui.GLRootView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -19,6 +20,14 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
+
+        <!--
+        <ImageView
+            android:id="@+id/imgTest"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="fitCenter"/>
+            -->
 
         <ImageButton
             android:id="@+id/button_add"

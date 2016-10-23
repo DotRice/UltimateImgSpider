@@ -217,7 +217,7 @@ public class ThumbnailLoader {
     }
 
     public class SlotTexture {
-        Bitmap mainBmp;
+        public Bitmap mainBmp;
         BitmapTexture texture;
         StringTexture labelName;
         StringTexture labelInfo;
@@ -254,7 +254,7 @@ public class ThumbnailLoader {
     }
 
     private void refreshCacheOffset(int firstSlotInView, boolean forceRefresh) {
-        Log.i(TAG, "refreshCacheOffset "+firstSlotInView+" "+forceRefresh);
+        //Log.i(TAG, "refreshCacheOffset "+firstSlotInView+" "+forceRefresh);
 
         int newCacheOffset = firstSlotInView - bestOffsetOfDispInCache;
         int cacheOffsetMax = albumTotalImgNum - cacheSize;
@@ -317,7 +317,7 @@ public class ThumbnailLoader {
 
         
         void wakeup(){
-            Log.i(TAG, "pool wakeup");
+            //Log.i(TAG, "pool wakeup");
             for(ThumbnailLoaderThread thread:threads){
                 thread.wakeup();
             }
@@ -333,9 +333,16 @@ public class ThumbnailLoader {
             private int index;
             volatile boolean isWorking;
 
+            private BitmapFactory.Options bmpOpts;
+
             ThumbnailLoaderThread(int i) {
                 super("ThumbnailLoaderThread");
                 index=i;
+
+                bmpOpts=new BitmapFactory.Options();
+                bmpOpts.inPreferredConfig = StaticValue.BITMAP_TYPE;
+                bmpOpts.inSampleSize = 1;
+
                 setDaemon(true);
                 start();
             }
@@ -361,21 +368,21 @@ public class ThumbnailLoader {
                             if(!slot.isReady) {
                                 int imgIndex = slot.imgIndex;
                                 //Log.i(TAG, "Try " + imgIndex);
-
+                                bmpOpts.inBitmap=slot.mainBmp;
                                 mGLRootView.unlockRenderThread();
-                                Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, slot.mainBmp);
+                                Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, bmpOpts);
                                 loaderPauseLock.waitIfLocked();
                                 mGLRootView.lockRenderThread();
                                 if(bmp != null) {
                                     if(imgIndex == slot.imgIndex) {
-                                        Log.i(TAG, "create texture " + imgIndex);
+                                        //Log.i(TAG, "create texture " + imgIndex);
                                         slot.texture = new BitmapTexture(bmp);
                                         slot.isReady = true;
                                     }
                                 }
 
                                 if(needLabel) {
-                                    Log.i(TAG, "Load Label " + imgIndex + " " + loaderHelper.getLabelString(imgIndex));
+                                    //Log.i(TAG, "Load Label " + imgIndex + " " + loaderHelper.getLabelString(imgIndex));
 
                                     String[] labelStr = loaderHelper.getLabelString(imgIndex).split(" ");
 
@@ -414,7 +421,7 @@ public class ThumbnailLoader {
 
             void wakeup(){
                 if(!isWorking){
-                    Log.i(TAG, "thread "+index+" wakeup");
+                    //Log.i(TAG, "thread "+index+" wakeup");
                     interrupt();
                 }
             }
@@ -422,7 +429,7 @@ public class ThumbnailLoader {
             public void run() {
                 while(isRunning) {
                     isWorking=true;
-                    Log.i(TAG, "thread "+index+" work");
+                    //Log.i(TAG, "thread "+index+" work");
                     while(isOffsetChangedInLoading()) ;
                     isWorking=false;
 

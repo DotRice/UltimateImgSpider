@@ -9,7 +9,6 @@
 #include <sys/mman.h>
 
 #include "typeDef.h"
-#include "funcName.h"
 
 #include "ashmem.h"
 
@@ -44,8 +43,7 @@ void fileTest()
     fclose(testFile);
 }
 
-jstring stringFromJNI(JNIEnv *env,
-                      jobject thiz, jstring jSrcStr)
+jstring stringFromJNI(JNIEnv *env, jobject thiz, jstring jSrcStr)
 {
     const char *srcStr = (*env)->GetStringUTFChars(env, jSrcStr, NULL);
     LOGI("build @ %s %s", __DATE__, __TIME__);
@@ -87,10 +85,10 @@ OFFSET低位，PTR高位。
 */
 //内存池内偏移量在相对地址中占用的位数，必须能够包含SIZE_PER_URLPOOL
 #define POOL_OFFSET_BIT     20
-#define POOL_OFFSET_BITS    (((u32)1<<POOL_OFFSET_BIT)-1)
+#define POOL_OFFSET_BITS    ((((u32)1)<<POOL_OFFSET_BIT)-1)
 //内存池序号在相对地址中占用的位数
-#define POOL_PTR_BIT        (sizeof(u32)-POOL_OFFSET_BITS)
-#define POOL_PTR_BITS       ((((u32)1<<POOL_PTR_BIT)-1)<<POOL_OFFSET_BIT)
+#define POOL_PTR_BIT        (32-POOL_OFFSET_BIT)
+#define POOL_PTR_BITS       (((((u32)1)<<POOL_PTR_BIT)-1)<<POOL_OFFSET_BIT)
 
 #define RelativeAddr u32
 #define GET_POOL_OFFSET(addr)           ((addr)&POOL_OFFSET_BITS)
@@ -102,7 +100,7 @@ OFFSET低位，PTR高位。
                                         addr|=(ptr<<POOL_OFFSET_BIT)&POOL_PTR_BITS;
 
 #define NEW_RELATIVE_ADDR(ptr, offset)   ((((u32)ptr)<<POOL_OFFSET_BIT)|offset)
-#define POOL_PTR_INVALID    (((u32)1<<POOL_PTR_BIT)-1)
+#define POOL_PTR_INVALID    ((((u32)1)<<POOL_PTR_BIT)-1)
 
 #define RELATIVE_ADDR_NULL  NEW_RELATIVE_ADDR(POOL_PTR_INVALID, 0)
 
@@ -420,6 +418,7 @@ jboolean spiderParaInit(JNIEnv *env, u64 *imgParam, u64 *pageParam)
 
         if(ashm->ashmStat != ASHM_EXIST)
         {
+            LOGI("spiderParaInit new project");
             spiderPara->pageUrlTree.head = RELATIVE_ADDR_NULL;
             spiderPara->pageUrlTree.tail = RELATIVE_ADDR_NULL;
             spiderPara->pageUrlTree.root = RELATIVE_ADDR_NULL;
@@ -872,8 +871,7 @@ bool urlTreeInsert(JNIEnv *env, urlTree *tree, const char *newUrl,
 }
 
 
-jlong jniAddUrl(JNIEnv *env,
-                jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jlongArray jParam)
+jlong jniAddUrl(JNIEnv *env, jobject thiz, jstring jUrl, jbyteArray jMd5, jint jType, jlongArray jParam)
 {
     urlTree *curTree =
             (jType == URL_TYPE_PAGE) ? (&(spiderPara->pageUrlTree)) : (&(spiderPara->imgUrlTree));
@@ -981,8 +979,7 @@ void deleteUrlNodeFromList(urlTree *curTree, urlNode *curNode)
 }
 
 
-void jniSavePageTitle(
-        JNIEnv *env, jobject thiz, jstring jCurPageTitle)
+void jniSavePageTitle(JNIEnv *env, jobject thiz, jstring jCurPageTitle)
 {
     urlNode *curNode = nodeAddrRelativeToAbs(spiderPara->curPageNode);
 
@@ -1052,8 +1049,7 @@ int pageUrlRankForNext(urlNode *srcUrl, urlNode *curUrl, urlNode *testedUrl, boo
 }
 
 
-jstring jniFindNextPageUrl(
-        JNIEnv *env, jobject thiz, jlongArray jPageParam)
+jstring jniFindNextPageUrl(JNIEnv *env, jobject thiz, jlongArray jPageParam)
 {
     urlTree *curTree = &(spiderPara->pageUrlTree);
     urlNode *nextNode = NULL;
@@ -1226,10 +1222,42 @@ void jniOnImgUrlProcessed(JNIEnv *env, jobject thiz, jint jLastImgUrlAddr, jlong
     (*env)->ReleaseLongArrayElements(env, jImgParam, param, 0);
 }
 
+#define LOG_PRINT_LINE_SIZE 8
+void logPrintHexOneLine(u8 *data, u32 len){
+    char buf[LOG_PRINT_LINE_SIZE*3+1];
+    u8 offset=0;
+
+    if(len>LOG_PRINT_LINE_SIZE){
+        len=LOG_PRINT_LINE_SIZE;
+    }
+
+    for(u32 i=0; i<len; i++){
+        offset+=sprintf(buf+offset, "%02X ", data[i]);
+    }
+    LOGI("%s", buf);
+}
+
+void logPrintHex(void *target, u32 len){
+    u8 *data=(u8*)target;
+    u32 dataOffset;
+    LOGI("logPrintHex %d", len);
+    for(dataOffset=0; dataOffset<len; dataOffset+=LOG_PRINT_LINE_SIZE){
+        logPrintHexOneLine(data+dataOffset, LOG_PRINT_LINE_SIZE);
+    }
+
+    if(dataOffset>len){
+        dataOffset-=LOG_PRINT_LINE_SIZE;
+        logPrintHexOneLine(data+dataOffset, len-dataOffset);
+    }
+}
+
 jstring jniFindNextImgUrl(JNIEnv *env, jobject thiz, jlongArray jImgParam)
 {
     urlTree *curTree = &(spiderPara->imgUrlTree);
 
+    //LOGI("jniFindNextImgUrl curTree->head:%08X", curTree->head);
+    //LOGI("spiderPara");
+    //logPrintHex(spiderPara, sizeof(t_spiderPara));
 
     char *nextUrl = NULL;
 
@@ -1270,9 +1298,7 @@ jstring jniFindNextImgUrl(JNIEnv *env, jobject thiz, jlongArray jImgParam)
     return (*env)->NewStringUTF(env, nextUrl);
 }
 
-void jniSaveImgStorageInfo(
-        JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr, jlongArray jImgParam,
-        jint jCurImgFileSize)
+void jniSaveImgStorageInfo(JNIEnv *env, jobject thiz, jint jImgUrlAddr, jint jPageUrlAddr, jlongArray jImgParam, jint jCurImgFileSize)
 {
     u32 imgUrlAddr = (u32) jImgUrlAddr;
     u32 pageUrlAddr = (u32) jPageUrlAddr;

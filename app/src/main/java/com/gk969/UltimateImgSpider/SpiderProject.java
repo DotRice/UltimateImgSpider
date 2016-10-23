@@ -44,7 +44,6 @@ public class SpiderProject {
         public volatile int pageTreeHeight;
 
         public volatile int albumScrollDistance;
-        public Bitmap thumbnail;
 
         private void init(String siteHost, String sitePath, long[] paramImgInfo, long[] paramPageInfo, int scrollDistance) {
             host = siteHost;

@@ -48,47 +48,44 @@ public class AlbumSetLoaderHelper extends ThumbnailLoaderHelper {
 
 
     @Override
-    public Bitmap getThumbnailByIndex(int index, Bitmap container) {
+    public Bitmap getThumbnailByIndex(int index, BitmapFactory.Options bmpOptions) {
         //Log.i(TAG, "try to load index:" + index);
 
         if(index < mSpiderProject.projectList.size()) {
             SpiderProject.ProjectInfo project = mSpiderProject.projectList.get(index);
-            if(project.thumbnail == null) {
-                if(project.imgDownloadNum < PROJECT_THUMBNAIL_NUM) {
-                    String fileName = String.format("%s/%s/%d/%03d.%s", project.dir.getPath(),
-                            StaticValue.SLOT_THUMBNAIL_DIR_NAME, 0, 0, StaticValue.THUMBNAIL_FILE_EXT);
-                    bmpOpts.inSampleSize = 1;
-                    project.thumbnail = BitmapFactory.decodeFile(fileName, bmpOpts);
+            Bitmap thumbnailBmp;
+            if(project.imgDownloadNum < PROJECT_THUMBNAIL_NUM) {
+                String fileName = String.format("%s/%s/%d/%03d.%s", project.dir.getPath(),
+                        StaticValue.SLOT_THUMBNAIL_DIR_NAME, 0, 0, StaticValue.THUMBNAIL_FILE_EXT);
+                thumbnailBmp = BitmapFactory.decodeFile(fileName, bmpOptions);
+            } else {
+                File thumbnailFile = new File(String.format("%s/%s/%s", project.dir.getPath(),
+                        StaticValue.SLOT_THUMBNAIL_DIR_NAME, StaticValue.PROJECT_THUMBNAIL));
+
+                if(thumbnailFile.exists()) {
+                    thumbnailBmp = BitmapFactory.decodeFile(thumbnailFile.getPath(), bmpOptions);
                 } else {
-                    File thumbnailFile = new File(String.format("%s/%s/%s", project.dir.getPath(),
-                            StaticValue.SLOT_THUMBNAIL_DIR_NAME, StaticValue.PROJECT_THUMBNAIL));
-
-                    if(thumbnailFile.exists()) {
-                        bmpOpts.inSampleSize = 1;
-                        project.thumbnail = BitmapFactory.decodeFile(thumbnailFile.getPath(), bmpOpts);
-                    } else {
-                        bmpOpts.inSampleSize = 2;
-                        project.thumbnail = Bitmap.createBitmap(StaticValue.THUMBNAIL_SIZE,
-                                StaticValue.THUMBNAIL_SIZE, StaticValue.BITMAP_TYPE);
-                        Canvas canvas = new Canvas(project.thumbnail);
-                        int slotSize = StaticValue.THUMBNAIL_SIZE / PROJECT_THUMBNAIL_SLOTS;
-                        Log.i(TAG, "create project thumbnail " + canvas.getWidth() + " " + canvas.getHeight());
-                        for(int i = 0; i < PROJECT_THUMBNAIL_NUM; i++) {
-                            Bitmap bmp = BitmapFactory.decodeFile(String.format("%s/%s/%d/%03d.%s",
-                                    project.dir.getPath(), StaticValue.SLOT_THUMBNAIL_DIR_NAME,
-                                    0, i, StaticValue.THUMBNAIL_FILE_EXT), bmpOpts);
-                            if(bmp != null) {
-                                canvas.drawBitmap(bmp, (i % PROJECT_THUMBNAIL_SLOTS) * slotSize,
-                                        (i / PROJECT_THUMBNAIL_SLOTS) * slotSize, null);
-                            }
+                    BitmapFactory.Options opts=new BitmapFactory.Options();
+                    opts.inSampleSize = 2;
+                    Canvas canvas = new Canvas(bmpOptions.inBitmap);
+                    int slotSize = StaticValue.THUMBNAIL_SIZE / PROJECT_THUMBNAIL_SLOTS;
+                    Log.i(TAG, "create project thumbnail " + canvas.getWidth() + " " + canvas.getHeight());
+                    for(int i = 0; i < PROJECT_THUMBNAIL_NUM; i++) {
+                        Bitmap bmp = BitmapFactory.decodeFile(String.format("%s/%s/%d/%03d.%s",
+                                project.dir.getPath(), StaticValue.SLOT_THUMBNAIL_DIR_NAME,
+                                0, i, StaticValue.THUMBNAIL_FILE_EXT), opts);
+                        if(bmp != null) {
+                            canvas.drawBitmap(bmp, (i % PROJECT_THUMBNAIL_SLOTS) * slotSize,
+                                    (i / PROJECT_THUMBNAIL_SLOTS) * slotSize, null);
                         }
-
-                        Utils.saveBitmapToFile(project.thumbnail, thumbnailFile);
                     }
+
+                    Utils.saveBitmapToFile(bmpOptions.inBitmap, thumbnailFile);
+                    thumbnailBmp=bmpOptions.inBitmap;
                 }
             }
 
-            return project.thumbnail;
+            return thumbnailBmp;
         }
 
         return null;

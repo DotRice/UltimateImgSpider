@@ -28,8 +28,8 @@ public class AlbumLoaderHelper extends ThumbnailLoaderHelper {
     }
 
     @Override
-    public Bitmap getThumbnailByIndex(int index, Bitmap container) {
-        Log.i(TAG, "load thumbnail bmp " + index);
+    public Bitmap getThumbnailByIndex(int index, BitmapFactory.Options bmpOption) {
+        //Log.i(TAG, "load thumbnail bmp " + index);
         int group = index / StaticValue.MAX_IMG_FILE_PER_DIR;
         int offset = index % StaticValue.MAX_IMG_FILE_PER_DIR;
 
@@ -37,8 +37,7 @@ public class AlbumLoaderHelper extends ThumbnailLoaderHelper {
                 group, offset, StaticValue.THUMBNAIL_FILE_EXT));
 
         if(file.exists()) {
-            bmpOpts.inBitmap = container;
-            return BitmapFactory.decodeFile(file.getPath(), bmpOpts);
+            return BitmapFactory.decodeFile(file.getPath(), bmpOption);
         }
 
         return null;
