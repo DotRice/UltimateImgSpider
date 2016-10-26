@@ -44,10 +44,10 @@
     <string name="badExternalStoragePrompt">存储器错误！</string>
     <string name="notFindValidStorage">未发现可用存储器</string>
     <string name="storage_lack">存储空间不足！</string>
-    
-    
+
+
     <string name="image_info">图片数量</string>
-    
+
     <string name="image_download_num">已下载图片数</string>
     <string name="image_processed">已扫描图片数</string>
     <string name="image_total">图片总数</string>
@@ -55,7 +55,7 @@
 
 
     <string name="page_info">网页数量</string>
-    
+
     <string name="page_processed">已扫描网页数</string>
     <string name="page_total">网页总数</string>
     <string name="page_tree_height">网页树高度</string>
@@ -72,9 +72,9 @@
     <string name="page_load_time">网页加载用时</string>
     <string name="page_scan_time">网页扫描用时</string>
     <string name="page_search_time">网页查找用时</string>
-    
+
     <string name="ram_info">内存信息</string>
-    
+
     <string name="ram_sys_total">系统总内存</string>
     <string name="ram_sys_free">系统空闲内存</string>
     <string name="ram_activity_vm">界面VM内存</string>
@@ -102,5 +102,7 @@
     <string name="sdcardStorage">SD卡</string>
     <string name="totalSpace">总空间:</string>
     <string name="freeSpace">剩余空间:</string>
+
+    <string name="permission_tips">请务必允许此权限，否则应用将无法使用，自动退出。</string>
 
 </resources>

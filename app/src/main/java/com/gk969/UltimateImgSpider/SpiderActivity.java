@@ -31,6 +31,7 @@ import com.gk969.gallerySimple.ThumbnailLoader;
 import com.gk969.gallerySimple.SlotView;
 import com.gk969.gallerySimple.ThumbnailLoaderHelper;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -42,12 +43,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
@@ -56,6 +59,7 @@ import android.os.Message;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -168,6 +172,11 @@ public class SpiderActivity extends Activity {
     private StorageUtils storageInfo;
 
     IRemoteSpiderService mService = null;
+
+
+    private final static int RESULT_SRC_URL = 0;
+
+    private static final int PERMISSION_REQUEST_CODE=0;
 
     private void serviceInterfaceInit() {
         mConnection = new ServiceConnection() {
@@ -341,14 +350,16 @@ public class SpiderActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
         setContentView(R.layout.activity_spider);
+        onFirstRun();
 
         Log.i(TAG, "onCreate");
 
-        createTime = SystemClock.uptimeMillis();
-        onFirstRun();
+        checkPermissionBeforeInit();
+    }
 
+    private void init(){
+        createTime = SystemClock.uptimeMillis();
         storageInfo = new StorageUtils();
         serviceInterfaceInit();
         panelViewInit();
@@ -356,6 +367,30 @@ public class SpiderActivity extends Activity {
         timerThreadPoolInit();
     }
 
+    private void checkPermissionBeforeInit(){
+        Log.i(TAG, "checkPermissionBeforeInit");
+        if(Build.VERSION.SDK_INT >= 23){
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+            }else{
+                init();
+            }
+        }else {
+            init();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                init();
+            }else {
+                finish();
+            }
+        }
+    }
 
     private void timerThreadPoolInit() {
         singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable() {
@@ -661,14 +696,18 @@ public class SpiderActivity extends Activity {
 
     protected void onResume() {
         super.onResume();
-        mThumbnailLoader.onResume();
+        if(mThumbnailLoader!=null) {
+            mThumbnailLoader.onResume();
+        }
         Log.i(TAG, "onResume");
 
     }
 
     protected void onPause() {
         super.onPause();
-        mThumbnailLoader.onPause();
+        if(mThumbnailLoader!=null) {
+            mThumbnailLoader.onPause();
+        }
         Log.i(TAG, "onPause");
     }
 
@@ -692,40 +731,44 @@ public class SpiderActivity extends Activity {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
 
-        mThumbnailLoader.stopLoader();
-        photoView.stopLoader();
-        tryToStopSpiderService();
+        if(mThumbnailLoader!=null) {
+            mThumbnailLoader.stopLoader();
+            photoView.stopLoader();
+            tryToStopSpiderService();
+            storageInfo.stopRefresh();
+        }
         singleThreadPoolTimer.shutdown();
-        storageInfo.stopRefresh();
     }
 
     // 返回至SelSrcActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if(requestCode == StaticValue.RESULT_SRC_URL) {
-            if(resultCode == RESULT_CANCELED) {
-                Log.i(TAG, "REQUST_SRC_URL cancelled!");
-            } else {
-                if(data != null) {
-                    try {
-                        URL newUrl = new URL(data.getAction());
+        switch(requestCode){
+            case RESULT_SRC_URL:
+                if(resultCode == RESULT_CANCELED) {
+                    Log.i(TAG, "REQUEST_SRC_URL cancelled!");
+                } else {
+                    if(data != null) {
+                        try {
+                            URL newUrl = new URL(data.getAction());
 
-                        Log.i(TAG, "REQUST_SRC_URL " + newUrl.toString());
-                        String host = newUrl.getHost();
-                        downloadingProjectSrcUrl = newUrl.toString();
+                            Log.i(TAG, "REQUEST_SRC_URL " + newUrl.toString());
+                            String host = newUrl.getHost();
+                            downloadingProjectSrcUrl = newUrl.toString();
 
-                        int albumIndex = spiderProject.findIndexBySite(host);
-                        if(albumIndex == SpiderProject.INVALID_INDEX) {
-                            showSelStoAlert(host);
-                        } else {
-                            openStartProject(albumIndex);
+                            int albumIndex = spiderProject.findIndexBySite(host);
+                            if(albumIndex == SpiderProject.INVALID_INDEX) {
+                                showSelStoAlert(host);
+                            } else {
+                                openStartProject(albumIndex);
+                            }
+                        } catch(MalformedURLException e) {
+                            e.printStackTrace();
                         }
-                    } catch(MalformedURLException e) {
-                        e.printStackTrace();
                     }
                 }
-            }
+                break;
         }
     }
 
@@ -820,7 +863,7 @@ public class SpiderActivity extends Activity {
         if(urlToOpen != null) {
             intent.putExtra(StaticValue.EXTRA_URL_TO_OPEN, urlToOpen);
         }
-        startActivityForResult(intent, StaticValue.RESULT_SRC_URL);
+        startActivityForResult(intent, RESULT_SRC_URL);
     }
 
     private class InfoDrawer {

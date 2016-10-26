@@ -50,6 +50,7 @@ public class SpiderProject {
             dir = new File(sitePath);
 
             if(!dir.exists()) {
+                Log.i(TAG, "make new project dir "+dir.getPath());
                 dir.mkdirs();
             }
 

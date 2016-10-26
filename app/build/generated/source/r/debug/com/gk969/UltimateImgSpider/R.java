@@ -426,52 +426,46 @@ public final class R {
         public static final int page_total=0x7f050042;
         public static final int page_tree_height=0x7f050043;
         public static final int pause=0x7f050044;
-        public static final int project_load_complete=0x7f050045;
-        public static final int prompt=0x7f050046;
-        public static final int ram_activity_native=0x7f050047;
-        public static final int ram_activity_vm=0x7f050048;
-        public static final int ram_info=0x7f050049;
-        public static final int ram_service_native=0x7f05004a;
-        public static final int ram_service_vm=0x7f05004b;
-        public static final int ram_sys_free=0x7f05004c;
-        public static final int ram_sys_total=0x7f05004d;
-        public static final int refresh=0x7f05004e;
-        public static final int retry=0x7f05004f;
-        public static final int sdcardStorage=0x7f050050;
-        public static final int search=0x7f050051;
-        public static final int searchOrInputURL=0x7f050052;
-        public static final int selSearchEngine=0x7f050053;
-        public static final int selSrc=0x7f050054;
-        public static final int selStorageDevice=0x7f050055;
-        public static final int settings=0x7f050056;
-        public static final int speed_info=0x7f050057;
-        public static final int spiderGo=0x7f050058;
-        public static final int spiderGoConfirm=0x7f050059;
-        public static final int srcUrl=0x7f05005a;
-        public static final int srcUrlHint=0x7f05005b;
-        public static final int start=0x7f05005c;
-        public static final int stop=0x7f05005d;
-        public static final int storage_free=0x7f05005e;
-        public static final int storage_info=0x7f05005f;
-        public static final int storage_lack=0x7f050060;
-        public static final int storage_total=0x7f050061;
-        public static final int title=0x7f050062;
-        public static final int totalSpace=0x7f050063;
-        public static final int uneffectiveNetworkPrompt=0x7f050064;
-        public static final int web_url=0x7f050065;
+        public static final int permission_tips=0x7f050045;
+        public static final int project_load_complete=0x7f050046;
+        public static final int prompt=0x7f050047;
+        public static final int ram_activity_native=0x7f050048;
+        public static final int ram_activity_vm=0x7f050049;
+        public static final int ram_info=0x7f05004a;
+        public static final int ram_service_native=0x7f05004b;
+        public static final int ram_service_vm=0x7f05004c;
+        public static final int ram_sys_free=0x7f05004d;
+        public static final int ram_sys_total=0x7f05004e;
+        public static final int refresh=0x7f05004f;
+        public static final int retry=0x7f050050;
+        public static final int sdcardStorage=0x7f050051;
+        public static final int search=0x7f050052;
+        public static final int searchOrInputURL=0x7f050053;
+        public static final int selSearchEngine=0x7f050054;
+        public static final int selSrc=0x7f050055;
+        public static final int selStorageDevice=0x7f050056;
+        public static final int settings=0x7f050057;
+        public static final int speed_info=0x7f050058;
+        public static final int spiderGo=0x7f050059;
+        public static final int spiderGoConfirm=0x7f05005a;
+        public static final int srcUrl=0x7f05005b;
+        public static final int srcUrlHint=0x7f05005c;
+        public static final int start=0x7f05005d;
+        public static final int stop=0x7f05005e;
+        public static final int storage_free=0x7f05005f;
+        public static final int storage_info=0x7f050060;
+        public static final int storage_lack=0x7f050061;
+        public static final int storage_total=0x7f050062;
+        public static final int title=0x7f050063;
+        public static final int totalSpace=0x7f050064;
+        public static final int uneffectiveNetworkPrompt=0x7f050065;
+        public static final int web_url=0x7f050066;
     }
     public static final class style {
         /**  API 11 theme customizations can go here. 
  API 14 theme customizations can go here. 
-
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        
          */
         public static final int AppBaseTheme=0x7f070000;
-        /** <item name="android:actionBarStyle">@style/MyActionBar</item>
-         */
         public static final int AppTheme=0x7f070002;
         public static final int ProgressBar_Mini=0x7f070003;
         public static final int leak_canary_LeakCanary_Base=0x7f070001;

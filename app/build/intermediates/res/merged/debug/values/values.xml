@@ -278,6 +278,7 @@
     <string name="page_total">网页总数</string>
     <string name="page_tree_height">网页树高度</string>
     <string name="pause">暂停</string>
+    <string name="permission_tips">请务必允许此权限，否则应用将无法使用，自动退出。</string>
     <string name="project_load_complete">工程加载完毕</string>
     <string name="prompt">提示</string>
     <string name="ram_activity_native">界面Native内存</string>
@@ -312,14 +313,10 @@
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
     <string name="web_url">网址</string>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
+        
     </style>
     <style name="AppTheme" parent="AppBaseTheme">
-        <!--<item name="android:actionBarStyle">@style/MyActionBar</item>-->
+        
     </style>
     <style name="ProgressBar_Mini" parent="@android:style/Widget.Holo.Light.ProgressBar.Horizontal">
         <item name="android:maxHeight">2dp</item>

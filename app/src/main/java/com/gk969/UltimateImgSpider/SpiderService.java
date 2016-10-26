@@ -23,6 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.gk969.Utils.MemoryInfo;
 import com.gk969.Utils.Utils;
 
+import android.Manifest;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -30,6 +31,7 @@ import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
@@ -134,7 +136,6 @@ public class SpiderService extends Service {
                 } catch(RemoteException e) {
                     e.printStackTrace();
                 }
-
             }
 
             public void onServiceDisconnected(ComponentName className) {

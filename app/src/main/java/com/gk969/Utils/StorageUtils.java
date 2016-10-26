@@ -27,7 +27,7 @@ public class StorageUtils {
         public StorageDeviceDir(long pFreeSpace, long pTotalSpace, String firstPath) {
             freeSpace = pFreeSpace;
             totalSpace = pTotalSpace;
-            pathList = new LinkedList<String>();
+            pathList = new LinkedList<>();
             pathList.add(firstPath);
             path = firstPath;
         }
@@ -45,7 +45,7 @@ public class StorageUtils {
         }
     }
 
-    private LinkedList<StorageDeviceDir> storageDeviceDirList = new LinkedList<StorageDeviceDir>();
+    private LinkedList<StorageDeviceDir> storageDeviceDirList = new LinkedList<>();
     private ReentrantLock storageInfoLock = new ReentrantLock();
 
     public interface OnGottenStorageDirListener{
@@ -59,7 +59,7 @@ public class StorageUtils {
                 storageDeviceDirList = getStorageInfo();
                 storageInfoLock.unlock();
 
-                LinkedList<StorageDir> storageInfo = new LinkedList<StorageDir>();
+                LinkedList<StorageDir> storageInfo = new LinkedList<>();
                 for(StorageDeviceDir storageDeviceDir : storageDeviceDirList) {
                     storageInfo.add(new StorageDir(storageDeviceDir.freeSpace, storageDeviceDir.totalSpace,
                             storageDeviceDir.path));
@@ -114,7 +114,7 @@ public class StorageUtils {
     }
 
     public static LinkedList<StorageDeviceDir> getStorageInfo() {
-        LinkedList<StorageDeviceDir> newStorageDirList = new LinkedList<StorageDeviceDir>();
+        LinkedList<StorageDeviceDir> newStorageDirList = new LinkedList<>();
 
         long startTime = SystemClock.uptimeMillis();
         if(Environment.getExternalStorageState().equals(

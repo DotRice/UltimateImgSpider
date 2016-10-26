@@ -38,7 +38,8 @@
             android:scaleType="fitCenter"
             android:background="@drawable/button_add_corners_background"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"/>
+            android:layout_centerHorizontal="true"
+            android:visibility="invisible"/>
 
         <ImageButton
             android:id="@+id/button_menu"
@@ -50,7 +51,8 @@
             android:padding="5dp"
             android:background="@drawable/button_info_corners_background"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"/>
+            android:layout_centerHorizontal="true"
+            android:visibility="invisible"/>
 
     </RelativeLayout>
 

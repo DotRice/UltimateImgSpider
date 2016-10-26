@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -22,6 +23,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
@@ -89,7 +91,6 @@ public class WatchdogService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
         mHandler.post(timerRunnable);
         Log.i(TAG, "onCreate");
     }

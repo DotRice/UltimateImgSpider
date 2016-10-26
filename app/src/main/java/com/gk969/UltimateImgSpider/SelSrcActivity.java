@@ -622,7 +622,6 @@ public class SelSrcActivity extends Activity {
         findViewById(R.id.buttonSpiderGo).setOnClickListener(oclBrowserBtn);
         findViewById(R.id.buttonHome).setOnClickListener(oclBrowserBtn);
         findViewById(R.id.buttonMenu).setOnClickListener(oclBrowserBtn);
-        
     }
     
     @Override
