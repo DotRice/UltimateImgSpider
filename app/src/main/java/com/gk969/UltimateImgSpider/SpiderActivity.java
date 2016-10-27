@@ -592,12 +592,10 @@ public class SpiderActivity extends Activity {
         slotView.setOnManuallyScroll(new SlotView.OnManuallyScrollListener() {
             @Override
             public void onManuallyScroll() {
-                /*
                 if(curView == ALBUM_VIEW)
                 {
                     showButtonMenu(true);
                 }
-                */
             }
         });
 
@@ -697,7 +695,9 @@ public class SpiderActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if(mThumbnailLoader!=null) {
-            mThumbnailLoader.onResume();
+            if(Build.VERSION.SDK_INT >= 24 && !isInMultiWindowMode()) {
+                mThumbnailLoader.onResume();
+            }
         }
         Log.i(TAG, "onResume");
 
@@ -706,7 +706,9 @@ public class SpiderActivity extends Activity {
     protected void onPause() {
         super.onPause();
         if(mThumbnailLoader!=null) {
-            mThumbnailLoader.onPause();
+            if(Build.VERSION.SDK_INT >= 24 && !isInMultiWindowMode()) {
+                mThumbnailLoader.onPause();
+            }
         }
         Log.i(TAG, "onPause");
     }

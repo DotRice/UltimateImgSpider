@@ -829,7 +829,14 @@
                     "endOffset": 4069
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml",
+                    "position": {
+                        "startLine": 8,
+                        "startColumn": 4,
+                        "startOffset": 239,
+                        "endColumn": 49,
+                        "endOffset": 284
+                    }
                 }
             },
             {
@@ -841,7 +848,14 @@
                     "endOffset": 4117
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml"
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\dimens.xml",
+                    "position": {
+                        "startLine": 7,
+                        "startColumn": 4,
+                        "startOffset": 190,
+                        "endColumn": 47,
+                        "endOffset": 233
+                    }
                 }
             },
             {
@@ -2341,7 +2355,14 @@
                     "endOffset": 11199
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml",
+                    "position": {
+                        "startLine": 33,
+                        "startColumn": 1,
+                        "startOffset": 1227,
+                        "endColumn": 58,
+                        "endOffset": 1284
+                    }
                 }
             },
             {
@@ -3265,14 +3286,7 @@
                     "endOffset": 15749
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml",
-                    "position": {
-                        "startLine": 105,
-                        "startColumn": 4,
-                        "startOffset": 4139,
-                        "endColumn": 68,
-                        "endOffset": 4203
-                    }
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\strings.xml"
                 }
             },
             {
@@ -3676,9 +3690,51 @@
                     "startLine": 314,
                     "startColumn": 4,
                     "startOffset": 17287,
-                    "endLine": 316,
+                    "endLine": 320,
                     "endColumn": 12,
-                    "endOffset": 17370
+                    "endOffset": 17578
+                },
+                "from": {
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml",
+                    "position": {
+                        "startLine": 6,
+                        "startColumn": 4,
+                        "startOffset": 192,
+                        "endLine": 12,
+                        "endColumn": 12,
+                        "endOffset": 489
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 321,
+                    "startColumn": 4,
+                    "startOffset": 17583,
+                    "endLine": 323,
+                    "endColumn": 12,
+                    "endOffset": 17718
+                },
+                "from": {
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml",
+                    "position": {
+                        "startLine": 15,
+                        "startColumn": 4,
+                        "startOffset": 530,
+                        "endLine": 17,
+                        "endColumn": 12,
+                        "endOffset": 667
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 324,
+                    "startColumn": 4,
+                    "startOffset": 17723,
+                    "endLine": 328,
+                    "endColumn": 12,
+                    "endOffset": 18008
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
@@ -3686,38 +3742,12 @@
             },
             {
                 "to": {
-                    "startLine": 317,
+                    "startLine": 329,
                     "startColumn": 4,
-                    "startOffset": 17375,
-                    "endLine": 319,
-                    "endColumn": 12,
-                    "endOffset": 17442
-                },
-                "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
-                }
-            },
-            {
-                "to": {
-                    "startLine": 320,
-                    "startColumn": 4,
-                    "startOffset": 17447,
-                    "endLine": 324,
-                    "endColumn": 12,
-                    "endOffset": 17732
-                },
-                "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values\\styles.xml"
-                }
-            },
-            {
-                "to": {
-                    "startLine": 325,
-                    "startColumn": 4,
-                    "startOffset": 17737,
-                    "endLine": 326,
+                    "startOffset": 18013,
+                    "endLine": 330,
                     "endColumn": 10,
-                    "endOffset": 17813
+                    "endOffset": 18089
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\values\\values.xml"
@@ -3725,12 +3755,12 @@
             },
             {
                 "to": {
-                    "startLine": 327,
+                    "startLine": 331,
                     "startColumn": 4,
-                    "startOffset": 17818,
-                    "endLine": 333,
+                    "startOffset": 18094,
+                    "endLine": 337,
                     "endColumn": 10,
-                    "endOffset": 18198
+                    "endOffset": 18474
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\exploded-aar\\com.squareup.leakcanary\\leakcanary-android\\1.4\\res\\values\\values.xml"

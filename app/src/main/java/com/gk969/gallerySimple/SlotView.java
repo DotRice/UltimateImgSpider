@@ -79,6 +79,8 @@ public class SlotView extends GLView {
 
     private int labelHeight;
     private int labelTextSize;
+    private float labelTextHeightRatio=0;
+    private int labelTextHeight=0;
     private int labelTextTop;
     private int labelPadding;
 
@@ -383,6 +385,7 @@ public class SlotView extends GLView {
 
         labelHeight = (int) (slotSize * LABEL_HEIGHT_RATIO);
         labelTextSize = (int) (labelHeight * LABEL_TEXT_HEIGHT_RATIO);
+        labelTextHeight=(int)(labelTextHeightRatio*labelTextSize);
         labelTextTop = (labelHeight - labelTextSize) / 2;
         labelPadding = (int) (slotSize * LABEL_PADDING_RATIO);
 
@@ -545,6 +548,12 @@ public class SlotView extends GLView {
         }
     }
 
+    private void getLabelTextHeightRatio(StringTexture stringTexture){
+        if(labelTextHeightRatio==0){
+            labelTextHeightRatio=stringTexture.getHeight()/(float)labelTextSize;
+            labelTextHeight=(int)(labelTextHeightRatio*labelTextSize);
+        }
+    }
 
     @Override
     protected void render(GLCanvas canvas) {
@@ -602,13 +611,17 @@ public class SlotView extends GLView {
 
                     int labelY = slotTop + slotSize - labelHeight;
                     if(slotTexture.labelName != null) {
+                        getLabelTextHeightRatio(slotTexture.labelName);
+
                         canvas.fillRect(slotLeft, labelY, slotSize, labelHeight, LABEL_BACKGROUND_COLOR);
-                        slotTexture.labelName.draw(canvas, slotLeft + labelPadding, labelY + labelTextTop);
+                        slotTexture.labelName.draw(canvas, slotLeft + labelPadding, labelY + labelTextTop,
+                                slotTexture.labelName.getWidth()*labelTextHeight/slotTexture.labelName.getHeight(), labelTextHeight);
                     }
 
                     if(slotTexture.labelInfo != null) {
                         slotTexture.labelInfo.draw(canvas, slotLeft + slotSize - slotTexture.labelInfo.getWidth() - labelPadding,
-                                labelY + labelTextTop);
+                                labelY + labelTextTop,
+                                slotTexture.labelInfo.getWidth()*labelTextHeight/slotTexture.labelInfo.getHeight(), labelTextHeight);
                     }
                 }
             }

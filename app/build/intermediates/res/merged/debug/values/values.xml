@@ -75,8 +75,8 @@
     <dimen name="big_setting_popup_window_width_xlarge">590dp</dimen>
     <dimen name="button_add_radius">25dp</dimen>
     <dimen name="button_add_size">50dp</dimen>
-    <dimen name="button_info_radius">20dp</dimen>
-    <dimen name="button_info_size">40dp</dimen>
+    <dimen name="button_info_radius">25dp</dimen>
+    <dimen name="button_info_size">50dp</dimen>
     <dimen name="cache_pin_margin">8dp</dimen>
     <dimen name="cache_pin_size">24dp</dimen>
     <dimen name="camera_controls_size">0dip</dimen>
@@ -201,7 +201,7 @@
     <drawable name="background_normal">#FFF</drawable>
     <drawable name="background_pressed">#CFC</drawable>
     <drawable name="trans_background_green">#A8F8</drawable>
-    <drawable name="trans_background_normal">#BFFF</drawable>
+    <drawable name="trans_background_normal">#DFFF</drawable>
     <drawable name="trans_background_pressed">#ACFC</drawable>
     <integer name="album_rows_land">2</integer>
     <integer name="album_rows_port">4</integer>
@@ -313,10 +313,14 @@
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
     <string name="web_url">网址</string>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
-        
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
     </style>
     <style name="AppTheme" parent="AppBaseTheme">
-        
+        <!--<item name="android:actionBarStyle">@style/MyActionBar</item>-->
     </style>
     <style name="ProgressBar_Mini" parent="@android:style/Widget.Holo.Light.ProgressBar.Horizontal">
         <item name="android:maxHeight">2dp</item>

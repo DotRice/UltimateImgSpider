@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 24
     buildToolsVersion "21.1.2"
 
     defaultConfig {
         applicationId "com.gk969.UltimateImgSpider"
         minSdkVersion 14
-        targetSdkVersion 23
+        targetSdkVersion 24
 
         ndk {
             moduleName "UltimateImgSpider"

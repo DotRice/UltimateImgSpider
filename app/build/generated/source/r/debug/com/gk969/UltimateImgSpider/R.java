@@ -464,8 +464,15 @@ public final class R {
     public static final class style {
         /**  API 11 theme customizations can go here. 
  API 14 theme customizations can go here. 
+
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        
          */
         public static final int AppBaseTheme=0x7f070000;
+        /** <item name="android:actionBarStyle">@style/MyActionBar</item>
+         */
         public static final int AppTheme=0x7f070002;
         public static final int ProgressBar_Mini=0x7f070003;
         public static final int leak_canary_LeakCanary_Base=0x7f070001;

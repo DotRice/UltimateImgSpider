@@ -2,8 +2,8 @@
 <resources>
     <dimen name="button_add_radius">33dp</dimen>
     <dimen name="button_add_size">66dp</dimen>
-    <dimen name="button_info_radius">25dp</dimen>
-    <dimen name="button_info_size">50dp</dimen>
+    <dimen name="button_info_radius">33dp</dimen>
+    <dimen name="button_info_size">66dp</dimen>
     <dimen name="drawer_info_button_ctrl_width">100dp</dimen>
     <dimen name="drawer_info_button_open_width">100dp</dimen>
     <dimen name="drawer_info_ctrl_panel_height">50dp</dimen>
