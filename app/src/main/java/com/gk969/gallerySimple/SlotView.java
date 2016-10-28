@@ -100,7 +100,8 @@ public class SlotView extends GLView {
 
     private static final int DECELERATE_MULTI_MIN = 1;
     private static final int DECELERATE_MULTI_MAX = 5;
-    private static final int FLY_ACCURACY_ABS = 10000;
+    private static final int FLY_ACCURACY_ABS_IN_DP = 7500;
+    private int flyAccuracyAbs;
     private float flyAccuracy;
     private float flyVelocity;
     private float flyVelocityRaw;
@@ -179,7 +180,7 @@ public class SlotView extends GLView {
     OnScrollEndListener runOnScrollEnd;
 
     public interface OnManuallyScrollListener {
-        public void onManuallyScroll();
+        public void onManuallyScroll(boolean isUp);
     }
 
     OnManuallyScrollListener runOnManuallyScroll;
@@ -221,7 +222,7 @@ public class SlotView extends GLView {
         @Override
         public boolean onScroll(float dx, float dy, float totalX, float totalY) {
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
-            runOnManuallyScroll.onManuallyScroll();
+            runOnManuallyScroll.onManuallyScroll(totalY<0);
 
             mGLRootView.lockRenderThread();
 
@@ -332,11 +333,14 @@ public class SlotView extends GLView {
         scrollBarHeightMax = Utils.DisplayUtil.dipToPx(context, SCROLL_BAR_HEIGHT_MAX_IN_DP);
         scrollBarHeightMin = Utils.DisplayUtil.dipToPx(context, SCROLL_BAR_HEIGHT_MIN_IN_DP);
         barScrollValid = Utils.DisplayUtil.dipToPx(context, BAR_SCROLL_VALID_IN_DP);
+        flyAccuracyAbs = Utils.DisplayUtil.dipToPx(context, FLY_ACCURACY_ABS_IN_DP);
 
         mThumbnailLoader = loader;
         mThumbnailLoader.onViewScrollOverLine(0);
         mGLRootView = glRootView;
         loader.setView(this);
+
+        Log.i(TAG, "density "+context.getResources().getDisplayMetrics().density);
     }
 
     @Override
@@ -350,7 +354,7 @@ public class SlotView extends GLView {
         stopAnimation();
         setViewSize(getWidth(), getHeight());
 
-        if(runOnStart!=null && hasStarted==false){
+        if(runOnStart!=null && !hasStarted){
             runOnStart.onStart();
             hasStarted=true;
         }
@@ -426,7 +430,7 @@ public class SlotView extends GLView {
     private void startFly(float velocity) {
         flyVelocity = velocity;
         flyVelocityRaw = flyVelocity;
-        flyAccuracy = (velocity > 0) ? (0 - FLY_ACCURACY_ABS) : FLY_ACCURACY_ABS;
+        flyAccuracy = (velocity > 0) ? (0 - flyAccuracyAbs) : flyAccuracyAbs;
 
         renderTime = SystemClock.uptimeMillis();
         mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);

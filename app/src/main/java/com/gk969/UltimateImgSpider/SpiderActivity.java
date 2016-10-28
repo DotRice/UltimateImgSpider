@@ -591,10 +591,10 @@ public class SpiderActivity extends Activity {
 
         slotView.setOnManuallyScroll(new SlotView.OnManuallyScrollListener() {
             @Override
-            public void onManuallyScroll() {
+            public void onManuallyScroll(boolean isUp) {
                 if(curView == ALBUM_VIEW)
                 {
-                    showButtonMenu(true);
+                    showButtonMenu(isUp);
                 }
             }
         });
@@ -694,22 +694,12 @@ public class SpiderActivity extends Activity {
 
     protected void onResume() {
         super.onResume();
-        if(mThumbnailLoader!=null) {
-            if(Build.VERSION.SDK_INT >= 24 && !isInMultiWindowMode()) {
-                mThumbnailLoader.onResume();
-            }
-        }
         Log.i(TAG, "onResume");
 
     }
 
     protected void onPause() {
         super.onPause();
-        if(mThumbnailLoader!=null) {
-            if(Build.VERSION.SDK_INT >= 24 && !isInMultiWindowMode()) {
-                mThumbnailLoader.onPause();
-            }
-        }
         Log.i(TAG, "onPause");
     }
 
@@ -1136,7 +1126,6 @@ public class SpiderActivity extends Activity {
     }
 
     private void buttonShowAnim(final View view, final boolean isShow) {
-        Log.i(TAG, "buttonShowAnim "+view+" "+isShow);
         if((view.getVisibility() == View.VISIBLE) != isShow) {
             float fromY = isShow ? 1 : 0;
             TranslateAnimation animation = new TranslateAnimation(

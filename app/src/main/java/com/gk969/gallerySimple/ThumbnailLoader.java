@@ -82,8 +82,6 @@ public class ThumbnailLoader {
 
     private int labelNameLimit;
 
-    private Utils.ReadWaitLock loaderPauseLock = new Utils.ReadWaitLock();
-
     public ThumbnailLoader(GLRootView glRoot, ThumbnailLoaderHelper helper) {
         cacheSize = StaticValue.getThumbnailCacheSize();
         textureCache = new SlotTexture[cacheSize];
@@ -121,14 +119,6 @@ public class ThumbnailLoader {
 
     public void setView(SlotView view) {
         slotView = view;
-    }
-
-    public void onPause() {
-        loaderPauseLock.lock();
-    }
-
-    public void onResume() {
-        loaderPauseLock.unlock();
     }
 
     public void setHelper(ThumbnailLoaderHelper helper, int totalImgNum) {
@@ -371,7 +361,6 @@ public class ThumbnailLoader {
                                 bmpOpts.inBitmap=slot.mainBmp;
                                 mGLRootView.unlockRenderThread();
                                 Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, bmpOpts);
-                                loaderPauseLock.waitIfLocked();
                                 mGLRootView.lockRenderThread();
                                 if(bmp != null) {
                                     if(imgIndex == slot.imgIndex) {

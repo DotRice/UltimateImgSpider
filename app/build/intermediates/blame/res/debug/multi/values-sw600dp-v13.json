@@ -7,8 +7,8 @@
                     "startLine": 2,
                     "startColumn": 4,
                     "startOffset": 55,
-                    "endColumn": 48,
-                    "endOffset": 99
+                    "endColumn": 61,
+                    "endOffset": 112
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -18,9 +18,9 @@
                 "to": {
                     "startLine": 3,
                     "startColumn": 4,
-                    "startOffset": 104,
-                    "endColumn": 46,
-                    "endOffset": 146
+                    "startOffset": 117,
+                    "endColumn": 61,
+                    "endOffset": 174
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -30,47 +30,33 @@
                 "to": {
                     "startLine": 4,
                     "startColumn": 4,
-                    "startOffset": 151,
-                    "endColumn": 49,
-                    "endOffset": 196
+                    "startOffset": 179,
+                    "endColumn": 60,
+                    "endOffset": 235
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml",
-                    "position": {
-                        "startLine": 6,
-                        "startColumn": 4,
-                        "startOffset": 164,
-                        "endColumn": 49,
-                        "endOffset": 209
-                    }
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
                 }
             },
             {
                 "to": {
                     "startLine": 5,
                     "startColumn": 4,
-                    "startOffset": 201,
-                    "endColumn": 47,
-                    "endOffset": 244
+                    "startOffset": 240,
+                    "endColumn": 63,
+                    "endOffset": 299
                 },
                 "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml",
-                    "position": {
-                        "startLine": 5,
-                        "startColumn": 4,
-                        "startOffset": 115,
-                        "endColumn": 47,
-                        "endOffset": 158
-                    }
+                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
                 }
             },
             {
                 "to": {
                     "startLine": 6,
                     "startColumn": 4,
-                    "startOffset": 249,
+                    "startOffset": 304,
                     "endColumn": 61,
-                    "endOffset": 306
+                    "endOffset": 361
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -80,9 +66,9 @@
                 "to": {
                     "startLine": 7,
                     "startColumn": 4,
-                    "startOffset": 311,
-                    "endColumn": 61,
-                    "endOffset": 368
+                    "startOffset": 366,
+                    "endColumn": 66,
+                    "endOffset": 428
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -92,9 +78,9 @@
                 "to": {
                     "startLine": 8,
                     "startColumn": 4,
-                    "startOffset": 373,
-                    "endColumn": 60,
-                    "endOffset": 429
+                    "startOffset": 433,
+                    "endColumn": 66,
+                    "endOffset": 495
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -104,9 +90,9 @@
                 "to": {
                     "startLine": 9,
                     "startColumn": 4,
-                    "startOffset": 434,
-                    "endColumn": 63,
-                    "endOffset": 493
+                    "startOffset": 500,
+                    "endColumn": 65,
+                    "endOffset": 561
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -116,9 +102,9 @@
                 "to": {
                     "startLine": 10,
                     "startColumn": 4,
-                    "startOffset": 498,
-                    "endColumn": 61,
-                    "endOffset": 555
+                    "startOffset": 566,
+                    "endColumn": 64,
+                    "endOffset": 626
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -128,9 +114,9 @@
                 "to": {
                     "startLine": 11,
                     "startColumn": 4,
-                    "startOffset": 560,
-                    "endColumn": 66,
-                    "endOffset": 622
+                    "startOffset": 631,
+                    "endColumn": 54,
+                    "endOffset": 681
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -140,9 +126,9 @@
                 "to": {
                     "startLine": 12,
                     "startColumn": 4,
-                    "startOffset": 627,
-                    "endColumn": 66,
-                    "endOffset": 689
+                    "startOffset": 686,
+                    "endColumn": 57,
+                    "endOffset": 739
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -152,9 +138,9 @@
                 "to": {
                     "startLine": 13,
                     "startColumn": 4,
-                    "startOffset": 694,
-                    "endColumn": 65,
-                    "endOffset": 755
+                    "startOffset": 744,
+                    "endColumn": 62,
+                    "endOffset": 802
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -164,9 +150,9 @@
                 "to": {
                     "startLine": 14,
                     "startColumn": 4,
-                    "startOffset": 760,
-                    "endColumn": 64,
-                    "endOffset": 820
+                    "startOffset": 807,
+                    "endColumn": 59,
+                    "endOffset": 862
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -176,9 +162,9 @@
                 "to": {
                     "startLine": 15,
                     "startColumn": 4,
-                    "startOffset": 825,
-                    "endColumn": 54,
-                    "endOffset": 875
+                    "startOffset": 867,
+                    "endColumn": 60,
+                    "endOffset": 923
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -188,9 +174,9 @@
                 "to": {
                     "startLine": 16,
                     "startColumn": 4,
-                    "startOffset": 880,
-                    "endColumn": 57,
-                    "endOffset": 933
+                    "startOffset": 928,
+                    "endColumn": 63,
+                    "endOffset": 987
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -200,9 +186,9 @@
                 "to": {
                     "startLine": 17,
                     "startColumn": 4,
-                    "startOffset": 938,
-                    "endColumn": 62,
-                    "endOffset": 996
+                    "startOffset": 992,
+                    "endColumn": 55,
+                    "endOffset": 1043
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -212,9 +198,9 @@
                 "to": {
                     "startLine": 18,
                     "startColumn": 4,
-                    "startOffset": 1001,
-                    "endColumn": 59,
-                    "endOffset": 1056
+                    "startOffset": 1048,
+                    "endColumn": 58,
+                    "endOffset": 1102
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -224,9 +210,9 @@
                 "to": {
                     "startLine": 19,
                     "startColumn": 4,
-                    "startOffset": 1061,
-                    "endColumn": 60,
-                    "endOffset": 1117
+                    "startOffset": 1107,
+                    "endColumn": 49,
+                    "endOffset": 1152
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -236,9 +222,9 @@
                 "to": {
                     "startLine": 20,
                     "startColumn": 4,
-                    "startOffset": 1122,
-                    "endColumn": 63,
-                    "endOffset": 1181
+                    "startOffset": 1157,
+                    "endColumn": 45,
+                    "endOffset": 1198
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -248,9 +234,9 @@
                 "to": {
                     "startLine": 21,
                     "startColumn": 4,
-                    "startOffset": 1186,
-                    "endColumn": 55,
-                    "endOffset": 1237
+                    "startOffset": 1203,
+                    "endColumn": 45,
+                    "endOffset": 1244
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -260,9 +246,9 @@
                 "to": {
                     "startLine": 22,
                     "startColumn": 4,
-                    "startOffset": 1242,
-                    "endColumn": 58,
-                    "endOffset": 1296
+                    "startOffset": 1249,
+                    "endColumn": 52,
+                    "endOffset": 1297
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
@@ -272,57 +258,9 @@
                 "to": {
                     "startLine": 23,
                     "startColumn": 4,
-                    "startOffset": 1301,
-                    "endColumn": 49,
-                    "endOffset": 1346
-                },
-                "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
-                }
-            },
-            {
-                "to": {
-                    "startLine": 24,
-                    "startColumn": 4,
-                    "startOffset": 1351,
+                    "startOffset": 1302,
                     "endColumn": 45,
-                    "endOffset": 1392
-                },
-                "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
-                }
-            },
-            {
-                "to": {
-                    "startLine": 25,
-                    "startColumn": 4,
-                    "startOffset": 1397,
-                    "endColumn": 45,
-                    "endOffset": 1438
-                },
-                "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
-                }
-            },
-            {
-                "to": {
-                    "startLine": 26,
-                    "startColumn": 4,
-                    "startOffset": 1443,
-                    "endColumn": 52,
-                    "endOffset": 1491
-                },
-                "from": {
-                    "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
-                }
-            },
-            {
-                "to": {
-                    "startLine": 27,
-                    "startColumn": 4,
-                    "startOffset": 1496,
-                    "endColumn": 45,
-                    "endOffset": 1537
+                    "endOffset": 1343
                 },
                 "from": {
                     "file": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\values-sw600dp\\dimens.xml"
