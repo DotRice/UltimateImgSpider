@@ -1,5 +1,10 @@
 #include <jni.h>
 
+void jniTryDeleteProjectAshmem(JNIEnv *env, jobject thiz);
+void Java_com_gk969_UltimateImgSpider_WatchdogService_jniTryDeleteProjectAshmem(JNIEnv *env, jobject thiz){
+    jniTryDeleteProjectAshmem(env, thiz);
+}
+
 void jniRestoreProjectData(JNIEnv *env, jobject thiz, jstring jDataFileFullPath);
 void Java_com_gk969_UltimateImgSpider_WatchdogService_jniRestoreProjectData(JNIEnv *env, jobject thiz, jstring jDataFileFullPath){
     jniRestoreProjectData(env, thiz, jDataFileFullPath);

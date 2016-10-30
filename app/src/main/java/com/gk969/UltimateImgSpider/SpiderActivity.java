@@ -173,6 +173,8 @@ public class SpiderActivity extends Activity {
 
     IRemoteSpiderService mService = null;
 
+    private URL newUrl=null;
+    private boolean ProjectListHasLoaded=false;
 
     private final static int RESULT_SRC_URL = 0;
 
@@ -528,7 +530,7 @@ public class SpiderActivity extends Activity {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if(curView == ALBUM_SET_VIEW) {
+                        if(curView == ALBUM_SET_VIEW && newUrl==null) {
                             mThumbnailLoader.setAlbumTotalImgNum(spiderProject.projectList.size());
                         }
                     }
@@ -543,19 +545,18 @@ public class SpiderActivity extends Activity {
                     @Override
                     public void run() {
                         Log.i(TAG, "runOnProjectLoadComplete");
-                        if(curView==ALBUM_SET_VIEW) {
+                        ProjectListHasLoaded=true;
+                        if(newUrl!=null) {
+                            processNewUrl();
+                        }else if(curView == ALBUM_SET_VIEW) {
+                            buttonShowAnim(buttonAdd, true);
                             if((SystemClock.uptimeMillis() - createTime) > TIME_TO_DISP_TOAST
                                     && spiderProject.projectList.size() > 0) {
-                                Toast toast = Toast.makeText(SpiderActivity.this,
-                                        R.string.project_load_complete, Toast.LENGTH_SHORT);
-                                toast.setGravity(Gravity.CENTER, 0, 0);
-                                toast.show();
+                                Toast.makeText(SpiderActivity.this,
+                                        R.string.project_load_complete, Toast.LENGTH_SHORT).show();
                             }
                         }
 
-                        if(curView == ALBUM_SET_VIEW) {
-                            buttonShowAnim(buttonAdd, true);
-                        }
                     }
                 });
             }
@@ -743,17 +744,10 @@ public class SpiderActivity extends Activity {
                 } else {
                     if(data != null) {
                         try {
-                            URL newUrl = new URL(data.getAction());
-
+                            newUrl = new URL(data.getAction());
                             Log.i(TAG, "REQUEST_SRC_URL " + newUrl.toString());
-                            String host = newUrl.getHost();
-                            downloadingProjectSrcUrl = newUrl.toString();
-
-                            int albumIndex = spiderProject.findIndexBySite(host);
-                            if(albumIndex == SpiderProject.INVALID_INDEX) {
-                                showSelStoAlert(host);
-                            } else {
-                                openStartProject(albumIndex);
+                            if(ProjectListHasLoaded) {
+                                processNewUrl();
                             }
                         } catch(MalformedURLException e) {
                             e.printStackTrace();
@@ -761,6 +755,17 @@ public class SpiderActivity extends Activity {
                     }
                 }
                 break;
+        }
+    }
+
+    private void processNewUrl(){
+        String host = newUrl.getHost();
+        downloadingProjectSrcUrl = newUrl.toString();
+        int albumIndex = spiderProject.findIndexBySite(host);
+        if(albumIndex == SpiderProject.INVALID_INDEX) {
+            showSelStoAlert(host);
+        } else {
+            openStartProject(albumIndex);
         }
     }
 
@@ -802,7 +807,7 @@ public class SpiderActivity extends Activity {
 
                                     storageInfo[i] = deviceName + "  " + totalSpace + " " + freeSpace;
                                 }
-                                new AlertDialog.Builder(SpiderActivity.this)
+                                AlertDialog selStorageAlert=new AlertDialog.Builder(SpiderActivity.this)
                                         .setTitle(R.string.selStorageDevice)
                                         .setItems(storageInfo,
                                                 new DialogInterface.OnClickListener() {
@@ -811,7 +816,14 @@ public class SpiderActivity extends Activity {
                                                         openStartNewProject(host, storageDirs.get(whichButton).path);
                                                     }
                                                 })
-                                        .setNegativeButton(R.string.cancel, null).create().show();
+                                        .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                            @Override
+                                            public void onCancel(DialogInterface dialogInterface) {
+                                                mThumbnailLoader.setAlbumTotalImgNum(spiderProject.projectList.size());
+                                                buttonShowAnim(buttonAdd, true);
+                                            }
+                                        }).create();
+                                selStorageAlert.show();
                             }
                         } else {
                             new AlertDialog.Builder(SpiderActivity.this)
@@ -1126,7 +1138,7 @@ public class SpiderActivity extends Activity {
     }
 
     private void buttonShowAnim(final View view, final boolean isShow) {
-        if((view.getVisibility() == View.VISIBLE) != isShow) {
+        if((view.getVisibility() == View.VISIBLE) != isShow && view.getAnimation()==null) {
             float fromY = isShow ? 1 : 0;
             TranslateAnimation animation = new TranslateAnimation(
                     Animation.RELATIVE_TO_SELF, 0f,
@@ -1157,10 +1169,7 @@ public class SpiderActivity extends Activity {
     }
 
     private void showButtonMenu(boolean isShow) {
-        if(isShow) {
-            buttonMenuDisplayTime.set(BUTTON_MENU_DISPLAY_SECOND);
-        }
-
+        buttonMenuDisplayTime.set(isShow?BUTTON_MENU_DISPLAY_SECOND:0);
         buttonShowAnim(buttonMenu, isShow);
     }
 

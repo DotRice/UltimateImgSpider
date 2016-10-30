@@ -158,7 +158,7 @@ public class Utils {
         private long refreshTime = 0;
         private Context context;
 
-        private final static int AVERAGE_BUF_SIZE = 3;
+        private final static int AVERAGE_BUF_SIZE = 10;
         private int avrgBufIndex;
         private long[] averageBuf = new long[AVERAGE_BUF_SIZE];
         private long[] intervalBuf = new long[AVERAGE_BUF_SIZE];

@@ -130,11 +130,7 @@ int createNewAshmem(const char *name, int size, u8 **addr) {
     return fd;
 }
 
-void jniRestoreProjectData(JNIEnv *env, jobject thiz, jstring jDataFileFullPath) {
-    const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
-
-    LOGI("jniRestoreProjectData path:%s", dataFileFullPath);
-
+void jniTryDeleteProjectAshmem(JNIEnv *env, jobject thiz){
     if(ashmemChainHead!=NULL){
         LOGI("ashmem chain not empty");
         AshmNode *nextAshmNode;
@@ -150,6 +146,13 @@ void jniRestoreProjectData(JNIEnv *env, jobject thiz, jstring jDataFileFullPath)
         ashmemChainHead=NULL;
         ashmemChainTail=NULL;
     }
+}
+
+void jniRestoreProjectData(JNIEnv *env, jobject thiz, jstring jDataFileFullPath) {
+    const u8 *dataFileFullPath = (*env)->GetStringUTFChars(env, jDataFileFullPath, NULL);
+
+    LOGI("jniRestoreProjectData path:%s", dataFileFullPath);
+
 
     FILE *dataFile = fopen(dataFileFullPath, "r");
 

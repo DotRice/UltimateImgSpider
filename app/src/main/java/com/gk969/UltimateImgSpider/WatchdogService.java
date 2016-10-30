@@ -51,6 +51,7 @@ public class WatchdogService extends Service {
     private String dataDirPath;
 
     private native int jniGetAshmem(String name, int size);
+    private native void jniTryDeleteProjectAshmem();
     private native void jniRestoreProjectData(String path);
     private native void jniStoreProjectData(String path);
     private static native String jniGetProjectInfo(String dataFileFullPath, long[] imgParam, long[] pageParam);
@@ -214,6 +215,8 @@ public class WatchdogService extends Service {
                     dataDir.mkdirs();
                 }
                 dataDirPath = newDataDirPath;
+
+                jniTryDeleteProjectAshmem();
 
                 int[] bestDataFileIndex = new int[1];
                 if(getProjectInfo(dataDirPath, null, null, bestDataFileIndex) != null) {
