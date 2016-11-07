@@ -105,4 +105,7 @@
 
     <string name="permission_tips">请务必允许此权限，否则应用将无法使用，自动退出。</string>
 
+    <string name="project_complete">当前工程下载结束</string>
+    <string name="please_wait_to_load_project">请等待工程加载完毕...</string>
+
 </resources>

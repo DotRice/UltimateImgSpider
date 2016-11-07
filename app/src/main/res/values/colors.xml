@@ -22,6 +22,9 @@
     <color name="drawer_info_item_value_text_color">#D33</color>
 
 
+    <color name="button_focus_background_color">#D2F6</color>
+    <color name="button_blur_background_color">#DFFF</color>
+
 
     <color name="default_background">#000</color>
 

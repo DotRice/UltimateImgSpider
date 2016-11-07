@@ -22,7 +22,7 @@
         android:theme="@android:style/Theme.Holo.Light.NoActionBar">
         <activity
             android:name=".SpiderActivity"
-            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize">
+            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize|keyboard|mcc|mnc">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -31,7 +31,7 @@
         </activity>
         <activity
             android:name=".SelSrcActivity"
-            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize"
+            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize|keyboard|mcc|mnc"
             android:process=":selectSrcUrl">
         </activity>
 
@@ -75,7 +75,7 @@
 
         <activity
             android:name=".ParaConfigActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize|keyboard|mcc|mnc"
             android:process=":selectSrcUrl">
         </activity>
     </application>

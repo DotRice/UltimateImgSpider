@@ -99,7 +99,7 @@ public class SpiderActivity extends Activity {
     private static final int CONN_STATE_WAIT_CONNECT = 3;
 
     //private static final int MIN_FREE_MEM_TO_RESTART_SERVICE = 50;
-    private static final int MAX_USED_MEM_TO_RESTART_SERVICE = 50;
+    private static final int MAX_USED_MEM_TO_RESTART_SERVICE = (MemoryInfo.getTotalMemInMb()/1024+1)*50;
     private static final int MIN_FREE_STORAGE_TO_STOP_SERVICE = 200;
 
     private int serviceConnState = CONN_STATE_DISCONNECTED;
@@ -174,7 +174,7 @@ public class SpiderActivity extends Activity {
     IRemoteSpiderService mService = null;
 
     private URL newUrl=null;
-    private boolean ProjectListHasLoaded=false;
+    private boolean projectListHasLoaded=false;
 
     private final static int RESULT_SRC_URL = 0;
 
@@ -299,7 +299,14 @@ public class SpiderActivity extends Activity {
                     showSysFaultAlert(getString(R.string.prompt),
                             getString(R.string.uneffectiveNetworkPrompt), false);
                 } else if(jsonReport.getBoolean("siteScanCompleted")) {
-                    setProjectState(ProjectState.COMPLETE);
+                    if(projectState!=ProjectState.COMPLETE) {
+                        setProjectState(ProjectState.COMPLETE);
+                        new AlertDialog.Builder(this)
+                                .setTitle(R.string.prompt)
+                                .setMessage(R.string.project_complete)
+                                .setPositiveButton(R.string.OK, null)
+                                .create().show();
+                    }
                 } else if(serviceNativeMem >= MAX_USED_MEM_TO_RESTART_SERVICE) {
                     if(serviceConnState == CONN_STATE_CONNECTED) {
                         serviceConnState = CONN_STATE_WAIT_DISCONNECT;
@@ -466,16 +473,20 @@ public class SpiderActivity extends Activity {
     private void openAlbum(int index) {
         if(displayProjectIndex != index) {
             if(index < spiderProject.projectList.size()) {
-                displayProjectIndex = index;
-                displayProjectInfo = spiderProject.projectList.get(displayProjectIndex);
-                albumLoaderHelper.setProjectPath(displayProjectInfo.dir.getPath());
-                mThumbnailLoader.setHelper(albumLoaderHelper, displayProjectInfo.imgDownloadNum,
-                        spiderProject.projectList.get(index).albumScrollDistance);
-                infoDrawer.onDisplayProjectChanged();
+                if(projectListHasLoaded || newUrl==null) {
+                    displayProjectIndex = index;
+                    displayProjectInfo = spiderProject.projectList.get(displayProjectIndex);
+                    albumLoaderHelper.setProjectPath(displayProjectInfo.dir.getPath());
+                    mThumbnailLoader.setHelper(albumLoaderHelper, displayProjectInfo.imgDownloadNum,
+                            spiderProject.projectList.get(index).albumScrollDistance);
+                    infoDrawer.onDisplayProjectChanged();
 
-                dispProjectState((displayProjectIndex != downloadingProjectIndex) ? ProjectState.PAUSE : projectState);
+                    dispProjectState((displayProjectIndex != downloadingProjectIndex) ? ProjectState.PAUSE : projectState);
 
-                setView(ALBUM_VIEW);
+                    setView(ALBUM_VIEW);
+                }else{
+                    Toast.makeText(this, R.string.please_wait_to_load_project, Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }
@@ -520,8 +531,41 @@ public class SpiderActivity extends Activity {
         }
     }
 
+    private GLView getCurGLView(){
+        return curView==PHOTO_VIEW?photoView:slotView;
+    }
+
+    private ImageButton getCurBottomButton(){
+        return curView==ALBUM_SET_VIEW?buttonAdd:buttonMenu;
+    }
+
     private void albumViewInit() {
         glRootView = (GLRootView) findViewById(R.id.gl_root_view);
+
+        glRootView.setFocusable(true);
+        glRootView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                if(keyEvent.getAction()==KeyEvent.ACTION_DOWN) {
+                    int keyCode=keyEvent.getKeyCode();
+                    Log.i(TAG, "glRootView onKeyDown " + keyCode);
+                    switch(keyCode){
+                        case KeyEvent.KEYCODE_DPAD_UP:
+                        case KeyEvent.KEYCODE_DPAD_DOWN:
+                        case KeyEvent.KEYCODE_DPAD_LEFT:
+                        case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        case KeyEvent.KEYCODE_ENTER:
+                            ImageButton curButton=getCurBottomButton();
+                            boolean processed = getCurGLView().onKeyDown(keyCode, curButton.getVisibility()==View.VISIBLE);
+                            if(!processed) {
+                                curButton.requestFocus();
+                            }
+                            return true;
+                    }
+                }
+                return false;
+            }
+        });
 
         Runnable runOnFindProject = new Runnable() {
             @Override
@@ -530,7 +574,7 @@ public class SpiderActivity extends Activity {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if(curView == ALBUM_SET_VIEW && newUrl==null) {
+                        if(curView == ALBUM_SET_VIEW) {
                             mThumbnailLoader.setAlbumTotalImgNum(spiderProject.projectList.size());
                         }
                     }
@@ -545,7 +589,7 @@ public class SpiderActivity extends Activity {
                     @Override
                     public void run() {
                         Log.i(TAG, "runOnProjectLoadComplete");
-                        ProjectListHasLoaded=true;
+                        projectListHasLoaded=true;
                         if(newUrl!=null) {
                             processNewUrl();
                         }else if(curView == ALBUM_SET_VIEW) {
@@ -595,7 +639,9 @@ public class SpiderActivity extends Activity {
             public void onManuallyScroll(boolean isUp) {
                 if(curView == ALBUM_VIEW)
                 {
-                    showButtonMenu(isUp);
+                    if(buttonMenu.getAnimation()==null && (buttonMenu.getVisibility()==View.VISIBLE)!=isUp) {
+                        showButtonMenu(isUp);
+                    }
                 }
             }
         });
@@ -746,7 +792,7 @@ public class SpiderActivity extends Activity {
                         try {
                             newUrl = new URL(data.getAction());
                             Log.i(TAG, "REQUEST_SRC_URL " + newUrl.toString());
-                            if(ProjectListHasLoaded) {
+                            if(projectListHasLoaded) {
                                 processNewUrl();
                             }
                         } catch(MalformedURLException e) {
@@ -761,6 +807,7 @@ public class SpiderActivity extends Activity {
     private void processNewUrl(){
         String host = newUrl.getHost();
         downloadingProjectSrcUrl = newUrl.toString();
+        newUrl=null;
         int albumIndex = spiderProject.findIndexBySite(host);
         if(albumIndex == SpiderProject.INVALID_INDEX) {
             showSelStoAlert(host);
@@ -819,7 +866,6 @@ public class SpiderActivity extends Activity {
                                         .setOnCancelListener(new DialogInterface.OnCancelListener() {
                                             @Override
                                             public void onCancel(DialogInterface dialogInterface) {
-                                                mThumbnailLoader.setAlbumTotalImgNum(spiderProject.projectList.size());
                                                 buttonShowAnim(buttonAdd, true);
                                             }
                                         }).create();
@@ -857,7 +903,6 @@ public class SpiderActivity extends Activity {
 
         buttonShowAnim(buttonAdd, (view == ALBUM_SET_VIEW));
         showButtonMenu(view != ALBUM_SET_VIEW);
-        buttonMenuDisplayTime.set((view == ALBUM_SET_VIEW) ? 0 : BUTTON_MENU_DISPLAY_SECOND);
 
         glRootView.setContentPane((view == PHOTO_VIEW) ? photoView : slotView);
     }
@@ -1102,6 +1147,17 @@ public class SpiderActivity extends Activity {
         });
         buttonMenu.setVisibility(View.INVISIBLE);
 
+        View.OnFocusChangeListener onFocusChangeListener=new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean focus) {
+                view.setBackgroundResource(focus?
+                        R.drawable.bottom_button_focus_background:R.drawable.bottom_button_blur_background);
+            }
+        };
+        buttonAdd.setOnFocusChangeListener(onFocusChangeListener);
+        buttonMenu.setOnFocusChangeListener(onFocusChangeListener);
+
+
         buttonProjectCtrl = (ImageButton) findViewById(R.id.project_ctrl);
         buttonProjectCtrl.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1138,34 +1194,38 @@ public class SpiderActivity extends Activity {
     }
 
     private void buttonShowAnim(final View view, final boolean isShow) {
-        if((view.getVisibility() == View.VISIBLE) != isShow && view.getAnimation()==null) {
-            float fromY = isShow ? 1 : 0;
-            TranslateAnimation animation = new TranslateAnimation(
-                    Animation.RELATIVE_TO_SELF, 0f,
-                    Animation.RELATIVE_TO_SELF, 0f,
-                    Animation.RELATIVE_TO_SELF, fromY,
-                    Animation.RELATIVE_TO_SELF, 1 - fromY);
-            animation.setDuration(BUTTON_MENU_ANIMATION_TIME);
-            animation.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-                    if(isShow)
-                        view.setVisibility(View.VISIBLE);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    if(!isShow)
-                        view.setVisibility(View.GONE);
-                }
-            });
-            view.startAnimation(animation);
+        Animation lastAnimation=view.getAnimation();
+        if(lastAnimation!=null){
+            lastAnimation.cancel();
         }
+
+        float fromY = isShow ? 1 : 0;
+        TranslateAnimation animation = new TranslateAnimation(
+                Animation.RELATIVE_TO_SELF, 0f,
+                Animation.RELATIVE_TO_SELF, 0f,
+                Animation.RELATIVE_TO_SELF, fromY,
+                Animation.RELATIVE_TO_SELF, 1 - fromY);
+        animation.setDuration(BUTTON_MENU_ANIMATION_TIME);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                if(isShow)
+                    view.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if(!isShow)
+                    view.setVisibility(View.GONE);
+            }
+        });
+        view.startAnimation(animation);
+
     }
 
     private void showButtonMenu(boolean isShow) {
@@ -1208,8 +1268,18 @@ public class SpiderActivity extends Activity {
 
         if(cmd == StaticValue.CMD_START) {
             if(downloadingProjectSrcUrl != null) {
-                bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, downloadingProjectSrcUrl);
-                downloadingProjectSrcUrl = null;
+                try {
+                    URL srcUrl=new URL(downloadingProjectSrcUrl);
+                    if(!downloadingProjectInfo.host.equals(srcUrl.getHost())){
+                        return;
+                    }else {
+                        bundle.putString(StaticValue.BUNDLE_KEY_SOURCE_URL, downloadingProjectSrcUrl);
+                        downloadingProjectSrcUrl = null;
+                    }
+                } catch(MalformedURLException e) {
+                    e.printStackTrace();
+                }
+
             }
             bundle.putString(StaticValue.BUNDLE_KEY_PROJECT_PATH, downloadingProjectInfo.dir.getPath());
         }
@@ -1235,34 +1305,44 @@ public class SpiderActivity extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.i(TAG, "onKeyDown " + keyCode);
 
-        if(keyCode == KeyEvent.KEYCODE_BACK) {
-            if(curView == ALBUM_SET_VIEW) {
-                if(inDeleting) {
-                    Toast.makeText(this, R.string.inDeletingToast, Toast.LENGTH_SHORT).show();
+        switch(keyCode) {
+            case KeyEvent.KEYCODE_BACK:
+                if(curView == ALBUM_SET_VIEW) {
+                    if(inDeleting) {
+                        Toast.makeText(this, R.string.inDeletingToast, Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+
+                    if(SystemClock.uptimeMillis() - exitTim > 2000) {
+                        Toast.makeText(this, getString(R.string.keyBackExitConfirm)
+                                + getString(R.string.app_name), Toast.LENGTH_SHORT).show();
+
+                        exitTim = SystemClock.uptimeMillis();
+                        return true;
+                    } else {
+                        Log.i(TAG, "finish");
+                        //Sometimes onDestory() will not been called.So handle spider service here.
+                        tryToStopSpiderService();
+                    }
+                } else if(curView == ALBUM_VIEW) {
+                    backToAlbumSetView();
+                    return true;
+                } else if(curView == PHOTO_VIEW) {
+                    backToAlbumView();
                     return true;
                 }
+                break;
 
-                if(SystemClock.uptimeMillis() - exitTim > 2000) {
-                    Toast.makeText(this, getString(R.string.keyBackExitConfirm)
-                            + getString(R.string.app_name), Toast.LENGTH_SHORT).show();
-
-                    exitTim = SystemClock.uptimeMillis();
-                    return true;
-                } else {
-                    Log.i(TAG, "finish");
-                    //Sometimes onDestory() will not been called.So handle spider service here.
-                    tryToStopSpiderService();
-                }
-            } else if(curView == ALBUM_VIEW) {
-                backToAlbumSetView();
+            case KeyEvent.KEYCODE_MENU:
+                infoDrawer.onInfoKey();
                 return true;
-            } else if(curView == PHOTO_VIEW) {
-                backToAlbumView();
+            case KeyEvent.KEYCODE_DPAD_UP:
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                glRootView.requestFocus();
+                getCurGLView().onKeyDown(keyCode, false);
                 return true;
-            }
-
-        } else if(keyCode == KeyEvent.KEYCODE_MENU) {
-            infoDrawer.onInfoKey();
         }
 
         return super.onKeyDown(keyCode, event);

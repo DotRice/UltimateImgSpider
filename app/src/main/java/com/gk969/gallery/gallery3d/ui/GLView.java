@@ -442,6 +442,11 @@ public class GLView {
         mRoot = null;
     }
 
+    public boolean onKeyDown(int keyCode, boolean canGiveUpFocus){
+        return false;
+    }
+
+
     public void lockRendering() {
         if (mRoot != null) {
             mRoot.lockRenderThread();

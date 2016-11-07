@@ -12,8 +12,10 @@ import android.os.SystemClock;
 
 import android.util.Log;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import com.gk969.UltimateImgSpider.StaticValue;
 import com.gk969.Utils.Utils;
 import com.gk969.gallery.gallery3d.common.ApiHelper;
 import com.gk969.gallery.gallery3d.data.MediaItem;
@@ -36,6 +38,7 @@ public class SlotView extends GLView {
 
     private static final int SLOT_GAP_MIN_IN_DP = 5;
     private static final int SLOT_BACKGROUND_COLOR = 0xFF808080;
+    private static final int SLOT_FOCUS_COLOR = 0x8020F060;
     private static final int SLOT_PER_ROW_PORTRAIT = 3;
     private static final int SLOT_PER_ROW_LANDSCAPE = 5;
 
@@ -91,6 +94,8 @@ public class SlotView extends GLView {
     private int scrollDistance;
     private int scrollDistanceOverRow;
 
+    private int focusedSlotIndex = StaticValue.INDEX_INVALID;
+
     private ThumbnailLoader mThumbnailLoader;
     private GLRootView mGLRootView;
 
@@ -118,7 +123,7 @@ public class SlotView extends GLView {
     private final static int NEW_LINE_SCROLL_DURATION = 500;
 
 
-    class BezierScroll {
+    private class BezierScroll {
         private Utils.CubicBezier scrollBezier;
         private int scrollStartPoint;
         private int scrollTotalDistance;
@@ -126,7 +131,7 @@ public class SlotView extends GLView {
         private int scrollDuration;
         private boolean isScrolling = false;
         
-        public BezierScroll(Utils.CubicBezier cubicBezier, int duration) {
+        BezierScroll(Utils.CubicBezier cubicBezier, int duration) {
             scrollBezier = cubicBezier;
             scrollDuration = duration;
         }
@@ -170,25 +175,23 @@ public class SlotView extends GLView {
         public void onClick(int slotIndex);
     }
 
-    OnClickListener runOnClick;
+    private OnClickListener runOnClick;
     private boolean validClick;
 
     public interface OnScrollEndListener {
         public void onScrollEnd(int curScrollDistance);
     }
-
-    OnScrollEndListener runOnScrollEnd;
+    private OnScrollEndListener runOnScrollEnd;
 
     public interface OnManuallyScrollListener {
         public void onManuallyScroll(boolean isUp);
     }
-
-    OnManuallyScrollListener runOnManuallyScroll;
+    private OnManuallyScrollListener runOnManuallyScroll;
 
     public interface OnStartListener{
         public void onStart();
     }
-    OnStartListener runOnStart;
+    private OnStartListener runOnStart;
     private boolean hasStarted=false;
 
 
@@ -299,10 +302,11 @@ public class SlotView extends GLView {
                     (y > scrollBarTop) && (y < (scrollBarTop + scrollBarHeight));
             validClick = (!isRebounding) && (flyVelocity == 0);
             isTouching = true;
-
+            focusedSlotIndex=StaticValue.INDEX_INVALID;
             stopAnimation();
 
             mGLRootView.unlockRenderThread();
+            mGLRootView.requestRender();
         }
 
         @Override
@@ -360,6 +364,66 @@ public class SlotView extends GLView {
         }
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, boolean canGiveUpFocus) {
+        mGLRootView.lockRenderThread();
+        boolean processed=true;
+        int totalSlotNum=mThumbnailLoader.albumTotalImgNum;
+
+        if(keyCode==KeyEvent.KEYCODE_ENTER) {
+            if(focusedSlotIndex != StaticValue.INDEX_INVALID) {
+                runOnClick.onClick(focusedSlotIndex);
+            }
+        }else {
+            if(focusedSlotIndex==StaticValue.INDEX_INVALID){
+                if(totalSlotNum==0){
+                    processed=false;
+                }else {
+                    focusedSlotIndex = mThumbnailLoader.dispAreaOffset + maxSlotRowsInView / 2 * slotsPerRow - slotsPerRow / 2 - 1;
+                    if(focusedSlotIndex >= totalSlotNum) {
+                        focusedSlotIndex = totalSlotNum - 1;
+                    }
+                }
+            }else {
+                switch(keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_UP:
+                        if(focusedSlotIndex >= slotsPerRow) {
+                            focusedSlotIndex -= slotsPerRow;
+                        }
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_DOWN:
+                        int newFocusedSlotIndex=focusedSlotIndex+slotsPerRow;
+                        if(newFocusedSlotIndex < totalSlotNum) {
+                            focusedSlotIndex = newFocusedSlotIndex;
+                        } else if((focusedSlotIndex+slotsPerRow) < totalSlotNum) {
+                            focusedSlotIndex = totalSlotNum-1;
+                        } else if(canGiveUpFocus){
+                            processed = false;
+                            focusedSlotIndex=StaticValue.INDEX_INVALID;
+                            break;
+                        }
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        if(focusedSlotIndex>0){
+                            focusedSlotIndex--;
+                        }
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        if(focusedSlotIndex<(totalSlotNum-1)){
+                            focusedSlotIndex++;
+                        }
+                        break;
+                }
+            }
+
+            Log.i(TAG, "focusedSlotIndex "+focusedSlotIndex);
+            mGLRootView.requestRender();
+        }
+
+        mGLRootView.unlockRenderThread();
+        return processed;
+    }
+
     public void setOnClick(OnClickListener listener) {
         runOnClick = listener;
     }
@@ -407,13 +471,20 @@ public class SlotView extends GLView {
         }
     }
 
-    public void stopAnimation() {
+    private void stopAnimation() {
         mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         flyVelocity = 0;
         isRebounding = false;
         barScroll.stop();
         newLineScroll.stop();
         runOnScrollEnd.onScrollEnd(scrollDistance);
+    }
+
+    public void onChangeView(){
+        mGLRootView.lockRenderThread();
+        focusedSlotIndex=StaticValue.INDEX_INVALID;
+        stopAnimation();
+        mGLRootView.unlockRenderThread();
     }
 
     private float calculateDecelerate(float curValue, float rawValue) {
@@ -606,11 +677,14 @@ public class SlotView extends GLView {
                     int slotLeft = leftIndex * slotHeightWithGap;
                     int slotTop = slotOffsetTop + topIndex * overScrollHeight;
 
-
                     if(slotTexture.isReady) {
                         slotTexture.texture.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
                     } else {
                         canvas.fillRect(slotLeft, slotTop, slotSize, slotSize, SLOT_BACKGROUND_COLOR);
+                    }
+
+                    if(focusedSlotIndex == slotIndex) {
+                        canvas.fillRect(slotLeft, slotTop, slotSize, slotSize, SLOT_FOCUS_COLOR);
                     }
 
                     int labelY = slotTop + slotSize - labelHeight;

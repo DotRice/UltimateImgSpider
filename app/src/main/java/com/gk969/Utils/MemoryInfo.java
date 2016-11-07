@@ -32,7 +32,7 @@ public class MemoryInfo {
 
     private static final String TAG = MemoryInfo.class.getSimpleName();
 
-    public static long getTotalMemInMb() {
+    public static int getTotalMemInMb() {
 
         String memInfoPath = "/proc/meminfo";
         String readTemp = "";
@@ -55,7 +55,7 @@ public class MemoryInfo {
         } catch(IOException e) {
             Log.e(TAG, "IOException: " + e.getMessage());
         }
-        return memory >> 10;
+        return (int)(memory >> 10);
     }
 
     /**
@@ -65,8 +65,7 @@ public class MemoryInfo {
      */
     public static long getFreeMemInMb(Context context) {
         ActivityManager.MemoryInfo outInfo = new ActivityManager.MemoryInfo();
-        ActivityManager am = (ActivityManager) context
-                .getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         am.getMemoryInfo(outInfo);
         long avaliMem = outInfo.availMem;
         return avaliMem >> 20;

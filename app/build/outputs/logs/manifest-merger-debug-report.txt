@@ -64,7 +64,7 @@ MERGED from [com.squareup.leakcanary:leakcanary-android:1.4] D:\android\Ultimate
 activity#com.gk969.UltimateImgSpider.SpiderActivity
 ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:23:9-31:20
 	android:configChanges
-		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:25:13-106
+		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:25:13-123
 	android:name
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:24:13-43
 intent-filter#android.intent.action.MAIN+android.intent.category.LAUNCHER
@@ -82,7 +82,7 @@ ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:32:9-36
 	android:process
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:35:13-44
 	android:configChanges
-		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:34:13-106
+		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:34:13-123
 	android:name
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:33:13-43
 service#com.gk969.UltimateImgSpider.SpiderService
@@ -126,7 +126,7 @@ ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:76:9-80
 	android:process
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:79:13-44
 	android:configChanges
-		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:78:13-74
+		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:78:13-123
 	android:name
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:77:13-47
 uses-sdk

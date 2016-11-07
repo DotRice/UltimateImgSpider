@@ -31,7 +31,7 @@
         android:theme="@android:style/Theme.Holo.Light.NoActionBar" >
         <activity
             android:name="com.gk969.UltimateImgSpider.SpiderActivity"
-            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize" >
+            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize|keyboard|mcc|mnc" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -40,7 +40,7 @@
         </activity>
         <activity
             android:name="com.gk969.UltimateImgSpider.SelSrcActivity"
-            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize"
+            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize|keyboard|mcc|mnc"
             android:process=":selectSrcUrl" >
         </activity>
 
@@ -83,7 +83,7 @@
 
         <activity
             android:name="com.gk969.UltimateImgSpider.ParaConfigActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:configChanges="orientation|keyboardHidden|smallestScreenSize|screenLayout|screenSize|keyboard|mcc|mnc"
             android:process=":selectSrcUrl" >
         </activity>
 

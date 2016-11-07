@@ -31,25 +31,25 @@
 
         <ImageButton
             android:id="@+id/button_add"
-            android:layout_width="@dimen/button_add_size"
-            android:layout_height="@dimen/button_add_size"
+            android:layout_width="@dimen/bottom_button_size"
+            android:layout_height="@dimen/bottom_button_size"
             android:src="@drawable/add"
             android:layout_marginBottom="5dp"
             android:scaleType="fitCenter"
-            android:background="@drawable/button_add_corners_background"
+            android:background="@drawable/bottom_button_blur_background"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:visibility="invisible"/>
 
         <ImageButton
             android:id="@+id/button_menu"
-            android:layout_width="@dimen/button_info_size"
-            android:layout_height="@dimen/button_info_size"
+            android:layout_width="@dimen/bottom_button_size"
+            android:layout_height="@dimen/bottom_button_size"
             android:src="@drawable/green_menu"
             android:scaleType="fitCenter"
             android:layout_margin="5dp"
             android:padding="8dp"
-            android:background="@drawable/button_info_corners_background"
+            android:background="@drawable/bottom_button_blur_background"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:visibility="invisible"/>

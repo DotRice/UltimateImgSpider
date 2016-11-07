@@ -724,7 +724,7 @@ public class PhotoView extends GLView {
                 mGLRootView.lockRenderThread();
                 int indexInProject=photoCache[curPhotoIndexInCache].indexInProject;
                 if(velocityX > 0) {
-                    velocityX = (indexInProject==0)?0:Math.max(velocityX, velocityMinAtStart);
+                    velocityX = (indexInProject==0 && photoCache[curPhotoIndexInCache].boxPos.left==0)?0:Math.max(velocityX, velocityMinAtStart);
                 } else {
                     velocityX = (indexInProject==(curProjectInfo.imgDownloadNum - 1))?
                             0:Math.min(velocityX, (0 - velocityMinAtStart));

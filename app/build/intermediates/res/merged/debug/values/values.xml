@@ -19,7 +19,9 @@
     <color name="bitmap_screennail_placeholder">#333</color>
     <color name="bright_foreground_disabled_holo_dark">#ff4c4c4c</color>
     <color name="bright_foreground_holo_dark">#fff3f3f3</color>
+    <color name="button_blur_background_color">#DFFF</color>
     <color name="button_dark_transparent_background">#6000</color>
+    <color name="button_focus_background_color">#D2F6</color>
     <color name="cache_background">#1A1A1A</color>
     <color name="cache_placeholder">#333</color>
     <color name="default_background">#000</color>
@@ -73,10 +75,8 @@
     <dimen name="appwidget_width">180dp</dimen>
     <dimen name="big_setting_popup_window_width">320dp</dimen>
     <dimen name="big_setting_popup_window_width_xlarge">590dp</dimen>
-    <dimen name="button_add_radius">25dp</dimen>
-    <dimen name="button_add_size">50dp</dimen>
-    <dimen name="button_info_radius">25dp</dimen>
-    <dimen name="button_info_size">50dp</dimen>
+    <dimen name="bottom_button_radius">25dp</dimen>
+    <dimen name="bottom_button_size">50dp</dimen>
     <dimen name="cache_pin_margin">8dp</dimen>
     <dimen name="cache_pin_size">24dp</dimen>
     <dimen name="camera_controls_size">0dip</dimen>
@@ -279,6 +279,8 @@
     <string name="page_tree_height">网页树高度</string>
     <string name="pause">暂停</string>
     <string name="permission_tips">请务必允许此权限，否则应用将无法使用，自动退出。</string>
+    <string name="please_wait_to_load_project">请等待工程加载完毕...</string>
+    <string name="project_complete">当前工程下载结束</string>
     <string name="project_load_complete">工程加载完毕</string>
     <string name="prompt">提示</string>
     <string name="ram_activity_native">界面Native内存</string>
@@ -313,14 +315,10 @@
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
     <string name="web_url">网址</string>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
+        
     </style>
     <style name="AppTheme" parent="AppBaseTheme">
-        <!--<item name="android:actionBarStyle">@style/MyActionBar</item>-->
+        
     </style>
     <style name="ProgressBar_Mini" parent="@android:style/Widget.Holo.Light.ProgressBar.Horizontal">
         <item name="android:maxHeight">2dp</item>

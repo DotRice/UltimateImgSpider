@@ -60,7 +60,7 @@ public class ThumbnailLoader {
     private int bestOffsetOfDispInCache;
     private int cacheOffset = 0;
 
-    private volatile int dispAreaOffset;
+    public volatile int dispAreaOffset;
     public volatile int albumTotalImgNum;
     private volatile int imgNumInView;
 
@@ -125,9 +125,7 @@ public class ThumbnailLoader {
         loaderHelper = helper;
         needLabel = helper.needLabel();
 
-        mGLRootView.lockRenderThread();
-        slotView.stopAnimation();
-        mGLRootView.unlockRenderThread();
+        slotView.onChangeView();
 
         setAlbumTotalImgNum(0);
         setAlbumTotalImgNum(totalImgNum);
@@ -192,7 +190,7 @@ public class ThumbnailLoader {
         labelNameLimit = paraLabelNameLimit;
     
         if(mThumbnailLoaderThreadPool==null) {
-            mThumbnailLoaderThreadPool=new ThumbnailLoaderThreadPool(Utils.getCpuCoresNum());
+            mThumbnailLoaderThreadPool=new ThumbnailLoaderThreadPool();
         } else {
             mThumbnailLoaderThreadPool.wakeup();
         }
@@ -293,10 +291,16 @@ public class ThumbnailLoader {
 
     private class ThumbnailLoaderThreadPool {
         private volatile boolean isRunning;
+        private static final int THREAD_POOL_SIZE_MAX=4;
         
         private ThumbnailLoaderThread[] threads;
         
-        ThumbnailLoaderThreadPool(int poolSize){
+        ThumbnailLoaderThreadPool(){
+            int poolSize=Utils.getCpuCoresNum();
+            if(poolSize>THREAD_POOL_SIZE_MAX){
+                poolSize=4;
+            }
+
             Log.i(TAG, "loader thread pool size "+poolSize);
             isRunning=true;
             threads=new ThumbnailLoaderThread[poolSize];

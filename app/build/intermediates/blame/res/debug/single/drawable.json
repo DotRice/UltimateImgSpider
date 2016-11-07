@@ -4,6 +4,14 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\sogou.png"
     },
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\bottom_button_blur_background.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\bottom_button_blur_background.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\bottom_button_focus_background.xml",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\bottom_button_focus_background.xml"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\image.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\image.png"
     },
@@ -48,10 +56,6 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\rom.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\button_add_corners_background.xml",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\button_add_corners_background.xml"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\setting.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\setting.png"
     },
@@ -86,10 +90,6 @@
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\info_write.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\info_write.png"
-    },
-    {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\button_info_corners_background.xml",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\button_info_corners_background.xml"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\spidergo.png",
