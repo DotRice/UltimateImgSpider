@@ -37,7 +37,7 @@ Cache Mode:
 * *                  *  *
 * * ***************  *  *
 * * *             *  *  *
-* * *  disp area  *  *  *
+* * *  visible area  *  *  *
 * * *             *  *  *
 * * ***************  *  *
 * *                  *  *
@@ -57,10 +57,10 @@ public class ThumbnailLoader {
     private SlotTexture[] textureCache;
     private volatile int scrollStep = 1;
 
-    private int bestOffsetOfDispInCache;
+    private int bestOffsetOfVisibleInCache;
     private int cacheOffset = 0;
 
-    public volatile int dispAreaOffset;
+    public volatile int visibleAreaOffset;
     public volatile int albumTotalImgNum;
     private volatile int imgNumInView;
 
@@ -160,11 +160,11 @@ public class ThumbnailLoader {
             clearCache();
             slotView.scrollAbs(0);
         } else if(totalImgNum > prevTotalImgNum) {
-            if(dispAreaOffset + cacheSize > prevTotalImgNum) {
+            if(visibleAreaOffset + cacheSize > prevTotalImgNum) {
                 for(SlotTexture slot : textureCache) {
                     slot.hasTried = false;
                 }
-                refreshCacheOffset(dispAreaOffset, true);
+                refreshCacheOffset(visibleAreaOffset, true);
 
             }
 
@@ -183,7 +183,7 @@ public class ThumbnailLoader {
 
     public void initAboutView(int slotNumInView, int paraLabelTextSize, int paraLabelNameLimit) {
         imgNumInView = slotNumInView;
-        bestOffsetOfDispInCache = (cacheSize - slotNumInView) / 2;
+        bestOffsetOfVisibleInCache = (cacheSize - slotNumInView) / 2;
         Log.i(TAG, "initAboutView slotNumInView " + slotNumInView);
 
         labelTextSize = paraLabelTextSize;
@@ -244,7 +244,7 @@ public class ThumbnailLoader {
     private void refreshCacheOffset(int firstSlotInView, boolean forceRefresh) {
         //Log.i(TAG, "refreshCacheOffset "+firstSlotInView+" "+forceRefresh);
 
-        int newCacheOffset = firstSlotInView - bestOffsetOfDispInCache;
+        int newCacheOffset = firstSlotInView - bestOffsetOfVisibleInCache;
         int cacheOffsetMax = albumTotalImgNum - cacheSize;
         if(cacheOffsetMax < 0) {
             cacheOffsetMax = 0;
@@ -283,7 +283,7 @@ public class ThumbnailLoader {
             mThumbnailLoaderThreadPool.wakeup();
         }
 
-        dispAreaOffset = firstSlotInView;
+        visibleAreaOffset = firstSlotInView;
 
         //Log.i(TAG, "scrollToIndex "+index+" cacheOffset "+cacheOffset);
     }
@@ -343,8 +343,8 @@ public class ThumbnailLoader {
 
             private boolean isOffsetChangedInLoading() {
                 int step = scrollStep;
-                int dispOffset = dispAreaOffset;
-                int imgIndexForLoader = (step == 1) ? dispOffset : (dispOffset + imgNumInView - 1);
+                int visibleOffset = visibleAreaOffset;
+                int imgIndexForLoader = (step == 1) ? visibleOffset : (visibleOffset + imgNumInView - 1);
                 for(int i = 0; i < cacheSize; i++) {
                     if(!isRunning) {
                         break;
@@ -399,7 +399,7 @@ public class ThumbnailLoader {
                         mGLRootView.unlockRenderThread();
                     }
 
-                    if(dispAreaOffset != dispOffset) {
+                    if(visibleAreaOffset != visibleOffset) {
                         return true;
                     }
 

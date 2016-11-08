@@ -121,6 +121,7 @@ public class SlotView extends GLView {
 
     private final static int BAR_SCROLL_DURATION = 300;
     private final static int NEW_LINE_SCROLL_DURATION = 500;
+    private final static int FOCUS_SCROLL_DURATION = 200;
 
 
     private class BezierScroll {
@@ -170,6 +171,8 @@ public class SlotView extends GLView {
             new Utils.CubicBezier(0.25f, 0.1f, 0.1f, 1), BAR_SCROLL_DURATION);
     private BezierScroll newLineScroll = new BezierScroll(
             new Utils.CubicBezier(0.4f, 0.1f, 0.1f, 1f), NEW_LINE_SCROLL_DURATION);
+    private BezierScroll focusScroll = new BezierScroll(
+            new Utils.CubicBezier(0.25f, 0.1f, 0.25f, 1), FOCUS_SCROLL_DURATION);
 
     public interface OnClickListener {
         public void onClick(int slotIndex);
@@ -364,6 +367,39 @@ public class SlotView extends GLView {
         }
     }
 
+    private int getTopNotFullLineVisibleHeight(){
+        int topLineInvisibleHeight=scrollDistance%slotHeightWithGap;
+        if(topLineInvisibleHeight==0){
+            return 0;
+        }
+        return slotHeightWithGap-topLineInvisibleHeight;
+    }
+
+    private boolean isFocusOnVisibleAreaSlot(){
+        int firstSlotInView=scrollDistance/slotHeightWithGap*slotsPerRow;
+
+        int topNotFullLineVisibleHeight=getTopNotFullLineVisibleHeight();
+        int linesInView=(viewHeight-topNotFullLineVisibleHeight+(slotHeightWithGap-1))/slotHeightWithGap;
+        if(topNotFullLineVisibleHeight>slotGap) {
+            linesInView++;
+        }
+
+        return focusedSlotIndex>=firstSlotInView && focusedSlotIndex<(firstSlotInView+linesInView*slotsPerRow);
+    }
+
+    private void focusScrollIfNeed(){
+        int firstFullSlotInView=(scrollDistance+slotHeightWithGap-1)/slotHeightWithGap*slotsPerRow;
+        int topNotFullLineVisibleHeight=getTopNotFullLineVisibleHeight();
+        int fullSlotLines = (viewHeight-topNotFullLineVisibleHeight)/slotHeightWithGap;
+        int lastFullSlotInView=firstFullSlotInView+fullSlotLines*slotsPerRow-1;
+
+        if(focusedSlotIndex<firstFullSlotInView){
+            focusScroll.start(scrollDistance, focusedSlotIndex/slotsPerRow*slotHeightWithGap);
+        }else if(focusedSlotIndex>lastFullSlotInView){
+            focusScroll.start(scrollDistance, focusedSlotIndex/slotsPerRow*slotHeightWithGap-viewHeight+slotHeightWithGap);
+        }
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, boolean canGiveUpFocus) {
         mGLRootView.lockRenderThread();
@@ -371,15 +407,15 @@ public class SlotView extends GLView {
         int totalSlotNum=mThumbnailLoader.albumTotalImgNum;
 
         if(keyCode==KeyEvent.KEYCODE_ENTER) {
-            if(focusedSlotIndex != StaticValue.INDEX_INVALID) {
+            if(isFocusOnVisibleAreaSlot()) {
                 runOnClick.onClick(focusedSlotIndex);
             }
         }else {
-            if(focusedSlotIndex==StaticValue.INDEX_INVALID){
+            if(!isFocusOnVisibleAreaSlot()&&!focusScroll.isScrolling){
                 if(totalSlotNum==0){
                     processed=false;
-                }else {
-                    focusedSlotIndex = mThumbnailLoader.dispAreaOffset + maxSlotRowsInView / 2 * slotsPerRow - slotsPerRow / 2 - 1;
+                }else{
+                    focusedSlotIndex = mThumbnailLoader.visibleAreaOffset + maxSlotRowsInView / 2 * slotsPerRow - slotsPerRow / 2 - 1;
                     if(focusedSlotIndex >= totalSlotNum) {
                         focusedSlotIndex = totalSlotNum - 1;
                     }
@@ -417,6 +453,7 @@ public class SlotView extends GLView {
             }
 
             Log.i(TAG, "focusedSlotIndex "+focusedSlotIndex);
+            focusScrollIfNeed();
             mGLRootView.requestRender();
         }
 
@@ -477,6 +514,7 @@ public class SlotView extends GLView {
         isRebounding = false;
         barScroll.stop();
         newLineScroll.stop();
+        focusScroll.stop();
         runOnScrollEnd.onScrollEnd(scrollDistance);
     }
 
@@ -648,6 +686,7 @@ public class SlotView extends GLView {
 
         barScroll.render(curTime);
         newLineScroll.render(curTime);
+        focusScroll.render(curTime);
 
 
         int overScrollGapAbs = (int) Math.abs(overScrollGapY);
