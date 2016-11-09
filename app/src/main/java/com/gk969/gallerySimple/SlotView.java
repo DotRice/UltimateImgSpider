@@ -95,6 +95,7 @@ public class SlotView extends GLView {
     private int scrollDistanceOverRow;
 
     private int focusedSlotIndex = StaticValue.INDEX_INVALID;
+    private int centerSlotIndex = StaticValue.INDEX_INVALID;
 
     private ThumbnailLoader mThumbnailLoader;
     private GLRootView mGLRootView;
@@ -502,10 +503,20 @@ public class SlotView extends GLView {
         maxSlotRowsInOverScrollView = viewHeight / slotHeightWithGap + 1;
         mThumbnailLoader.initAboutView(maxSlotRowsInView * slotsPerRow, labelTextSize, (int) (slotSize * LABEL_NAME_LIMIT_RATIO));
 
-        if((scrollDistance != 0) && (prevViewHeight != height)) {
+        if(centerSlotIndex!=StaticValue.INDEX_INVALID){
+            scrollAbs(centerSlotIndex/slotsPerRow*slotHeightWithGap-(viewHeight-slotHeightWithGap)/2);
+            if(focusedSlotIndex!=StaticValue.INDEX_INVALID){
+                focusedSlotIndex=centerSlotIndex;
+            }
+            centerSlotIndex=StaticValue.INDEX_INVALID;
+        }else if((scrollDistance != 0) && (prevViewHeight != height)) {
             scrollAbs(scrollDistance / prevSlotHeightWithGap * prevSlotsPerRow / slotsPerRow
                     * slotHeightWithGap + scrollDistance % prevSlotHeightWithGap);
         }
+    }
+
+    public void setCenterSlotIndex(int index){
+        centerSlotIndex=index;
     }
 
     private void stopAnimation() {

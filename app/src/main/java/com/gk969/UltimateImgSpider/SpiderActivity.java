@@ -499,6 +499,7 @@ public class SpiderActivity extends Activity {
     }
 
     private void backToAlbumView() {
+        slotView.setCenterSlotIndex(photoView.getCurPhotoIndexInProject());
         photoView.onDestroy();
         setView(ALBUM_VIEW);
     }

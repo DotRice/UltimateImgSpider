@@ -12,6 +12,7 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 import com.gk969.UltimateImgSpider.SpiderProject;
@@ -34,6 +35,8 @@ import com.gk969.gallery.photos.BitmapRegionTileSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -59,11 +62,16 @@ public class PhotoView extends GLView {
     private long renderTime;
     private final static int VELOCITY_END_MIN_IN_DP = 100;
     private final static int VELOCITY_START_MIN_IN_DP = 3000;
+    private final static int VELOCITY_KEY_SCROLL_IN_DP = 5000;
     private float velocityMinAtEnd;
     private float velocityMinAtStart;
+    private float velocityKeyScroll;
     private float flyVelocity;
     private float flyStartVelocity;
     private float flyStartLeft;
+
+    private ArrayDeque<Integer> keyQueue=new ArrayDeque<>();
+    private static final int KEY_QUEUE_SIZE=3;
 
     private GLRootView mGLRootView;
     private TiledTexture.Uploader mTextureUploader;
@@ -165,8 +173,8 @@ public class PhotoView extends GLView {
         }
 
         void calcRenderPos() {
-            Log.i(TAG, String.format("calcRenderPos %d boxPos %f %f %f %f inbox %.3f %.3f",
-                            indexInProject, boxPos.width, boxPos.height, boxPos.top, boxPos.left, widthInBox, heightInBox));
+            //Log.i(TAG, String.format("calcRenderPos %d boxPos %f %f %f %f inbox %.3f %.3f",
+            //                indexInProject, boxPos.width, boxPos.height, boxPos.top, boxPos.left, widthInBox, heightInBox));
             renderPos.width = boxPos.width * widthInBox;
             renderPos.height = boxPos.height * heightInBox;
             renderPos.top = boxPos.top + (boxPos.height - renderPos.height) / 2;
@@ -320,6 +328,7 @@ public class PhotoView extends GLView {
         float density = context.getResources().getDisplayMetrics().density;
         velocityMinAtEnd = VELOCITY_END_MIN_IN_DP * density;
         velocityMinAtStart = VELOCITY_START_MIN_IN_DP * density;
+        velocityKeyScroll = VELOCITY_KEY_SCROLL_IN_DP * density;
         scaleForImg = density;
 
         mGLRootView = glRootView;
@@ -474,6 +483,7 @@ public class PhotoView extends GLView {
     }
 
     private void startFly(float velocity) {
+        Log.i(TAG, "startFly "+velocity);
         if(velocity!=0) {
             flyVelocity = velocity;
             flyStartVelocity = velocity;
@@ -483,6 +493,43 @@ public class PhotoView extends GLView {
             renderTime = SystemClock.uptimeMillis();
             mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         }
+    }
+
+    public int getCurPhotoIndexInProject(){
+        return photoCache[curPhotoIndexInCache].indexInProject;
+    }
+
+    private void onKeyDown(int keyCode){
+        int indexInProject = photoCache[curPhotoIndexInCache].indexInProject;
+        switch(keyCode) {
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                if(indexInProject > 0) {
+                    onScroll(-1);
+                    startFly(velocityKeyScroll);
+                }
+                break;
+
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                if(indexInProject < (curProjectInfo.imgDownloadNum - 1)) {
+                    startFly(0 - velocityKeyScroll);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, boolean canGiveUpFocus) {
+        mGLRootView.lockRenderThread();
+        if(flyVelocity==0) {
+            onKeyDown(keyCode);
+        }else{
+            if(keyQueue.size()>=KEY_QUEUE_SIZE){
+                keyQueue.removeFirst();
+            }
+            keyQueue.addLast(keyCode);
+        }
+        mGLRootView.unlockRenderThread();
+        return true;
     }
 
     @Override
@@ -496,7 +543,7 @@ public class PhotoView extends GLView {
         renderTime = curTime;
 
         Photo photo = photoCache[curPhotoIndexInCache];
-        //Log.i(TAG, "render " + photo.indexInProject + " " + curPhotoIndexInCache + " time " + renderTimeInterval);
+        Log.i(TAG, "render " + photo.indexInProject + " " + curPhotoIndexInCache + " time " + renderTimeInterval);
 
         if(flyVelocity != 0) {
             float newLeft = photo.boxPos.left + renderTimeInterval * flyVelocity / 1000;
@@ -552,6 +599,12 @@ public class PhotoView extends GLView {
         } else {
             canvas.fillRect(photo.boxPos.left, photo.boxPos.top, photo.boxPos.width, photo.boxPos.height,
                     EMPTY_IMG_COLOR);
+        }
+
+        if(flyVelocity==0){
+            if(!keyQueue.isEmpty()){
+                onKeyDown(keyQueue.removeFirst());
+            }
         }
     }
 
@@ -654,6 +707,46 @@ public class PhotoView extends GLView {
         }
     }
 
+    private boolean onScroll(float dx){
+        Log.i(TAG, "onScroll "+dx);
+
+        Photo photo = photoCache[curPhotoIndexInCache];
+        float newLeft = photo.boxPos.left - dx;
+
+        float leftMin = 0 - viewWidth;
+
+        boolean isEdge=false;
+        if(newLeft > 0 && photo.boxPos.left <= 0) {
+            //Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
+            if(photo.indexInProject > 0) {
+                curPhotoIndexInCache = getPrevPhotoIndexInCache(curPhotoIndexInCache);
+                photo = photoCache[curPhotoIndexInCache];
+                photo.boxPos.set(0, leftMin, viewWidth, viewHeight);
+                photoCacheScroll(SCROLL_PREV);
+            } else {
+                isEdge=true;
+            }
+            //Log.i(TAG, "prev "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
+        } else if(newLeft <= leftMin && photo.boxPos.left > leftMin) {
+            //Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
+            curPhotoIndexInCache = getNextPhotoIndexInCache(curPhotoIndexInCache);
+            photo = photoCache[curPhotoIndexInCache];
+            photo.boxPos.set(fullScreen);
+            photoCacheScroll(SCROLL_NEXT);
+            //Log.i(TAG, "next "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
+        }
+
+        if(dx > 0 && photo.indexInProject == (curProjectInfo.imgDownloadNum - 1)) {
+            isEdge=true;
+        }
+
+        if(!isEdge) {
+            photo.boxPos.left -= dx;
+        }
+
+        return isEdge;
+    }
+
     private class MyGestureListener implements GestureRecognizer.Listener {
 
         @Override
@@ -679,40 +772,7 @@ public class PhotoView extends GLView {
         public boolean onScroll(float dx, float dy, float totalX, float totalY) {
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
             mGLRootView.lockRenderThread();
-            Photo photo = photoCache[curPhotoIndexInCache];
-            float newLeft = photo.boxPos.left - dx;
-
-            float leftMin = 0 - viewWidth;
-
-            boolean isEdge=false;
-            if(newLeft > 0 && photo.boxPos.left <= 0) {
-                //Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
-                if(photo.indexInProject > 0) {
-                    curPhotoIndexInCache = getPrevPhotoIndexInCache(curPhotoIndexInCache);
-                    photo = photoCache[curPhotoIndexInCache];
-                    photo.boxPos.set(0, leftMin, viewWidth, viewHeight);
-                    photoCacheScroll(SCROLL_PREV);
-                } else {
-                    isEdge=true;
-                }
-                //Log.i(TAG, "prev "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
-            } else if(newLeft <= leftMin && photo.boxPos.left > leftMin) {
-                //Log.i(TAG, "cur "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
-                curPhotoIndexInCache = getNextPhotoIndexInCache(curPhotoIndexInCache);
-                photo = photoCache[curPhotoIndexInCache];
-                photo.boxPos.set(fullScreen);
-                photoCacheScroll(SCROLL_NEXT);
-                //Log.i(TAG, "next "+curPhotoIndexInCache+" left "+photo.boxPos.left+" width "+photo.boxPos.width);
-            }
-
-            if(dx > 0 && photo.indexInProject == (curProjectInfo.imgDownloadNum - 1)) {
-                isEdge=true;
-            }
-
-            if(!isEdge) {
-                photo.boxPos.left -= dx;
-            }
-
+            boolean isEdge=PhotoView.this.onScroll(dx);
             mGLRootView.unlockRenderThread();
             mGLRootView.requestRender();
             return isEdge;
