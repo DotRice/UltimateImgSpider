@@ -680,14 +680,12 @@
                         android:textSize="@dimen/drawer_info_group_title_text_size"
                         android:text="@string/cur_page"/>
 
-                    <Button
+                    <com.gk969.View.RadiusCornerButton
                         android:id="@+id/open_cur_page"
                         android:layout_width="@dimen/drawer_info_button_open_width"
                         android:layout_height="match_parent"
                         android:text="@string/open"
-                        android:textSize="@dimen/drawer_info_item_value_text_size"
-                        android:padding="0dp"
-                        android:gravity="center"/>
+                        android:textSize="@dimen/drawer_info_item_value_text_size"/>
 
                 </LinearLayout>
 
@@ -753,7 +751,7 @@
             android:gravity="center"
             android:textSize="@dimen/drawer_info_group_title_text_size"/>
 
-        <ImageButton
+        <com.gk969.View.RadiusCornerImageButton
             android:id="@+id/project_ctrl"
             android:layout_width="@dimen/drawer_info_button_ctrl_width"
             android:layout_height="match_parent"
@@ -761,8 +759,6 @@
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:contentDescription="@string/start"
-            android:scaleType="fitCenter"
-            android:background="@drawable/button_ctrl_corners_background"
             android:src="@drawable/start"
             />
 

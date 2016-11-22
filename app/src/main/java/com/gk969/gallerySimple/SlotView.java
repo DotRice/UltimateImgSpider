@@ -139,11 +139,13 @@ public class SlotView extends GLView {
         }
 
         public void start(int startPoint, int endPoint) {
-            scrollStartTime = SystemClock.uptimeMillis();
-            scrollStartPoint = startPoint;
-            scrollTotalDistance = endPoint - startPoint;
-            mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-            isScrolling = true;
+            if(endPoint!=scrollStartPoint+scrollTotalDistance) {
+                scrollStartPoint = startPoint;
+                scrollTotalDistance = endPoint - startPoint;
+                scrollStartTime = SystemClock.uptimeMillis();
+                mGLRootView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                isScrolling = true;
+            }
         }
 
         public void render(long curTime) {
@@ -406,6 +408,7 @@ public class SlotView extends GLView {
         mGLRootView.lockRenderThread();
         boolean processed=true;
         int totalSlotNum=mThumbnailLoader.albumTotalImgNum;
+        boolean gotoNewLine=false;
 
         if(keyCode==KeyEvent.KEYCODE_ENTER) {
             if(isFocusOnVisibleAreaSlot()) {
@@ -432,7 +435,7 @@ public class SlotView extends GLView {
                         int newFocusedSlotIndex=focusedSlotIndex+slotsPerRow;
                         if(newFocusedSlotIndex < totalSlotNum) {
                             focusedSlotIndex = newFocusedSlotIndex;
-                        } else if((focusedSlotIndex+slotsPerRow) < totalSlotNum) {
+                        } else if(newFocusedSlotIndex < (totalSlotNum+slotsPerRow-1)/slotsPerRow*slotsPerRow) {
                             focusedSlotIndex = totalSlotNum-1;
                         } else if(canGiveUpFocus){
                             processed = false;

@@ -19,9 +19,12 @@
     <color name="bitmap_screennail_placeholder">#333</color>
     <color name="bright_foreground_disabled_holo_dark">#ff4c4c4c</color>
     <color name="bright_foreground_holo_dark">#fff3f3f3</color>
+    <color name="button_background">#9E9</color>
     <color name="button_blur_background_color">#DFFF</color>
     <color name="button_dark_transparent_background">#6000</color>
+    <color name="button_focus_background">#2f6</color>
     <color name="button_focus_background_color">#D2F6</color>
+    <color name="button_on_touch_background">#E99</color>
     <color name="cache_background">#1A1A1A</color>
     <color name="cache_placeholder">#333</color>
     <color name="default_background">#000</color>
@@ -77,6 +80,7 @@
     <dimen name="big_setting_popup_window_width_xlarge">590dp</dimen>
     <dimen name="bottom_button_radius">25dp</dimen>
     <dimen name="bottom_button_size">50dp</dimen>
+    <dimen name="button_corner_radius">10dp</dimen>
     <dimen name="cache_pin_margin">8dp</dimen>
     <dimen name="cache_pin_size">24dp</dimen>
     <dimen name="camera_controls_size">0dip</dimen>
@@ -198,8 +202,9 @@
     <dimen name="touch_circle_size">8dp</dimen>
     <dimen name="zoom_font_size">14pt</dimen>
     <dimen name="zoom_ring_min">48dp</dimen>
-    <drawable name="background_normal">#FFF</drawable>
-    <drawable name="background_pressed">#CFC</drawable>
+    <drawable name="browser_button_normal_bg">#FFF</drawable>
+    <drawable name="browser_button_pressed_bg">#CFC</drawable>
+    <drawable name="browser_button_trans_bg">#0000</drawable>
     <drawable name="trans_background_green">#A8F8</drawable>
     <drawable name="trans_background_normal">#DFFF</drawable>
     <drawable name="trans_background_pressed">#ACFC</drawable>
@@ -315,10 +320,14 @@
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
     <string name="web_url">网址</string>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
-        
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
     </style>
     <style name="AppTheme" parent="AppBaseTheme">
-        
+        <!--<item name="android:actionBarStyle">@style/MyActionBar</item>-->
     </style>
     <style name="ProgressBar_Mini" parent="@android:style/Widget.Holo.Light.ProgressBar.Horizontal">
         <item name="android:maxHeight">2dp</item>

@@ -34,7 +34,8 @@
 	<drawable name="trans_background_normal">#DFFF</drawable>
 	<drawable name="trans_background_pressed">#ACFC</drawable>
 
-	<drawable name="background_normal">#FFF</drawable>
-	<drawable name="background_pressed">#CFC</drawable>
+	<drawable name="browser_button_trans_bg">#0000</drawable>
+	<drawable name="browser_button_normal_bg">#FFF</drawable>
+	<drawable name="browser_button_pressed_bg">#CFC</drawable>
 	
 </resources>

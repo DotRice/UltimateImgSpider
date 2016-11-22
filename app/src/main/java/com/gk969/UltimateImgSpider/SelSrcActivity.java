@@ -76,7 +76,7 @@ public class SelSrcActivity extends Activity {
     
     private RelativeLayout urlBar;
     
-    private Button btnURLcmd;
+    private ImageButton btnURLcmd;
 
     private Context appCtx;
     
@@ -263,7 +263,7 @@ public class SelSrcActivity extends Activity {
     private void setUrlCmd(int cmd) {
         if(cmd < URLCMD_ICON.length) {
             URLcmd = cmd;
-            btnURLcmd.setBackgroundResource(URLCMD_ICON[cmd]);
+            btnURLcmd.setImageResource(URLCMD_ICON[cmd]);
         }
     }
     
@@ -533,7 +533,7 @@ public class SelSrcActivity extends Activity {
         findViewById(R.id.FrameLayoutSelSearchEngine).setOnClickListener(
                 oclSelSearchEngine);
         
-        btnURLcmd = (Button) findViewById(R.id.buttonURLcmd);
+        btnURLcmd = (ImageButton) findViewById(R.id.buttonURLcmd);
         btnURLcmd.setOnClickListener(oclBrowserBtn);
         
         findViewById(R.id.FrameLayoutURLcmd).setOnClickListener(oclBrowserBtn);

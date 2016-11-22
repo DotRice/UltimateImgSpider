@@ -19,6 +19,7 @@ import com.gk969.Utils.MemoryInfo;
 import com.gk969.Utils.StorageUtils;
 import com.gk969.Utils.Utils;
 import com.gk969.View.ImageTextButton;
+import com.gk969.View.MyDrawerLayout;
 import com.gk969.gallery.gallery3d.glrenderer.GLCanvas;
 import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
@@ -98,7 +99,6 @@ public class SpiderActivity extends Activity {
     private static final int CONN_STATE_WAIT_DISCONNECT = 2;
     private static final int CONN_STATE_WAIT_CONNECT = 3;
 
-    //private static final int MIN_FREE_MEM_TO_RESTART_SERVICE = 50;
     private static final int MAX_USED_MEM_TO_RESTART_SERVICE = (MemoryInfo.getTotalMemInMb()/1024+1)*50;
     private static final int MIN_FREE_STORAGE_TO_STOP_SERVICE = 200;
 
@@ -918,7 +918,7 @@ public class SpiderActivity extends Activity {
 
     private class InfoDrawer {
 
-        private DrawerLayout drawer;
+        private MyDrawerLayout drawer;
 
         private LinearLayout albumInfoDrawer;
         private LinearLayout albumSetInfoDrawer;
@@ -952,12 +952,16 @@ public class SpiderActivity extends Activity {
         private TextView cur_page_url;
         private TextView cur_page_title;
 
-        private String totalMemString = MemoryInfo.getTotalMemInMb() + "M";
-
         public InfoDrawer() {
-            drawer = (DrawerLayout) findViewById(R.id.main_drawer);
-            albumInfoDrawer = (LinearLayout) findViewById(R.id.album_info_drawer);
+            drawer = (MyDrawerLayout) findViewById(R.id.main_drawer);
+            drawer.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View view, boolean b) {
+                    Log.i(TAG, "drawer onFocusChange "+b);
+                }
+            });
 
+            albumInfoDrawer = (LinearLayout) findViewById(R.id.album_info_drawer);
             albumInfoDrawer.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -995,6 +999,8 @@ public class SpiderActivity extends Activity {
             cur_page_url = (TextView) findViewById(R.id.cur_page_url);
             cur_page_title = (TextView) findViewById(R.id.cur_page_title);
 
+            ram_sys_total.setText(MemoryInfo.getTotalMemInMb() + "M");
+
             Button open_cur_page = (Button) findViewById(R.id.open_cur_page);
             open_cur_page.setOnClickListener(new OnClickListener() {
                 @Override
@@ -1005,6 +1011,43 @@ public class SpiderActivity extends Activity {
                     }
                 }
             });
+
+            buttonProjectCtrl = (ImageButton) findViewById(R.id.project_ctrl);
+            buttonProjectCtrl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(displayProjectIndex == downloadingProjectIndex) {
+                        switch(projectState) {
+                            case DOWNLOADING:
+                                setProjectState(ProjectState.PAUSE);
+                                sendCmdToSpiderService(StaticValue.CMD_PAUSE);
+                                break;
+
+                            case PAUSE:
+                                setProjectState(ProjectState.CHECK);
+                                checkAndStart(false);
+                                break;
+
+                            case CHECK:
+                                setProjectState(ProjectState.PAUSE);
+                                break;
+                        }
+                    } else {
+                        startProject(displayProjectIndex);
+                    }
+                }
+            });
+            buttonProjectCtrl.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View view, boolean b) {
+                    Log.i(TAG, "buttonProjectCtrl onFocusChange "+b);
+                }
+            });
+
+            projectStateDesc = getResources().getStringArray(R.array.project_state);
+            textViewProjectState = (TextView) findViewById(R.id.project_state);
+
+            setProjectState(ProjectState.PAUSE);
         }
 
         public void initDownloadingInfo() {
@@ -1054,7 +1097,6 @@ public class SpiderActivity extends Activity {
         public void refreshMemoryInfo() {
             storage_free.setText(Utils.byteSizeToString(storageInfo.getFreeSpace(displayProjectInfo.dir.getPath())));
 
-            ram_sys_total.setText(totalMemString);
             ram_sys_free.setText(MemoryInfo.getFreeMemInMb(SpiderActivity.this) + "M");
             ram_activity_vm.setText((Runtime.getRuntime().totalMemory() >> 10) + "K");
             ram_activity_native.setText((Debug.getNativeHeapSize() >> 10) + "K");
@@ -1158,37 +1200,6 @@ public class SpiderActivity extends Activity {
         buttonAdd.setOnFocusChangeListener(onFocusChangeListener);
         buttonMenu.setOnFocusChangeListener(onFocusChangeListener);
 
-
-        buttonProjectCtrl = (ImageButton) findViewById(R.id.project_ctrl);
-        buttonProjectCtrl.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(displayProjectIndex == downloadingProjectIndex) {
-                    switch(projectState) {
-                        case DOWNLOADING:
-                            setProjectState(ProjectState.PAUSE);
-                            sendCmdToSpiderService(StaticValue.CMD_PAUSE);
-                            break;
-
-                        case PAUSE:
-                            setProjectState(ProjectState.CHECK);
-                            checkAndStart(false);
-                            break;
-
-                        case CHECK:
-                            setProjectState(ProjectState.PAUSE);
-                            break;
-                    }
-                } else {
-                    startProject(displayProjectIndex);
-                }
-            }
-        });
-
-        projectStateDesc = getResources().getStringArray(R.array.project_state);
-        textViewProjectState = (TextView) findViewById(R.id.project_state);
-
-        setProjectState(ProjectState.PAUSE);
 
         infoDrawer = new InfoDrawer();
         infoDrawer.setDrawer(curView);

@@ -3,12 +3,21 @@
 
     <item
         is-multidex="false"
-        jar="D:\android\UltimateImgSpider\app\libs\android-support-v13.jar"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.1\jars\libs\internal_impl-24.2.1.jar"
         jumboMode="false"
         optimize="true"
         revision="21.1.2"
-        sha1="ca3f431561810d8149c358d50d33d66c136fb326">
-        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\android-support-v13_ce9cf8f887d9f170398db0f8c5be45c4c076b4fa.jar" />
+        sha1="7e4389bd133359a2ff88623ff1e4ff93d6e6f780">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.1_3b144e39294b67c7261343f83cb005b079cf8659.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.1\jars\libs\internal_impl-24.2.1.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="fbf8da429efd5ad21e02e3e5ecaa1efc4167878d">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.1_e5bbe6d0b415cdc8152d490b7fa9bb3a3276e5ef.jar" />
     </item>
     <item
         is-multidex="false"
@@ -21,12 +30,39 @@
     </item>
     <item
         is-multidex="false"
-        jar="C:\Users\songjian\.gradle\caches\modules-2\files-2.1\com.squareup.leakcanary\leakcanary-analyzer\1.4\5faf46d7b5f99d8bdc887ba83c7a966b426740e1\leakcanary-analyzer-1.4.jar"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.squareup.leakcanary\leakcanary-android\1.4\jars\classes.jar"
         jumboMode="false"
         optimize="true"
         revision="21.1.2"
-        sha1="5faf46d7b5f99d8bdc887ba83c7a966b426740e1">
-        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\leakcanary-analyzer-1.4_8f0a2db0e8ce26deae3682ca6e4209ac3280212e.jar" />
+        sha1="d5e583b1683726f97ea955f0ca8dca78ac761ec5">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.squareup.leakcanary-leakcanary-android-1.4_d363915723886c181d20947b6360533e7c8618d3.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.1\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="9c4c3bc902450c39ed54de170db4fb12aea20a35">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-core-utils-24.2.1_28009ec5f2e4cfade1bc06314cc0243bcad5101f.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-fragment\24.2.1\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="b9a1ac78ad7ef3abedc4a4b30cd92bcacb939d1f">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-fragment-24.2.1_63a6ac5794b8e27928f5a9ad30d16fa1e9a8a276.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="G:\Develop\android\adt-bundle-windows-x86_64\sdk\extras\android\m2repository\com\android\support\support-annotations\24.2.1\support-annotations-24.2.1.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="8de3aafecbdf98a61db6427f008f2d515bcd2544">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\support-annotations-24.2.1_08e17a437ffda132b6b88cda36ca74b404f2c8db.jar" />
     </item>
     <item
         is-multidex="false"
@@ -39,12 +75,75 @@
     </item>
     <item
         is-multidex="false"
-        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.squareup.leakcanary\leakcanary-android\1.4\jars\classes.jar"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.1\jars\libs\internal_impl-24.2.1.jar"
         jumboMode="false"
         optimize="true"
         revision="21.1.2"
-        sha1="d5e583b1683726f97ea955f0ca8dca78ac761ec5">
-        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.squareup.leakcanary-leakcanary-android-1.4_d363915723886c181d20947b6360533e7c8618d3.jar" />
+        sha1="867dad63c33388ff8c7644b236579355036d075f">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.1_20886d031d0066e10c3258fd9fdcd0cb9466cde9.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.1\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="e7f3132168957eefc46229fc32c3bd464642b71e">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-core-ui-24.2.1_b5a4e985e1fe0a47cbde5a30ce1cf99a54266d30.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.1\jars\libs\internal_impl-24.2.1.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="935a969265b2a166b2d20415423f5f6e90fe16e0">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.1_663a473fea442700bee9e8826a4cc974398ce766.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-fragment\24.2.1\jars\libs\internal_impl-24.2.1.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="5f64d657e838e8375135c0f6057a7ff8fab6a50e">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.1_c549aabf1f5866011043a6361149105b6349a2ff.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.1\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="0ecb4b595fa0f0f8018a149ace3ea6525624f94e">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-compat-24.2.1_9b0d2505c3305901284ea6155f82ae48fb03ff98.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-v4\24.2.1\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="d7c42c80f6509b9ea4db28ca7859ffae08ec5741">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-v4-24.2.1_3343b791f927d540e2fe779f309eddce11be9d53.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Users\songjian\.gradle\caches\modules-2\files-2.1\com.squareup.leakcanary\leakcanary-analyzer\1.4\5faf46d7b5f99d8bdc887ba83c7a966b426740e1\leakcanary-analyzer-1.4.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="5faf46d7b5f99d8bdc887ba83c7a966b426740e1">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\leakcanary-analyzer-1.4_8f0a2db0e8ce26deae3682ca6e4209ac3280212e.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.1\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="09b462bbcb77650284bd6614f1a32f360ef369f8">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-media-compat-24.2.1_9549bf7ca810be24cb5f91387eb993daae81a6de.jar" />
     </item>
 
 </items>

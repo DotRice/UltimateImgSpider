@@ -2,28 +2,18 @@ package com.gk969.gallerySimple;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.graphics.Rect;
+import android.os.SystemClock;
 import android.util.Log;
-import android.os.Handler;
 
 import com.gk969.UltimateImgSpider.StaticValue;
-import com.gk969.Utils.MemoryInfo;
 import com.gk969.Utils.Utils;
 import com.gk969.gallery.gallery3d.glrenderer.BitmapTexture;
+import com.gk969.gallery.gallery3d.glrenderer.GLCanvas;
 import com.gk969.gallery.gallery3d.glrenderer.StringTexture;
-import com.gk969.gallery.gallery3d.glrenderer.Texture;
-import com.gk969.gallery.gallery3d.glrenderer.TiledTexture;
+import com.gk969.gallery.gallery3d.ui.GLRoot;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.ArrayDeque;
 
 /*
 Cache Mode:
@@ -65,6 +55,8 @@ public class ThumbnailLoader {
     private volatile int imgNumInView;
 
     private GLRootView mGLRootView;
+
+    private Uploader uploader = new Uploader();
 
     private ThumbnailLoaderThreadPool mThumbnailLoaderThreadPool;
     private SlotView slotView;
@@ -188,9 +180,9 @@ public class ThumbnailLoader {
 
         labelTextSize = paraLabelTextSize;
         labelNameLimit = paraLabelNameLimit;
-    
-        if(mThumbnailLoaderThreadPool==null) {
-            mThumbnailLoaderThreadPool=new ThumbnailLoaderThreadPool();
+
+        if(mThumbnailLoaderThreadPool == null) {
+            mThumbnailLoaderThreadPool = new ThumbnailLoaderThreadPool();
         } else {
             mThumbnailLoaderThreadPool.wakeup();
         }
@@ -288,42 +280,98 @@ public class ThumbnailLoader {
         //Log.i(TAG, "scrollToIndex "+index+" cacheOffset "+cacheOffset);
     }
 
+    private class Uploader implements GLRoot.OnGLIdleListener {
+        // We are targeting at 60fps, so we have 16ms for each frame.
+        // In this 16ms, we use about 4~8 ms to upload tiles.
+        private static final long UPLOAD_TILE_LIMIT = 4; // ms
+        private boolean isQueued;
+        private ArrayDeque<SlotTexture> textureDeque=new ArrayDeque<>(3);
+
+        /**
+         * Must be synchronized with GL-thread
+         *
+         * @param texture
+         */
+        void add(SlotTexture texture) {
+            if(textureDeque.size()>cacheSize){
+                textureDeque.removeFirst();
+            }
+            textureDeque.addLast(texture);
+
+            if(!isQueued) {
+                isQueued = true;
+                mGLRootView.addOnGLIdleListener(this);
+            }
+        }
+
+        @Override
+        public boolean onGLIdle(GLCanvas canvas, boolean renderRequested) {
+            Log.i(TAG, "onGLIdle");
+
+            long now = SystemClock.uptimeMillis();
+            long dueTime = now + UPLOAD_TILE_LIMIT;
+            //Log.i(TAG, "onGLIdle");
+            while (now < dueTime && !textureDeque.isEmpty()) {
+                SlotTexture curSlotTexture = textureDeque.removeFirst();
+
+                if(curSlotTexture.texture != null && !curSlotTexture.isReady) {
+                    Log.i(TAG, "upload slot " + curSlotTexture.imgIndex);
+                    curSlotTexture.texture.updateContent(canvas);
+                    curSlotTexture.isReady = true;
+                    mGLRootView.requestRender();
+                }
+                now = SystemClock.uptimeMillis();
+            }
+            isQueued=!textureDeque.isEmpty();
+            return isQueued;
+        }
+    }
+
+    private int getNextIndexInCache(int curIndex, int step) {
+        curIndex += step;
+        if(curIndex < 0) {
+            curIndex = cacheSize - 1;
+        } else if(curIndex >= cacheSize) {
+            curIndex = 0;
+        }
+        return curIndex;
+    }
 
     private class ThumbnailLoaderThreadPool {
         private volatile boolean isRunning;
-        private static final int THREAD_POOL_SIZE_MAX=4;
+        private static final int THREAD_POOL_SIZE_MAX = 4;
         
         private ThumbnailLoaderThread[] threads;
         
-        ThumbnailLoaderThreadPool(){
-            int poolSize=Utils.getCpuCoresNum();
-            if(poolSize>THREAD_POOL_SIZE_MAX){
-                poolSize=4;
+        ThumbnailLoaderThreadPool() {
+            int poolSize = Utils.getCpuCoresNum();
+            if(poolSize > THREAD_POOL_SIZE_MAX) {
+                poolSize = 4;
             }
 
-            Log.i(TAG, "loader thread pool size "+poolSize);
-            isRunning=true;
-            threads=new ThumbnailLoaderThread[poolSize];
-            for(int i=0; i<poolSize; i++){
-                threads[i]=new ThumbnailLoaderThread(i);
+            Log.i(TAG, "loader thread pool size " + poolSize);
+            isRunning = true;
+            threads = new ThumbnailLoaderThread[poolSize];
+            for(int i = 0; i < poolSize; i++) {
+                threads[i] = new ThumbnailLoaderThread(i);
             }
         }
 
         
-        void wakeup(){
+        void wakeup() {
             //Log.i(TAG, "pool wakeup");
-            for(ThumbnailLoaderThread thread:threads){
+            for(ThumbnailLoaderThread thread : threads) {
                 thread.wakeup();
             }
         }
         
-        void shutdown(){
-            isRunning=false;
+        void shutdown() {
+            isRunning = false;
             wakeup();
         }
         
         private class ThumbnailLoaderThread extends Thread {
-            private final static long SLEEP_INTERVAL = 365*24*3600*1000;
+            private final static long SLEEP_INTERVAL = 365 * 24 * 3600 * 1000;
             private int index;
             volatile boolean isWorking;
 
@@ -331,9 +379,9 @@ public class ThumbnailLoader {
 
             ThumbnailLoaderThread(int i) {
                 super("ThumbnailLoaderThread");
-                index=i;
+                index = i;
 
-                bmpOpts=new BitmapFactory.Options();
+                bmpOpts = new BitmapFactory.Options();
                 bmpOpts.inPreferredConfig = StaticValue.BITMAP_TYPE;
                 bmpOpts.inSampleSize = 1;
 
@@ -344,13 +392,14 @@ public class ThumbnailLoader {
             private boolean isOffsetChangedInLoading() {
                 int step = scrollStep;
                 int visibleOffset = visibleAreaOffset;
-                int imgIndexForLoader = (step == 1) ? visibleOffset : (visibleOffset + imgNumInView - 1);
+                int loaderStart = (step == 1) ? visibleOffset : (visibleOffset + imgNumInView - 1);
+                int imgIndexForLoader = loaderStart % cacheSize;
                 for(int i = 0; i < cacheSize; i++) {
                     if(!isRunning) {
                         break;
                     }
 
-                    SlotTexture slot = textureCache[imgIndexForLoader % cacheSize];
+                    SlotTexture slot = textureCache[imgIndexForLoader];
 
                     if(!slot.hasTried) {
                         mGLRootView.lockRenderThread();
@@ -362,7 +411,7 @@ public class ThumbnailLoader {
                             if(!slot.isReady) {
                                 int imgIndex = slot.imgIndex;
                                 //Log.i(TAG, "Try " + imgIndex);
-                                bmpOpts.inBitmap=slot.mainBmp;
+                                bmpOpts.inBitmap = slot.mainBmp;
                                 mGLRootView.unlockRenderThread();
                                 Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, bmpOpts);
                                 mGLRootView.lockRenderThread();
@@ -370,7 +419,7 @@ public class ThumbnailLoader {
                                     if(imgIndex == slot.imgIndex) {
                                         //Log.i(TAG, "create texture " + imgIndex);
                                         slot.texture = new BitmapTexture(bmp);
-                                        slot.isReady = true;
+                                        uploader.add(slot);
                                     }
                                 }
 
@@ -394,7 +443,7 @@ public class ThumbnailLoader {
                             }
 
                             slot.hasTried = hasTried;
-                            slot.isLoading =false;
+                            slot.isLoading = false;
                         }
                         mGLRootView.unlockRenderThread();
                     }
@@ -403,17 +452,14 @@ public class ThumbnailLoader {
                         return true;
                     }
 
-                    imgIndexForLoader += step;
-                    if(imgIndexForLoader < 0) {
-                        imgIndexForLoader = cacheSize - 1;
-                    }
+                    imgIndexForLoader = getNextIndexInCache(imgIndexForLoader, step);
                 }
 
                 return false;
             }
 
-            void wakeup(){
-                if(!isWorking){
+            void wakeup() {
+                if(!isWorking) {
                     //Log.i(TAG, "thread "+index+" wakeup");
                     interrupt();
                 }
@@ -421,10 +467,10 @@ public class ThumbnailLoader {
 
             public void run() {
                 while(isRunning) {
-                    isWorking=true;
+                    isWorking = true;
                     //Log.i(TAG, "thread "+index+" work");
                     while(isOffsetChangedInLoading()) ;
-                    isWorking=false;
+                    isWorking = false;
 
                     if(isRunning) {
                         try {

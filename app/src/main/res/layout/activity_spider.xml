@@ -1,4 +1,4 @@
-<android.support.v4.widget.DrawerLayout
+<com.gk969.View.MyDrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main_drawer"
     android:layout_width="match_parent"
@@ -61,4 +61,4 @@
         android:layout_width="@dimen/drawer_info_width"
         android:layout_gravity="start"
         layout="@layout/drawer_info"/>
-</android.support.v4.widget.DrawerLayout>
+</com.gk969.View.MyDrawerLayout>
