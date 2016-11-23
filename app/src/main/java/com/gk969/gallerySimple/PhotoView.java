@@ -74,7 +74,6 @@ public class PhotoView extends GLView {
     private static final int KEY_QUEUE_SIZE=3;
 
     private GLRootView mGLRootView;
-    private TiledTexture.Uploader mTextureUploader;
 
     private GestureRecognizer mGestureRecognizer;
 
@@ -134,12 +133,11 @@ public class PhotoView extends GLView {
         float heightInBox;
 
         StringTexture indexTexture;
-        TiledTexture fillCenterTexture;
-        Bitmap fillCenterBmp;
-        BitmapFactory.Options bmpOptions = new BitmapFactory.Options();
 
+        BitmapFactory.Options bmpOptions = new BitmapFactory.Options();
         BitmapRegionDecoder regionDecoder;
         Tile[] fillCenterTiles=new Tile[FILL_CENTER_TILE_CACHE_SIZE];
+        boolean fillCenterTilesLoaded;
 
         class Tile{
             Bitmap bmp;
@@ -149,12 +147,13 @@ public class PhotoView extends GLView {
             DisplayPosition posInBox=new DisplayPosition();
 
             void calcRenderPos() {
-                //Log.i(TAG, String.format("calcRenderPos %d boxPos %f %f %f %f inbox %.3f %.3f",
-                //                indexInProject, boxPos.width, boxPos.height, boxPos.top, boxPos.left, widthInBox, heightInBox));
+                //Log.i(TAG, String.format("calcRenderPos %d boxPos %f %f %f %f inbox %.3f %.3f %.3f %.3f",
+                //                indexInProject, boxPos.width, boxPos.height, boxPos.top, boxPos.left,
+                //        posInBox.width, posInBox.height, posInBox.top, posInBox.left));
                 renderPos.width = boxPos.width*posInBox.width;
                 renderPos.height = boxPos.height*posInBox.height;
-                renderPos.top = boxPos.top * posInBox.top;
-                renderPos.left = boxPos.left * posInBox.left;
+                renderPos.top = boxPos.top + boxPos.height * posInBox.top;
+                renderPos.left = boxPos.left + boxPos.width * posInBox.left;
             }
         }
         
@@ -163,36 +162,23 @@ public class PhotoView extends GLView {
             indexInCache = index;
             for(int i=0; i<fillCenterTiles.length; i++){
                 fillCenterTiles[i]=new Tile();
+                fillCenterTiles[i].bmp=Bitmap.createBitmap(StaticValue.THUMBNAIL_SIZE,
+                        StaticValue.THUMBNAIL_SIZE, StaticValue.BITMAP_TYPE);
             }
         }
 
-        private void recycleBmp() {
-            if(fillCenterBmp != null) {
-                fillCenterBmp.recycle();
-                fillCenterBmp = null;
-            }
-
-
-        }
-
-        public void recycleTexture() {
-            if(fillCenterTexture != null) {
-                fillCenterTexture.recycle();
-                fillCenterTexture = null;
-            }
-
-        }
 
         public void recycle() {
             Log.i(TAG, "recycle " + indexInProject + " @ " + indexInCache);
-            recycleBmp();
-            recycleTexture();
-
             for(Tile tile:fillCenterTiles){
-                tile.texture.recycle();
-                tile.texture=null;
+                if(tile.texture!=null) {
+                    tile.texture.recycle();
+                    tile.texture = null;
+                }
                 tile.bmpLoaded=false;
             }
+
+            fillCenterTilesLoaded=false;
         }
 
         void calcRenderPos() {
@@ -217,6 +203,30 @@ public class PhotoView extends GLView {
             boxPos.height = basePos.height * scaleRatio;
         }
 
+        void drawFillCenterTiles(GLCanvas canvas){
+            for(Tile tile:fillCenterTiles){
+                if(tile.bmpLoaded) {
+                    tile.calcRenderPos();
+                    //Log.i(TAG, String.format("draw tile l:%d t:%d w:%d h:%d", (int) renderPos.left, (int) renderPos.top,
+                    //        (int) renderPos.width, (int) renderPos.height));
+                    canvas.drawTexture(tile.texture, (int) renderPos.left, (int) renderPos.top,
+                            (int) renderPos.width, (int) renderPos.height);
+                }
+            }
+        }
+
+        void drawMixedFillCenterTiles(GLCanvas canvas, int color, float ratio){
+            for(Tile tile:fillCenterTiles){
+                if(tile.bmpLoaded) {
+                    tile.calcRenderPos();
+                    canvas.drawMixed(tile.texture, color, ratio, (int) renderPos.left, (int) renderPos.top,
+                            (int) renderPos.width, (int) renderPos.height);
+                }
+            }
+        }
+
+
+
         void loadFillCenterBmp() {
             int group = indexInProject / StaticValue.MAX_IMG_FILE_PER_DIR;
             int offset = indexInProject % StaticValue.MAX_IMG_FILE_PER_DIR;
@@ -240,101 +250,77 @@ public class PhotoView extends GLView {
             
             Log.i(TAG, "loadFillCenterBmp " + indexInProject + " @ " + imgFilePath);
 
-
-            bmpOptions.inJustDecodeBounds = true;
-            bmpOptions.inSampleSize = 1;
-            BitmapFactory.decodeFile(imgFilePath, bmpOptions);
-    
-            int rawWidth = bmpOptions.outWidth;
-            int rawHeight = bmpOptions.outHeight;
-            if(rawWidth == 0 || rawHeight == 0) {
-                return;
-            }
-
-            float width;
-            float height;
-
-            if(rawWidth <= minSizeForImg && rawHeight <= minSizeForImg) {
-                if(rawHeight > rawWidth) {
-                    width = rawWidth * photoViewMinSize / rawHeight;
-                    height = photoViewMinSize;
-                } else {
-                    width = photoViewMinSize;
-                    height = rawHeight * photoViewMinSize / rawWidth;
-                }
-            } else if(rawWidth < viewWidthForImg && rawHeight < viewHeightForImg) {
-                width = scaleForImg * rawWidth;
-                height = scaleForImg * rawHeight;
-            } else if(rawHeight * viewWidthForImg > rawWidth * viewHeightForImg) {
-                width = rawWidth * viewHeight / rawHeight;
-                height = viewHeight;
-            } else {
-                width = viewWidth;
-                height = rawHeight * viewWidth / rawWidth;
-            }
-
-            widthInBox = width / viewWidth;
-            heightInBox = height / viewHeight;
-
-            bmpOptions.inSampleSize = (int) (rawWidth / (width / scaleForImg));
-            bmpOptions.inJustDecodeBounds = false;
-
-            Log.i(TAG, String.format("%s raw size:%d*%d inSampleSize:%d", imgFilePath,
-                    rawWidth, rawHeight, bmpOptions.inSampleSize));
-
-
-
-            fillCenterBmp = BitmapFactory.decodeFile(imgFilePath, bmpOptions);
-            if(fillCenterBmp != null) {
-                Log.i(TAG, String.format("fill center bmp size:%d*%d",
-                        fillCenterBmp.getWidth(), fillCenterBmp.getHeight()));
-            }
-
             try {
                 regionDecoder=BitmapRegionDecoder.newInstance(imgFilePath, false);
-                rawWidth=regionDecoder.getWidth();
-                rawHeight=regionDecoder.getHeight();
+                int rawWidth=regionDecoder.getWidth();
+                int rawHeight=regionDecoder.getHeight();
 
                 int tilesHorizontal=(rawWidth+StaticValue.TILED_BMP_SLOT_SIZE-1) / StaticValue.TILED_BMP_SLOT_SIZE;
                 int tilesVertical=(rawHeight+StaticValue.TILED_BMP_SLOT_SIZE-1) / StaticValue.TILED_BMP_SLOT_SIZE;
                 if(tilesHorizontal*tilesVertical<fillCenterTiles.length){
                     bmpOptions.inSampleSize=1;
+                    if(rawHeight>=StaticValue.TILED_BMP_SLOT_SIZE && rawWidth>=StaticValue.TILED_BMP_SLOT_SIZE) {
+                        float width;
+                        float height;
 
-                    float topInbox=(1-heightInBox)/2;
-                    float leftInbox=(1-widthInBox)/2;
-                    float tileSizeInBox=widthInBox/((float)rawWidth/StaticValue.TILED_BMP_SLOT_SIZE);
-                    for(int x=0; x<tilesHorizontal; x++){
-                        for(int y=0; y<tilesVertical; y++){
-                            Tile tile=fillCenterTiles[x*tilesHorizontal+y];
-                            Rect tileRect=new Rect();
+                        if(rawWidth <= minSizeForImg && rawHeight <= minSizeForImg) {
+                            if(rawHeight > rawWidth) {
+                                width = rawWidth * photoViewMinSize / rawHeight;
+                                height = photoViewMinSize;
+                            } else {
+                                width = photoViewMinSize;
+                                height = rawHeight * photoViewMinSize / rawWidth;
+                            }
+                        } else if(rawWidth < viewWidthForImg && rawHeight < viewHeightForImg) {
+                            width = scaleForImg * rawWidth;
+                            height = scaleForImg * rawHeight;
+                        } else if(rawHeight * viewWidthForImg > rawWidth * viewHeightForImg) {
+                            width = rawWidth * viewHeight / rawHeight;
+                            height = viewHeight;
+                        } else {
+                            width = viewWidth;
+                            height = rawHeight * viewWidth / rawWidth;
+                        }
 
-                            tileRect.left=x*StaticValue.TILED_BMP_SLOT_SIZE;
-                            tileRect.right=rawWidth-(tileRect.left+StaticValue.TILED_BMP_SLOT_SIZE);
-                            if(tileRect.right<0){
-                                tileRect.right=0;
-                                tile.posInBox.width=(tileRect.right-tileRect.left)/
-                                        StaticValue.TILED_BMP_SLOT_SIZE*tileSizeInBox;
-                            }else{
-                                tile.posInBox.width=tileSizeInBox;
+                        widthInBox = width / viewWidth;
+                        heightInBox = height / viewHeight;
+
+                        float topInbox = (1 - heightInBox) / 2;
+                        float leftInbox = (1 - widthInBox) / 2;
+                        float tileWidthInBox = widthInBox / ((float) rawWidth / StaticValue.TILED_BMP_SLOT_SIZE);
+                        float tileHeightInBox = heightInBox / ((float) rawHeight / StaticValue.TILED_BMP_SLOT_SIZE);
+                        Rect tileRect = new Rect();
+                        for(int x = 0; x < tilesHorizontal; x++) {
+                            tileRect.left = x * StaticValue.TILED_BMP_SLOT_SIZE;
+                            tileRect.right = tileRect.left + StaticValue.TILED_BMP_SLOT_SIZE;
+                            if(tileRect.right > rawWidth) {
+                                tileRect.right = rawWidth;
+                                tileRect.left=rawWidth-StaticValue.TILED_BMP_SLOT_SIZE;
                             }
 
-                            tileRect.top=y*StaticValue.TILED_BMP_SLOT_SIZE;
-                            tileRect.bottom=rawHeight-(tileRect.top+StaticValue.TILED_BMP_SLOT_SIZE);
-                            if(tileRect.bottom<0){
-                                tileRect.bottom=0;
-                                tile.posInBox.height=(tileRect.bottom-tileRect.top)/
-                                        StaticValue.TILED_BMP_SLOT_SIZE*tileSizeInBox;
-                            }else{
-                                tile.posInBox.height=tileSizeInBox;
-                            }
+                            for(int y = 0; y < tilesVertical; y++) {
+                                tileRect.top = y * StaticValue.TILED_BMP_SLOT_SIZE;
+                                tileRect.bottom = tileRect.top + StaticValue.TILED_BMP_SLOT_SIZE;
+                                if(tileRect.bottom > rawHeight) {
+                                    tileRect.bottom = rawHeight;
+                                    tileRect.top=rawHeight-StaticValue.TILED_BMP_SLOT_SIZE;
+                                }
 
-                            tile.posInBox.left=leftInbox+tileSizeInBox*x;
-                            tile.posInBox.top=topInbox+tileSizeInBox*y;
+                                Tile tile = fillCenterTiles[x * tilesHorizontal + y];
+                                tile.posInBox.left = leftInbox + tileWidthInBox * tileRect.left/StaticValue.TILED_BMP_SLOT_SIZE;
+                                tile.posInBox.top = topInbox + tileHeightInBox * tileRect.top/StaticValue.TILED_BMP_SLOT_SIZE;
+                                tile.posInBox.width = tileWidthInBox;
+                                tile.posInBox.height = tileHeightInBox;
 
-                            bmpOptions.inBitmap=tile.bmp;
-                            Bitmap bmp=regionDecoder.decodeRegion(tileRect, bmpOptions);
-                            if(bmp!=null){
-                                tile.bmpLoaded=true;
+                                bmpOptions.inBitmap = tile.bmp;
+                                Bitmap bmp = regionDecoder.decodeRegion(tileRect, bmpOptions);
+
+                                //Log.i(TAG, String.format("tiled load %d raw size w:%d h:%d rect t:%d l:%d b:%d r:%d",
+                                //        indexInProject, rawWidth, rawHeight, tileRect.top, tileRect.left, tileRect.bottom, tileRect.right));
+                                if(bmp != null) {
+                                //    Log.i(TAG, "success");
+                                    tile.bmpLoaded = true;
+                                }
                             }
                         }
                     }
@@ -345,17 +331,9 @@ public class PhotoView extends GLView {
             }
         }
 
-        private void createTiledCacheTexture(){
-            for(Tile tile:fillCenterTiles){
-                if(tile.bmpLoaded){
-                    tile.texture=new BitmapTexture(tile.bmp);
-                }
-            }
-        }
-
         private void load() {
             int cacheIndexBeforeLoad = curPhotoIndexInCache;
-            if(fillCenterBmp == null) {
+            if(!fillCenterTilesLoaded) {
                 Log.i(TAG, "load bmp " + indexInProject + " for cache " + indexInCache);
 
                 int projectIndexBeforeLoad = indexInProject;
@@ -383,15 +361,13 @@ public class PhotoView extends GLView {
                 }
             }
 
-            if(inDisplay && fillCenterTexture == null) {
-                Log.i(TAG, "create texture " + indexInProject);
-
-                if(fillCenterBmp != null) {
-                    indexTexture = StringTexture.newInstance(String.valueOf(indexInProject), 40, 0xFFFF0000);
-                    fillCenterTexture = new TiledTexture(fillCenterBmp);
-                    mTextureUploader.addTexture(fillCenterTexture);
+            indexTexture = StringTexture.newInstance(String.valueOf(indexInProject), 40, 0xFFFF0000);
+            for(Tile tile:fillCenterTiles){
+                if(tile.bmpLoaded){
+                    tile.texture=new BitmapTexture(tile.bmp);
                 }
             }
+            fillCenterTilesLoaded=true;
 
             if(cacheIndexBeforeLoad != curPhotoIndexInCache) {
                 loader.needReload = true;
@@ -408,9 +384,6 @@ public class PhotoView extends GLView {
         scaleForImg = density;
 
         mGLRootView = glRootView;
-
-        TiledTexture.prepareResources();
-        mTextureUploader = new TiledTexture.Uploader(glRootView);
 
         photoCache = new Photo[PHOTO_CACHE_SIZE];
         for(int i = 0; i < PHOTO_CACHE_SIZE; i++) {
@@ -624,7 +597,7 @@ public class PhotoView extends GLView {
         renderTime = curTime;
 
         Photo photo = photoCache[curPhotoIndexInCache];
-        Log.i(TAG, "render " + photo.indexInProject + " " + curPhotoIndexInCache + " time " + renderTimeInterval);
+        //Log.i(TAG, "render " + photo.indexInProject + " " + curPhotoIndexInCache + " time " + renderTimeInterval);
 
         if(flyVelocity != 0) {
             float newLeft = photo.boxPos.left + renderTimeInterval * flyVelocity / 1000;
@@ -658,11 +631,8 @@ public class PhotoView extends GLView {
 
             nextPhoto.scaleByScreenCenter(0.25f + mainTextureMoveLeftRatio * 0.75f);
 
-            if(nextPhoto.fillCenterTexture != null && nextPhoto.fillCenterTexture.isReady()) {
-                nextPhoto.calcRenderPos();
-                nextPhoto.fillCenterTexture.drawMixed(canvas, NEXT_TEXTURE_MIXED_COLOR, 1 - mainTextureMoveLeftRatio,
-                        (int) renderPos.left, (int) renderPos.top,
-                        (int) renderPos.width, (int) renderPos.height);
+            if(nextPhoto.fillCenterTilesLoaded){
+                nextPhoto.drawMixedFillCenterTiles(canvas, NEXT_TEXTURE_MIXED_COLOR, 1 - mainTextureMoveLeftRatio);
                 nextPhoto.indexTexture.draw(canvas, (int) renderPos.left, (int) renderPos.top);
             } else {
                 canvas.fillRect(nextPhoto.boxPos.left, nextPhoto.boxPos.top, nextPhoto.boxPos.width,
@@ -670,11 +640,8 @@ public class PhotoView extends GLView {
             }
         }
 
-        if(photo.fillCenterTexture != null && photo.fillCenterTexture.isReady()) {
-            //Log.i(TAG, "render ready");
-            photo.calcRenderPos();
-            photo.fillCenterTexture.draw(canvas, (int) renderPos.left, (int) renderPos.top,
-                    (int) renderPos.width, (int) renderPos.height);
+        if(photo.fillCenterTilesLoaded){
+            photo.drawFillCenterTiles(canvas);
             photo.indexTexture.draw(canvas, (int) renderPos.left, (int) renderPos.top);
         } else {
             canvas.fillRect(photo.boxPos.left, photo.boxPos.top, photo.boxPos.width, photo.boxPos.height,
@@ -690,11 +657,9 @@ public class PhotoView extends GLView {
 
     public void onDestroy() {
         mGLRootView.lockRenderThread();
-        mTextureUploader.clear();
         //TiledTexture.freeResources();
         for(Photo photo : photoCache) {
             photo.boxPos.set(fullScreen);
-            photo.recycleTexture();
         }
 
         inDisplay = false;
