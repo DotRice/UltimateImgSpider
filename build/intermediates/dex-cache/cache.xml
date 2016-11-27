@@ -39,6 +39,51 @@
     </item>
     <item
         is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.1\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="e7f3132168957eefc46229fc32c3bd464642b71e">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-core-ui-24.2.1_b5a4e985e1fe0a47cbde5a30ce1cf99a54266d30.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.1\jars\libs\internal_impl-24.2.1.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="935a969265b2a166b2d20415423f5f6e90fe16e0">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.1_663a473fea442700bee9e8826a4cc974398ce766.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-fragment\24.2.1\jars\libs\internal_impl-24.2.1.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="5f64d657e838e8375135c0f6057a7ff8fab6a50e">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.1_c549aabf1f5866011043a6361149105b6349a2ff.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.1\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="0ecb4b595fa0f0f8018a149ace3ea6525624f94e">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-compat-24.2.1_9b0d2505c3305901284ea6155f82ae48fb03ff98.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.1\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="21.1.2"
+        sha1="09b462bbcb77650284bd6614f1a32f360ef369f8">
+        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-media-compat-24.2.1_9549bf7ca810be24cb5f91387eb993daae81a6de.jar" />
+    </item>
+    <item
+        is-multidex="false"
         jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.1\jars\classes.jar"
         jumboMode="false"
         optimize="true"
@@ -84,42 +129,6 @@
     </item>
     <item
         is-multidex="false"
-        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.1\jars\classes.jar"
-        jumboMode="false"
-        optimize="true"
-        revision="21.1.2"
-        sha1="e7f3132168957eefc46229fc32c3bd464642b71e">
-        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-core-ui-24.2.1_b5a4e985e1fe0a47cbde5a30ce1cf99a54266d30.jar" />
-    </item>
-    <item
-        is-multidex="false"
-        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.1\jars\libs\internal_impl-24.2.1.jar"
-        jumboMode="false"
-        optimize="true"
-        revision="21.1.2"
-        sha1="935a969265b2a166b2d20415423f5f6e90fe16e0">
-        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.1_663a473fea442700bee9e8826a4cc974398ce766.jar" />
-    </item>
-    <item
-        is-multidex="false"
-        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-fragment\24.2.1\jars\libs\internal_impl-24.2.1.jar"
-        jumboMode="false"
-        optimize="true"
-        revision="21.1.2"
-        sha1="5f64d657e838e8375135c0f6057a7ff8fab6a50e">
-        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.1_c549aabf1f5866011043a6361149105b6349a2ff.jar" />
-    </item>
-    <item
-        is-multidex="false"
-        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.1\jars\classes.jar"
-        jumboMode="false"
-        optimize="true"
-        revision="21.1.2"
-        sha1="0ecb4b595fa0f0f8018a149ace3ea6525624f94e">
-        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-compat-24.2.1_9b0d2505c3305901284ea6155f82ae48fb03ff98.jar" />
-    </item>
-    <item
-        is-multidex="false"
         jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-v4\24.2.1\jars\classes.jar"
         jumboMode="false"
         optimize="true"
@@ -135,15 +144,6 @@
         revision="21.1.2"
         sha1="5faf46d7b5f99d8bdc887ba83c7a966b426740e1">
         <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\leakcanary-analyzer-1.4_8f0a2db0e8ce26deae3682ca6e4209ac3280212e.jar" />
-    </item>
-    <item
-        is-multidex="false"
-        jar="D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.1\jars\classes.jar"
-        jumboMode="false"
-        optimize="true"
-        revision="21.1.2"
-        sha1="09b462bbcb77650284bd6614f1a32f360ef369f8">
-        <dex dex="D:\android\UltimateImgSpider\app\build\intermediates\pre-dexed\debug\com.android.support-support-media-compat-24.2.1_9549bf7ca810be24cb5f91387eb993daae81a6de.jar" />
     </item>
 
 </items>

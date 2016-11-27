@@ -189,10 +189,10 @@ public class PhotoView extends GLView {
             protected Bitmap onGetBitmap() {
                 sCanvas.drawBitmap(bmp, BORDER_SIZE, BORDER_SIZE, sBitmapPaint);
 
-                //sCanvas.drawLine(0, 0, 0, TILE_SIZE, sPaint);
-                //sCanvas.drawLine(0, 0, TILE_SIZE, 0, sPaint);
-                //sCanvas.drawLine(TILE_SIZE, TILE_SIZE, 0, TILE_SIZE, sPaint);
-                //sCanvas.drawLine(TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, sPaint);
+                sCanvas.drawLine(0, 0, 0, TILE_SIZE, sPaint);
+                sCanvas.drawLine(0, 0, TILE_SIZE, 0, sPaint);
+                sCanvas.drawLine(TILE_SIZE, TILE_SIZE, 0, TILE_SIZE, sPaint);
+                sCanvas.drawLine(TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, sPaint);
 
                 return sUploadBitmap;
             }
@@ -253,28 +253,28 @@ public class PhotoView extends GLView {
 
             int tilesHorizontal=(fillCenterBmpWidth+StaticValue.TILED_BMP_SLOT_SIZE-1) / StaticValue.TILED_BMP_SLOT_SIZE;
             int tilesVertical=(fillCenterBmpHeight+StaticValue.TILED_BMP_SLOT_SIZE-1) / StaticValue.TILED_BMP_SLOT_SIZE;
-            int width=(int)(boxPos.width*widthInBox+0.5f);
-            int height=(int)(boxPos.height*heightInBox+0.5f);
-            int contentWidth=(int)(StaticValue.TILED_BMP_SLOT_SIZE*boxPos.width*widthInBox/fillCenterBmpWidth+0.5f);
-            int contentHeight=(int)(StaticValue.TILED_BMP_SLOT_SIZE*boxPos.height*heightInBox/fillCenterBmpHeight+0.5f);
+            float width=boxPos.width*widthInBox;
+            float height=boxPos.height*heightInBox;
+            float contentWidth=StaticValue.TILED_BMP_SLOT_SIZE*width/fillCenterBmpWidth;
+            float contentHeight=StaticValue.TILED_BMP_SLOT_SIZE*height/fillCenterBmpHeight;
 
             calcRenderPos();
             for(int x = 0; x < tilesHorizontal; x++) {
-                int left=x*contentWidth;
+                float left=x*contentWidth;
                 if((left+contentWidth)>width){
                     left=width-contentWidth;
                 }
-                left+=renderPos.left-BORDER_SIZE;
+                left+=renderPos.left;
                 for(int y = 0; y < tilesVertical; y++) {
-                    int top=y*contentHeight;
+                    float top=y*contentHeight;
                     if((top+contentHeight)>height){
                         top=height-contentHeight;
                     }
-                    top+=renderPos.top-BORDER_SIZE;
+                    top+=renderPos.top;
 
                     Tile tile = fillCenterTiles[x * tilesVertical + y];
                     if(tile.bmpLoaded){
-                        Log.i(TAG, String.format("draw %d tile %d l:%d t:%d", indexInProject,
+                        Log.i(TAG, String.format("draw %d tile %d l:%f t:%f", indexInProject,
                                 tile.id, left, top));
                         destRect.set(left, top, left+contentWidth, top+contentHeight);
                         canvas.drawTexture(tile, srcRect, destRect);
