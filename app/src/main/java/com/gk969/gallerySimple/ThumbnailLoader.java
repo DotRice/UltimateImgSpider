@@ -306,7 +306,7 @@ public class ThumbnailLoader {
 
         @Override
         public boolean onGLIdle(GLCanvas canvas, boolean renderRequested) {
-            Log.i(TAG, "onGLIdle");
+            //Log.i(TAG, "onGLIdle");
 
             long now = SystemClock.uptimeMillis();
             long dueTime = now + UPLOAD_TILE_LIMIT;
@@ -315,7 +315,7 @@ public class ThumbnailLoader {
                 SlotTexture curSlotTexture = textureDeque.removeFirst();
 
                 if(curSlotTexture.texture != null && !curSlotTexture.isReady) {
-                    Log.i(TAG, "upload slot " + curSlotTexture.imgIndex);
+                    //Log.i(TAG, "upload slot " + curSlotTexture.imgIndex);
                     curSlotTexture.texture.updateContent(canvas);
                     curSlotTexture.isReady = true;
                     mGLRootView.requestRender();
