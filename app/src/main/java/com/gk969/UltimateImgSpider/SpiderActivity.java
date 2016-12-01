@@ -65,8 +65,10 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -1312,8 +1314,19 @@ public class SpiderActivity extends Activity {
                 "Landscape" : "Portrait");
     }
 
-    private long exitTim = 0;
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event){
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER)!=0) {
+            if(event.getAction() == MotionEvent.ACTION_SCROLL) {
+                getCurGLView().onActionScroll(event.getAxisValue(MotionEvent.AXIS_VSCROLL));
+            }
+        }
 
+        return false;
+    }
+
+    private long exitTim = 0;
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.i(TAG, "onKeyDown " + keyCode);
 

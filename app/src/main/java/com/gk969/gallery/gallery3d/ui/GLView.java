@@ -442,6 +442,10 @@ public class GLView {
         mRoot = null;
     }
 
+    public boolean onActionScroll(float scrollValue){
+        return false;
+    }
+
     public boolean onKeyDown(int keyCode, boolean canGiveUpFocus){
         return false;
     }

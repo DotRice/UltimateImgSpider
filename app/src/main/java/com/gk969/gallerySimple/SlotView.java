@@ -111,8 +111,9 @@ public class SlotView extends GLView {
     private float flyAccuracy;
     private float flyVelocity;
     private float flyVelocityRaw;
+    private static final int ACTION_SCROLL_FLY_RATIO=200;
+    private static final int REBOUND_VELOCITY_PARAM = 6;
 
-    private static final float REBOUND_VELOCITY_PARAM = 6;
     private float overScrollGapY = 0;
     private float reboundVelocity = 0;
     private boolean isRebounding;
@@ -231,6 +232,7 @@ public class SlotView extends GLView {
         @Override
         public boolean onScroll(float dx, float dy, float totalX, float totalY) {
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
+
             runOnManuallyScroll.onManuallyScroll(totalY<0);
 
             mGLRootView.lockRenderThread();
@@ -401,6 +403,15 @@ public class SlotView extends GLView {
         }else if(focusedSlotIndex>lastFullSlotInView){
             focusScroll.start(scrollDistance, focusedSlotIndex/slotsPerRow*slotHeightWithGap-viewHeight+slotHeightWithGap);
         }
+    }
+
+    @Override
+    public boolean onActionScroll(float scrollValue){
+        mGLRootView.lockRenderThread();
+        scroll(0-scrollValue*slotHeightWithGap/2);
+        startFly(scrollValue*ACTION_SCROLL_FLY_RATIO);
+        mGLRootView.unlockRenderThread();
+        return false;
     }
 
     @Override

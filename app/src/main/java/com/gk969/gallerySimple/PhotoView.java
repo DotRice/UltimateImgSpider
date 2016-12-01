@@ -588,6 +588,12 @@ public class PhotoView extends GLView {
         return photoCache[curPhotoIndexInCache].indexInProject;
     }
 
+    @Override
+    public boolean onActionScroll(float scrollValue){
+        onKeyDown(scrollValue>0?KeyEvent.KEYCODE_DPAD_LEFT:KeyEvent.KEYCODE_DPAD_RIGHT);
+        return false;
+    }
+
     private void onKeyDown(int keyCode){
         int indexInProject = photoCache[curPhotoIndexInCache].indexInProject;
         switch(keyCode) {
