@@ -319,13 +319,13 @@ public class Utils {
     }
 
     public static String byteSizeToString(long size) {
-        String[] sizeUnitName = new String[]{"GB", "MB", "KB"};
-        int[] sizeUnit = new int[]{1 << 30, 1 << 20, 1 << 10, 1};
+        String[] sizeUnitName = new String[]{"TB", "GB", "MB", "KB"};
+        long[] sizeUnit = new long[]{(long)1 << 40, 1 << 30, 1 << 20, 1 << 10, 1};
 
         for(int i = 0; i < sizeUnitName.length; i++) {
             if(size >= sizeUnit[i]) {
                 size /= sizeUnit[i + 1];
-                float sizeInFloat = (float) size / 1024;
+                double sizeInFloat = (double) size / 1024;
                 return String.format("%.2f%s", sizeInFloat, sizeUnitName[i]);
             }
         }
@@ -338,8 +338,6 @@ public class Utils {
             FileOutputStream fileOut = new FileOutputStream(filePath);
             fileOut.write(str.getBytes());
             fileOut.close();
-        } catch(FileNotFoundException e) {
-            e.printStackTrace();
         } catch(IOException e) {
             e.printStackTrace();
         }
@@ -353,8 +351,6 @@ public class Utils {
             bmp.compress(Bitmap.CompressFormat.JPEG, 90, fileOut);
             fileOut.flush();
             fileOut.close();
-        } catch(FileNotFoundException e) {
-            e.printStackTrace();
         } catch(IOException e) {
             e.printStackTrace();
         }

@@ -17,6 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class StorageUtils {
     private final static String TAG = "StorageUtils";
     private final static int INFO_REFRESH_INTERVAL = 30;
+    private final static int VALID_TOTAL_SIZE_MIN = 128<<20;
 
     private static class StorageDeviceDir {
         public long freeSpace;
@@ -113,7 +114,7 @@ public class StorageUtils {
         mScheduledExecutor.shutdown();
     }
 
-    public static LinkedList<StorageDeviceDir> getStorageInfo() {
+    private static LinkedList<StorageDeviceDir> getStorageInfo() {
         LinkedList<StorageDeviceDir> newStorageDirList = new LinkedList<>();
 
         long startTime = SystemClock.uptimeMillis();
@@ -137,18 +138,20 @@ public class StorageUtils {
                 long totalSpace = stoDir.getTotalSpace();
                 //Log.i(TAG, path + " size:" + (freeSpace >> 20) + "/" + (totalSpace >> 20));
 
-                boolean linkedDirFound = false;
-                for(StorageDeviceDir storageDeviceDir : newStorageDirList) {
-                    if(storageDeviceDir.totalSpace == totalSpace && (Math.abs(storageDeviceDir.freeSpace-freeSpace)<(1<<20))) {
-                        linkedDirFound = true;
-                        if(!storageDeviceDir.pathList.contains(path)) {
-                            storageDeviceDir.pathList.add(path);
+                if(totalSpace>=VALID_TOTAL_SIZE_MIN) {
+                    boolean linkedDirFound = false;
+                    for(StorageDeviceDir storageDeviceDir : newStorageDirList) {
+                        if(storageDeviceDir.totalSpace == totalSpace && (Math.abs(storageDeviceDir.freeSpace - freeSpace) < (1 << 20))) {
+                            linkedDirFound = true;
+                            if(!storageDeviceDir.pathList.contains(path)) {
+                                storageDeviceDir.pathList.add(path);
+                            }
                         }
                     }
-                }
 
-                if(!linkedDirFound) {
-                    newStorageDirList.add(new StorageDeviceDir(freeSpace, totalSpace, path));
+                    if(!linkedDirFound) {
+                        newStorageDirList.add(new StorageDeviceDir(freeSpace, totalSpace, path));
+                    }
                 }
             }
         }

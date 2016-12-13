@@ -10,6 +10,7 @@ import com.gk969.Utils.Utils;
 import com.gk969.gallery.gallery3d.glrenderer.BitmapTexture;
 import com.gk969.gallery.gallery3d.glrenderer.GLCanvas;
 import com.gk969.gallery.gallery3d.glrenderer.StringTexture;
+import com.gk969.gallery.gallery3d.glrenderer.UploadedTexture;
 import com.gk969.gallery.gallery3d.ui.GLRoot;
 import com.gk969.gallery.gallery3d.ui.GLRootView;
 
@@ -17,25 +18,28 @@ import java.util.ArrayDeque;
 
 /*
 Cache Mode:
-*************************
-*                       *
-*      img file         *
-*                       *
-* ********************  *
-* *                  *  *
-* *  texture cache   *  *
-* *                  *  *
-* * ***************  *  *
-* * *             *  *  *
-* * *  visible area  *  *  *
-* * *             *  *  *
-* * ***************  *  *
-* *                  *  *
-* *                  *  *
-* ********************  *
-*                       *
-*                       *
-*************************
+***********************
+*                     *
+*      img file       *
+*                     *
+* ******************* *
+* *                 * *
+* *  texture cache  * *
+* *                 * *
+* * *************** * *
+* * *             * * *
+* * *             * * *
+* * *   visible   * * *
+* * *   window    * * *
+* * *             * * *
+* * *             * * *
+* * *************** * *
+* *                 * *
+* *                 * *
+* ******************* *
+*                     *
+*                     *
+***********************
  */
 
 
@@ -81,7 +85,6 @@ public class ThumbnailLoader {
             textureCache[i] = new SlotTexture();
             textureCache[i].mainBmp = Bitmap.createBitmap(StaticValue.THUMBNAIL_SIZE,
                     StaticValue.THUMBNAIL_SIZE, StaticValue.BITMAP_TYPE);
-            textureCache[i].texture = new BitmapTexture(textureCache[i].mainBmp);
             textureCache[i].imgIndex = i;
             textureCache[i].isReady = false;
             textureCache[i].hasTried = false;
@@ -196,9 +199,8 @@ public class ThumbnailLoader {
         return null;
     }
 
-    public class SlotTexture {
+    public class SlotTexture extends UploadedTexture {
         public Bitmap mainBmp;
-        BitmapTexture texture;
         StringTexture labelName;
         StringTexture labelInfo;
         volatile int imgIndex;
@@ -206,23 +208,30 @@ public class ThumbnailLoader {
         volatile boolean hasTried;
         boolean isLoading;
 
+        @Override
+        protected Bitmap onGetBitmap() {
+            return mainBmp;
+        }
+
+        @Override
+        protected void onFreeBitmap(Bitmap bitmap) {
+
+        }
+
+        @Override
         public void recycle() {
-            if(texture != null) {
-                texture.recycle();
-                texture = null;
+            super.recycle();
+
+            if(labelInfo != null) {
+                labelInfo.recycle();
+                labelInfo = null;
             }
 
-            if(needLabel) {
-                if(labelInfo != null) {
-                    labelInfo.recycle();
-                    labelInfo = null;
-                }
-
-                if(labelName != null) {
-                    labelName.recycle();
-                    labelName = null;
-                }
+            if(labelName != null) {
+                labelName.recycle();
+                labelName = null;
             }
+
             isReady = false;
             hasTried = false;
         }
@@ -314,9 +323,9 @@ public class ThumbnailLoader {
             while (now < dueTime && !textureDeque.isEmpty()) {
                 SlotTexture curSlotTexture = textureDeque.removeFirst();
 
-                if(curSlotTexture.texture != null && !curSlotTexture.isReady) {
+                if(!curSlotTexture.isReady) {
                     //Log.i(TAG, "upload slot " + curSlotTexture.imgIndex);
-                    curSlotTexture.texture.updateContent(canvas);
+                    curSlotTexture.updateContent(canvas);
                     curSlotTexture.isReady = true;
                     mGLRootView.requestRender();
                 }
@@ -383,7 +392,6 @@ public class ThumbnailLoader {
 
                 bmpOpts = new BitmapFactory.Options();
                 bmpOpts.inPreferredConfig = StaticValue.BITMAP_TYPE;
-                bmpOpts.inSampleSize = 1;
 
                 setDaemon(true);
                 start();
@@ -417,8 +425,6 @@ public class ThumbnailLoader {
                                 mGLRootView.lockRenderThread();
                                 if(bmp != null) {
                                     if(imgIndex == slot.imgIndex) {
-                                        //Log.i(TAG, "create texture " + imgIndex);
-                                        slot.texture = new BitmapTexture(bmp);
                                         uploader.add(slot);
                                     }
                                 }

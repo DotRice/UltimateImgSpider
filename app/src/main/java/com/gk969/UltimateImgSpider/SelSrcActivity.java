@@ -56,7 +56,9 @@ import com.gk969.Utils.Utils;
 
 public class SelSrcActivity extends Activity {
     private final String TAG = "SelSrcActivity";
-    
+
+    private static final String HOME_URL="file:///android_asset/home.html";
+
     private WebView browser;
     private ProgressBar pbWebView;
     private Bitmap browserIcon;
@@ -219,7 +221,7 @@ public class SelSrcActivity extends Activity {
         browser.requestFocus();
 
         if(urlToOpen == null) {
-            urlToOpen = ParaConfig.getHomeURL(appCtx);
+            urlToOpen = HOME_URL;
         }
 
         browserLoadUrl(urlToOpen);
@@ -381,7 +383,7 @@ public class SelSrcActivity extends Activity {
                             break;
                         
                         case R.id.buttonHome:
-                            browserLoadUrl(ParaConfig.getHomeURL(appCtx));
+                            browserLoadUrl(HOME_URL);
                             break;
                         
                         case R.id.buttonMenu:
@@ -588,7 +590,7 @@ public class SelSrcActivity extends Activity {
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_GO);
                     } else if(url.isEmpty()) {
                         setUrlCmd(URL_CANCEL);
-                        btnSelSearchEngine.setImageResource(ParaConfig.getSearchEngineIcon(appCtx));
+                        btnSelSearchEngine.setImageResource(R.drawable.site);
                         etUrl.setImeOptions(EditorInfo.IME_ACTION_NONE);
                     } else {
                         setUrlCmd(URL_SEARCH);

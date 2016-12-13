@@ -241,7 +241,7 @@
     <string name="image_info">图片数量</string>
     <string name="image_processed">已扫描图片数</string>
     <string name="image_total">图片总数</string>
-    <string name="image_total_size">项目图片总大小</string>
+    <string name="image_total_size">项目图片大小</string>
     <string name="image_tree_height">图片树高度</string>
     <string name="inDeletingTips">删除中，请稍候...</string>
     <string name="inDeletingToast">正在删除当前项目，请稍候...</string>
@@ -320,14 +320,10 @@
     <string name="uneffectiveNetworkPrompt">网络连接已断开，请检查网络设置！</string>
     <string name="web_url">网址</string>
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
+        
     </style>
     <style name="AppTheme" parent="AppBaseTheme">
-        <!--<item name="android:actionBarStyle">@style/MyActionBar</item>-->
+        
     </style>
     <style name="ProgressBar_Mini" parent="@android:style/Widget.Holo.Light.ProgressBar.Horizontal">
         <item name="android:maxHeight">2dp</item>

@@ -408,7 +408,7 @@ public class SlotView extends GLView {
     @Override
     public boolean onActionScroll(float scrollValue){
         mGLRootView.lockRenderThread();
-        scroll(0-scrollValue*slotHeightWithGap/2);
+        scroll(0-scrollValue*slotHeightWithGap/2, false);
         startFly(scrollValue*ACTION_SCROLL_FLY_RATIO);
         mGLRootView.unlockRenderThread();
         return false;
@@ -468,7 +468,9 @@ public class SlotView extends GLView {
             }
 
             Log.i(TAG, "focusedSlotIndex "+focusedSlotIndex);
-            focusScrollIfNeed();
+            if(focusedSlotIndex!=StaticValue.INDEX_INVALID) {
+                focusScrollIfNeed();
+            }
             mGLRootView.requestRender();
         }
 
@@ -598,7 +600,11 @@ public class SlotView extends GLView {
     }
 
     private void scroll(float dy) {
-        scroll(dy, getScrollDistanceMax());
+        scroll(dy, getScrollDistanceMax(), true);
+    }
+
+    private void scroll(float dy, boolean canOverScroll) {
+        scroll(dy, getScrollDistanceMax(), canOverScroll);
     }
 
     public void scrollAbs(int distance) {
@@ -613,11 +619,13 @@ public class SlotView extends GLView {
         scrollSlotRow();
     }
 
-    private void scroll(float dy, int scrollMax) {
+    private void scroll(float dy, int scrollMax, boolean canOverScroll) {
         scrollDistance += dy;
         if((scrollDistance < 0) || (scrollDistance > scrollMax)) {
             scrollDistance = (scrollDistance < 0) ? 0 : scrollMax;
-            overScrollGapY -= dy / (Math.abs(overScrollGapY) + 2) / 1.5f;
+            if(canOverScroll) {
+                overScrollGapY -= dy / (Math.abs(overScrollGapY) + 2) / 1.5f;
+            }
             //Log.i(TAG, "overScrollGapY " + overScrollGapY);
         } else if(overScrollGapY != 0) {
             scrollDistance = (overScrollGapY > 0) ? 0 : scrollMax;
@@ -664,7 +672,7 @@ public class SlotView extends GLView {
                     startRebound();
                 }
             } else {
-                scroll(0 - (curFlyVelocity + flyVelocity) * interval / 2 / 1000, scrollMax);
+                scroll(0 - (curFlyVelocity + flyVelocity) * interval / 2 / 1000, scrollMax, true);
                 flyVelocity = curFlyVelocity;
             }
         }
@@ -742,7 +750,7 @@ public class SlotView extends GLView {
                     int slotTop = slotOffsetTop + topIndex * overScrollHeight;
 
                     if(slotTexture.isReady) {
-                        slotTexture.texture.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
+                        slotTexture.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
                     } else {
                         canvas.fillRect(slotLeft, slotTop, slotSize, slotSize, SLOT_BACKGROUND_COLOR);
                     }

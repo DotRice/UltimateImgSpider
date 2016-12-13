@@ -22,17 +22,15 @@ import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 
 public class ParaConfigActivity extends Activity {
-    private String curUrl;
     private String TAG = "ParaConfigActivity";
     
     private WebView wvParaConfig;
-    private WebSettings wsParaConfig;
     
     private Handler mHandler = new Handler();
 
     private Context appCtx;
-    
-    final static String assetParaUrl = "file:///android_asset/paraConfig.html";
+
+    private final static String PARA_CONFIG_PAGE = "file:///android_asset/paraConfig.html";
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,15 +40,8 @@ public class ParaConfigActivity extends Activity {
         appCtx = getApplicationContext();
 
         Log.i(TAG, "onCreate");
-        
-        curUrl = getIntent().getExtras().getString(
-                StaticValue.BUNDLE_KEY_SOURCE_URL);
-        
-        if(curUrl != null) {
-            Log.i(TAG, "curUrl:" + curUrl);
-            webViewInit();
-        }
 
+        webViewInit();
     }
     
     @Override
@@ -84,8 +75,8 @@ public class ParaConfigActivity extends Activity {
                 return true;
             }
         });
-        
-        wsParaConfig = wvParaConfig.getSettings();
+
+        WebSettings wsParaConfig = wvParaConfig.getSettings();
         
         // 使能javascript
         wsParaConfig.setJavaScriptEnabled(true);
@@ -93,30 +84,8 @@ public class ParaConfigActivity extends Activity {
         
         wvParaConfig.addJavascriptInterface(this, "paraConfig");
         
-        wvParaConfig.loadUrl(assetParaUrl);
+        wvParaConfig.loadUrl(PARA_CONFIG_PAGE);
         
-    }
-    
-    @JavascriptInterface
-    public void setHomeUrl(String URL) {
-        Log.i(TAG, "setHomeUrl");
-        
-        if(!URL.isEmpty()) {
-            if(URL.equals("curUrl")) {
-                URL = curUrl;
-            }
-            
-            if(URLUtil.isNetworkUrl(URL)) {
-                ParaConfig.setHomeURL(appCtx, URL);
-                
-                Toast.makeText(this, "已设置主页:" + URL, Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-    
-    @JavascriptInterface
-    public String getHomeUrl() {
-        return ParaConfig.getHomeURL(appCtx);
     }
     
     @JavascriptInterface

@@ -506,21 +506,13 @@ public class SpiderService extends Service {
     private final static int MAX_SIZE_PER_TITLE = 255;
 
     private native String stringFromJNI(String srcStr);
-
     private native String jniSpiderInit(long[] imgPara, long[] pagePara);
-
     private native void jniSetSrcPageUrl(String pageUrl, byte[] srcPageUrlMd5, long[] pagePara);
-
     private native int jniAddUrl(String url, byte[] md5, int type, long[] param);
-
     private native String jniFindNextPageUrl(long[] param);
-
     private native void jniOnImgUrlProcessed(int lastImgUrlAddr, long[] param);
-
     private native String jniFindNextImgUrl(long[] param);
-
     private native void jniSaveImgStorageInfo(int imgUrlAddr, int PageUrlAddr, long[] imgParam, int imgFileSize);
-
     private native void jniSavePageTitle(String curPageTitle);
 
     private Utils.ReadWaitLock pageProcessLock = new Utils.ReadWaitLock();
@@ -539,8 +531,8 @@ public class SpiderService extends Service {
         private static final String CACHE_MARK = ".cache";
 
         private final static int IMG_VALID_FILE_MIN = 512 * 1024;
-        private final static int IMG_VALID_WIDTH_MIN = 200;
-        private final static int IMG_VALID_HEIGHT_MIN = 200;
+        private final static int IMG_VALID_WIDTH_MIN = 300;
+        private final static int IMG_VALID_HEIGHT_MIN = 300;
 
         private final static int BASE_NUM_TO_SAVE_PROJECT_DATA = 50;
 
