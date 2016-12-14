@@ -384,6 +384,7 @@ public class ThumbnailLoader {
             private int index;
             volatile boolean isWorking;
 
+            private byte[] bitmapInTempStorage=new byte[16*1024];
             private BitmapFactory.Options bmpOpts;
 
             ThumbnailLoaderThread(int i) {
@@ -392,6 +393,7 @@ public class ThumbnailLoader {
 
                 bmpOpts = new BitmapFactory.Options();
                 bmpOpts.inPreferredConfig = StaticValue.BITMAP_TYPE;
+                bmpOpts.inTempStorage=bitmapInTempStorage;
 
                 setDaemon(true);
                 start();
