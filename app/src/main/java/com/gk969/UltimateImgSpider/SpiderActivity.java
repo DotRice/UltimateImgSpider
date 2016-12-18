@@ -501,7 +501,7 @@ public class SpiderActivity extends Activity {
     }
 
     private void backToAlbumView() {
-        slotView.setCenterSlotIndex(photoView.getCurPhotoIndexInProject());
+        slotView.letSlotInView(photoView.getCurPhotoIndexInProject());
         photoView.onDestroy();
         setView(ALBUM_VIEW);
     }
@@ -521,7 +521,7 @@ public class SpiderActivity extends Activity {
             }
         });
 
-        mThumbnailLoader.setHelper(albumSetLoaderHelper, spiderProject.projectList.size());
+        mThumbnailLoader.setHelper(albumSetLoaderHelper, spiderProject.projectList.size(), 0);
         displayProjectIndex = SpiderProject.INVALID_INDEX;
         setView(ALBUM_SET_VIEW);
     }

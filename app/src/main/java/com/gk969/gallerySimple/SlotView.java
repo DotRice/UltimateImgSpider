@@ -42,11 +42,11 @@ public class SlotView extends GLView {
     private static final int SLOT_PER_ROW_PORTRAIT = 3;
     private static final int SLOT_PER_ROW_LANDSCAPE = 5;
 
-    private static final float LABEL_HEIGHT_RATIO = 0.12f;
+    static final float LABEL_HEIGHT_RATIO = 0.12f;
     private static final int LABEL_BACKGROUND_COLOR = 0x80000000;
 
-    private static final float LABEL_TEXT_HEIGHT_RATIO = 0.7f;
-    private static final float LABEL_NAME_LIMIT_RATIO = 0.7f;
+    static final float LABEL_TEXT_HEIGHT_RATIO = 0.7f;
+    static final float LABEL_NAME_WIDTH_RATIO = 0.7f;
     private static final float LABEL_PADDING_RATIO = 0.02f;
 
     private static final int SCROLL_BAR_TAP_WIDTH_IN_DP = 30;
@@ -81,9 +81,8 @@ public class SlotView extends GLView {
     private int slotGap;
 
     private int labelHeight;
-    private int labelTextSize;
-    private float labelTextHeightRatio=0;
-    private int labelTextHeight=0;
+    private int labelTextHeight;
+    private int labelNameWidth;
     private int labelTextTop;
     private int labelPadding;
 
@@ -95,7 +94,7 @@ public class SlotView extends GLView {
     private int scrollDistanceOverRow;
 
     private int focusedSlotIndex = StaticValue.INDEX_INVALID;
-    private int centerSlotIndex = StaticValue.INDEX_INVALID;
+    private int slotShouldInView = StaticValue.INDEX_INVALID;
 
     private ThumbnailLoader mThumbnailLoader;
     private GLRootView mGLRootView;
@@ -380,7 +379,7 @@ public class SlotView extends GLView {
         return slotHeightWithGap-topLineInvisibleHeight;
     }
 
-    private boolean isFocusOnVisibleAreaSlot(){
+    private boolean isSlotInView(int index){
         int firstSlotInView=scrollDistance/slotHeightWithGap*slotsPerRow;
 
         int topNotFullLineVisibleHeight=getTopNotFullLineVisibleHeight();
@@ -389,7 +388,7 @@ public class SlotView extends GLView {
             linesInView++;
         }
 
-        return focusedSlotIndex>=firstSlotInView && focusedSlotIndex<(firstSlotInView+linesInView*slotsPerRow);
+        return index>=firstSlotInView && index<(firstSlotInView+linesInView*slotsPerRow);
     }
 
     private void focusScrollIfNeed(){
@@ -422,11 +421,11 @@ public class SlotView extends GLView {
         boolean gotoNewLine=false;
 
         if(keyCode==KeyEvent.KEYCODE_ENTER) {
-            if(isFocusOnVisibleAreaSlot()) {
+            if(isSlotInView(focusedSlotIndex)) {
                 runOnClick.onClick(focusedSlotIndex);
             }
         }else {
-            if(!isFocusOnVisibleAreaSlot()&&!focusScroll.isScrolling){
+            if(!isSlotInView(focusedSlotIndex)&&!focusScroll.isScrolling){
                 if(totalSlotNum==0){
                     processed=false;
                 }else{
@@ -506,9 +505,7 @@ public class SlotView extends GLView {
         slotSize = (width - (slotsPerRow - 1) * slotGap) / slotsPerRow;
 
         labelHeight = (int) (slotSize * LABEL_HEIGHT_RATIO);
-        labelTextSize = (int) (labelHeight * LABEL_TEXT_HEIGHT_RATIO);
-        labelTextHeight=(int)(labelTextHeightRatio*labelTextSize);
-        labelTextTop = (labelHeight - labelTextSize) / 2;
+        labelTextTop = (int)(labelHeight - labelHeight*LABEL_TEXT_HEIGHT_RATIO) / 2;
         labelPadding = (int) (slotSize * LABEL_PADDING_RATIO);
 
         viewWidth = width;
@@ -517,22 +514,24 @@ public class SlotView extends GLView {
         slotHeightWithGap = slotSize + slotGap;
         maxSlotRowsInView = viewHeight / slotHeightWithGap + 2;
         maxSlotRowsInOverScrollView = viewHeight / slotHeightWithGap + 1;
-        mThumbnailLoader.initAboutView(maxSlotRowsInView * slotsPerRow, labelTextSize, (int) (slotSize * LABEL_NAME_LIMIT_RATIO));
+        mThumbnailLoader.initAboutView(maxSlotRowsInView * slotsPerRow);
 
-        if(centerSlotIndex!=StaticValue.INDEX_INVALID){
-            scrollAbs(centerSlotIndex/slotsPerRow*slotHeightWithGap-(viewHeight-slotHeightWithGap)/2);
-            if(focusedSlotIndex!=StaticValue.INDEX_INVALID){
-                focusedSlotIndex=centerSlotIndex;
+        if(slotShouldInView!=StaticValue.INDEX_INVALID){
+            if(!isSlotInView(slotShouldInView)) {
+                scrollAbs(slotShouldInView / slotsPerRow * slotHeightWithGap - (viewHeight - slotHeightWithGap) / 2);
             }
-            centerSlotIndex=StaticValue.INDEX_INVALID;
+            if(focusedSlotIndex!=StaticValue.INDEX_INVALID){
+                focusedSlotIndex=slotShouldInView;
+            }
+            slotShouldInView=StaticValue.INDEX_INVALID;
         }else if((scrollDistance != 0) && (prevViewHeight != height)) {
             scrollAbs(scrollDistance / prevSlotHeightWithGap * prevSlotsPerRow / slotsPerRow
                     * slotHeightWithGap + scrollDistance % prevSlotHeightWithGap);
         }
     }
 
-    public void setCenterSlotIndex(int index){
-        centerSlotIndex=index;
+    public void letSlotInView(int index){
+        slotShouldInView=index;
     }
 
     private void stopAnimation() {
@@ -546,10 +545,8 @@ public class SlotView extends GLView {
     }
 
     public void onChangeView(){
-        mGLRootView.lockRenderThread();
         focusedSlotIndex=StaticValue.INDEX_INVALID;
         stopAnimation();
-        mGLRootView.unlockRenderThread();
     }
 
     private float calculateDecelerate(float curValue, float rawValue) {
@@ -694,13 +691,6 @@ public class SlotView extends GLView {
         }
     }
 
-    private void getLabelTextHeightRatio(StringTexture stringTexture){
-        if(labelTextHeightRatio==0){
-            labelTextHeightRatio=stringTexture.getHeight()/(float)labelTextSize;
-            labelTextHeight=(int)(labelTextHeightRatio*labelTextSize);
-        }
-    }
-
     @Override
     protected void render(GLCanvas canvas) {
         canvas.save(GLCanvas.SAVE_FLAG_MATRIX);
@@ -749,7 +739,7 @@ public class SlotView extends GLView {
                     int slotLeft = leftIndex * slotHeightWithGap;
                     int slotTop = slotOffsetTop + topIndex * overScrollHeight;
 
-                    if(slotTexture.isReady) {
+                    if(slotTexture.isLoaded()) {
                         slotTexture.draw(canvas, slotLeft, slotTop, slotSize, slotSize);
                     } else {
                         canvas.fillRect(slotLeft, slotTop, slotSize, slotSize, SLOT_BACKGROUND_COLOR);
@@ -759,19 +749,25 @@ public class SlotView extends GLView {
                         canvas.fillRect(slotLeft, slotTop, slotSize, slotSize, SLOT_FOCUS_COLOR);
                     }
 
+                    float labelScale=(float)slotSize/StaticValue.THUMBNAIL_SIZE;
                     int labelY = slotTop + slotSize - labelHeight;
-                    if(slotTexture.labelName != null) {
-                        getLabelTextHeightRatio(slotTexture.labelName);
-
+                    if(slotTexture.labelName.isLoaded()) {
+                        int labelNameWidth=(int)(slotTexture.labelName.getWidth()*labelScale);
+                        int labelNameHeight=(int)(slotTexture.labelName.getHeight()*labelScale);
                         canvas.fillRect(slotLeft, labelY, slotSize, labelHeight, LABEL_BACKGROUND_COLOR);
                         slotTexture.labelName.draw(canvas, slotLeft + labelPadding, labelY + labelTextTop,
-                                slotTexture.labelName.getWidth()*labelTextHeight/slotTexture.labelName.getHeight(), labelTextHeight);
+                                labelNameWidth, labelNameHeight);
                     }
 
                     if(slotTexture.labelInfo != null) {
-                        slotTexture.labelInfo.draw(canvas, slotLeft + slotSize - slotTexture.labelInfo.getWidth() - labelPadding,
-                                labelY + labelTextTop,
-                                slotTexture.labelInfo.getWidth()*labelTextHeight/slotTexture.labelInfo.getHeight(), labelTextHeight);
+                        int labelInfoWidth=(int)(slotTexture.labelInfo.getWidth()*labelScale);
+                        int labelInfoHeight=(int)(slotTexture.labelInfo.getHeight()*labelScale);
+
+                        //Log.i(TAG, String.format("slotSize %s labelHeight %d labelInfoHeight %d",
+                        //        slotSize, labelHeight, labelInfoHeight));
+
+                        slotTexture.labelInfo.draw(canvas, slotLeft + slotSize - labelInfoWidth - labelPadding,
+                                labelY + labelTextTop, labelInfoWidth, labelInfoHeight);
                     }
                 }
             }
