@@ -88,6 +88,8 @@ public class ThumbnailLoader {
 
     private volatile boolean needLabel;
 
+    private boolean isViewStop;
+
 
     public ThumbnailLoader(GLRootView glRoot, ThumbnailLoaderHelper helper) {
         cacheSize = StaticValue.getThumbnailCacheSize();
@@ -208,6 +210,9 @@ public class ThumbnailLoader {
         } else {
             mThumbnailLoaderThreadPool.wakeup(false);
         }
+
+        isViewStop=false;
+        mGLRootView.addOnGLIdleListener(uploader);
     }
 
     SlotTexture getTexture(int index) {
@@ -309,6 +314,15 @@ public class ThumbnailLoader {
         }
     }
 
+    public void onViewStart(){
+        mGLRootView.requestLayoutContentPane();
+    }
+
+    public void onViewStop(){
+        mGLRootView.lockRenderThread();
+        isViewStop = true;
+        mGLRootView.unlockRenderThread();
+    }
 
     public void onViewScrollOverLine(int index) {
         refreshCacheOffset(index, false);
@@ -353,7 +367,9 @@ public class ThumbnailLoader {
             scrollStep = step;
             cacheOffset = newCacheOffset;
 
-            mThumbnailLoaderThreadPool.wakeup(false);
+            if(!isViewStop) {
+                mThumbnailLoaderThreadPool.wakeup(false);
+            }
         }
 
         visibleAreaOffset = firstSlotInView;
@@ -390,27 +406,29 @@ public class ThumbnailLoader {
         @Override
         public boolean onGLIdle(GLCanvas canvas, boolean renderRequested) {
             //Log.i(TAG, "onGLIdle");
-
-            long now = SystemClock.uptimeMillis();
-            long dueTime = now + UPLOAD_TILE_LIMIT;
-            //Log.i(TAG, "onGLIdle");
-            while(now < dueTime && !textureDeque.isEmpty()) {
-                ReusableUploadedTexture texture = textureDeque.removeFirst();
-                if(texture.contentLoaded) {
-                    /*
-                    if(texture instanceof SlotTexture) {
-                        Log.i(TAG, "deque " + textureDeque.size() + " updateContent SlotTexture " + ((SlotTexture) texture).imgIndex);
-                    } else if(texture instanceof LabelNameTexture) {
-                        Log.i(TAG, "deque " + textureDeque.size() + " updateContent LabelNameTexture " + ((LabelNameTexture) texture).text);
+            if(isViewStop){
+                isQueued=false;
+            }else {
+                long now = SystemClock.uptimeMillis();
+                long dueTime = now + UPLOAD_TILE_LIMIT;
+                //Log.i(TAG, "onGLIdle");
+                while(now < dueTime && !textureDeque.isEmpty()) {
+                    ReusableUploadedTexture texture = textureDeque.removeFirst();
+                    if(texture.contentLoaded) {
+                        /*
+                        if(texture instanceof SlotTexture) {
+                            Log.i(TAG, "deque " + textureDeque.size() + " updateContent SlotTexture " + ((SlotTexture) texture).imgIndex);
+                        } else if(texture instanceof LabelNameTexture) {
+                            Log.i(TAG, "deque " + textureDeque.size() + " updateContent LabelNameTexture " + ((LabelNameTexture) texture).text);
+                        }
+                        */
+                        texture.updateContent(canvas);
+                        mGLRootView.requestRender();
                     }
-                    */
-
-                    texture.updateContent(canvas);
-                    mGLRootView.requestRender();
+                    now = SystemClock.uptimeMillis();
                 }
-                now = SystemClock.uptimeMillis();
+                isQueued = !textureDeque.isEmpty();
             }
-            isQueued = !textureDeque.isEmpty();
             return isQueued;
         }
     }
@@ -481,8 +499,8 @@ public class ThumbnailLoader {
 
             private boolean isOffsetChangedInLoading() {
                 int step = scrollStep;
-                int visibleOffset = visibleAreaOffset;
-                int loaderStart = (step == 1) ? visibleOffset : (visibleOffset + imgNumInView - 1);
+                int visibleAreaOffset = ThumbnailLoader.this.visibleAreaOffset;
+                int loaderStart = (step == 1) ? visibleAreaOffset : (visibleAreaOffset + imgNumInView - 1);
                 int imgIndexForLoader = loaderStart % cacheSize;
                 for(int i = 0; i < cacheSize; i++) {
                     if(!isRunning) {
@@ -508,8 +526,8 @@ public class ThumbnailLoader {
                                 Bitmap bmp = loaderHelper.getThumbnailByIndex(imgIndex, bmpOpts);
                                 mGLRootView.lockRenderThread();
 
-                                bmpValid = imgIndex == slot.imgIndex && !needRestart;
-                                //Log.i(TAG, "imgIndex " + imgIndex+" "+slot.imgIndex+" "+"needRestart "+needRestart+" "+imgIndex);
+                                bmpValid = imgIndex == slot.imgIndex && !needRestart && !isViewStop;
+                                //Log.i(TAG, "loaded imgIndex " + imgIndex+" "+slot.imgIndex+" i "+i);
 
                                 if(bmpValid) {
                                     if(bmp != null) {
@@ -558,7 +576,7 @@ public class ThumbnailLoader {
                     imgIndexForLoader = getNextIndexInCache(imgIndexForLoader, step);
                 }
 
-                return false;
+                return visibleAreaOffset != ThumbnailLoader.this.visibleAreaOffset;
             }
 
             void wakeup(boolean needRestart) {

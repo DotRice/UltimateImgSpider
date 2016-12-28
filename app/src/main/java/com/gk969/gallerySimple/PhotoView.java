@@ -394,8 +394,8 @@ public class PhotoView extends GLView {
                         bmpOptions.inBitmap = tile.bmp;
                         Bitmap bmp = regionDecoder.decodeRegion(tileRect, bmpOptions);
 
-                        Log.i(TAG, String.format("load %d %d raw size w:%d h:%d rect t:%d l:%d b:%d r:%d",
-                                indexInProject, tile.id, rawWidth, rawHeight, tileRect.top, tileRect.left, tileRect.bottom, tileRect.right));
+                        //Log.i(TAG, String.format("load %d %d raw size w:%d h:%d rect t:%d l:%d b:%d r:%d",
+                        //        indexInProject, tile.id, rawWidth, rawHeight, tileRect.top, tileRect.left, tileRect.bottom, tileRect.right));
                         if(bmp != null) {
                             //Log.i(TAG, "success");
                             tile.bmpLoaded = true;

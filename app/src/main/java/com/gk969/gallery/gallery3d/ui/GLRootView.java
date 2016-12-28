@@ -320,7 +320,7 @@ public class GLRootView extends GLSurfaceView
         }
         GL11 gl = (GL11) gl1;
         Utils.assertTrue(mGL == gl);
-
+        requestLayoutContentPane();
         mCanvas.setSize(width, height);
     }
 

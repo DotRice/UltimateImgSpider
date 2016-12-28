@@ -47,11 +47,11 @@ ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:13:5-67
 application
 ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:15:5-81:19
 MERGED from [com.android.support:support-v4:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-v4\24.2.1\AndroidManifest.xml:25:5-20
-MERGED from [com.android.support:support-compat:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.1\AndroidManifest.xml:25:5-20
-MERGED from [com.android.support:support-media-compat:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.1\AndroidManifest.xml:25:5-20
-MERGED from [com.android.support:support-core-utils:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.1\AndroidManifest.xml:25:5-20
-MERGED from [com.android.support:support-core-ui:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.1\AndroidManifest.xml:25:5-20
 MERGED from [com.android.support:support-fragment:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-fragment\24.2.1\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-media-compat:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.1\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-core-ui:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.1\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-core-utils:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.1\AndroidManifest.xml:25:5-20
+MERGED from [com.android.support:support-compat:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.1\AndroidManifest.xml:25:5-20
 MERGED from [com.squareup.leakcanary:leakcanary-android:1.4] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.squareup.leakcanary\leakcanary-android\1.4\AndroidManifest.xml:28:5-57:19
 	android:label
 		ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:20:9-41
@@ -138,11 +138,11 @@ ADDED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml:76:9-80
 uses-sdk
 INJECTED from D:\android\UltimateImgSpider\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 MERGED from [com.android.support:support-v4:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-v4\24.2.1\AndroidManifest.xml:21:5-23:54
-MERGED from [com.android.support:support-compat:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.1\AndroidManifest.xml:21:5-23:58
-MERGED from [com.android.support:support-media-compat:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.1\AndroidManifest.xml:21:5-23:63
-MERGED from [com.android.support:support-core-utils:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.1\AndroidManifest.xml:21:5-23:61
-MERGED from [com.android.support:support-core-ui:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.1\AndroidManifest.xml:21:5-23:58
 MERGED from [com.android.support:support-fragment:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-fragment\24.2.1\AndroidManifest.xml:21:5-23:60
+MERGED from [com.android.support:support-media-compat:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.1\AndroidManifest.xml:21:5-23:63
+MERGED from [com.android.support:support-core-ui:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.1\AndroidManifest.xml:21:5-23:58
+MERGED from [com.android.support:support-core-utils:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.1\AndroidManifest.xml:21:5-23:61
+MERGED from [com.android.support:support-compat:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.1\AndroidManifest.xml:21:5-23:58
 MERGED from [com.squareup.leakcanary:leakcanary-android:1.4] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.squareup.leakcanary\leakcanary-android\1.4\AndroidManifest.xml:20:5-22:41
 	tools:overrideLibrary
 		ADDED from [com.android.support:support-v4:24.2.1] D:\android\UltimateImgSpider\app\build\intermediates\exploded-aar\com.android.support\support-v4\24.2.1\AndroidManifest.xml:23:9-51

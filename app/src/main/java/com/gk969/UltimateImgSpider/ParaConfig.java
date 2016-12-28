@@ -67,7 +67,7 @@ class ParaConfig {
     
     public static boolean isSpiderGoNeedConfirm(Context ctx) {
         return ctx.getSharedPreferences(SPMAIN_NAME, 0).getBoolean(
-                SPIDERGO_NOT_CONFIRM, false);
+                SPIDERGO_NOT_CONFIRM, true);
     }
 
     public static void setUserAgent(Context ctx, String ua) {

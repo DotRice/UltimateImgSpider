@@ -106,34 +106,26 @@ public class WatchdogService extends Service {
     }
 
     private void storeProjectData(final boolean onStop) {
-        singleThreadPool.execute(new Runnable() {
-            @Override
-            public void run() {
-                String dataFileName = DATA_FILE[saveDataBackupIndex];
-                String hashDataName = DATA_HASH_FILE[saveDataBackupIndex];
+        singleThreadPool.execute(() -> {
+            String dataFileName = DATA_FILE[saveDataBackupIndex];
+            String hashDataName = DATA_HASH_FILE[saveDataBackupIndex];
 
-                saveDataBackupIndex = (saveDataBackupIndex + 1) % DATA_FILE.length;
+            saveDataBackupIndex = (saveDataBackupIndex + 1) % DATA_FILE.length;
 
-                String dataFileFullPath = dataDirPath + dataFileName;
-                long time = SystemClock.uptimeMillis();
-                jniStoreProjectData(dataFileFullPath);
-                Log.i(TAG, "jniStoreProjectData " + dataFileName + " time " + (SystemClock.uptimeMillis() - time));
+            String dataFileFullPath = dataDirPath + dataFileName;
+            long time = SystemClock.uptimeMillis();
+            jniStoreProjectData(dataFileFullPath);
+            Log.i(TAG, "jniStoreProjectData " + dataFileName + " time " + (SystemClock.uptimeMillis() - time));
 
-                time = SystemClock.uptimeMillis();
-                String md5String = Utils.getFileMD5String(dataFileFullPath);
-                Log.i(TAG, "getFileMD5String " + hashDataName + " time " + (SystemClock.uptimeMillis() - time));
-                Utils.stringToFile(md5String, dataDirPath + hashDataName);
+            time = SystemClock.uptimeMillis();
+            String md5String = Utils.getFileMD5String(dataFileFullPath);
+            Log.i(TAG, "getFileMD5String " + hashDataName + " time " + (SystemClock.uptimeMillis() - time));
+            Utils.stringToFile(md5String, dataDirPath + hashDataName);
 
-                if(onStop) {
-                    stopSelf();
-                } else {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            projectDataSaved();
-                        }
-                    });
-                }
+            if(onStop) {
+                stopSelf();
+            } else {
+                mHandler.post(() -> projectDataSaved());
             }
         });
     }
@@ -267,30 +259,17 @@ public class WatchdogService extends Service {
 
         switch(cmd) {
             case StaticValue.CMD_START: {
-                singleThreadPool.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        tryToRestoreProjectData(path);
+                singleThreadPool.execute(() -> {
+                    tryToRestoreProjectData(path);
 
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                projectPathRecved();
-                            }
-                        });
-                    }
+                    mHandler.post(() -> projectPathRecved());
                 });
 
                 break;
             }
 
             case StaticValue.CMD_STOP_STORE: {
-                singleThreadPool.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        storeProjectData(true);
-                    }
-                });
+                singleThreadPool.execute(() -> storeProjectData(true));
                 break;
             }
 

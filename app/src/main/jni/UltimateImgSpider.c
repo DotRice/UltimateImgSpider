@@ -246,6 +246,8 @@ void *addrRelativeToAbs(RelativeAddr relativeAddr)
         if(offset < pool->idleMemPtr)
         {
             return (void *) (pool->mem + offset);
+        }else{
+            LOGI("addrRelativeToAbs offset %08X pool->idleMemPtr %08X", offset, pool->idleMemPtr);
         }
     }
 
@@ -409,6 +411,28 @@ void *mallocFromPool(JNIEnv *env, u32 size, RelativeAddr *direction)
 }
 
 
+void printSpiderPara(){
+    LOGI("spiderPara->pageUrlTree.head      %08X", spiderPara->pageUrlTree.head      );
+    LOGI("spiderPara->pageUrlTree.tail      %08X", spiderPara->pageUrlTree.tail      );
+    LOGI("spiderPara->pageUrlTree.root      %08X", spiderPara->pageUrlTree.root      );
+    LOGI("spiderPara->pageUrlTree.processed %08X", spiderPara->pageUrlTree.processed );
+    LOGI("spiderPara->pageUrlTree.len       %08X", spiderPara->pageUrlTree.len       );
+    LOGI("spiderPara->pageUrlTree.height    %08X", spiderPara->pageUrlTree.height    );
+    LOGI("spiderPara->imgUrlTree.head       %08X", spiderPara->imgUrlTree.head       );
+    LOGI("spiderPara->imgUrlTree.tail       %08X", spiderPara->imgUrlTree.tail       );
+    LOGI("spiderPara->imgUrlTree.root       %08X", spiderPara->imgUrlTree.root       );
+    LOGI("spiderPara->imgUrlTree.processed  %08X", spiderPara->imgUrlTree.processed  );
+    LOGI("spiderPara->imgUrlTree.len        %08X", spiderPara->imgUrlTree.len        );
+    LOGI("spiderPara->imgUrlTree.height     %08X", spiderPara->imgUrlTree.height     );
+    LOGI("spiderPara->urlPoolNum            %08X", spiderPara->urlPoolNum            );
+    LOGI("spiderPara->storageImgList.head   %08X", spiderPara->storageImgList.head   );
+    LOGI("spiderPara->storageImgList.tail   %08X", spiderPara->storageImgList.tail   );
+    LOGI("spiderPara->storageImgList.num    %08X", spiderPara->storageImgList.num    );
+    LOGI("spiderPara->imgTotalSize          %08X", spiderPara->imgTotalSize          );
+    LOGI("spiderPara->curPageNode           %08X", spiderPara->curPageNode           );
+    LOGI("spiderPara->srcPageNode           %08X", spiderPara->srcPageNode           );
+}
+
 jboolean spiderParaInit(JNIEnv *env, u64 *imgParam, u64 *pageParam)
 {
     AshmBlock *ashm = spiderGetAshmemFromWatchdog(env, SPIDER_PARA_NAME, sizeof(t_spiderPara));
@@ -443,6 +467,8 @@ jboolean spiderParaInit(JNIEnv *env, u64 *imgParam, u64 *pageParam)
             spiderPara->curPageNode = RELATIVE_ADDR_NULL;
             spiderPara->srcPageNode = RELATIVE_ADDR_NULL;
         }
+        
+        printSpiderPara();
 
         imgParam[PARA_TOTAL] = spiderPara->imgUrlTree.len;
         imgParam[PARA_PROCESSED] = spiderPara->imgUrlTree.processed;
@@ -1062,7 +1088,9 @@ jstring jniFindNextPageUrl(JNIEnv *env, jobject thiz, jlongArray jPageParam)
     {
         urlNode *curNode = nodeAddrRelativeToAbs(spiderPara->curPageNode);
         urlNode *srcNode = nodeAddrRelativeToAbs(spiderPara->srcPageNode);
-        LOGI("jniFindNextPageUrl %08X %08X", curNode, srcNode);
+
+        LOGI("jniFindNextPageUrl addr %08X %08X", spiderPara->curPageNode, spiderPara->srcPageNode);
+        LOGI("jniFindNextPageUrl ptr  %08X %08X", curNode, srcNode);
 
         LOGI("srcUrl:%s prevUrl:%s pageUrlTreeLen:%d", srcNode->url, curNode->url, curTree->len);
         LOGI("title:%s", (char *) addrRelativeToAbs(curNode->para.title));

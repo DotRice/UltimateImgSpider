@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "21.1.2"
+    buildToolsVersion "25"
 
     defaultConfig {
         applicationId "com.gk969.UltimateImgSpider"
@@ -12,6 +12,10 @@ android {
         ndk {
             moduleName "UltimateImgSpider"
             ldLibs "log"
+        }
+
+        jackOptions {
+            enabled true
         }
     }
 
@@ -26,6 +30,10 @@ android {
         ndkBuild {
             path 'src/main/jni/Android.mk'
         }
+    }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
     }
 }
 

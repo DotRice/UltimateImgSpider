@@ -186,11 +186,7 @@ public class SelSrcActivity extends Activity {
                 if(newProgress == PROGRESS_MAX) {
                     if(pbWebView.getProgress() != 0) {
                         pbWebView.setProgress(PROGRESS_MAX);
-                        mHandler.postDelayed(new Runnable() {
-                            public void run() {
-                                pbWebView.setProgress(0);
-                            }
-                        }, 500);
+                        mHandler.postDelayed(() -> pbWebView.setProgress(0), 500);
                     }
                 } else {
                     pbWebView.setProgress(newProgress);
@@ -288,7 +284,7 @@ public class SelSrcActivity extends Activity {
                 if(!(urlToDisp.startsWith("http://") || urlToDisp.startsWith("https://"))) {
                     urlToDisp = "http://" + urlToDisp;
                 }
-                if(!browser.getUrl().equals(urlToDisp)) {
+                if(!urlToDisp.equals(browser.getUrl())) {
                     browserLoadUrl(urlToDisp);
                 }
                 break;
@@ -330,19 +326,9 @@ public class SelSrcActivity extends Activity {
                     .setMultiChoiceItems(
                             R.array.noLongerConfirm,
                             new boolean[]{false},
-                            new DialogInterface.OnMultiChoiceClickListener() {
-                                public void onClick(DialogInterface dialog,
-                                                    int whichButton, boolean isChecked) {
-                                    ParaConfig.setSpiderGoConfirm(appCtx, isChecked);
-                                }
-                            })
+                            (dialog, whichButton, isChecked) -> ParaConfig.setSpiderGoConfirm(appCtx, isChecked))
                     .setPositiveButton(R.string.OK,
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,
-                                                    int whichButton) {
-                                    spiderGo(url);
-                                }
-                            })
+                            (dialog, whichButton) -> spiderGo(url))
                     .setNegativeButton(R.string.cancel, null).create().show();
         } else {
             spiderGo(url);
@@ -356,60 +342,56 @@ public class SelSrcActivity extends Activity {
     }
 
     private void oclBrowserBtnInit() {
-        oclBrowserBtn = new View.OnClickListener() {
-            
-            @Override
-            public void onClick(View v) {
-                int viewId = v.getId();
-                
-                if((viewId == R.id.buttonURLcmd)
-                        || (viewId == R.id.FrameLayoutURLcmd)) {
-                    executeURLcmd();
-                } else {
-                    switch(viewId) {
-                        case R.id.buttonBack:
-                            Log.i(TAG, "buttonBack");
-                            browserGoBack();
-                            break;
-                        
-                        case R.id.buttonForward:
-                            if(browser.canGoForward()) {
-                                browser.goForward();
-                            }
-                            break;
-                        
-                        case R.id.buttonSpiderGo:
-                            showSpiderGoAlert();
-                            break;
-                        
-                        case R.id.buttonHome:
-                            browserLoadUrl(HOME_URL);
-                            break;
-                        
-                        case R.id.buttonMenu:
-                            responseMenuKey();
-                            return;
+        oclBrowserBtn = v -> {
+            int viewId = v.getId();
 
-                        case R.id.buttonSetting:
-                            openSettingPage();
-                            break;
-                        
-                        case R.id.buttonExit:
-                            finish();
-                            return;
-                        case R.id.buttonRefresh:
-                            browser.reload();
-                            break;
-                        
-                        default:
-                            Log.i(TAG, "oclBrowserBtn Unknown Button");
-                            break;
-                    }
-                    
-                    focusOnWebView();
+            if((viewId == R.id.buttonURLcmd)
+                    || (viewId == R.id.FrameLayoutURLcmd)) {
+                executeURLcmd();
+            } else {
+                switch(viewId) {
+                    case R.id.buttonBack:
+                        Log.i(TAG, "buttonBack");
+                        browserGoBack();
+                        break;
+
+                    case R.id.buttonForward:
+                        if(browser.canGoForward()) {
+                            browser.goForward();
+                        }
+                        break;
+
+                    case R.id.buttonSpiderGo:
+                        showSpiderGoAlert();
+                        break;
+
+                    case R.id.buttonHome:
+                        browserLoadUrl(HOME_URL);
+                        break;
+
+                    case R.id.buttonMenu:
+                        responseMenuKey();
+                        return;
+
+                    case R.id.buttonSetting:
+                        openSettingPage();
+                        break;
+
+                    case R.id.buttonExit:
+                        finish();
+                        return;
+                    case R.id.buttonRefresh:
+                        browser.reload();
+                        break;
+
+                    default:
+                        Log.i(TAG, "oclBrowserBtn Unknown Button");
+                        break;
                 }
-                
+
+                focusOnWebView();
             }
+
         };
     }
     
@@ -477,13 +459,9 @@ public class SelSrcActivity extends Activity {
     
     private void browserMenuInit() {
         layoutWvMask = (RelativeLayout) findViewById(R.id.RelativeLayoutWvMask);
-        layoutWvMask.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // Log.i(TAG, "mask Clicked");
-                focusOnWebView();
-            }
+        layoutWvMask.setOnClickListener(v -> {
+            // Log.i(TAG, "mask Clicked");
+            focusOnWebView();
         });
         
         browserMenu = (LinearLayout) findViewById(R.id.browserMenu);
@@ -495,37 +473,24 @@ public class SelSrcActivity extends Activity {
     
     private void URLbarInit() {
         urlBar = (RelativeLayout) findViewById(R.id.urlBar);
-        urlBar.setOnClickListener(new View.OnClickListener() {
-            
-            @Override
-            public void onClick(View v) {
-                focusOnURL();
-            }
-        });
+        urlBar.setOnClickListener(v -> focusOnURL());
         
-        oclSelSearchEngine = new View.OnClickListener() {
-            
-            @Override
-            public void onClick(View v) {
-                if(etUrl.isFocused()) {
-                    if((!URLUtil.isNetworkUrl(etUrl.getText().toString()))
-                            && (etUrl.getText().length() != 0)) {
-                        new AlertDialog.Builder(SelSrcActivity.this)
-                                .setTitle(R.string.selSearchEngine)
-                                .setItems(ParaConfig.SEARCH_ENGINE_NAME,
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog,
-                                                                int whichButton) {
-                                                Log.i(TAG, "whichButton:" + whichButton);
-                                                ParaConfig.setSearchEngine(appCtx, whichButton);
-                                                btnSelSearchEngine.setImageResource(ParaConfig
-                                                        .getSearchEngineIcon(SelSrcActivity.this));
-                                            }
-                                        }).create().show();
-                    }
-                } else {
-                    focusOnURL();
+        oclSelSearchEngine = v -> {
+            if(etUrl.isFocused()) {
+                if((!URLUtil.isNetworkUrl(etUrl.getText().toString()))
+                        && (etUrl.getText().length() != 0)) {
+                    new AlertDialog.Builder(SelSrcActivity.this)
+                            .setTitle(R.string.selSearchEngine)
+                            .setItems(ParaConfig.SEARCH_ENGINE_NAME,
+                                    (dialog, whichButton) -> {
+                                        Log.i(TAG, "whichButton:" + whichButton);
+                                        ParaConfig.setSearchEngine(appCtx, whichButton);
+                                        btnSelSearchEngine.setImageResource(ParaConfig
+                                                .getSearchEngineIcon(SelSrcActivity.this));
+                                    }).create().show();
                 }
+            } else {
+                focusOnURL();
             }
         };
         btnSelSearchEngine = (ImageButton) findViewById(R.id.buttonSelSearchEngine);
@@ -541,26 +506,19 @@ public class SelSrcActivity extends Activity {
         findViewById(R.id.FrameLayoutURLcmd).setOnClickListener(oclBrowserBtn);
         
         etUrl = (EditText) findViewById(R.id.editTextUrl);
-        etUrl.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        etUrl.setOnFocusChangeListener((v, hasFocus) -> {
+            if(hasFocus) {
+                showWebviewMask(true);
 
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus) {
-                    showWebviewMask(true);
+                setUrlCmd(URL_ENTER);
 
-                    setUrlCmd(URL_ENTER);
-
-                    etUrl.setText(urlToDisp);
-                    etUrl.selectAll();
-                    etUrl.setEnabled(false);
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            etUrl.setEnabled(true);
-                            focusOnURL();
-                        }
-                    }, 50);
-                }
+                etUrl.setText(urlToDisp);
+                etUrl.selectAll();
+                etUrl.setEnabled(false);
+                mHandler.postDelayed(() -> {
+                    etUrl.setEnabled(true);
+                    focusOnURL();
+                }, 50);
             }
         });
         
@@ -603,18 +561,15 @@ public class SelSrcActivity extends Activity {
 
         });
         
-        etUrl.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            public boolean onEditorAction(TextView v, int actionId,
-                                          KeyEvent event) {
-                if(actionId == EditorInfo.IME_ACTION_GO
-                        || actionId == EditorInfo.IME_ACTION_SEARCH
-                        || actionId == EditorInfo.IME_ACTION_NONE
-                        || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-                    executeURLcmd();
-                    return true;
-                }
-                return false;
+        etUrl.setOnEditorActionListener((v, actionId, event) -> {
+            if(actionId == EditorInfo.IME_ACTION_GO
+                    || actionId == EditorInfo.IME_ACTION_SEARCH
+                    || actionId == EditorInfo.IME_ACTION_NONE
+                    || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                executeURLcmd();
+                return true;
             }
+            return false;
         });
     }
     

@@ -3,18 +3,26 @@
     "D:\\android\\UltimateImgSpider\\app\\src\\main\\jni\\Android.mk"
   ],
   "cleanCommands": [
-    "G:\\Develop\\android\\android-ndk-r13\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\android\\UltimateImgSpider\\app\\src\\main\\jni\\Android.mk APP_ABI\u003dmips NDK_ALL_ABIS\u003dmips NDEBUG\u003d1 APP_PLATFORM\u003dandroid-14 NDK_OUT\u003dD:/android/UltimateImgSpider/app/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003dD:\\android\\UltimateImgSpider\\app\\build\\intermediates\\ndkBuild\\debug\\lib clean"
+    "G:\\Develop\\android\\android-ndk-r13\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\android\\UltimateImgSpider\\app\\src\\main\\jni\\Android.mk APP_ABI\u003dmips NDK_ALL_ABIS\u003dmips NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-14 NDK_OUT\u003dD:/android/UltimateImgSpider/app/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003dD:\\android\\UltimateImgSpider\\app\\build\\intermediates\\ndkBuild\\debug\\lib clean"
   ],
   "libraries": {
     "UltimateImgSpider-debug-mips": {
-      "buildCommand": "G:\\Develop\\android\\android-ndk-r13\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\android\\UltimateImgSpider\\app\\src\\main\\jni\\Android.mk APP_ABI\u003dmips NDK_ALL_ABIS\u003dmips NDEBUG\u003d1 APP_PLATFORM\u003dandroid-14 NDK_OUT\u003dD:/android/UltimateImgSpider/app/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003dD:\\android\\UltimateImgSpider\\app\\build\\intermediates\\ndkBuild\\debug\\lib D:/android/UltimateImgSpider/app/build/intermediates/ndkBuild/debug/obj/local/mips/libUltimateImgSpider.so",
+      "buildCommand": "G:\\Develop\\android\\android-ndk-r13\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\android\\UltimateImgSpider\\app\\src\\main\\jni\\Android.mk APP_ABI\u003dmips NDK_ALL_ABIS\u003dmips NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-14 NDK_OUT\u003dD:/android/UltimateImgSpider/app/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003dD:\\android\\UltimateImgSpider\\app\\build\\intermediates\\ndkBuild\\debug\\lib D:/android/UltimateImgSpider/app/build/intermediates/ndkBuild/debug/obj/local/mips/libUltimateImgSpider.so",
       "toolchain": "toolchain-mips",
       "abi": "mips",
       "artifactName": "UltimateImgSpider",
       "files": [
         {
           "src": "D:\\android\\UltimateImgSpider\\app\\src\\main\\jni\\UltimateImgSpider.c",
-          "flags": "\"-gcc-toolchain\" \"G:/Develop/android/android-ndk-r13/build//../toolchains/mipsel-linux-android-4.9/prebuilt/windows-x86_64\" \"-target\" \"mipsel-none-linux-android\" \"-fpic\" \"-ffunction-sections\" \"-funwind-tables\" \"-fstack-protector-strong\" \"-fmessage-length\u003d0\" \"-Wno-invalid-command-line-argument\" \"-Wno-unused-command-line-argument\" \"-no-canonical-prefixes\" \"-g\" \"-mips32\" \"-O2\" \"-DNDEBUG\" \"-ID:/android/UltimateImgSpider/app/src/main/jni\" \"-DANDROID\" \"-Wa,--noexecstack\" \"-Wformat\" \"-Werror\u003dformat-security\" \"-isystem\" \"G:/Develop/android/android-ndk-r13/build//../platforms/android-14/arch-mips/usr/include\""
+          "flags": "\"-gcc-toolchain\" \"G:/Develop/android/android-ndk-r13/build//../toolchains/mipsel-linux-android-4.9/prebuilt/windows-x86_64\" \"-target\" \"mipsel-none-linux-android\" \"-fpic\" \"-ffunction-sections\" \"-funwind-tables\" \"-fstack-protector-strong\" \"-fmessage-length\u003d0\" \"-Wno-invalid-command-line-argument\" \"-Wno-unused-command-line-argument\" \"-no-canonical-prefixes\" \"-g\" \"-mips32\" \"-O0\" \"-UNDEBUG\" \"-fno-limit-debug-info\" \"-ID:/android/UltimateImgSpider/app/src/main/jni\" \"-DANDROID\" \"-Wa,--noexecstack\" \"-Wformat\" \"-Werror\u003dformat-security\" \"-isystem\" \"G:/Develop/android/android-ndk-r13/build//../platforms/android-14/arch-mips/usr/include\""
+        },
+        {
+          "src": "D:\\android\\UltimateImgSpider\\app\\src\\main\\jni\\ashmem.c",
+          "flags": "\"-gcc-toolchain\" \"G:/Develop/android/android-ndk-r13/build//../toolchains/mipsel-linux-android-4.9/prebuilt/windows-x86_64\" \"-target\" \"mipsel-none-linux-android\" \"-fpic\" \"-ffunction-sections\" \"-funwind-tables\" \"-fstack-protector-strong\" \"-fmessage-length\u003d0\" \"-Wno-invalid-command-line-argument\" \"-Wno-unused-command-line-argument\" \"-no-canonical-prefixes\" \"-g\" \"-mips32\" \"-O0\" \"-UNDEBUG\" \"-fno-limit-debug-info\" \"-ID:/android/UltimateImgSpider/app/src/main/jni\" \"-DANDROID\" \"-Wa,--noexecstack\" \"-Wformat\" \"-Werror\u003dformat-security\" \"-isystem\" \"G:/Develop/android/android-ndk-r13/build//../platforms/android-14/arch-mips/usr/include\""
+        },
+        {
+          "src": "D:\\android\\UltimateImgSpider\\app\\src\\main\\jni\\funcName.c",
+          "flags": "\"-gcc-toolchain\" \"G:/Develop/android/android-ndk-r13/build//../toolchains/mipsel-linux-android-4.9/prebuilt/windows-x86_64\" \"-target\" \"mipsel-none-linux-android\" \"-fpic\" \"-ffunction-sections\" \"-funwind-tables\" \"-fstack-protector-strong\" \"-fmessage-length\u003d0\" \"-Wno-invalid-command-line-argument\" \"-Wno-unused-command-line-argument\" \"-no-canonical-prefixes\" \"-g\" \"-mips32\" \"-O0\" \"-UNDEBUG\" \"-fno-limit-debug-info\" \"-ID:/android/UltimateImgSpider/app/src/main/jni\" \"-DANDROID\" \"-Wa,--noexecstack\" \"-Wformat\" \"-Werror\u003dformat-security\" \"-isystem\" \"G:/Develop/android/android-ndk-r13/build//../platforms/android-14/arch-mips/usr/include\""
         }
       ],
       "output": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\ndkBuild\\debug\\obj\\local\\mips\\libUltimateImgSpider.so"

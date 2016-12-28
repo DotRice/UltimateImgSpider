@@ -177,29 +177,15 @@ public class SlotView extends GLView {
     private BezierScroll focusScroll = new BezierScroll(
             new Utils.CubicBezier(0.25f, 0.1f, 0.25f, 1), FOCUS_SCROLL_DURATION);
 
-    public interface OnClickListener {
-        public void onClick(int slotIndex);
+    public interface SlotViewInterface{
+        void onClick(int slotIndex);
+        void onScrollEnd(int curScrollDistance);
+        void onManuallyScroll(boolean isUp);
+        void onStart();
     }
-
-    private OnClickListener runOnClick;
+    private SlotViewInterface slotViewInterface;
     private boolean validClick;
-
-    public interface OnScrollEndListener {
-        public void onScrollEnd(int curScrollDistance);
-    }
-    private OnScrollEndListener runOnScrollEnd;
-
-    public interface OnManuallyScrollListener {
-        public void onManuallyScroll(boolean isUp);
-    }
-    private OnManuallyScrollListener runOnManuallyScroll;
-
-    public interface OnStartListener{
-        public void onStart();
-    }
-    private OnStartListener runOnStart;
-    private boolean hasStarted=false;
-
+    private boolean hasStarted;
 
     private boolean isTouching;
 
@@ -208,10 +194,10 @@ public class SlotView extends GLView {
         @Override
         public boolean onSingleTapUp(float x, float y) {
             Log.i(TAG, "onSingleTapUp " + x + " " + y);
-            if(validClick && runOnClick != null) {
+            if(validClick && slotViewInterface != null) {
                 int intX = (int) x;
                 int intY = (int) y;
-                runOnClick.onClick((scrollDistance + intY) / slotHeightWithGap * slotsPerRow + intX / slotHeightWithGap);
+                slotViewInterface.onClick((scrollDistance + intY) / slotHeightWithGap * slotsPerRow + intX / slotHeightWithGap);
             }
             return true;
         }
@@ -232,7 +218,7 @@ public class SlotView extends GLView {
         public boolean onScroll(float dx, float dy, float totalX, float totalY) {
             //Log.i(TAG, "onScroll "+dx+" "+dy+" "+totalX+" "+totalY);
 
-            runOnManuallyScroll.onManuallyScroll(totalY<0);
+            slotViewInterface.onManuallyScroll(totalY<0);
 
             mGLRootView.lockRenderThread();
 
@@ -327,7 +313,7 @@ public class SlotView extends GLView {
             }
 
             isTouching = false;
-            runOnScrollEnd.onScrollEnd(scrollDistance);
+            slotViewInterface.onScrollEnd(scrollDistance);
             mGLRootView.unlockRenderThread();
         }
 
@@ -365,8 +351,8 @@ public class SlotView extends GLView {
         stopAnimation();
         setViewSize(getWidth(), getHeight());
 
-        if(runOnStart!=null && !hasStarted){
-            runOnStart.onStart();
+        if(slotViewInterface!=null && !hasStarted){
+            slotViewInterface.onStart();
             hasStarted=true;
         }
     }
@@ -422,7 +408,7 @@ public class SlotView extends GLView {
 
         if(keyCode==KeyEvent.KEYCODE_ENTER) {
             if(isSlotInView(focusedSlotIndex)) {
-                runOnClick.onClick(focusedSlotIndex);
+                slotViewInterface.onClick(focusedSlotIndex);
             }
         }else {
             if(!isSlotInView(focusedSlotIndex)&&!focusScroll.isScrolling){
@@ -477,20 +463,8 @@ public class SlotView extends GLView {
         return processed;
     }
 
-    public void setOnClick(OnClickListener listener) {
-        runOnClick = listener;
-    }
-
-    public void setOnScrollEnd(OnScrollEndListener listener) {
-        runOnScrollEnd = listener;
-    }
-
-    public void setOnManuallyScroll(OnManuallyScrollListener listener) {
-        runOnManuallyScroll = listener;
-    }
-
-    public void setOnStart(OnStartListener listener){
-        runOnStart = listener;
+    public void setInterface(SlotViewInterface listener) {
+        slotViewInterface = listener;
     }
 
     private void setViewSize(int width, int height) {
@@ -514,7 +488,6 @@ public class SlotView extends GLView {
         slotHeightWithGap = slotSize + slotGap;
         maxSlotRowsInView = viewHeight / slotHeightWithGap + 2;
         maxSlotRowsInOverScrollView = viewHeight / slotHeightWithGap + 1;
-        mThumbnailLoader.initAboutView(maxSlotRowsInView * slotsPerRow);
 
         if(slotShouldInView!=StaticValue.INDEX_INVALID){
             if(!isSlotInView(slotShouldInView)) {
@@ -528,6 +501,8 @@ public class SlotView extends GLView {
             scrollAbs(scrollDistance / prevSlotHeightWithGap * prevSlotsPerRow / slotsPerRow
                     * slotHeightWithGap + scrollDistance % prevSlotHeightWithGap);
         }
+
+        mThumbnailLoader.initAboutView(maxSlotRowsInView * slotsPerRow);
     }
 
     public void letSlotInView(int index){
@@ -541,7 +516,7 @@ public class SlotView extends GLView {
         barScroll.stop();
         newLineScroll.stop();
         focusScroll.stop();
-        runOnScrollEnd.onScrollEnd(scrollDistance);
+        slotViewInterface.onScrollEnd(scrollDistance);
     }
 
     public void onChangeView(){
@@ -573,9 +548,9 @@ public class SlotView extends GLView {
         if(!isTouching) {
             if(newLineScroll.isScrolling || scrollDistance == getSlotDistance(prevImgNum)) {
                 int albumBottom = getScrollDistanceMax();
-                Log.i(TAG, "albumBottom " + albumBottom);
+                //Log.i(TAG, "albumBottom " + albumBottom);
                 if((albumBottom - scrollDistance) >= slotHeightWithGap) {
-                    Log.i(TAG, "newLineScroll.start");
+                    //Log.i(TAG, "newLineScroll.start");
                     newLineScroll.start(scrollDistance, albumBottom);
                 }
             }

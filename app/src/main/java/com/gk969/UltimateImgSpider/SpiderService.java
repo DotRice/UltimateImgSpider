@@ -101,24 +101,16 @@ public class SpiderService extends Service {
             public void projectPathRecved() {
                 Log.i(TAG, "projectPathRecved");
 
-                spiderHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        startSpider();
-                    }
-                });
+                spiderHandler.post(() -> startSpider());
             }
 
             public void projectDataSaved() {
                 Log.i(TAG, "projectDataSaved");
 
-                spiderHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(isWaitingForSavingData) {
-                            isWaitingForSavingData = false;
-                            jniDataLock.unlock();
-                        }
+                spiderHandler.post(() -> {
+                    if(isWaitingForSavingData) {
+                        isWaitingForSavingData = false;
+                        jniDataLock.unlock();
                     }
                 });
             }
@@ -163,6 +155,7 @@ public class SpiderService extends Service {
         String srcUrlInDataFile = jniSpiderInit(imgProcParam, pageProcParam);
 
         if(srcUrlInDataFile != null) {
+            Log.i(TAG, "spiderInit srcUrlInDataFile "+srcUrlInDataFile);
             spiderInit(srcUrlInDataFile);
         } else {
             stopSelfAndWatchdog();
@@ -265,12 +258,9 @@ public class SpiderService extends Service {
 
     private void checkLockAndStopSelf() {
         //Prevent locks block main thread of service
-        singleThreadPoolTimer.execute(new Runnable() {
-            @Override
-            public void run() {
-                checkLock();
-                stopSelf();
-            }
+        singleThreadPoolTimer.execute(() -> {
+            checkLock();
+            stopSelf();
         });
     }
 
@@ -329,13 +319,10 @@ public class SpiderService extends Service {
                         if(srcUrl == null) {
                             srcUrl = url;
                         } else if(!srcUrl.equals(url)) {
-                            singleThreadPoolTimer.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    jniDataLock.lock();
-                                    jniSetSrcPageUrl(url, md5ForPage.digest(url.getBytes()), pageProcParam);
-                                    jniDataLock.unlock();
-                                }
+                            singleThreadPoolTimer.execute(() -> {
+                                jniDataLock.lock();
+                                jniSetSrcPageUrl(url, md5ForPage.digest(url.getBytes()), pageProcParam);
+                                jniDataLock.unlock();
                             });
                         }
                     }
@@ -367,18 +354,12 @@ public class SpiderService extends Service {
         Log.i(TAG, "stopStoreProject curState "+STAT_DESC[state.get()]);
         if(state.get() != STAT_STOP) {
             state.set(STAT_STOP);
-            singleThreadPoolTimer.execute(new Runnable() {
-                @Override
-                public void run() {
-                    checkLock();
-                    spiderHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
-                            stopSelf();
-                        }
-                    });
-                }
+            singleThreadPoolTimer.execute(() -> {
+                checkLock();
+                spiderHandler.post(() -> {
+                    sendCmdToWatchdog(StaticValue.CMD_STOP_STORE);
+                    stopSelf();
+                });
             });
         }
     }
@@ -624,12 +605,9 @@ public class SpiderService extends Service {
                             } else {
                                 //Log.i(TAG, "new page url valid");
 
-                                spiderHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        spider.loadUrl(curPageUrl);
-                                        urlLoadTimer.set(URL_TIME_OUT);
-                                    }
+                                spiderHandler.post(() -> {
+                                    spider.loadUrl(curPageUrl);
+                                    urlLoadTimer.set(URL_TIME_OUT);
                                 });
                             }
                         }
@@ -970,12 +948,7 @@ public class SpiderService extends Service {
         jsonReportStr.append("\"pageTreeHeight\":").append(pageProcParam[StaticValue.PARA_HEIGHT]).append(",\r\n");
         jniDataLock.unlock();
 
-        spiderHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                reportSpiderLog(jsonReportStr);
-            }
-        });
+        spiderHandler.post(() -> reportSpiderLog(jsonReportStr));
     }
 
     private void reportSpiderLog(StringBuilder jsonReportStr) {
@@ -1025,13 +998,10 @@ public class SpiderService extends Service {
                 curPageTitle = curPageTitle.substring(0, MAX_SIZE_PER_TITLE);
             }
 
-            singleThreadPoolTimer.execute(new Runnable() {
-                @Override
-                public void run() {
-                    jniDataLock.lock();
-                    jniSavePageTitle(curPageTitle);
-                    jniDataLock.unlock();
-                }
+            singleThreadPoolTimer.execute(() -> {
+                jniDataLock.lock();
+                jniSavePageTitle(curPageTitle);
+                jniDataLock.unlock();
             });
         }
 
@@ -1103,16 +1073,13 @@ public class SpiderService extends Service {
                     pageUrlFailCnt++;
                     if(pageUrlFailCnt == MAX_FAIL_PAGE_TO_CHECK) {
                         pageUrlFailCnt = 0;
-                        singleThreadPoolTimer.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                jniDataLock.lock();
-                                if(!Utils.isNetworkEffective()) {
-                                    isNetworkFail = true;
-                                    state.set(STAT_PAUSE);
-                                }
-                                jniDataLock.unlock();
+                        singleThreadPoolTimer.execute(() -> {
+                            jniDataLock.lock();
+                            if(!Utils.isNetworkEffective()) {
+                                isNetworkFail = true;
+                                state.set(STAT_PAUSE);
                             }
+                            jniDataLock.unlock();
                         });
                     }
                 }
@@ -1193,14 +1160,11 @@ public class SpiderService extends Service {
             }
 
             saveProjectDataTime.set(SAVE_PROJECT_DATA_TIME);
-            singleThreadPoolTimer.scheduleWithFixedDelay(new Runnable() {
-                @Override
-                public void run() {
-                    if(saveProjectDataTime.get() != 0) {
-                        if(saveProjectDataTime.decrementAndGet() == 0) {
-                            Log.i(TAG, "save project data by timeout");
-                            saveProjectData();
-                        }
+            singleThreadPoolTimer.scheduleWithFixedDelay(() -> {
+                if(saveProjectDataTime.get() != 0) {
+                    if(saveProjectDataTime.decrementAndGet() == 0) {
+                        Log.i(TAG, "save project data by timeout");
+                        saveProjectData();
                     }
                 }
             }, 0, 1000, TimeUnit.MILLISECONDS);
@@ -1248,14 +1212,10 @@ public class SpiderService extends Service {
 
                 if(urlLoadTimer.get() != 0) {
                     if(urlLoadTimer.decrementAndGet() == 0) {
-                        spiderHandler.post(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                Log.i(TAG, "Load TimeOut!!");
-                                spider.stopLoading();
-                                scanPageWithJS();
-                            }
+                        spiderHandler.post(() -> {
+                            Log.i(TAG, "Load TimeOut!!");
+                            spider.stopLoading();
+                            scanPageWithJS();
                         });
                     }
                 }

@@ -420,6 +420,7 @@ public class GLView {
     }
 
     protected void onVisibilityChanged(int visibility) {
+        Log.i(TAG, "onVisibilityChanged "+visibility);
         for (int i = 0, n = getComponentCount(); i < n; ++i) {
             GLView child = getComponent(i);
             if (child.getVisibility() == GLView.VISIBLE) {

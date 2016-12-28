@@ -1,15 +1,15 @@
 [
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\sogou.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\sogou.png"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\bottom_button_blur_background.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\bottom_button_blur_background.xml"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\bottom_button_focus_background.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\bottom_button_focus_background.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\sogou.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\sogou.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\image.png",
@@ -24,12 +24,12 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\google.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\new_proj.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\new_proj.png"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\button_background.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\button_background.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\new_proj.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\new_proj.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\exit.png",
@@ -52,12 +52,12 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\button_background_selector.xml"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\home.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\home.png"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\browser_button_focus_bg.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\browser_button_focus_bg.xml"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\home.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\home.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\rom.png",
@@ -76,12 +76,12 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\refresh.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\site.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\site.png"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\forward.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\forward.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\site.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\site.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\menu_refresh.png",
@@ -112,32 +112,32 @@
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\scan_page.png"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\option.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\option.png"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\button_on_touch_background.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\button_on_touch_background.xml"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\green_menu.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\green_menu.png"
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\option.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\option.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\button_focus_backgrou.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\button_focus_backgrou.xml"
     },
     {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\green_menu.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\green_menu.png"
+    },
+    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\button_trans_bg.xml",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\button_trans_bg.xml"
     },
     {
-        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\page.png",
-        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\page.png"
-    },
-    {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\big_menu.png",
         "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\big_menu.png"
+    },
+    {
+        "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\page.png",
+        "source": "D:\\android\\UltimateImgSpider\\app\\src\\main\\res\\drawable\\page.png"
     },
     {
         "merged": "D:\\android\\UltimateImgSpider\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\pause.png",

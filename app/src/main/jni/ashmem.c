@@ -174,7 +174,7 @@ void jniRestoreProjectData(JNIEnv *env, jobject thiz, jstring jDataFileFullPath)
             }
 
             if(fread(data, ashmParaStore.size, 1, dataFile) != 1) {
-                LOGI("fread data error");
+                LOGI("fread %d %08X data error", ashmParaStore.size, ashmParaStore.size);
                 break;
             }
 
